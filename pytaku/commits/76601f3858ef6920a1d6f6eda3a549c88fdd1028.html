@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[76601f3858] fit title cover into viewport width | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 76601f3858</strong><hr><pre>commit 76601f3858ef6920a1d6f6eda3a549c88fdd1028
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Aug 22 10:07:17 2023 +0700
+
+    fit title cover into viewport width
+    
+    Fixes mobile
+
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index 2885613..808fe1e 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -335,7 +335,7 @@ .search--result-text {
+ 
+ /* Title route */
+ .title--cover {
+-  max-width: 400px;
++  max-width: min(100%, 400px);
+   border: 1px solid black;
+ }
+ 
+</pre></body></html>

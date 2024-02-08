@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[bda5dc9848] gray button | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / bda5dc9848</strong><hr><pre>commit bda5dc984804b0375145bf3763cd728bf70df52d
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 6 00:21:54 2020 +0700
+
+    gray button
+
+diff --git a/src/pytaku/static/base.css b/src/pytaku/static/base.css
+index 6b9f446..2599471 100644
+--- a/src/pytaku/static/base.css
++++ b/src/pytaku/static/base.css
+@@ -6,6 +6,8 @@ :root {
+   --btn-green-bottom: #338a0d;
+   --btn-blue: #009ee8;
+   --btn-blue-bottom: #26789f;
++  --btn-gray: #444;
++  --btn-gray-bottom: #555;
+   --bg-black: #231f20;
+   --border-radius: 3px;
+   --body-padding: 0.5rem;
+@@ -85,6 +87,10 @@ .button.blue {
+   background-color: var(--btn-blue);
+   border-bottom: 4px solid var(--btn-blue-bottom);
+ }
++.button.gray {
++  background-color: var(--btn-gray);
++  border-bottom: 4px solid var(--btn-gray-bottom);
++}
+ .button.disabled,
+ .button.disabled:hover,
+ .button.disabled:active {
+diff --git a/src/pytaku/templates/base.html b/src/pytaku/templates/base.html
+index a917622..d3363f9 100644
+--- a/src/pytaku/templates/base.html
++++ b/src/pytaku/templates/base.html
+@@ -50,7 +50,7 @@
+         {% if session.get(&#39;user&#39;) %}
+         &lt;span&gt;Hi there &lt;strong&gt;{{ session.user[&#39;username&#39;] }}&lt;/strong&gt;!&lt;/span&gt;
+         &lt;form method=&quot;POST&quot; action=&quot;{{ url_for(&#39;logout_view&#39;) }}&quot;&gt;
+-          {{ ibutton(left_icon=&#39;log-out&#39;, text=&#39;Logout&#39;) }}
++          {{ ibutton(left_icon=&#39;log-out&#39;, text=&#39;Logout&#39;, color=&#39;gray&#39;) }}
+         &lt;/form&gt;
+         {% else %}
+         &lt;a href=&quot;/auth&quot;&gt;
+</pre></body></html>

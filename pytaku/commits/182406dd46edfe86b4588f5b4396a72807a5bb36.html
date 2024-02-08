@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[182406dd46] install poetry from pipx; let poetry manage venv | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 182406dd46</strong><hr><pre>commit 182406dd46edfe86b4588f5b4396a72807a5bb36
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jun 15 22:09:52 2021 +0700
+
+    install poetry from pipx; let poetry manage venv
+    
+    To work around weird versioning issue:
+    https://builds.sr.ht/~nhanb/job/525910
+        Command [&#39;/home/build/venv/bin/pip&#39;, &#39;install&#39;, &#39;--no-deps&#39;, &#39;/home/build/.cache/pypoetry/artifacts/cd/da/a5/4cfa20f311002e7588045a07491e292e7fb819fcc777144055b7c7ba89/MarkupSafe-1.1.1-cp37-cp37m-manylinux2010_x86_64.whl&#39;] errored with the following return code 1, and output:
+        MarkupSafe-1.1.1-cp37-cp37m-manylinux2010_x86_64.whl is not a supported wheel on this platform.
+
+diff --git a/.builds/ubuntu.yml b/.builds/ubuntu.yml
+index c2365fe..b0f977e 100644
+--- a/.builds/ubuntu.yml
++++ b/.builds/ubuntu.yml
+@@ -23,21 +23,18 @@ packages:
+ 
+ tasks:
+   - setup: |
+-      python3.7 -m venv ~/venv
+-      source ~/venv/bin/activate
+-      curl https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py
+-      python3.7 get-poetry.py -y --version 1.1.6
++      python3.7 -m pip install pipx
++      python3.7 -m pipx install poetry==1.1.6
+       cd pytaku
+       poetry install --no-dev
+-      pip install https://github.com/rogerbinns/apsw/releases/download/3.32.2-r1/apsw-3.32.2-r1.zip \
++      poetry run pip install https://github.com/rogerbinns/apsw/releases/download/3.32.2-r1/apsw-3.32.2-r1.zip \
+             --global-option=fetch --global-option=--version --global-option=3.32.2 --global-option=--all \
+             --global-option=build --global-option=--enable-all-extensions
+ 
+   #- test: |
+       #cd pytaku
+-      #source ~/venv/bin/activate
+       #mv ~/pytaku.conf.json ./
+-      #pytest
++      #poetry run pytest
+ 
+   - build: |
+       cd pytaku
+@@ -46,7 +43,6 @@ tasks:
+         src/pytaku/js-src/main.js \
+         --bundle --sourcemap --minify \
+         --outfile=src/pytaku/static/js/main.min.js
+-      source ~/venv/bin/activate
+       poetry build
+ 
+   # Builds.sr.ht doesn&#39;t support tag or even branch detection yet:
+</pre></body></html>

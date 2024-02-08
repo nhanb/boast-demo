@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[efb3b6109f] more mangadex bug fixes found during update | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / efb3b6109f</strong><hr><pre>commit efb3b6109fdd3eaeb3ba8d6e8a21eb93050c60b3
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Sep 3 23:47:31 2021 +0700
+
+    more mangadex bug fixes found during update
+
+diff --git a/src/mangoapi/base_site.py b/src/mangoapi/base_site.py
+index e308cea..b94fb36 100644
+--- a/src/mangoapi/base_site.py
++++ b/src/mangoapi/base_site.py
+@@ -46,7 +46,7 @@ def title_cover(self, title_id, cover_ext):
+         pass
+ 
+     @abstractmethod
+-    def title_thumbnail(self, title_id):
++    def title_thumbnail(self, title_id, cover_ext):
+         pass
+ 
+     @abstractmethod
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index 7340e19..209eff4 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -35,15 +35,19 @@ def get_title(self, title_id):
+             if rel[&quot;type&quot;] == &quot;cover_art&quot;:
+                 cover = rel[&quot;attributes&quot;][&quot;fileName&quot;]
+ 
++        descriptions = attrs[&quot;description&quot;]
++        if &quot;en&quot; in descriptions:
++            description = descriptions[&quot;en&quot;]
++        else:
++            description = list(descriptions.values())[0]
++
+         title = {
+             &quot;id&quot;: title_id,
+-            &quot;name&quot;: attrs[&quot;title&quot;][&quot;en&quot;],
++            &quot;name&quot;: list(attrs[&quot;title&quot;].values())[0],
+             &quot;site&quot;: &quot;mangadex&quot;,
+             &quot;cover_ext&quot;: cover,
+-            &quot;alt_names&quot;: [alt[&quot;en&quot;] for alt in attrs[&quot;altTitles&quot;]],
+-            &quot;descriptions&quot;: [
+-                _bbparser.format(html.unescape(attrs[&quot;description&quot;][&quot;en&quot;]).strip())
+-            ],
++            &quot;alt_names&quot;: [list(alt.values())[0] for alt in attrs[&quot;altTitles&quot;]],
++            &quot;descriptions&quot;: [_bbparser.format(html.unescape(description).strip())],
+             &quot;descriptions_format&quot;: &quot;html&quot;,
+             &quot;is_webtoon&quot;: is_web_comic,
+             &quot;chapters&quot;: self.get_chapters_list(title_id),
+@@ -59,21 +63,29 @@ def get_chapters_list(self, title_id):
+         volumes: dict = resp.json()[&quot;volumes&quot;]
+         chapters = []
+ 
+-        # Counting on python&#39;s spanking new key-order-preserving dicts here.
+-        # But WHY THE ACTUAL FUCK would you (mangadex) depend on JSON&#39;s key-value pairs ordering?
+-        # A JSON object&#39;s keys is supposed to be unordered FFS.
+-        # If it actually becomes a problem I&#39;ll do chapter sorting later. Soon. Ish.
++        # If there are no volumes, it&#39;s an empty list.
++        # But if there are actual volumes, it&#39;s a dict.
++        if type(volumes) is list:
++            return []
+         for vol in volumes.values():
+-            chapters += [
+-                {
+-                    &quot;id&quot;: chap[&quot;id&quot;],
+-                    &quot;name&quot;: &quot;&quot;,
+-                    &quot;groups&quot;: [],  # TODO
+-                    &quot;volume&quot;: None if vol[&quot;volume&quot;] == &quot;none&quot; else int(vol[&quot;volume&quot;]),
+-                    **_parse_chapter_number(chap[&quot;chapter&quot;]),
+-                }
+-                for chap in vol[&quot;chapters&quot;].values()  # again, fucking yikes
+-            ]
++            # Counting on python&#39;s spanking new key-order-preserving dicts here.
++            # But WHY THE ACTUAL FUCK would you (mangadex) depend on JSON&#39;s key-value
++            # pairs ordering?  A JSON object&#39;s keys is supposed to be unordered FFS.
++            # If it actually becomes a problem I&#39;ll do chapter sorting later. Soon. Ish.
++            chapters += (
++                [
++                    {
++                        &quot;id&quot;: chap[&quot;id&quot;],
++                        &quot;name&quot;: &quot;&quot;,
++                        &quot;groups&quot;: [],  # TODO
++                        &quot;volume&quot;: vol[&quot;volume&quot;],
++                        **_parse_chapter_number(chap[&quot;chapter&quot;]),
++                    }
++                    for chap in vol[&quot;chapters&quot;].values()  # again, fucking yikes
++                ]
++                if type(vol[&quot;chapters&quot;]) is dict
++                else []
++            )
+ 
+         return chapters
+ 
+@@ -121,7 +133,12 @@ def _get_md_at_home_server(self, chapter_id):
+         return resp.json()[&quot;baseUrl&quot;] if resp.status_code == 200 else None
+ 
+     def search_title(self, query):
+-        params = {&quot;limit&quot;: 100, &quot;title&quot;: query, &quot;includes[]&quot;: &quot;cover_art&quot;}
++        params = {
++            &quot;limit&quot;: 100,
++            &quot;title&quot;: query,
++            &quot;includes[]&quot;: &quot;cover_art&quot;,
++            &quot;order[relevance]&quot;: &quot;desc&quot;,
++        }
+         md_resp = self.http_get(&quot;https://api.mangadex.org/manga&quot;, params=params)
+         assert md_resp.status_code == 200
+         results = md_resp.json()[&quot;results&quot;]
+@@ -147,8 +164,8 @@ def search_title(self, query):
+     def title_cover(self, title_id, cover_ext):
+         return f&quot;https://uploads.mangadex.org/covers/{title_id}/{cover_ext}.256.jpg&quot;
+ 
+-    def title_thumbnail(self, title_id):
+-        return f&quot;https://mangadex.org/images/manga/{title_id}.large.jpg&quot;
++    def title_thumbnail(self, title_id, cover_ext):
++        return f&quot;https://uploads.mangadex.org/covers/{title_id}/{cover_ext}.256.jpg&quot;
+ 
+     def title_source_url(self, title_id):
+         return f&quot;https://mangadex.org/manga/{title_id}&quot;
+@@ -162,9 +179,9 @@ def title_source_url(self, title_id):
+ 
+ 
+ def _parse_chapter_number(string):
+-    if string == &quot;none&quot;:
++    if string in (None, &quot;none&quot;):
+         # most likely a oneshot
+-        return {&quot;number&quot;: &quot;&quot;}
++        return {&quot;number&quot;: &quot;0.0&quot;, &quot;num_major&quot;: 0, &quot;num_minor&quot;: 0}
+     nums = string.split(&quot;.&quot;)
+     count = len(nums)
+     assert count == 1 or count == 2
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+index ded8b8c..929b988 100644
+--- a/src/mangoapi/mangasee.py
++++ b/src/mangoapi/mangasee.py
+@@ -131,7 +131,7 @@ def search_title(self, query):
+     def title_cover(self, title_id, cover_ext):
+         return self.title_thumbnail(title_id)
+ 
+-    def title_thumbnail(self, title_id):
++    def title_thumbnail(self, title_id, cover_ext):
+         return f&quot;https://cover.nep.li/cover/{title_id}.jpg&quot;
+ 
+     def title_source_url(self, title_id):
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 8096c12..7246224 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -371,7 +371,7 @@ def api_logout():
+ def api_follows():
+     titles = get_followed_titles(request.user_id)
+     for title in titles:
+-        thumbnail = title_thumbnail(title[&quot;site&quot;], title[&quot;id&quot;])
++        thumbnail = title_thumbnail(title[&quot;site&quot;], title[&quot;id&quot;], title[&quot;cover_ext&quot;])
+         if title[&quot;site&quot;] == &quot;mangadex&quot;:
+             thumbnail = proxied(thumbnail)
+         title[&quot;thumbnail&quot;] = thumbnail
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 9b21cf1..f0bf43f 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -305,7 +305,11 @@ def unread(user_id, site, title_id, chapter_id):
+ 
+ def find_outdated_titles(since=f&quot;-{config.MANGA_HOURS_UNTIL_OUTDATED} hours&quot;):
+     return run_sql(
+-        &quot;SELECT id, site FROM title WHERE updated_at &lt;= datetime(&#39;now&#39;, ?);&quot;, (since,)
++        &quot;&quot;&quot;
++        SELECT id, name, site FROM title WHERE updated_at &lt;= datetime(&#39;now&#39;, ?)
++        ORDER BY updated_at;
++        &quot;&quot;&quot;,
++        (since,),
+     )
+ 
+ 
+diff --git a/src/pytaku/scheduler.py b/src/pytaku/scheduler.py
+index 07255b8..c25bcc4 100644
+--- a/src/pytaku/scheduler.py
++++ b/src/pytaku/scheduler.py
+@@ -67,11 +67,10 @@ def run(self):
+         outdated_titles = find_outdated_titles()
+         print(f&quot;Found {len(outdated_titles)} outdated titles&quot;)
+         for title in outdated_titles:
+-            if title[&quot;site&quot;] == &quot;mangadex&quot;:
+-                # print(f&quot;Skipped title {title[&#39;id&#39;]} from {title[&#39;site&#39;]}.&quot;)
+-                continue
+-
+-            print(f&quot;Updating title {title[&#39;id&#39;]} from {title[&#39;site&#39;]}...&quot;, end=&quot;&quot;)
++            print(
++                f&quot;Updating title {title[&#39;id&#39;]} - {title[&#39;name&#39;][:36]} from {title[&#39;site&#39;]}...&quot;,
++                end=&quot;&quot;,
++            )
+             try:
+                 updated_title = get_title(title[&quot;site&quot;], title[&quot;id&quot;])
+                 save_title(updated_title)
+diff --git a/src/pytaku/source_sites.py b/src/pytaku/source_sites.py
+index 62f0438..edc1821 100644
+--- a/src/pytaku/source_sites.py
++++ b/src/pytaku/source_sites.py
+@@ -45,8 +45,8 @@ def title_cover(site_name, title_id, cover_ext):
+     return _get_site(site_name).title_cover(title_id, cover_ext)
+ 
+ 
+-def title_thumbnail(site_name, title_id):
+-    return _get_site(site_name).title_thumbnail(title_id)
++def title_thumbnail(site_name, title_id, cover_ext):
++    return _get_site(site_name).title_thumbnail(title_id, cover_ext)
+ 
+ 
+ def title_source_url(site_name, title_id):
+</pre></body></html>

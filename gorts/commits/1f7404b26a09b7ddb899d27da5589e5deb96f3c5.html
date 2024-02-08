@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1f7404b26a] handle empty inputs; add sample players file | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 1f7404b26a</strong><hr><pre>commit 1f7404b26a09b7ddb899d27da5589e5deb96f3c5
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jun 20 15:05:16 2023 +0700
+
+    handle empty inputs; add sample players file
+
+diff --git a/Makefile b/Makefile
+index f75ed60..885462b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,10 +2,12 @@ windows:
+ 	CGO_ENABLED=0 GOOS=windows \
+ 		go build -o dist/windows/gorts.exe -ldflags -H=windowsgui
+ 	cp -r web dist/windows/web
++	cp players.sample.csv dist/windows/
+ 
+ linux:
+ 	CGO_ENABLED=0 GOOS=linux go build -o dist/linux/gorts
+ 	cp -r web dist/linux/web
++	cp players.sample.csv dist/linux/
+ 
+ dist/GORTS-Windows.zip: windows
+ 	cd dist/windows; \
+diff --git a/main.go b/main.go
+index 33bc0a2..d3f6b51 100644
+--- a/main.go
++++ b/main.go
+@@ -85,7 +85,7 @@ func startGUI() {
+ 	fmt.Fprintln(stdin, mainTcl)
+ 	println(&quot;Loaded main tcl script.&quot;)
+ 
+-	players := players.FromFile(PlayersFile)
++	allplayers := players.FromFile(PlayersFile)
+ 	state := initState()
+ 	b64icon := base64.StdEncoding.EncodeToString(gortsPngIcon)
+ 
+@@ -140,14 +140,23 @@ func startGUI() {
+ 			state.Write()
+ 
+ 		case &quot;readplayernames&quot;:
+-			for _, player := range players {
++			for _, player := range allplayers {
+ 				respond(player.Name)
+ 			}
+ 			respond(&quot;end&quot;)
+ 
+ 		case &quot;searchplayers&quot;:
+-			query := next()
+-			for _, p := range players {
++			query := strings.TrimSpace(next())
++
++			if query == &quot;&quot; {
++				for _, p := range allplayers {
++					respond(p.Name)
++				}
++				respond(&quot;end&quot;)
++				break
++			}
++
++			for _, p := range allplayers {
+ 				if p.MatchesName(query) {
+ 					respond(p.Name)
+ 				}
+diff --git a/players.sample.csv b/players.sample.csv
+new file mode 100644
+index 0000000..e388e57
+--- /dev/null
++++ b/players.sample.csv
+@@ -0,0 +1,3 @@
++Xian,sg,Team Singapore
++Tokido,jp,Team Japan
++Gamerbee,tw,Team Family Man
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index eca1954..8643a1e 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -202,8 +202,8 @@ proc setup_player_name_suggestion {} {
+         if {!($key == &quot;p1name&quot; || $key == &quot;p2name&quot;)} {
+             return
+         }
+-        set widget .c.players.$key
+         set newvalue $::scoreboard($key)
++        set widget .c.players.$key
+         set matches [searchplayers $newvalue]
+         $widget configure -values $matches
+     }
+</pre></body></html>

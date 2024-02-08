@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[d09e58bc19] please the validator | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / d09e58bc19</strong><hr><pre>commit d09e58bc195388c99896d36537fd5078d945e73e
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jan 24 21:46:58 2022 +0700
+
+    please the validator
+
+diff --git a/nhanb-theme/templates/base.html b/nhanb-theme/templates/base.html
+index 1889aec..2b7f19f 100644
+--- a/nhanb-theme/templates/base.html
++++ b/nhanb-theme/templates/base.html
+@@ -16,12 +16,12 @@
+ &lt;body&gt;
+   &lt;div id=&quot;main&quot;&gt;
+ 
+-    &lt;header role=&quot;banner&quot;&gt;
++    &lt;header&gt;
+       &lt;h1 id=&quot;site-name&quot;&gt;&lt;a href=&quot;/&quot;&gt;{{ SITENAME }}&lt;/a&gt;&lt;/h1&gt;
+       &lt;h2 id=&quot;site-subtitle&quot;&gt;{{ SITESUBTITLE}}&lt;/h2&gt;
+     &lt;/header&gt;
+ 
+-    &lt;nav role=&quot;navigation&quot;&gt;
++    &lt;nav&gt;
+       &lt;ul class=&quot;navbar&quot; id=&quot;left-navbar&quot;&gt;
+         {% for title, link in MENUITEMS %}
+           &lt;li&gt;&lt;a href=&quot;{{ link }}&quot;&gt;{{ title }}&lt;/a&gt;&lt;/li&gt;
+@@ -34,7 +34,7 @@ &lt;h2 id=&quot;site-subtitle&quot;&gt;{{ SITESUBTITLE}}&lt;/h2&gt;
+         &lt;li&gt;&lt;a href=&quot;{{SITE_URL}}/feeds/atom.xml&quot;&gt;Feed&lt;/a&gt;&lt;/li&gt;
+       &lt;/ul&gt;
+ 
+-    &lt;div class=&quot;clearfix&quot;&gt;
++      &lt;div class=&quot;clearfix&quot;&gt;&lt;/div&gt;
+ 
+     &lt;/nav&gt;
+ 
+diff --git a/nhanb-theme/templates/page.html b/nhanb-theme/templates/page.html
+index eaf4cd8..8ef5fa7 100644
+--- a/nhanb-theme/templates/page.html
++++ b/nhanb-theme/templates/page.html
+@@ -13,7 +13,7 @@
+ 
+ {% block content %}
+ &lt;div&gt;
+-  &lt;article role=&quot;article&quot;&gt;
++  &lt;article&gt;
+     {{ page.content }}
+   &lt;/article&gt;
+ &lt;/div&gt;
+</pre></body></html>

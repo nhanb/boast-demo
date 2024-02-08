@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[5ac8c2acab] NewTabSuffix: use less exotic arrow | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 5ac8c2acab</strong><hr><pre>commit 5ac8c2acab8c42963cb39bab014e0bb6e8691240
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 30 23:17:45 2023 +0700
+
+    NewTabSuffix: use less exotic arrow
+    
+    This one actually renders on IBM Plex.
+
+diff --git a/main.go b/main.go
+index de8ec71..8ac0a1b 100644
+--- a/main.go
++++ b/main.go
+@@ -189,7 +189,7 @@ type Link struct {
+ 	NewTab bool
+ }
+ 
+-const NewTabSuffix = &quot;🡕&quot;
++const NewTabSuffix = &quot;↗&quot;
+ 
+ func regenerate(fsys writablefs.FS) (site *SiteMetadata, err error) {
+ 	defer timer(&quot;Took %s&quot;)()
+</pre></body></html>

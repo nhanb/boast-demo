@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[60a1987a07] document parser | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 60a1987a07</strong><hr><pre>commit 60a1987a07c0ad0108eb09bd924b914f61e9f4e8
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu May 14 14:36:56 2020 +0700
+
+    document parser
+    
+    next step: actually render pretty text based on node type
+
+diff --git a/README.md b/README.md
+index 448020b..4e04916 100644
+--- a/README.md
++++ b/README.md
+@@ -29,3 +29,8 @@ ## Forces gemini:// in request
+ 
+ Spec says protocol part is optional, but if I omit that one the server will
+ respond with `53 No proxying to other hosts!`.
++
++## Newline
++
++Spec says a newline should be \r\n but the server running
++gemini.circumlunar.space just uses \n every time.
+diff --git a/src/mccross/document.py b/src/mccross/document.py
+new file mode 100644
+index 0000000..e27d4ad
+--- /dev/null
++++ b/src/mccross/document.py
+@@ -0,0 +1,81 @@
++import re
++
++NEWLINE = &quot;\n&quot;
++LINK_LINE_PATTERN = re.compile(r&quot;^=&gt;[ \t]+(\S+)([ \t]+(.+))?$&quot;)
++
++
++class GeminiNode:
++    text: str
++
++    def __init__(self, text):
++        self.text = text
++
++    def __repr__(self):
++        return f&quot;{self.__class__.__name__}: {self.text.__repr__()}&quot;
++
++
++class TextNode(GeminiNode):
++    pass
++
++
++class LinkNode(GeminiNode):
++    url: str
++    name: str
++
++    def __init__(self, text, url, name):
++        self.text = text
++        self.url = url
++        self.name = name
++
++    def __repr__(self):
++        result = f&quot;{self.__class__.__name__}: {self.url.__repr__()}&quot;
++        if self.name:
++            result += f&quot; {self.name.__repr__()}&quot;
++        return result
++
++
++class PreformattedNode(GeminiNode):
++    pass
++
++
++def parse(text):
++    &quot;&quot;&quot;
++    Naive one-pass parser.
++    &quot;&quot;&quot;
++    nodes = []
++    preformatted = None
++
++    for line in text.strip().split(NEWLINE):
++
++        if line == &quot;```&quot;:
++            if preformatted is None:
++                # start preformatted mode
++                preformatted = &quot;&quot;
++            else:
++                nodes.append(PreformattedNode(preformatted))
++                preformatted = None
++
++        elif preformatted is not None:
++            if len(preformatted) &gt; 0:
++                preformatted += &quot;\n&quot;
++            preformatted += line
++
++        elif line.startswith(&quot;=&gt; &quot;):
++            match = LINK_LINE_PATTERN.match(line)
++            if not match:
++                nodes.append(TextNode(line))
++                continue
++            url = match.group(1)
++            name = match.group(3)  # may be None
++            nodes.append(LinkNode(text=line, url=url, name=name))
++
++        else:
++            nodes.append(TextNode(line))
++
++    return nodes
++
++
++def test():
++    return parse(
++        &quot;&quot;&quot;# Project Gemini\n\n## Overview\n\nGemini is a new internet protocol which:\n\n* Is heavier than gopher\n* Is lighter than the web\n* Will not replace either\n* Strives for maximum power to weight ratio\n* Takes user privacy very seriously\n\n## Resources\n\n=&gt; docs/\tGemini documentation\n=&gt; software/\tGemini software\n=&gt; servers/\tKnown Gemini servers\n=&gt; gemini://gus.guru/\tGemini Universal Search engine\n=&gt; https://lists.orbitalfox.eu/listinfo/gemini\tGemini mailing list\n=&gt; https://portal.mozz.us/?url=gemini%3A%2F%2Fgemini.circumlunar.space%2F&amp;fmt=fixed\tGemini-to-web proxy service\n=&gt; https://proxy.vulpes.one/gemini/gemini.circumlunar.space\tAnother Gemini-to-web proxy service\n=&gt; gemini://gemini.conman.org/test/torture/\tGemini client torture test\n\n## Geminispace aggregator (experimental!)\n\n=&gt; capcom/\tCAPCOM\n\n## Free Gemini hosting\n\n=&gt; users/\tUsers with Gemini content on this server\n```\nfooo\nbar\n```\nBye.\n&quot;&quot;&quot;
++    )
+diff --git a/src/mccross/gui/controller.py b/src/mccross/gui/controller.py
+index a49c79d..b040467 100644
+--- a/src/mccross/gui/controller.py
++++ b/src/mccross/gui/controller.py
+@@ -22,18 +22,20 @@ def go_callback(self, url: str):
+         # TODO url validation
+ 
+         print(&quot;Requesting&quot;, url)
+-
+         resp = transport.get(url)
++        print(&quot;Received&quot;, resp)
++
+         if resp.status.startswith(&quot;2&quot;):
+-            self.model.plaintext = resp.body.decode()
++            self.model.update_content(resp.body.decode())
+         else:
+-            self.model.plaintext = &quot;\n&quot;.join(
+-                [
+-                    &quot;Error:&quot;,
+-                    f&quot;{resp.status} {resp.meta}&quot;,
+-                    resp.body.decode() if resp.body else &quot;&quot;,
+-                ]
++            self.model.update_content(
++                &quot;\n&quot;.join(
++                    [
++                        &quot;Error:&quot;,
++                        f&quot;{resp.status} {resp.meta}&quot;,
++                        resp.body.decode() if resp.body else &quot;&quot;,
++                    ]
++                )
+             )
+ 
+-        print(&quot;Received&quot;, resp)
+         self.view.render_page()
+diff --git a/src/mccross/gui/model.py b/src/mccross/gui/model.py
+index b1472d0..d351890 100644
+--- a/src/mccross/gui/model.py
++++ b/src/mccross/gui/model.py
+@@ -1,2 +1,14 @@
++from .. import document
++
++
+ class Model:
+     plaintext = &quot;Nothing to see here... yet.&quot;
++    gemini_nodes = None
++
++    def update_content(self, plaintext):
++        self.plaintext = plaintext
++        self.gemini_nodes = []
++        try:
++            self.gemini_nodes = document.parse(plaintext)
++        except Exception:
++            print(&quot;Invalid gemini document!&quot;)
+diff --git a/src/mccross/gui/view.py b/src/mccross/gui/view.py
+index e60604f..8625556 100644
+--- a/src/mccross/gui/view.py
++++ b/src/mccross/gui/view.py
+@@ -101,4 +101,10 @@ def _on_go(self, ev=None):
+ 
+     def render_page(self):
+         self.text.delete(&quot;1.0&quot;, &quot;end&quot;)
+-        self.text.insert(&quot;end&quot;, self.model.plaintext)
++
++        if not self.model.gemini_nodes:
++            self.text.insert(&quot;end&quot;, self.model.plaintext)
++        else:
++            self.text.insert(
++                &quot;end&quot;, &quot;\n&quot;.join(str(node) for node in self.model.gemini_nodes)
++            )
+</pre></body></html>

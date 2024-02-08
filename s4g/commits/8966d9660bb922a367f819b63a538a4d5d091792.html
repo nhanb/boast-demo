@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[8966d9660b] WIP: generalize UserFileErr | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 8966d9660b</strong><hr><pre>commit 8966d9660bb922a367f819b63a538a4d5d091792
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jul 17 21:06:51 2023 +0700
+
+    WIP: generalize UserFileErr
+    
+    TODO: wire up the error passing for metadata in articles
+
+diff --git a/Makefile b/Makefile
+index 6f30ab5..8d9981e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@ build:
+ 	go build -o dist/
+ 
+ watch:
+-	fd -E docs -E theme | entr -rc go run .
++	fd -E docs -E theme | entr -rc go run . serve
+ 
+ watch-theme:
+ 	find theme/* | entr -c rsync -av theme/ docs/_theme/
+diff --git a/errors.go b/errors.go
+index 8999864..a698240 100644
+--- a/errors.go
++++ b/errors.go
+@@ -5,18 +5,19 @@
+ 	&quot;html/template&quot;
+ )
+ 
+-type SiteMetadataErr struct {
++type UserFileErr struct {
++	File  string
+ 	Field string
+ 	Msg   string
+ }
+ 
+-func (e *SiteMetadataErr) Error() string {
+-	return fmt.Sprintf(&quot;SiteMetadataErr - %s: %s&quot;, e.Field, e.Msg)
++func (e *UserFileErr) Error() string {
++	return fmt.Sprintf(&quot;UserFileErr - %s - %s: %s&quot;, e.File, e.Field, e.Msg)
+ }
+ 
+-func (e *SiteMetadataErr) Html() template.HTML {
++func (e *UserFileErr) Html() template.HTML {
+ 	return template.HTML(fmt.Sprintf(
+ 		&quot;&lt;p&gt;In file &lt;b&gt;%s&lt;/b&gt;, field &lt;b&gt;%s&lt;/b&gt;: %s &lt;/p&gt;&quot;,
+-		SiteFileName, e.Field, e.Msg,
++		e.File, e.Field, e.Msg,
+ 	))
+ }
+diff --git a/main.go b/main.go
+index 1de88ce..05cbe31 100644
+--- a/main.go
++++ b/main.go
+@@ -193,7 +193,10 @@ func regenerate(fsys writablefs.FS) (site *SiteMetadata, err error) {
+ 		return nil, err
+ 	}
+ 
+-	articles := findArticles(fsys, site)
++	articles, err := findArticles(fsys, site)
++	if err != nil {
++		return nil, err
++	}
+ 
+ 	if len(articles) == 0 {
+ 		fmt.Println(&quot;No articles found.&quot;)
+@@ -207,7 +210,8 @@ func regenerate(fsys writablefs.FS) (site *SiteMetadata, err error) {
+ 	for _, link := range site.NavbarLinks {
+ 		a, ok := articles[link]
+ 		if !ok {
+-			return nil, &amp;SiteMetadataErr{
++			return nil, &amp;UserFileErr{
++				File:  SiteFileName,
+ 				Field: &quot;NavbarLinks&quot;,
+ 				Msg:   fmt.Sprintf(`&quot;%s&quot; does not exist`, link),
+ 			}
+@@ -351,10 +355,10 @@ func (a *Article) WriteHtmlFile(
+ 	return nil
+ }
+ 
+-func findArticles(fsys writablefs.FS, site *SiteMetadata) map[string]Article {
++func findArticles(fsys writablefs.FS, site *SiteMetadata) (map[string]Article, error) {
+ 	result := make(map[string]Article)
+ 
+-	fs.WalkDir(fsys, &quot;.&quot;, func(path string, d fs.DirEntry, err error) error {
++	err := fs.WalkDir(fsys, &quot;.&quot;, func(path string, d fs.DirEntry, err error) error {
+ 		if d.IsDir() || !strings.HasSuffix(d.Name(), DjotExt) {
+ 			return nil
+ 		}
+@@ -381,8 +385,7 @@ func findArticles(fsys writablefs.FS, site *SiteMetadata) map[string]Article {
+ 		}
+ 		err = UnmarshalMetadata(metaText, &amp;meta)
+ 		if err != nil {
+-			fmt.Printf(&quot;FIXME: Malformed article metadata in %s: %s\n&quot;, path, err)
+-			return nil
++			return err
+ 		}
+ 
+ 		article := Article{
+@@ -396,5 +399,9 @@ func findArticles(fsys writablefs.FS, site *SiteMetadata) map[string]Article {
+ 		result[article.Path] = article
+ 		return nil
+ 	})
+-	return result
++
++	if err != nil {
++		return nil, err
++	}
++	return result, nil
+ }
+diff --git a/metadata.go b/metadata.go
+index d32badb..6050bc7 100644
+--- a/metadata.go
++++ b/metadata.go
+@@ -71,7 +71,8 @@ func UnmarshalMetadata(data []byte, dest any) error {
+ 	sType := s.Type()
+ 	for i := 0; i &lt; s.NumField(); i++ {
+ 		f := s.Field(i)
+-		val, ok := m[sType.Field(i).Name]
++		fieldName := sType.Field(i).Name
++		val, ok := m[fieldName]
+ 		if ok {
+ 			switch f.Type().String() {
+ 			case &quot;string&quot;:
+@@ -80,15 +81,22 @@ func UnmarshalMetadata(data []byte, dest any) error {
+ 			case &quot;int&quot;:
+ 				intVal, err := strconv.Atoi(val)
+ 				if err != nil {
+-					return fmt.Errorf(&quot;invalid int: %s&quot;, val)
++					return &amp;UserFileErr{
++						Field: fieldName,
++						Msg:   fmt.Sprintf(`invalid int: &quot;%s&quot;`, err),
++					}
+ 				}
+ 				s.Field(i).Set(reflect.ValueOf(intVal))
+ 
+ 			case &quot;bool&quot;:
+ 				if val != &quot;true&quot; &amp;&amp; val != &quot;false&quot; {
+-					return fmt.Errorf(
+-						&quot;invalid boolean: expected true/false, got %s&quot;, val,
+-					)
++					return &amp;UserFileErr{
++						Field: fieldName,
++						Msg: fmt.Sprintf(
++							`invalid boolean: expected true/false, got &quot;%s&quot;`,
++							val,
++						),
++					}
+ 				}
+ 				s.Field(i).SetBool(val == &quot;true&quot;)
+ 
+@@ -96,9 +104,12 @@ func UnmarshalMetadata(data []byte, dest any) error {
+ 				tVal, err := time.ParseInLocation(&quot;2006-01-02&quot;, val, time.Local)
+ 				tVal = tVal.Local()
+ 				if err != nil {
+-					return fmt.Errorf(
+-						&quot;invalid date: expected YYYY-MM-DD, got %s&quot;, val,
+-					)
++					return &amp;UserFileErr{
++						Field: fieldName,
++						Msg: fmt.Sprintf(
++							`invalid date: expected YYYY-MM-DD, got &quot;%s&quot;`, val,
++						),
++					}
+ 				}
+ 				s.Field(i).Set(reflect.ValueOf(tVal))
+ 
+@@ -112,7 +123,7 @@ func UnmarshalMetadata(data []byte, dest any) error {
+ 
+ 			default:
+ 				panic(fmt.Sprintf(
+-					&quot;unsupported metadata field type: %s&quot;,
++					`unsupported metadata field type: &quot;%s&quot;`,
+ 					f.Type().String(),
+ 				))
+ 			}
+</pre></body></html>

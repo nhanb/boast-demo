@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1ad503058e] switch back to clam theme | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 1ad503058e</strong><hr><pre>commit 1ad503058ed113e825360b48d280b0da976eef6d
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jun 19 21:05:03 2023 +0700
+
+    switch back to clam theme
+
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index b126e66..d5ef6b0 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -13,14 +13,9 @@ package require Tk
+ wm title . &quot;Overly Repetitive Tedious Software (in Go)&quot;
+ tk appname gorts
+ 
+-set OS [lindex $tcl_platform(os) 0]
+-if {$OS == &quot;Windows&quot;} {
+-    ttk::style theme use vista
+-} elseif {$OS == &quot;Darwin&quot;} {
+-    ttk::style theme use aqua
+-} else {
+-    ttk::style theme use clam
+-}
++# Proper Windows theme doesn&#39;t allow setting fieldbackground on text inputs,
++# so let&#39;s settle with `clam` instead.
++ttk::style theme use clam
+ 
+ wm protocol . WM_DELETE_WINDOW {
+     exit 0
+</pre></body></html>

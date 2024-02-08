@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[4a480c89b4] include compiled js | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 4a480c89b4</strong><hr><pre>commit 4a480c89b42669f915859545e008408d1951b6a8
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 13 20:39:06 2020 +0700
+
+    include compiled js
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 6fb9b85..b9f3a5e 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.19&quot;
++version = &quot;0.3.20&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+@@ -8,6 +8,9 @@ packages = [
+     { include = &quot;pytaku&quot;, from = &quot;src&quot; },
+     { include = &quot;mangoapi&quot;, from = &quot;src&quot; },
+ ]
++# Compiled js bundle dir is in gitignore, which poetry also reads.
++# Therefore, it needs to be specifically whitelisted here:
++include = [&quot;src/pytaku/static/js/*&quot;]
+ 
+ [tool.poetry.scripts]
+ pytaku = &quot;pytaku:serve&quot;
+</pre></body></html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[7bc4e56bcb] fix bug when visiting relative url from root | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 7bc4e56bcb</strong><hr><pre>commit 7bc4e56bcbabdf71b832ff04f943eda9310cc5ad
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun May 31 10:09:32 2020 +0700
+
+    fix bug when visiting relative url from root
+    
+    https://todo.sr.ht/~nhanb/mcross/6
+
+diff --git a/src/mcross/transport.py b/src/mcross/transport.py
+index 7c7071a..9031cc9 100644
+--- a/src/mcross/transport.py
++++ b/src/mcross/transport.py
+@@ -91,6 +91,8 @@ def parse(cls, text, current_url):
+         #   raw url text: yikes
+         #   =&gt; parsed url: gemini://example.com/foo/yikes
+         current_path = current_url.path[: current_url.path.rfind(&quot;/&quot;) + 1]
++        if current_path == &quot;&quot;:
++            current_path = &quot;/&quot;
+         return GeminiUrl(current_url.host, current_url.port, current_path + text)
+ 
+     @staticmethod
+</pre></body></html>

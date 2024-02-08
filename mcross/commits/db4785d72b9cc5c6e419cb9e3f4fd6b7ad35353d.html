@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[db4785d72b] init protocol client | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / db4785d72b</strong><hr><pre>commit db4785d72b9cc5c6e419cb9e3f4fd6b7ad35353d
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed May 13 22:57:50 2020 +0700
+
+    init protocol client
+
+diff --git a/README.md b/README.md
+new file mode 100644
+index 0000000..22118dc
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1,15 @@
++Developed against gemini://gemini.circumlunar.space/ because apparently
++it&#39;s the only one if a valid TLS cert.
++
++# Server bugs/surprises
++
++## Forces gemini:// in request
++
++Spec says protocol part is optional, but if I omit that one the server will
++respond with `53 No proxying to other hosts!`
++
++```
++&lt;URL&gt; is a UTF-8 encoded absolute URL, of maximum length 1024 bytes.
++If the scheme of the URL is not specified, a scheme of gemini:// is
++implied.
++```
+diff --git a/client.py b/client.py
+new file mode 100644
+index 0000000..0f06883
+--- /dev/null
++++ b/client.py
+@@ -0,0 +1,46 @@
++import re
++import socket
++import ssl
++
++MAX_RESP_HEADER_BYTES = 2 + 1 + 1024 + 2  # &lt;STATUS&gt;&lt;whitespace&gt;&lt;META&gt;&lt;CR&gt;&lt;LF&gt;
++MAX_RESP_BODY_BYTES = 1024 * 1024 * 5
++
++
++# Wanted to use a dataclass here but ofc it doesn&#39;t allow a slotted class to
++# have fields with default values:
++# https://stackoverflow.com/questions/50180735/how-can-dataclasses-be-made-to-work-better-with-slots
++# Maaaaybe I should just use attrs and call it a day.
++class Response:
++    __slots__ = (&quot;status&quot;, &quot;meta&quot;, &quot;body&quot;)
++
++    def __init__(self, status: str, meta: str, body: bytes = None):
++        self.status = status
++        self.meta = meta
++        self.body = body
++
++    def __repr__(self):
++        return f&quot;Response(status={repr(self.status)}, meta={repr(self.meta)})&quot;
++
++
++def get(hostname=&quot;gemini.circumlunar.space&quot;, path=&quot;/&quot;, port=1965):
++    assert path.startswith(&quot;/&quot;), f&quot;Malformed path: {path}&quot;
++    context = ssl.create_default_context()
++    with socket.create_connection((hostname, port)) as sock:
++        with context.wrap_socket(sock, server_hostname=hostname) as ssock:
++            ssock.send(f&quot;gemini://{hostname}{path}\r\n&quot;.encode())
++            header = ssock.recv(MAX_RESP_HEADER_BYTES).decode()
++            status, meta = _parse_resp_header(header)
++            resp = Response(status=status, meta=meta)
++
++            if status.startswith(&quot;2&quot;):
++                resp.body = ssock.recv(MAX_RESP_BODY_BYTES)
++
++            return resp
++
++
++def _parse_resp_header(header, pattern=re.compile(r&quot;^(\d\d) (.{,1024})\r\n$&quot;)):
++    match = pattern.match(header)
++    assert match is not None, f&quot;Malformed response header: {header}&quot;
++    status = match.group(1)
++    meta = match.group(2)
++    return status, meta
+diff --git a/poetry.lock b/poetry.lock
+new file mode 100644
+index 0000000..c250d42
+--- /dev/null
++++ b/poetry.lock
+@@ -0,0 +1,394 @@
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Disable App Nap on OS X 10.9&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot; and sys_platform == \&quot;darwin\&quot;&quot;
++name = &quot;appnope&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.1.0&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Specifications for callback functions passed in to an API&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++name = &quot;backcall&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.1.0&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Cross-platform colored terminal text.&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot; and sys_platform == \&quot;win32\&quot;&quot;
++name = &quot;colorama&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
++version = &quot;0.4.3&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Decorators for Humans&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++name = &quot;decorator&quot;
++optional = false
++python-versions = &quot;&gt;=2.6, !=3.0.*, !=3.1.*&quot;
++version = &quot;4.4.2&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Read metadata from Python packages&quot;
++marker = &quot;python_version &lt; \&quot;3.8\&quot;&quot;
++name = &quot;importlib-metadata&quot;
++optional = false
++python-versions = &quot;!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,&gt;=2.7&quot;
++version = &quot;1.6.0&quot;
++
++[package.dependencies]
++zipp = &quot;&gt;=0.5&quot;
++
++[package.extras]
++docs = [&quot;sphinx&quot;, &quot;rst.linker&quot;]
++testing = [&quot;packaging&quot;, &quot;importlib-resources&quot;]
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;IPython-enabled pdb&quot;
++name = &quot;ipdb&quot;
++optional = false
++python-versions = &quot;&gt;=2.7&quot;
++version = &quot;0.13.2&quot;
++
++[package.dependencies]
++setuptools = &quot;*&quot;
++
++[package.dependencies.ipython]
++python = &quot;&gt;=3.4&quot;
++version = &quot;&gt;=5.1.0&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;IPython: Productive Interactive Computing&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++name = &quot;ipython&quot;
++optional = false
++python-versions = &quot;&gt;=3.6&quot;
++version = &quot;7.14.0&quot;
++
++[package.dependencies]
++appnope = &quot;*&quot;
++backcall = &quot;*&quot;
++colorama = &quot;*&quot;
++decorator = &quot;*&quot;
++jedi = &quot;&gt;=0.10&quot;
++pexpect = &quot;*&quot;
++pickleshare = &quot;*&quot;
++prompt-toolkit = &quot;&gt;=2.0.0,&lt;3.0.0 || &gt;3.0.0,&lt;3.0.1 || &gt;3.0.1,&lt;3.1.0&quot;
++pygments = &quot;*&quot;
++setuptools = &quot;&gt;=18.5&quot;
++traitlets = &quot;&gt;=4.2&quot;
++
++[package.extras]
++all = [&quot;nose (&gt;=0.10.1)&quot;, &quot;Sphinx (&gt;=1.3)&quot;, &quot;testpath&quot;, &quot;nbformat&quot;, &quot;ipywidgets&quot;, &quot;qtconsole&quot;, &quot;numpy (&gt;=1.14)&quot;, &quot;notebook&quot;, &quot;ipyparallel&quot;, &quot;ipykernel&quot;, &quot;pygments&quot;, &quot;requests&quot;, &quot;nbconvert&quot;]
++doc = [&quot;Sphinx (&gt;=1.3)&quot;]
++kernel = [&quot;ipykernel&quot;]
++nbconvert = [&quot;nbconvert&quot;]
++nbformat = [&quot;nbformat&quot;]
++notebook = [&quot;notebook&quot;, &quot;ipywidgets&quot;]
++parallel = [&quot;ipyparallel&quot;]
++qtconsole = [&quot;qtconsole&quot;]
++test = [&quot;nose (&gt;=0.10.1)&quot;, &quot;requests&quot;, &quot;testpath&quot;, &quot;pygments&quot;, &quot;nbformat&quot;, &quot;ipykernel&quot;, &quot;numpy (&gt;=1.14)&quot;]
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Vestigial utilities from IPython&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++name = &quot;ipython-genutils&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.2.0&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;An autocompletion tool for Python that can be used for text editors.&quot;
++name = &quot;jedi&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++version = &quot;0.15.2&quot;
++
++[package.dependencies]
++parso = &quot;&gt;=0.5.2&quot;
++
++[package.extras]
++testing = [&quot;colorama (0.4.1)&quot;, &quot;docopt&quot;, &quot;pytest (&gt;=3.9.0,&lt;5.0.0)&quot;]
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;A Python Parser&quot;
++name = &quot;parso&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++version = &quot;0.7.0&quot;
++
++[package.extras]
++testing = [&quot;docopt&quot;, &quot;pytest (&gt;=3.0.7)&quot;]
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Pexpect allows easy control of interactive console applications.&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot; and sys_platform != \&quot;win32\&quot;&quot;
++name = &quot;pexpect&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;4.8.0&quot;
++
++[package.dependencies]
++ptyprocess = &quot;&gt;=0.5&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Tiny &#39;shelve&#39;-like database with concurrency support&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++name = &quot;pickleshare&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.7.5&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;plugin and hook calling mechanisms for python&quot;
++name = &quot;pluggy&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++version = &quot;0.13.1&quot;
++
++[package.dependencies]
++[package.dependencies.importlib-metadata]
++python = &quot;&lt;3.8&quot;
++version = &quot;&gt;=0.12&quot;
++
++[package.extras]
++dev = [&quot;pre-commit&quot;, &quot;tox&quot;]
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Library for building powerful interactive command lines in Python&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++name = &quot;prompt-toolkit&quot;
++optional = false
++python-versions = &quot;&gt;=3.6.1&quot;
++version = &quot;3.0.5&quot;
++
++[package.dependencies]
++wcwidth = &quot;*&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Run a subprocess in a pseudo terminal&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot; and sys_platform != \&quot;win32\&quot;&quot;
++name = &quot;ptyprocess&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.6.0&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Pygments is a syntax highlighting package written in Python.&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++name = &quot;pygments&quot;
++optional = false
++python-versions = &quot;&gt;=3.5&quot;
++version = &quot;2.6.1&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;JSON RPC 2.0 server library&quot;
++name = &quot;python-jsonrpc-server&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.3.4&quot;
++
++[package.dependencies]
++ujson = &quot;&lt;=1.35&quot;
++
++[package.extras]
++test = [&quot;versioneer&quot;, &quot;pylint&quot;, &quot;pycodestyle&quot;, &quot;pyflakes&quot;, &quot;pytest&quot;, &quot;mock&quot;, &quot;pytest-cov&quot;, &quot;coverage&quot;]
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Python Language Server for the Language Server Protocol&quot;
++name = &quot;python-language-server&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.31.10&quot;
++
++[package.dependencies]
++jedi = &quot;&gt;=0.14.1,&lt;0.16&quot;
++pluggy = &quot;*&quot;
++python-jsonrpc-server = &quot;&gt;=0.3.2&quot;
++ujson = &quot;&lt;=1.35&quot;
++
++[package.extras]
++all = [&quot;autopep8&quot;, &quot;flake8&quot;, &quot;mccabe&quot;, &quot;pycodestyle&quot;, &quot;pydocstyle (&gt;=2.0.0)&quot;, &quot;pyflakes (&gt;=1.6.0,&lt;2.2.0)&quot;, &quot;pylint&quot;, &quot;rope (&gt;=0.10.5)&quot;, &quot;yapf&quot;]
++autopep8 = [&quot;autopep8&quot;]
++flake8 = [&quot;flake8&quot;]
++mccabe = [&quot;mccabe&quot;]
++pycodestyle = [&quot;pycodestyle&quot;]
++pydocstyle = [&quot;pydocstyle (&gt;=2.0.0)&quot;]
++pyflakes = [&quot;pyflakes (&gt;=1.6.0,&lt;2.2.0)&quot;]
++pylint = [&quot;pylint&quot;]
++rope = [&quot;rope (&gt;0.10.5)&quot;]
++test = [&quot;versioneer&quot;, &quot;pylint&quot;, &quot;pytest&quot;, &quot;mock&quot;, &quot;pytest-cov&quot;, &quot;coverage&quot;, &quot;numpy&quot;, &quot;pandas&quot;, &quot;matplotlib&quot;, &quot;pyqt5&quot;]
++yapf = [&quot;yapf&quot;]
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Python 2 and 3 compatibility utilities&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++name = &quot;six&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*&quot;
++version = &quot;1.14.0&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Traitlets Python config system&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++name = &quot;traitlets&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;4.3.3&quot;
++
++[package.dependencies]
++decorator = &quot;*&quot;
++ipython-genutils = &quot;*&quot;
++six = &quot;*&quot;
++
++[package.extras]
++test = [&quot;pytest&quot;, &quot;mock&quot;]
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Ultra fast JSON encoder and decoder for Python&quot;
++marker = &quot;platform_system != \&quot;Windows\&quot;&quot;
++name = &quot;ujson&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;1.35&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Measures number of Terminal column cells of wide-character codes&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++name = &quot;wcwidth&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.1.9&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Backport of pathlib-compatible object wrapper for zip files&quot;
++marker = &quot;python_version &lt; \&quot;3.8\&quot;&quot;
++name = &quot;zipp&quot;
++optional = false
++python-versions = &quot;&gt;=3.6&quot;
++version = &quot;3.1.0&quot;
++
++[package.extras]
++docs = [&quot;sphinx&quot;, &quot;jaraco.packaging (&gt;=3.2)&quot;, &quot;rst.linker (&gt;=1.9)&quot;]
++testing = [&quot;jaraco.itertools&quot;, &quot;func-timeout&quot;]
++
++[metadata]
++content-hash = &quot;aa819a24de25e1f54368130e31d3524825aea37a1de2632a1eabd6cb6bafaa42&quot;
++python-versions = &quot;^3.7&quot;
++
++[metadata.files]
++appnope = [
++    {file = &quot;appnope-0.1.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:5b26757dc6f79a3b7dc9fab95359328d5747fcb2409d331ea66d0272b90ab2a0&quot;},
++    {file = &quot;appnope-0.1.0.tar.gz&quot;, hash = &quot;sha256:8b995ffe925347a2138d7ac0fe77155e4311a0ea6d6da4f5128fe4b3cbe5ed71&quot;},
++]
++backcall = [
++    {file = &quot;backcall-0.1.0.tar.gz&quot;, hash = &quot;sha256:38ecd85be2c1e78f77fd91700c76e14667dc21e2713b63876c0eb901196e01e4&quot;},
++    {file = &quot;backcall-0.1.0.zip&quot;, hash = &quot;sha256:bbbf4b1e5cd2bdb08f915895b51081c041bac22394fdfcfdfbe9f14b77c08bf2&quot;},
++]
++colorama = [
++    {file = &quot;colorama-0.4.3-py2.py3-none-any.whl&quot;, hash = &quot;sha256:7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff&quot;},
++    {file = &quot;colorama-0.4.3.tar.gz&quot;, hash = &quot;sha256:e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1&quot;},
++]
++decorator = [
++    {file = &quot;decorator-4.4.2-py2.py3-none-any.whl&quot;, hash = &quot;sha256:41fa54c2a0cc4ba648be4fd43cff00aedf5b9465c9bf18d64325bc225f08f760&quot;},
++    {file = &quot;decorator-4.4.2.tar.gz&quot;, hash = &quot;sha256:e3a62f0520172440ca0dcc823749319382e377f37f140a0b99ef45fecb84bfe7&quot;},
++]
++importlib-metadata = [
++    {file = &quot;importlib_metadata-1.6.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:2a688cbaa90e0cc587f1df48bdc97a6eadccdcd9c35fb3f976a09e3b5016d90f&quot;},
++    {file = &quot;importlib_metadata-1.6.0.tar.gz&quot;, hash = &quot;sha256:34513a8a0c4962bc66d35b359558fd8a5e10cd472d37aec5f66858addef32c1e&quot;},
++]
++ipdb = [
++    {file = &quot;ipdb-0.13.2.tar.gz&quot;, hash = &quot;sha256:77fb1c2a6fccdfee0136078c9ed6fe547ab00db00bebff181f1e8c9e13418d49&quot;},
++]
++ipython = [
++    {file = &quot;ipython-7.14.0-py3-none-any.whl&quot;, hash = &quot;sha256:5b241b84bbf0eb085d43ae9d46adf38a13b45929ca7774a740990c2c242534bb&quot;},
++    {file = &quot;ipython-7.14.0.tar.gz&quot;, hash = &quot;sha256:f0126781d0f959da852fb3089e170ed807388e986a8dd4e6ac44855845b0fb1c&quot;},
++]
++ipython-genutils = [
++    {file = &quot;ipython_genutils-0.2.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:72dd37233799e619666c9f639a9da83c34013a73e8bbc79a7a6348d93c61fab8&quot;},
++    {file = &quot;ipython_genutils-0.2.0.tar.gz&quot;, hash = &quot;sha256:eb2e116e75ecef9d4d228fdc66af54269afa26ab4463042e33785b887c628ba8&quot;},
++]
++jedi = [
++    {file = &quot;jedi-0.15.2-py2.py3-none-any.whl&quot;, hash = &quot;sha256:1349c1e8c107095a55386628bb3b2a79422f3a2cab8381e34ce19909e0cf5064&quot;},
++    {file = &quot;jedi-0.15.2.tar.gz&quot;, hash = &quot;sha256:e909527104a903606dd63bea6e8e888833f0ef087057829b89a18364a856f807&quot;},
++]
++parso = [
++    {file = &quot;parso-0.7.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:158c140fc04112dc45bca311633ae5033c2c2a7b732fa33d0955bad8152a8dd0&quot;},
++    {file = &quot;parso-0.7.0.tar.gz&quot;, hash = &quot;sha256:908e9fae2144a076d72ae4e25539143d40b8e3eafbaeae03c1bfe226f4cdf12c&quot;},
++]
++pexpect = [
++    {file = &quot;pexpect-4.8.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:0b48a55dcb3c05f3329815901ea4fc1537514d6ba867a152b581d69ae3710937&quot;},
++    {file = &quot;pexpect-4.8.0.tar.gz&quot;, hash = &quot;sha256:fc65a43959d153d0114afe13997d439c22823a27cefceb5ff35c2178c6784c0c&quot;},
++]
++pickleshare = [
++    {file = &quot;pickleshare-0.7.5-py2.py3-none-any.whl&quot;, hash = &quot;sha256:9649af414d74d4df115d5d718f82acb59c9d418196b7b4290ed47a12ce62df56&quot;},
++    {file = &quot;pickleshare-0.7.5.tar.gz&quot;, hash = &quot;sha256:87683d47965c1da65cdacaf31c8441d12b8044cdec9aca500cd78fc2c683afca&quot;},
++]
++pluggy = [
++    {file = &quot;pluggy-0.13.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:966c145cd83c96502c3c3868f50408687b38434af77734af1e9ca461a4081d2d&quot;},
++    {file = &quot;pluggy-0.13.1.tar.gz&quot;, hash = &quot;sha256:15b2acde666561e1298d71b523007ed7364de07029219b604cf808bfa1c765b0&quot;},
++]
++prompt-toolkit = [
++    {file = &quot;prompt_toolkit-3.0.5-py3-none-any.whl&quot;, hash = &quot;sha256:df7e9e63aea609b1da3a65641ceaf5bc7d05e0a04de5bd45d05dbeffbabf9e04&quot;},
++    {file = &quot;prompt_toolkit-3.0.5.tar.gz&quot;, hash = &quot;sha256:563d1a4140b63ff9dd587bda9557cffb2fe73650205ab6f4383092fb882e7dc8&quot;},
++]
++ptyprocess = [
++    {file = &quot;ptyprocess-0.6.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:d7cc528d76e76342423ca640335bd3633420dc1366f258cb31d05e865ef5ca1f&quot;},
++    {file = &quot;ptyprocess-0.6.0.tar.gz&quot;, hash = &quot;sha256:923f299cc5ad920c68f2bc0bc98b75b9f838b93b599941a6b63ddbc2476394c0&quot;},
++]
++pygments = [
++    {file = &quot;Pygments-2.6.1-py3-none-any.whl&quot;, hash = &quot;sha256:ff7a40b4860b727ab48fad6360eb351cc1b33cbf9b15a0f689ca5353e9463324&quot;},
++    {file = &quot;Pygments-2.6.1.tar.gz&quot;, hash = &quot;sha256:647344a061c249a3b74e230c739f434d7ea4d8b1d5f3721bc0f3558049b38f44&quot;},
++]
++python-jsonrpc-server = [
++    {file = &quot;python-jsonrpc-server-0.3.4.tar.gz&quot;, hash = &quot;sha256:c73bf5495c9dd4d2f902755bedeb6da5afe778e0beee82f0e195c4655352fe37&quot;},
++    {file = &quot;python_jsonrpc_server-0.3.4-py3-none-any.whl&quot;, hash = &quot;sha256:1f85f75f37f923149cc0aa078474b6df55b708e82ed819ca8846a65d7d0ada7f&quot;},
++]
++python-language-server = [
++    {file = &quot;python-language-server-0.31.10.tar.gz&quot;, hash = &quot;sha256:6c96567158377a0c725625ef6e24e7b655dcfab95080b463023b6680d1766d4f&quot;},
++    {file = &quot;python_language_server-0.31.10-py3-none-any.whl&quot;, hash = &quot;sha256:20a24b4793b804b81c72fe076bd269f2db8cb81f91579c4892602ab02f1a3d62&quot;},
++]
++six = [
++    {file = &quot;six-1.14.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c&quot;},
++    {file = &quot;six-1.14.0.tar.gz&quot;, hash = &quot;sha256:236bdbdce46e6e6a3d61a337c0f8b763ca1e8717c03b369e87a7ec7ce1319c0a&quot;},
++]
++traitlets = [
++    {file = &quot;traitlets-4.3.3-py2.py3-none-any.whl&quot;, hash = &quot;sha256:70b4c6a1d9019d7b4f6846832288f86998aa3b9207c6821f3578a6a6a467fe44&quot;},
++    {file = &quot;traitlets-4.3.3.tar.gz&quot;, hash = &quot;sha256:d023ee369ddd2763310e4c3eae1ff649689440d4ae59d7485eb4cfbbe3e359f7&quot;},
++]
++ujson = [
++    {file = &quot;ujson-1.35.tar.gz&quot;, hash = &quot;sha256:f66073e5506e91d204ab0c614a148d5aa938bdbf104751be66f8ad7a222f5f86&quot;},
++]
++wcwidth = [
++    {file = &quot;wcwidth-0.1.9-py2.py3-none-any.whl&quot;, hash = &quot;sha256:cafe2186b3c009a04067022ce1dcd79cb38d8d65ee4f4791b8888d6599d1bbe1&quot;},
++    {file = &quot;wcwidth-0.1.9.tar.gz&quot;, hash = &quot;sha256:ee73862862a156bf77ff92b09034fc4825dd3af9cf81bc5b360668d425f3c5f1&quot;},
++]
++zipp = [
++    {file = &quot;zipp-3.1.0-py3-none-any.whl&quot;, hash = &quot;sha256:aa36550ff0c0b7ef7fa639055d797116ee891440eac1a56f378e2d3179e0320b&quot;},
++    {file = &quot;zipp-3.1.0.tar.gz&quot;, hash = &quot;sha256:c599e4d75c98f6798c509911d08a22e6c021d074469042177c8c86fb92eefd96&quot;},
++]
+diff --git a/pyproject.toml b/pyproject.toml
+new file mode 100644
+index 0000000..ab3e352
+--- /dev/null
++++ b/pyproject.toml
+@@ -0,0 +1,17 @@
++[tool.poetry]
++name = &quot;beans&quot;
++version = &quot;0.1.0&quot;
++description = &quot;gemini for human(bean)s&quot;
++authors = [&quot;Your Name &lt;you@example.com&gt;&quot;]
++license = &quot;MIT&quot;
++
++[tool.poetry.dependencies]
++python = &quot;^3.7&quot;
++
++[tool.poetry.dev-dependencies]
++python-language-server = &quot;^0.31.10&quot;
++ipdb = &quot;^0.13.2&quot;
++
++[build-system]
++requires = [&quot;poetry&gt;=0.12&quot;]
++build-backend = &quot;poetry.masonry.api&quot;
+</pre></body></html>

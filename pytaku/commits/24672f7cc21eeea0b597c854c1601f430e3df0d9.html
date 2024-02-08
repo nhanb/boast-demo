@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[24672f7cc2] TIL mangadex cover images aren&#39;t always jpg | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 24672f7cc2</strong><hr><pre>commit 24672f7cc21eeea0b597c854c1601f430e3df0d9
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 2 15:45:56 2020 +0700
+
+    TIL mangadex cover images aren&#39;t always jpg
+    
+    Yes the db read/write code could use a saner api... sometime soon.
+
+diff --git a/src/mangoapi/__init__.py b/src/mangoapi/__init__.py
+index c41cf81..d975b16 100644
+--- a/src/mangoapi/__init__.py
++++ b/src/mangoapi/__init__.py
+@@ -35,9 +35,13 @@ def get_title(title_id):
+     md_json = md_resp.json()
+     assert md_json[&quot;status&quot;] == &quot;OK&quot;
+ 
++    cover = md_json[&quot;manga&quot;][&quot;cover_url&quot;].split(&quot;/&quot;)[-1]
++    cover_ext = cover[cover.find(&quot;.&quot;) + 1 : cover.rfind(&quot;?&quot;)]
++
+     title = {
+         &quot;id&quot;: title_id,
+         &quot;name&quot;: md_json[&quot;manga&quot;][&quot;title&quot;],
++        &quot;cover_ext&quot;: cover_ext,
+         &quot;alt_names&quot;: md_json[&quot;manga&quot;][&quot;alt_names&quot;],
+         &quot;descriptions&quot;: md_json[&quot;manga&quot;][&quot;description&quot;].split(&quot;\r\n\r\n&quot;),
+         &quot;chapters&quot;: [
+diff --git a/src/pytaku/database/migrations/latest_schema.sql b/src/pytaku/database/migrations/latest_schema.sql
+index d770928..18089c6 100644
+--- a/src/pytaku/database/migrations/latest_schema.sql
++++ b/src/pytaku/database/migrations/latest_schema.sql
+@@ -5,6 +5,7 @@ CREATE TABLE title (
+     id text,
+     name text,
+     site text,
++    cover_ext text,
+     chapters text,
+     alt_names text,
+     descriptions text,
+diff --git a/src/pytaku/database/migrations/m0001.sql b/src/pytaku/database/migrations/m0001.sql
+index 7730151..7fb82ee 100644
+--- a/src/pytaku/database/migrations/m0001.sql
++++ b/src/pytaku/database/migrations/m0001.sql
+@@ -2,6 +2,7 @@ create table title (
+     id text,
+     name text,
+     site text,
++    cover_ext text,
+     chapters text,
+     alt_names text,
+     descriptions text,
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 663a75e..6587b73 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -11,6 +11,7 @@ def save_title(title):
+         id,
+         name,
+         site,
++        cover_ext,
+         chapters,
+         alt_names,
+         descriptions
+@@ -18,11 +19,13 @@ def save_title(title):
+         :id,
+         :name,
+         :site,
++        :cover_ext,
+         :chapters,
+         :alt_names,
+         :descriptions
+     ) ON CONFLICT (id, site) DO UPDATE SET
+         name=excluded.name,
++        cover_ext=excluded.cover_ext,
+         chapters=excluded.chapters,
+         alt_names=excluded.alt_names,
+         descriptions=excluded.descriptions,
+@@ -33,6 +36,7 @@ def save_title(title):
+             &quot;id&quot;: title[&quot;id&quot;],
+             &quot;name&quot;: title[&quot;name&quot;],
+             &quot;site&quot;: &quot;mangadex&quot;,
++            &quot;cover_ext&quot;: title[&quot;cover_ext&quot;],
+             &quot;chapters&quot;: json.dumps(title[&quot;chapters&quot;]),
+             &quot;alt_names&quot;: json.dumps(title[&quot;alt_names&quot;]),
+             &quot;descriptions&quot;: json.dumps(title[&quot;descriptions&quot;]),
+@@ -45,7 +49,7 @@ def load_title(title_id):
+     result = list(
+         conn.cursor().execute(
+             &quot;&quot;&quot;
+-    SELECT id, name, site, chapters, alt_names, descriptions
++    SELECT id, name, site, cover_ext, chapters, alt_names, descriptions
+     FROM title
+     WHERE id = ?
+       AND datetime(updated_at) &gt; datetime(&#39;now&#39;, &#39;-6 hours&#39;);
+@@ -63,9 +67,10 @@ def load_title(title_id):
+             &quot;id&quot;: title[0],
+             &quot;name&quot;: title[1],
+             &quot;site&quot;: title[2],
+-            &quot;chapters&quot;: json.loads(title[3]),
+-            &quot;alt_names&quot;: json.loads(title[4]),
+-            &quot;descriptions&quot;: json.loads(title[5]),
++            &quot;cover_ext&quot;: title[3],
++            &quot;chapters&quot;: json.loads(title[4]),
++            &quot;alt_names&quot;: json.loads(title[5]),
++            &quot;descriptions&quot;: json.loads(title[6]),
+         }
+ 
+ 
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index ad63a95..d0d098a 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -20,7 +20,7 @@ &lt;h1&gt;{{ name }}&lt;/h1&gt;
+ {{ ibutton(href=&#39;https://mangadex.org/manga/&#39; + id, right_icon=&#39;arrow-up-right&#39;, text=&#39;Source site&#39;, color=&#39;blue&#39;) }}
+ &lt;/div&gt;
+ 
+-&lt;img class=&quot;cover&quot; src=&quot;https://mangadex.org/images/manga/{{ id }}.jpg&quot; alt=&quot;cover&quot; /&gt;
++&lt;img class=&quot;cover&quot; src=&quot;https://mangadex.org/images/manga/{{ id }}.{{ cover_ext }}&quot; alt=&quot;cover&quot; /&gt;
+ 
+ &lt;table&gt;
+   &lt;tr&gt;
+</pre></body></html>

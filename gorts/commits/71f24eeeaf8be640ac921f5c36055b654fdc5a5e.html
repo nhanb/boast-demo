@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[71f24eeeaf] more readable ipc debug messages | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 71f24eeeaf</strong><hr><pre>commit 71f24eeeaf8be640ac921f5c36055b654fdc5a5e
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jun 22 10:21:37 2023 +0700
+
+    more readable ipc debug messages
+
+diff --git a/main.go b/main.go
+index 74e89a4..48a4a38 100644
+--- a/main.go
++++ b/main.go
+@@ -13,6 +13,7 @@
+ 	&quot;os/exec&quot;
+ 	&quot;runtime&quot;
+ 	&quot;strconv&quot;
++	&quot;strings&quot;
+ 	&quot;time&quot;
+ 
+ 	&quot;go.imnhan.com/gorts/netstring&quot;
+@@ -93,7 +94,7 @@ func startGUI() {
+ 	scanner.Split(netstring.SplitFunc)
+ 
+ 	respond := func(ss ...string) {
+-		debug := fmt.Sprintf(&quot;&lt;-- %v&quot;, ss)
++		debug := fmt.Sprintf(&quot;&lt;-- %v&quot;, strings.Join(ss, &quot;, &quot;))
+ 		if len(debug) &gt; 35 {
+ 			debug = debug[:35] + &quot;[...]&quot;
+ 		}
+@@ -104,7 +105,7 @@ func startGUI() {
+ 
+ 	for scanner.Scan() {
+ 		req := netstring.DecodeMultiple(scanner.Text())
+-		fmt.Printf(&quot;--&gt; %v\n&quot;, req)
++		fmt.Printf(&quot;--&gt; %v\n&quot;, strings.Join(req, &quot;, &quot;))
+ 		switch req[0] {
+ 		case &quot;geticon&quot;:
+ 			respond(string(gortsPngIcon))
+</pre></body></html>

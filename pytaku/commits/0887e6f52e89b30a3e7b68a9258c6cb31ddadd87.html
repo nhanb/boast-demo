@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[0887e6f52e] actually I didn&#39;t need legacy_alter_table | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 0887e6f52e</strong><hr><pre>commit 0887e6f52e89b30a3e7b68a9258c6cb31ddadd87
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 10 22:46:58 2020 +0700
+
+    actually I didn&#39;t need legacy_alter_table
+    
+    Should have read the whole docs smh. They even had a table that
+    explicitly said my order of steps where incorrect.
+    
+    `PRAGMA foreign_key_check` is suuuuper important too.
+
+diff --git a/src/pytaku/database/migrations/latest_schema.sql b/src/pytaku/database/migrations/latest_schema.sql
+index 9ba45dd..1af6b03 100644
+--- a/src/pytaku/database/migrations/latest_schema.sql
++++ b/src/pytaku/database/migrations/latest_schema.sql
+@@ -34,7 +34,7 @@ CREATE TABLE keyval_store (
+     value text not null,
+     updated_at text default (datetime(&#39;now&#39;))
+ );
+-CREATE TABLE chapter (
++CREATE TABLE IF NOT EXISTS &quot;chapter&quot; (
+     id text,
+     title_id text,
+     site text,
+@@ -50,7 +50,7 @@ CREATE TABLE chapter (
+     unique(site, title_id, id),
+     unique(site, title_id, num_major, num_minor)
+ );
+-CREATE TABLE read (
++CREATE TABLE IF NOT EXISTS &quot;read&quot; (
+     user_id integer not null,
+     site text not null,
+     title_id text, -- nullable to accomodate existing mangadex rows, urgh.
+diff --git a/src/pytaku/database/migrations/m0003.sql b/src/pytaku/database/migrations/m0003.sql
+index d581ff4..93eadfe 100644
+--- a/src/pytaku/database/migrations/m0003.sql
++++ b/src/pytaku/database/migrations/m0003.sql
+@@ -2,12 +2,16 @@
+ -- SQLite doesn&#39;t let you do that directly so gotta create a new table
+ -- then copy existing data over.
+ 
++-- To future self, before doing anything similar in the future, please,
++-- _please_ read sqlite&#39;s documentation on the matter and follow the laid out
++-- steps, otherwise you&#39;ll be in a world of hurt:
++-- https://www.sqlite.org/lang_altertable.html#making_other_kinds_of_table_schema_changes
++
+ pragma foreign_keys = off; -- to let us do anything at all
+-pragma legacy_alter_table = on; -- prevent foreign keys from renaming to &#39;old_chapter&#39; as well
+ begin transaction;
+ 
+-alter table chapter rename to old_chapter;
+-create table chapter (
++-- First, handle `chapter` table
++create table new_chapter (
+     id text,
+     title_id text,
+     site text,
+@@ -23,13 +27,12 @@ create table chapter (
+     unique(site, title_id, id),
+     unique(site, title_id, num_major, num_minor)
+ );
+-insert into chapter select * from old_chapter;
+-drop table old_chapter;
+-
++insert into new_chapter select * from chapter;
++drop table chapter;
++alter table new_chapter rename to chapter;
+ 
+--- &quot;read&quot; table needs a new &quot;title_id&quot; column too
+-alter table read rename to old_read;
+-create table read (
++-- `read` table needs a new &quot;title_id&quot; column too
++create table new_read (
+     user_id integer not null,
+     site text not null,
+     title_id text, -- nullable to accomodate existing mangadex rows, urgh.
+@@ -40,10 +43,11 @@ create table read (
+     foreign key (site, title_id, chapter_id) references chapter (site, title_id, id),
+     unique(user_id, site, title_id, chapter_id)
+ );
+-insert into read (user_id, site, chapter_id, updated_at)
+-    select user_id, site, chapter_id, updated_at from old_read;
+-drop table old_read;
++insert into new_read (user_id, site, chapter_id, updated_at)
++    select user_id, site, chapter_id, updated_at from read;
++drop table read;
++alter table new_read rename to read;
+ 
++pragma foreign_key_check;
+ commit;
+ pragma foreign_keys = on;
+-pragma legacy_alter_table = off;
+diff --git a/src/pytaku/database/migrator.py b/src/pytaku/database/migrator.py
+index 1fe88b9..58603a9 100644
+--- a/src/pytaku/database/migrator.py
++++ b/src/pytaku/database/migrator.py
+@@ -69,11 +69,13 @@ def migrate(overwrite_latest_schema=True):
+         cursor = conn.cursor()
+ 
+         # Backup first
+-        now = datetime.datetime.utcnow().isoformat(&quot;T&quot;, &quot;milliseconds&quot;)
+-        backup_filename = f&quot;db_backup_{now}.sqlite3&quot;
+-        print(f&quot;Backup up to {backup_filename}...&quot;, end=&quot;&quot;)
+-        cursor.execute(&quot;VACUUM main INTO ?;&quot;, (backup_filename,))
+-        print(&quot; done&quot;)
++        current_version = _get_current_version()
++        if current_version != 0:
++            now = datetime.datetime.utcnow().isoformat(&quot;T&quot;, &quot;milliseconds&quot;)
++            backup_filename = f&quot;db_backup_v{current_version}_{now}.sqlite3&quot;
++            print(f&quot;Backup up to {backup_filename}...&quot;, end=&quot;&quot;)
++            cursor.execute(&quot;VACUUM main INTO ?;&quot;, (backup_filename,))
++            print(&quot; done&quot;)
+ 
+         # Start migrations
+         # NOTE: this is NOT done in a transaction.
+</pre></body></html>

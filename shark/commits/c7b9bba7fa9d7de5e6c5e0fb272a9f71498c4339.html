@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[c7b9bba7fa] badges and build links | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / c7b9bba7fa</strong><hr><pre>commit c7b9bba7fa9d7de5e6c5e0fb272a9f71498c4339
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jun 30 22:13:43 2022 +0700
+
+    badges and build links
+
+diff --git a/.github/workflows/main.yml b/.github/workflows/main.yml
+index 66fc027..115ac8e 100644
+--- a/.github/workflows/main.yml
++++ b/.github/workflows/main.yml
+@@ -1,4 +1,4 @@
+-name: Go
++name: win+mac+linux
+ 
+ on:
+   push:
+@@ -24,7 +24,7 @@ jobs:
+ 
+     - name: Install ebiten linux deps
+       if: runner.os == &#39;Linux&#39;
+-      run: sudo apt-get install -y libc6-dev libglu1-mesa-dev libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libxxf86vm-dev libasound2-dev pkg-config
++      run: make deps-debian
+ 
+     - run: make
+ 
+diff --git a/Makefile b/Makefile
+index 29824a6..360f23e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -15,3 +15,7 @@ mac:
+ 
+ clean:
+ 	rm -f dist/*
++
++# https://ebiten.org/documents/install.html#Debian_/_Ubuntu
++deps-debian:
++	sudo apt install libc6-dev libglu1-mesa-dev libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libxxf86vm-dev libasound2-dev pkg-config
+diff --git a/README.md b/README.md
+index bef1ca6..dbe08a9 100644
+--- a/README.md
++++ b/README.md
+@@ -2,8 +2,8 @@ # What
+ 
+ https://user-images.githubusercontent.com/1446315/176439983-091dec3d-bc36-4ae3-8b78-2a2a7f11e90d.mp4
+ 
+-This is a PoC &quot;desktop pet&quot; à la [shimeji][1] using [ebitengine][2], and should
+-run on Windows/Linux/Mac. It currently has only 3 animations: idle (default),
++This is a PoC &quot;desktop pet&quot; à la [shimeji][1] using [ebitengine][2]that runs on
++Windows, Linux, and macOS. It currently has only 3 animations: idle (default),
+ left-click dragging, and right-click.
+ 
+ Fair warning: I&#39;m a Go noob who mostly has no idea what he&#39;s doing.
+@@ -11,8 +11,15 @@ # What
+ 
+ # Download
+ 
+-Prebuilt binaries are provided over at
+-[Releases](https://github.com/nhanb/shark/releases/latest).
++Official tagged releases are available on [GitHub Releases][5].
++
++Newer builds straight from master branch are also available as artifacts on
++GitHub and sourcehut:
++
++[![github status](https://github.com/nhanb/shark/actions/workflows/main.yml/badge.svg)][gh]
++[![builds.sr.ht status](https://builds.sr.ht/~nhanb/shark/commits/master.svg)][srht]
++
++Sourcehut doesn&#39;t have macOS builds though.
+ 
+ # Artist
+ 
+@@ -37,3 +44,7 @@ # License
+ [2]: https://ebiten.org/
+ [3]: https://www.behance.net/meeway/projects
+ [4]: https://www.facebook.com/meexway
++[5]: https://github.com/nhanb/shark/releases/latest
++
++[srht]: https://builds.sr.ht/~nhanb/shark/commits/master
++[gh]: https://github.com/nhanb/shark/actions/workflows/main.yml
+</pre></body></html>

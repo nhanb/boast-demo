@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[67aac1e772] disable optimize img plugin | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 67aac1e772</strong><hr><pre>commit 67aac1e772c2519a809870dd9615ce93d83af6d7
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Wed Feb 5 09:19:40 2014 +0700
+
+    disable optimize img plugin
+
+diff --git a/content/what-i-did-after-installing-manjaro.md b/content/what-i-did-after-installing-manjaro.md
+new file mode 100644
+index 0000000..167a6c0
+--- /dev/null
++++ b/content/what-i-did-after-installing-manjaro.md
+@@ -0,0 +1,32 @@
++Title: What I did after installing Manjaro xfce
++Slug: what-i-did-after-installing-manjaro-xfce
++Date: 2014-02-04 20:20:13
++
++After about 2 months with elementary OS, I got sick of the guaranteed once-every-hour crashes of
++its **Files** file manager (yeah, I&#39;m still hating their naming decisions with a passion), the
++flickering when I play fullscreen OpenGL games, and the automatic collapsing of workspaces. I&#39;ve
++had enough of that. Let&#39;s go back to xfce! But hey, (X)ubuntu 14.04 is nearly out but I don&#39;t want
++to install an alpha version right now, and installing 13.10 just to update 2 months later is insane
++(to me, at least). That&#39;s when I noticed Manjaro - a battery-included distro based on Arch. All
++hail rolling release!
++
++Although Manjaro comes packed with most of the apps that I would install on any other distro
++anyway: GIMP, LibreOffice, Steam, etc., here are some additional steps I took to make it rock.
++
++## Get Mirosoft fonts
++
++Getting Micro$oft fonts is like the first thing to do after any Linux distro installation. The Arch
++community has a whole [wiki page][1] dedicated to it. It&#39;s worth mentioning that you can&#39;t
++*legally* install those packages without the actual fonts already on your computer. Assuming you
++have an installed copy of Windows 7, go to its `Fonts` folder and put the necessary fonts in the
++same folder of the extracted package downloaded from the AUR page. For some instant copy-and-paste
++commands: (**warning**: this script assumes you already have all your Windows 7 fonts in
++`~/win_fonts/`. Put them there before running the following commands)
++
++    :::bash
++    curl -O &#39;https://gist.github.com/nhanb/8804875/raw/arch-ms-fonts.sh&#39;
++    bash arch-ms-fonts.sh
++
++For 
++
++[1]: https://wiki.archlinux.org/index.php/MS_Fonts
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 0535431..8a5e753 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -76,4 +76,3 @@
+ )
+ 
+ PLUGIN_PATH = &#39;/home/nhanb/open-source/pelican-plugins&#39;
+-PLUGINS = [&quot;optimize_images&quot;]
+</pre></body></html>

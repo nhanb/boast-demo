@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[6c86d1cfb9] fix code block | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 6c86d1cfb9</strong><hr><pre>commit 6c86d1cfb9274b2e1a3920aa8ff925ff1f9f6a19
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 24 15:14:45 2023 +0700
+
+    fix code block
+
+diff --git a/theme/base.css b/theme/base.css
+index c10cd1f..90ac997 100644
+--- a/theme/base.css
++++ b/theme/base.css
+@@ -28,14 +28,14 @@ footer {
+ pre,
+ .sidenote {
+   border: 1px solid black;
+-  background-color: #eee;
+   padding: 0.5rem;
+ }
+ pre {
+-  overflow-y: scroll;
++  overflow-x: auto;
+ }
+ .sidenote {
+   margin-left: 2rem;
++  background-color: #eee;
+ }
+ .sidenote p {
+   margin: 0;
+</pre></body></html>

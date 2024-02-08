@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e3a81b240e] read init state from json | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / e3a81b240e</strong><hr><pre>commit e3a81b240eb7e7c531eb70159725178625293532
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Jun 16 21:35:08 2023 +0700
+
+    read init state from json
+    
+    Tk doesn&#39;t seem to play well with flag emojis tho
+
+diff --git a/main.go b/main.go
+index c18c4fa..c81e011 100644
+--- a/main.go
++++ b/main.go
+@@ -3,10 +3,14 @@
+ import (
+ 	&quot;bufio&quot;
+ 	_ &quot;embed&quot;
++	&quot;encoding/json&quot;
+ 	&quot;io&quot;
++	&quot;io/ioutil&quot;
+ 	&quot;log&quot;
+ 	&quot;net/http&quot;
++	&quot;os&quot;
+ 	&quot;os/exec&quot;
++	&quot;strconv&quot;
+ 	&quot;sync&quot;
+ )
+ 
+@@ -61,6 +65,9 @@ func connectTclProc() {
+ 	io.WriteString(stdin, mainTcl)
+ 	println(&quot;Loaded main tcl script.&quot;)
+ 
++	// TODO: this should probably be refactored out
++	state := initState()
++
+ 	io.WriteString(stdin, &quot;readvars\n&quot;)
+ 
+ 	reqscanner := bufio.NewScanner(stdout)
+@@ -69,7 +76,7 @@ func connectTclProc() {
+ 		println(&quot;=&gt; &quot; + req)
+ 		switch req {
+ 		case &quot;readvars&quot;:
+-			for _, line := range serveReadvars() {
++			for _, line := range serveReadvars(state) {
+ 				println(&quot;&lt;= &quot; + line)
+ 				io.WriteString(stdin, line+&quot;\n&quot;)
+ 			}
+@@ -85,17 +92,42 @@ func connectTclProc() {
+ 	}
+ }
+ 
+-func serveReadvars() []string {
++func serveReadvars(s State) []string {
+ 	return []string{
+-		&quot;description Saigon Cup 2023&quot;,
+-		&quot;p1name Diego Umejuarez&quot;,
+-		&quot;p1country jp&quot;,
+-		&quot;p1score 1&quot;,
+-		&quot;p1team Japan&quot;,
+-		&quot;p2name Chokido&quot;,
+-		&quot;p2country jp&quot;,
+-		&quot;p2score 2&quot;,
+-		&quot;p2team Japan2&quot;,
++		&quot;description &quot; + s.Description,
++		&quot;p1name &quot; + s.P1name,
++		&quot;p1country &quot; + s.P1country,
++		&quot;p1score &quot; + strconv.Itoa(s.P1score),
++		&quot;p1team &quot; + s.P1team,
++		&quot;p2name &quot; + s.P2name,
++		&quot;p2country &quot; + s.P2country,
++		&quot;p2score &quot; + strconv.Itoa(s.P2score),
++		&quot;p2team &quot; + s.P2team,
+ 		&quot;end&quot;,
+ 	}
+ }
++
++type State struct {
++	Description string `json:&quot;description&quot;`
++	P1name      string `json:&quot;p1name&quot;`
++	P1country   string `json:&quot;p1country&quot;`
++	P1score     int    `json:&quot;p1score&quot;`
++	P1team      string `json:&quot;p1team&quot;`
++	P2name      string `json:&quot;p2name&quot;`
++	P2country   string `json:&quot;p2country&quot;`
++	P2score     int    `json:&quot;p2score&quot;`
++	P2team      string `json:&quot;p2team&quot;`
++}
++
++func initState() State {
++	var state State
++	file, err := os.Open(StateFile)
++	if err == nil {
++		bytes, err := ioutil.ReadAll(file)
++		if err != nil {
++			panic(err)
++		}
++		json.Unmarshal(bytes, &amp;state)
++	}
++	return state
++}
+diff --git a/web/state.json b/web/state.json
+index 11d2151..b66d8f0 100644
+--- a/web/state.json
++++ b/web/state.json
+@@ -3,9 +3,9 @@
+     &quot;p1name&quot;: &quot;CYG BST | | Fuudo&quot;,
+     &quot;p1country&quot;: &quot;🇯🇵&quot;,
+     &quot;p1team&quot;: &quot;&quot;,
+-    &quot;p1score&quot;: &quot;6&quot;,
++    &quot;p1score&quot;: 6,
+     &quot;p2name&quot;: &quot;B.O.B | Xiaobao&quot;,
+     &quot;p2country&quot;: &quot;🇯🇵&quot;,
+-    &quot;p2score&quot;: &quot;1&quot;,
++    &quot;p2score&quot;: 1,
+     &quot;p2team&quot;: &quot;&quot;
+ }
+</pre></body></html>

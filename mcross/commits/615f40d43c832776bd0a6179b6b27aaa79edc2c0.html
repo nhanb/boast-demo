@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[615f40d43c] more checklist items | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 615f40d43c</strong><hr><pre>commit 615f40d43c832776bd0a6179b6b27aaa79edc2c0
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri May 15 21:55:30 2020 +0700
+
+    more checklist items
+
+diff --git a/README.md b/README.md
+index 166f7a2..2aacc8c 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,17 @@
+ McRoss is a WIP [gemini://](https://gemini.circumlunar.space/) browser
+-written in python and tkinter.
++written in python and tkinter, meaning it Just Works (tm) on any
++self-respecting desktop OS: Linux, Windows, Mac OS, maaaaybe the BSDs?
++Never tried one of those.
+ 
+ It currently looks like this:
+ 
+ ![](https://p.caophim.net/87.png)
+ 
+-Happy-path surfing and link-visiting already works.
++Happy-path surfing already works.
+ The UX is still terrible though (see feature checklist below).
+ I&#39;m still figuring out stuff as I go.
+ 
++
+ # Installation
+ 
+ ```sh
+@@ -19,6 +22,7 @@ # Installation
+ Better distribution methods to be explored later.
+ Maybe it&#39;s finally time to try nuitka?
+ 
++
+ # Development
+ 
+ Deps:
+@@ -40,29 +44,43 @@ # to publish, first bump version in pyproject.toml then
+ poetry publish --build
+ ```
+ 
++
+ # Feature checklist
+ 
+ - [x] back-forward buttons
++- [ ] handle redirects
+ - [ ] separate I/O thread to avoid blocking GUI
+ - [ ] more visual indicators - maybe a status bar at the bottom
+ - [x] parse gemini&#39;s advanced line types
++- [ ] properly handle mime types (gemini/plaintext/binary)
+ - [ ] configurable document styling
+ - [ ] configurable TLS to accomodate self-signed sites?
++- [ ] human-friendly distribution
+ 
+ Long term high-level goals:
+ 
+-- Should be easy for end users to install. If the word `rustup` exists in the
+-  installation guide for your G U I application then I&#39;m sorry it&#39;s not
+-  software made for people to _use_.
+-- Should be responsive &amp; pleasant to use. The Castor browser doesn&#39;t have
+-  visual indicators at all, for example, when clicking on a link it just
+-  appears to do nothing until the new page is completely loaded.
+-- The viewport should be rendered so that its content can be copied and still
+-  remain equivalent, valid gemini markup. Abolish the content creator vs
+-  consoomer divide!
+-- Lightweight, in terms of both disk space &amp; memory/cpu usage. It&#39;s completely
+-  unoptimized at the moment but tkinter and zero-dependency python gives us a
+-  fairly good starting point imo.
++## Easy for end users to install
++
++If the word `rustup` exists in the installation guide for your G U I
++application then I&#39;m sorry it&#39;s not software made for people to _use_.
++
++## Copy-friendly viewport
++
++More specifically, its content when copied should still remain equivalent,
++valid gemini markup. Abolish the content creator vs consoomer divide!
++
++## Responsive &amp; pleasant to use
++
++The Castor browser doesn&#39;t have visual indicators at all, for example, when
++clicking on a link it just appears to do nothing until the new page is
++completely loaded. That is A Bad Thing (tm).
++
++## Lightweight
++
++In terms of both disk space &amp; memory/cpu usage.
++It&#39;s completely unoptimized at the moment but tkinter and zero-dependency
++python gives us a fairly good starting point imo.
++
+ 
+ # Server bugs/surprises
+ 
+</pre></body></html>

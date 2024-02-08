@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[61300c25af] implement mithril search | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 61300c25af</strong><hr><pre>commit 61300c25af2d34b68b83e825169acd62854489d6
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Aug 21 22:52:13 2020 +0700
+
+    implement mithril search
+
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 0791098..29b5d01 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -366,7 +366,9 @@ def ensure_titles(site_title_pairs: List[Tuple[str, str]]):
+ @app.route(&quot;/h&quot;)
+ @app.route(&quot;/a&quot;)
+ @app.route(&quot;/f&quot;)
+-def home_view():
++@app.route(&quot;/s&quot;)
++@app.route(&quot;/s/&lt;query&gt;&quot;)
++def home_view(query=None):
+     return render_template(&quot;spa.html&quot;)
+ 
+ 
+@@ -442,3 +444,15 @@ def api_follows():
+             thumbnail = url_for(&quot;proxy_view&quot;, b64_url=_encode_proxy_url(thumbnail))
+         title[&quot;thumbnail&quot;] = thumbnail
+     return jsonify({&quot;titles&quot;: titles})
++
++
++@app.route(&quot;/api/search/&lt;query&gt;&quot;, methods=[&quot;GET&quot;])
++def api_search(query):
++    results = search_title_all_sites(query)
++
++    if &quot;mangadex&quot; in results:
++        for title in results[&quot;mangadex&quot;]:
++            title[&quot;thumbnail&quot;] = url_for(
++                &quot;proxy_view&quot;, b64_url=_encode_proxy_url(title[&quot;thumbnail&quot;])
++            )
++    return results
+diff --git a/src/pytaku/static/js/layout.js b/src/pytaku/static/js/layout.js
+index 7807b0f..7698c14 100644
+--- a/src/pytaku/static/js/layout.js
++++ b/src/pytaku/static/js/layout.js
+@@ -1,7 +1,8 @@
+-import { Auth } from &quot;./models.js&quot;;
++import { Auth, SearchModel } from &quot;./models.js&quot;;
+ 
+ function Navbar(initialVNode) {
+   let isLoggingOut = false;
++
+   return {
+     view: (vnode) =&gt; {
+       let userLink;
+@@ -50,10 +51,24 @@ function Navbar(initialVNode) {
+             }),
+           ]
+         ),
+-        m(&quot;form.nav--search-form&quot;, [
+-          m(&quot;input&quot;, { placeholder: &quot;search title name&quot; }),
+-          m(&quot;button&quot;, { type: &quot;submit&quot; }, [m(&quot;i.icon.icon-search&quot;)]),
+-        ]),
++        m(
++          &quot;form.nav--search-form&quot;,
++          {
++            onsubmit: (ev) =&gt; {
++              ev.preventDefault();
++              m.route.set(&quot;/s/:query&quot;, { query: SearchModel.query });
++            },
++          },
++          [
++            m(&quot;input[placeholder=search manga title]&quot;, {
++              onchange: (ev) =&gt; {
++                SearchModel.query = ev.target.value;
++              },
++              value: SearchModel.query,
++            }),
++            m(&quot;button[type=submit]&quot;, [m(&quot;i.icon.icon-search&quot;)]),
++          ]
++        ),
+         userLink,
+       ]);
+     },
+diff --git a/src/pytaku/static/js/main.js b/src/pytaku/static/js/main.js
+index 2dde99a..7863e87 100644
+--- a/src/pytaku/static/js/main.js
++++ b/src/pytaku/static/js/main.js
+@@ -3,6 +3,7 @@ import Layout from &quot;./layout.js&quot;;
+ import Authentication from &quot;./routes/authentication.js&quot;;
+ import Home from &quot;./routes/home.js&quot;;
+ import Follows from &quot;./routes/follows.js&quot;;
++import Search from &quot;./routes/search.js&quot;;
+ 
+ Auth.init().then(() =&gt; {
+   const root = document.getElementById(&quot;spa-root&quot;);
+@@ -16,7 +17,7 @@ Auth.init().then(() =&gt; {
+           return Home;
+         }
+       },
+-      render: () =&gt; m(Layout, m(Home)),
++      render: (vnode) =&gt; m(Layout, vnode),
+     },
+     &quot;/a&quot;: {
+       onmatch: () =&gt; {
+@@ -26,18 +27,30 @@ Auth.init().then(() =&gt; {
+           return Authentication;
+         }
+       },
+-      render: () =&gt; m(Layout, m(Authentication)),
++      render: (vnode) =&gt; m(Layout, vnode),
+     },
+     &quot;/f&quot;: {
+       onmatch: () =&gt; {
+         if (Auth.isLoggedIn()) {
+           return Follows;
+         } else {
+-          //m.route.set(&quot;/a&quot;, null, { replace: true });
+-          return m(&quot;h1&quot;, &quot;waiting&quot;);
++          m.route.set(&quot;/a&quot;, null, { replace: true });
+         }
+       },
+-      render: () =&gt; m(Layout, m(Follows)),
++      render: (vnode) =&gt; m(Layout, vnode),
++    },
++    &quot;/s/:query&quot;: {
++      render: (vnode) =&gt;
++        m(
++          Layout,
++          m(Search, {
++            query: vnode.attrs.query,
++            key: vnode.attrs.query,
++            // ^ set a key here to reinitialize Search component on route
++            // change. Without it, Search.oninit would only trigger once on
++            // first full page load.
++          })
++        ),
+     },
+   });
+ });
+diff --git a/src/pytaku/static/js/models.js b/src/pytaku/static/js/models.js
+index e1dc2b4..0159684 100644
+--- a/src/pytaku/static/js/models.js
++++ b/src/pytaku/static/js/models.js
+@@ -89,4 +89,35 @@ const Auth = {
+   },
+ };
+ 
+-export { Auth };
++const SearchModel = {
++  query: &quot;&quot;,
++  result: {},
++  cache: {},
++  isLoading: true,
++  performSearch: (query) =&gt; {
++    SearchModel.query = query;
++    if (SearchModel.cache[query]) {
++      SearchModel.result = SearchModel.cache[query];
++    } else {
++      SearchModel.isLoading = true;
++      m.redraw();
++      m.request({
++        method: &quot;GET&quot;,
++        url: &quot;/api/search/:query&quot;,
++        params: { query },
++      })
++        .then((resp) =&gt; {
++          SearchModel.cache[query] = resp;
++          SearchModel.result = resp;
++        })
++        .catch((err) =&gt; {
++          console.log(&quot;TODO&quot;, err);
++        })
++        .finally(() =&gt; {
++          SearchModel.isLoading = false;
++        });
++    }
++  },
++};
++
++export { Auth, SearchModel };
+diff --git a/src/pytaku/static/js/routes/follows.js b/src/pytaku/static/js/routes/follows.js
+index 06679fc..7097eec 100644
+--- a/src/pytaku/static/js/routes/follows.js
++++ b/src/pytaku/static/js/routes/follows.js
+@@ -1,7 +1,5 @@
+ import { Auth } from &quot;../models.js&quot;;
+-
+-const truncate = (input) =&gt;
+-  input.length &gt; 20 ? `${input.substring(0, 20)}...` : input;
++import { LoadingMessage, truncate } from &quot;../utils.js&quot;;
+ 
+ function fullChapterName(chapter) {
+   let result = &quot;Chapter &quot; + chapter.num_major;
+@@ -51,7 +49,7 @@ const Title = {
+               [
+                 fullChapterName(chapter),
+                 chapter.groups.map((group) =&gt; {
+-                  m(&quot;span.follows--group&quot;, truncate(group));
++                  m(&quot;span.follows--group&quot;, truncate(group, 20));
+                 }),
+               ]
+             )
+@@ -93,10 +91,7 @@ function Follows(initialVNode) {
+       let content = &quot;&quot;;
+ 
+       if (isLoading) {
+-        return m(
+-          &quot;div.content&quot;,
+-          m(&quot;h2.blink&quot;, [m(&quot;i.icon.icon-loader.spin&quot;), &quot; loading...&quot;])
+-        );
++        return m(&quot;div.content&quot;, m(LoadingMessage));
+       }
+ 
+       if (titles.length === 0) {
+diff --git a/src/pytaku/static/js/routes/search.js b/src/pytaku/static/js/routes/search.js
+new file mode 100644
+index 0000000..6551504
+--- /dev/null
++++ b/src/pytaku/static/js/routes/search.js
+@@ -0,0 +1,51 @@
++import { Auth, SearchModel } from &quot;../models.js&quot;;
++import { LoadingMessage, truncate } from &quot;../utils.js&quot;;
++
++const Search = {
++  oninit: (vnode) =&gt; {
++    document.title = `&quot;${vnode.attrs.query}&quot; search results`;
++    SearchModel.performSearch(vnode.attrs.query);
++  },
++  view: (vnode) =&gt; {
++    return m(
++      &quot;div.content&quot;,
++      SearchModel.isLoading
++        ? m(LoadingMessage)
++        : Object.entries(SearchModel.result).map(([site, titles]) =&gt;
++            m(&quot;div&quot;, [
++              m(&quot;h1.search--site-heading&quot;, site),
++              titles
++                ? m(&quot;p.search--result-text&quot;, [
++                    &quot;Showing &quot;,
++                    m(&quot;strong&quot;, titles.length),
++                    ` result${titles.length &gt; 1 ? &quot;s&quot; : &quot;&quot;} for `,
++                    SearchModel.query,
++                  ])
++                : m(
++                    &quot;p.search--result-text&quot;,
++                    `No results for &quot;${SearchModel.query}&quot;`
++                  ),
++              m(
++                &quot;div.search--results&quot;,
++                titles.map((title) =&gt;
++                  m(
++                    m.route.Link,
++                    {
++                      class: &quot;search--result&quot;,
++                      href: `/m/${site}/${title.id}`,
++                      title: title.name,
++                    },
++                    [
++                      m(&quot;img&quot;, { src: title.thumbnail, alt: title.name }),
++                      m(&quot;span&quot;, truncate(title.name, 50)),
++                    ]
++                  )
++                )
++              ),
++            ])
++          )
++    );
++  },
++};
++
++export default Search;
+diff --git a/src/pytaku/static/js/utils.js b/src/pytaku/static/js/utils.js
+new file mode 100644
+index 0000000..bf0105a
+--- /dev/null
++++ b/src/pytaku/static/js/utils.js
+@@ -0,0 +1,8 @@
++const LoadingMessage = {
++  view: (vnode) =&gt; m(&quot;h2.blink&quot;, [m(&quot;i.icon.icon-loader.spin&quot;), &quot; loading...&quot;]),
++};
++
++const truncate = (input, size) =&gt;
++  input.length &gt; size ? `${input.substring(0, size)}...` : input;
++
++export { LoadingMessage, truncate };
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index 4d9eec0..a1db482 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -220,3 +220,32 @@ .follows--more {
+   display: inline-block;
+   font-style: italic;
+ }
++
++/* Search route */
++.search--site-heading {
++  text-transform: capitalize;
++}
++.search--results {
++  display: flex;
++  flex-direction: row;
++  flex-wrap: wrap;
++}
++.search--result {
++  display: inline-flex;
++  flex-direction: column;
++  border: 1px solid var(--bg-black);
++  margin: 0 1rem 1rem 0;
++  background-color: var(--bg-black);
++  color: white;
++  text-decoration: none;
++  max-width: 150px;
++}
++.search--result span {
++  padding: 0.5rem;
++  width: 0;
++  min-width: 100%;
++}
++
++.search--result-text {
++  margin-bottom: 1rem;
++}
+</pre></body></html>

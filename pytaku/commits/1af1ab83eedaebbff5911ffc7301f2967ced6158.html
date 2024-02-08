@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1af1ab83ee] hjkl navigation because why not | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 1af1ab83ee</strong><hr><pre>commit 1af1ab83eedaebbff5911ffc7301f2967ced6158
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 26 21:04:35 2021 +0700
+
+    hjkl navigation because why not
+
+diff --git a/src/pytaku/js-src/routes/chapter.js b/src/pytaku/js-src/routes/chapter.js
+index 806af56..285972a 100644
+--- a/src/pytaku/js-src/routes/chapter.js
++++ b/src/pytaku/js-src/routes/chapter.js
+@@ -5,6 +5,10 @@ const KEYCODE_PLUS = 43;
+ const KEYCODE_MINUS = 45;
+ const KEYCODE_ZERO = 48;
+ const KEYCODE_QUESTION_MARK = 63;
++const KEYCODE_J = 106;
++const KEYCODE_K = 107;
++const KEYCODE_H = 104;
++const KEYCODE_L = 108;
+ 
+ const LoadingPlaceholder = {
+   view: () =&gt; m(&quot;h2&quot;, [m(&quot;i.icon.icon-loader.spin&quot;)]),
+@@ -78,6 +82,8 @@ function Chapter(initialVNode) {
+   let pageMaxWidth = 100; // in percent
+ 
+   function onKeyPress(event) {
++    if (event.target.tagName === &quot;INPUT&quot;) return;
++
+     switch (event.keyCode) {
+       case KEYCODE_PLUS:
+         if (pageMaxWidth &lt;= 85) pageMaxWidth += 15;
+@@ -92,8 +98,28 @@ function Chapter(initialVNode) {
+         window.alert(`Keyboard shortcuts:
+     - to decrease page size
+     + to increase page size (max 100%)
+-    0 (zero) to reset page size`);
++    0 (zero) to reset page size
++    j to scroll down
++    k to scroll up
++    h to go to previous chapter
++    l to go to next chapter`);
++        break;
++      case KEYCODE_J:
++        window.scrollBy({ top: 350, behavior: &quot;smooth&quot; });
++        break;
++      case KEYCODE_K:
++        window.scrollBy({ top: -350, behavior: &quot;smooth&quot; });
++        break;
++      case KEYCODE_H:
++        document.querySelector(&quot;.chapter--prev-button&quot;).click();
++        break;
++      case KEYCODE_L:
++        document.querySelector(&quot;.chapter--next-button&quot;).click();
+         break;
++      /*
++      default:
++        console.log(&quot;Keycode:&quot;, event.keyCode);
++      */
+     }
+     m.redraw();
+   }
+@@ -167,12 +193,13 @@ function Chapter(initialVNode) {
+         ? m(
+             m.route.Link,
+             {
+-              class: &quot;touch-friendly&quot;,
++              class: &quot;touch-friendly chapter--prev-button&quot;,
+               href: `/m/${site}/${titleId}/${prev.id}`,
+             },
+             [m(&quot;i.icon.icon-chevrons-left&quot;), m(&quot;span&quot;, &quot;prev&quot;)]
+           )
+         : m(Button, {
++            class: &quot;chapter--prev-button&quot;,
+             text: &quot;prev&quot;,
+             icon: &quot;chevrons-left&quot;,
+             disabled: true,
+@@ -189,7 +216,8 @@ function Chapter(initialVNode) {
+         m.route.Link,
+         {
+           class:
+-            &quot;touch-friendly&quot; + (isMarkingLastChapterAsRead ? &quot; disabled&quot; : &quot;&quot;),
++            &quot;touch-friendly chapter--next-button&quot; +
++            (isMarkingLastChapterAsRead ? &quot; disabled&quot; : &quot;&quot;),
+           href: nextRoute,
+           disabled: isMarkingLastChapterAsRead,
+           onclick: (ev) =&gt; {
+</pre></body></html>

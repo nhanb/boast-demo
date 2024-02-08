@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[07005ec3c6] check manga image url from db instead of regex | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 07005ec3c6</strong><hr><pre>commit 07005ec3c6588f674620988c14030e5b0c87bee5
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jan 4 09:04:21 2021 +0700
+
+    check manga image url from db instead of regex
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 05d43d6..0c7b27f 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.29&quot;
++version = &quot;0.3.30&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index dd50161..51c7238 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -19,6 +19,7 @@
+     get_prev_next_chapters,
+     get_username,
+     import_follows,
++    is_manga_page_url,
+     load_chapter,
+     load_title,
+     read,
+@@ -73,15 +74,14 @@ def _decode_proxy_url(b64_url):
+ 
+ def _is_manga_img_url(
+     url,
+-    pattern=re.compile(
+-        r&quot;^https://(&quot;
+-        r&quot;([\w-]+\.)?(mangadex\.org/(data|images)|(mangabeast\d{0,4}.com|hot\.granpulse\.us|fan-official\.eorzea\.us|fan-complete\.ivalice\.us)/manga)/&quot;
+-        r&quot;|&quot;
+-        r&quot;([\w-]+\.)+mangadex\.network:\d{2,6}/[\w-]+/data/&quot;
+-        r&quot;)&quot;
+-    ),
++    cover_pattern=re.compile(r&quot;^https://([\w-]+\.)?mangadex\.org/images&quot;),
+ ):
+-    return pattern.match(url)
++    &quot;&quot;&quot;
++    Check if either a cover or page img url.
++    &quot;&quot;&quot;
++    # Mangasee has god knows how many domains for manga page images, so we can&#39;t just
++    # do a regex check, but need to query our db instead.
++    return cover_pattern.match(url) or is_manga_page_url(url)
+ 
+ 
+ def proxied(url) -&gt; str:
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index bb2a9af..fa78bd9 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -390,3 +390,17 @@ def delete_expired_tokens():
+         return_num_affected=True,
+     )
+     return num_deleted
++
++
++def is_manga_page_url(url):
++    &quot;&quot;&quot;
++    Checks if url exists in db as a page image.
++    This is currently used to avoid abuse of our /proxy/ endpoint.
++    &quot;&quot;&quot;
++    result = run_sql(
++        &quot;&quot;&quot;
++        SELECT 1 FROM chapter, json_each(pages) WHERE value = ? LIMIT 1;
++        &quot;&quot;&quot;,
++        (url,),
++    )
++    return len(result) == 1
+</pre></body></html>

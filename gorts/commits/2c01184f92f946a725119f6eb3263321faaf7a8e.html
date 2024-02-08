@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[2c01184f92] migrate to netstring IPC | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 2c01184f92</strong><hr><pre>commit 2c01184f92f946a725119f6eb3263321faaf7a8e
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jun 21 20:58:51 2023 +0700
+
+    migrate to netstring IPC
+    
+    TODO: stop embedding tcl scripts into go binary
+
+diff --git a/main.go b/main.go
+index 9b582cc..2dd7465 100644
+--- a/main.go
++++ b/main.go
+@@ -3,7 +3,6 @@
+ import (
+ 	&quot;bufio&quot;
+ 	_ &quot;embed&quot;
+-	&quot;encoding/base64&quot;
+ 	&quot;encoding/json&quot;
+ 	&quot;fmt&quot;
+ 	&quot;io&quot;
+@@ -14,9 +13,9 @@
+ 	&quot;os/exec&quot;
+ 	&quot;runtime&quot;
+ 	&quot;strconv&quot;
+-	&quot;strings&quot;
+ 	&quot;time&quot;
+ 
++	&quot;go.imnhan.com/gorts/netstring&quot;
+ 	&quot;go.imnhan.com/gorts/players&quot;
+ 	&quot;go.imnhan.com/gorts/startgg&quot;
+ )
+@@ -94,6 +93,7 @@ func startGUI() {
+ 	fmt.Fprintln(stdin, &quot;initialize&quot;)
+ 
+ 	scanner := bufio.NewScanner(stdout)
++	scanner.Split(netstring.SplitFunc)
+ 
+ 	next := func() string {
+ 		scanner.Scan()
+@@ -102,90 +102,97 @@ func startGUI() {
+ 		return v
+ 	}
+ 
+-	respond := func(s string) {
++	respondOld := func(s string) {
+ 		debug := &quot;&lt;-- &quot; + s
+ 		if len(debug) &gt; 35 {
+ 			debug = debug[:35] + &quot;[...]&quot;
+ 		}
+ 		println(debug)
+-		io.WriteString(stdin, s+&quot;\n&quot;)
++		io.WriteString(stdin, netstring.Encode(s))
++	}
++
++	respond := func(ss ...string) {
++		debug := fmt.Sprintf(&quot;&lt;-- %v&quot;, ss)
++		if len(debug) &gt; 35 {
++			debug = debug[:35] + &quot;[...]&quot;
++		}
++		println(debug)
++		payload := netstring.EncodeN(ss...)
++		io.WriteString(stdin, payload)
+ 	}
+ 
+ 	for scanner.Scan() {
+-		req := scanner.Text()
+-		println(&quot;--&gt; &quot; + req)
+-		switch req {
+-		case &quot;readscoreboard&quot;:
++		req := netstring.DecodeMultiple(scanner.Text())
++		fmt.Printf(&quot;--&gt; %v\n&quot;, req)
++		switch req[0] {
++		case &quot;geticon&quot;:
++			respond(string(gortsPngIcon))
++
++		case &quot;getstartgg&quot;:
++			respond(startggInputs.Token, startggInputs.Slug)
++
++		case &quot;getwebport&quot;:
++			respond(WebPort)
++
++		case &quot;getcountrycodes&quot;:
++			respond(startgg.CountryCodes...)
++
++		case &quot;getscoreboard&quot;:
+ 			// TODO: there must be a more... civilized way.
+-			respond(scoreboard.Description)
+-			respond(scoreboard.Subtitle)
+-			respond(scoreboard.P1name)
+-			respond(scoreboard.P1country)
+-			respond(strconv.Itoa(scoreboard.P1score))
+-			respond(scoreboard.P1team)
+-			respond(scoreboard.P2name)
+-			respond(scoreboard.P2country)
+-			respond(strconv.Itoa(scoreboard.P2score))
+-			respond(scoreboard.P2team)
++			respond(
++				scoreboard.Description,
++				scoreboard.Subtitle,
++				scoreboard.P1name,
++				scoreboard.P1country,
++				strconv.Itoa(scoreboard.P1score),
++				scoreboard.P1team,
++				scoreboard.P2name,
++				scoreboard.P2country,
++				strconv.Itoa(scoreboard.P2score),
++				scoreboard.P2team,
++			)
+ 
+ 		case &quot;applyscoreboard&quot;:
+-			scoreboard.Description = next()
+-			scoreboard.Subtitle = next()
+-			scoreboard.P1name = next()
+-			scoreboard.P1country = next()
+-			scoreboard.P1score, _ = strconv.Atoi(next())
+-			scoreboard.P1team = next()
+-			scoreboard.P2name = next()
+-			scoreboard.P2country = next()
+-			scoreboard.P2score, _ = strconv.Atoi(next())
+-			scoreboard.P2team = next()
++			sb := req[1:]
++			scoreboard.Description = sb[0]
++			scoreboard.Subtitle = sb[1]
++			scoreboard.P1name = sb[2]
++			scoreboard.P1country = sb[3]
++			scoreboard.P1score, _ = strconv.Atoi(sb[4])
++			scoreboard.P1team = sb[5]
++			scoreboard.P2name = sb[6]
++			scoreboard.P2country = sb[7]
++			scoreboard.P2score, _ = strconv.Atoi(sb[8])
++			scoreboard.P2team = sb[9]
+ 			scoreboard.Write()
+-
+-		case &quot;readplayernames&quot;:
+-			for _, player := range allplayers {
+-				respond(player.Name)
+-			}
+-			respond(&quot;end&quot;)
++			respond(&quot;ok&quot;)
+ 
+ 		case &quot;searchplayers&quot;:
+-			query := strings.TrimSpace(next())
++			query := req[1]
++			var names []string
+ 
+ 			if query == &quot;&quot; {
+ 				for _, p := range allplayers {
+-					respond(p.Name)
++					names = append(names, p.Name)
+ 				}
+-				respond(&quot;end&quot;)
++				respond(names...)
+ 				break
+ 			}
+ 
+ 			for _, p := range allplayers {
+ 				if p.MatchesName(query) {
+-					respond(p.Name)
++					names = append(names, p.Name)
+ 				}
+ 			}
+-			respond(&quot;end&quot;)
++			respond(names...)
+ 
+-		case &quot;fetchplayers&quot;:
++		case &quot;fetchplayers&quot;: // FIXME
+ 			startggInputs.Token = next()
+ 			startggInputs.Slug = next()
+ 			time.Sleep(3 * time.Second)
+-			respond(&quot;fetchplayers__resp&quot;)
+-			respond(&quot;All done.&quot;)
++			respondOld(&quot;fetchplayers__resp&quot;)
++			respondOld(&quot;All done.&quot;)
+ 			startggInputs.Write(StartggFile)
+-
+-		case &quot;readwebport&quot;:
+-			respond(WebPort)
+-
+-		case &quot;geticon&quot;:
+-			b64icon := base64.StdEncoding.EncodeToString(gortsPngIcon)
+-			respond(b64icon)
+-
+-		case &quot;getcountrycodes&quot;:
+-			respond(strings.Join(startgg.CountryCodes, &quot; &quot;))
+-
+-		case &quot;readstartgg&quot;:
+-			respond(startggInputs.Token)
+-			respond(startggInputs.Slug)
+ 		}
+ 	}
+ 
+diff --git a/netstring/netstring.go b/netstring/netstring.go
+index 20c2506..be988e6 100644
+--- a/netstring/netstring.go
++++ b/netstring/netstring.go
+@@ -5,15 +5,25 @@
+ package netstring
+ 
+ import (
++	&quot;bufio&quot;
+ 	&quot;bytes&quot;
+ 	&quot;fmt&quot;
+ 	&quot;strconv&quot;
++	&quot;strings&quot;
+ )
+ 
+ func Encode(s string) string {
+ 	return fmt.Sprintf(&quot;%d:%s,&quot;, len(s), s)
+ }
+ 
++// Encode multiple strings into a nested netstring
++func EncodeN(strings ...string) (ns string) {
++	for _, s := range strings {
++		ns += Encode(s)
++	}
++	return Encode(ns)
++}
++
+ // A SplitFunc to be used in a bufio.Scanner
+ func SplitFunc(data []byte, atEOF bool) (advance int, token []byte, err error) {
+ 	colonIndex := bytes.IndexRune(data, &#39;:&#39;)
+@@ -36,3 +46,16 @@ func SplitFunc(data []byte, atEOF bool) (advance int, token []byte, err error) {
+ 	// The whole netstring should now be within the buffer
+ 	return colonIndex + 1 + length + 1, rest[:length], nil
+ }
++
++// Decode multiple concatenated netstrings into plain strings.
++// This is NOT a reverse EncodeN() - the input here is not a nested
++// netstring.
++func DecodeMultiple(nstrings string) (results []string) {
++	r := strings.NewReader(nstrings)
++	s := bufio.NewScanner(r)
++	s.Split(SplitFunc)
++	for s.Scan() {
++		results = append(results, s.Text())
++	}
++	return results
++}
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index 616a87a..9944ef1 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -8,6 +8,8 @@ foreach p {stdin stdout stderr} {
+     fconfigure $p -translation lf
+ }
+ 
++source tcl/netstring.tcl
++
+ package require Tk
+ 
+ wm title . &quot;Overly Repetitive Tedious Software (in Go)&quot;
+@@ -164,86 +166,89 @@ grid .n.s.msg -row 3 -column 1 -stick W
+ grid columnconfigure .n.s 1 -weight 1
+ grid rowconfigure .n.s 1 -pad 5
+ 
+-# The following procs constitute a very simple line-based IPC system where Tcl
+-# client talks to Go server via stdin/stdout.
+-
+ proc initialize {} {
+-    seticon
+-    setwebport
+-    setcountrycodes
+-    setstartgg
+-    readscoreboard
++    foreach p {stdin stdout} {
++        fconfigure $p -translation binary
++    }
++    loadicon
++    loadstartgg
++    loadwebmsg
++    loadcountrycodes
++    loadscoreboard
++    loadplayernames
++
+     setupdiffcheck
+-    readplayernames
+-    setupplayersuggestion
++    #setupplayersuggestion
+ }
+ 
+-proc setstartgg {} {
+-    puts &quot;readstartgg&quot;
+-    set ::startgg(token) [gets stdin]
+-    set ::startgg(slug) [gets stdin]
++# Very simple IPC system where Tcl client talks to Go server via stdin/stdout
++# using netstrings as wire format.
++proc ipc {method args} {
++    set payload [concat $method $args]
++    puts -nonewline [netstrings $payload]
++    flush stdout
++    return [decodenetstrings [readnetstring stdin]]
+ }
+ 
+-proc setwebport {} {
+-    puts &quot;readwebport&quot;
+-    set webport [gets stdin]
+-    set ::mainstatus &quot;Point your OBS browser source to http://localhost:${webport}&quot;
++proc loadicon {} {
++    set resp [ipc &quot;geticon&quot;]
++    set iconblob [lindex $resp 0]
++    image create photo applicationIcon -data $iconblob
++    wm iconphoto . -default applicationIcon
+ }
+ 
+-proc seticon {} {
+-    puts &quot;geticon&quot;
+-    set b64data [gets stdin]
+-    image create photo applicationIcon -data [
+-        binary decode base64 $b64data
+-    ]
+-    wm iconphoto . -default applicationIcon
++proc loadstartgg {} {
++    set resp [ipc &quot;getstartgg&quot;]
++    set ::startgg(token) [lindex $resp 0]
++    set ::startgg(slug) [lindex $resp 1]
++}
++
++proc loadwebmsg {} {
++    set resp [ipc &quot;getwebport&quot;]
++    set webport [lindex $resp 0]
++    set ::mainstatus &quot;Point your OBS browser source to http://localhost:${webport}&quot;
+ }
+ 
+-proc setcountrycodes {} {
+-    puts getcountrycodes
+-    set countrycodes [gets stdin]
+-    .n.m.players.p1country configure -values $countrycodes
+-    .n.m.players.p2country configure -values $countrycodes
++proc loadcountrycodes {} {
++    set codes [ipc &quot;getcountrycodes&quot;]
++    .n.m.players.p1country configure -values $codes
++    .n.m.players.p2country configure -values $codes
+ }
+ 
+-proc readscoreboard {} {
+-    puts &quot;readscoreboard&quot;
+-    set ::scoreboard(description) [gets stdin]
+-    set ::scoreboard(subtitle) [gets stdin]
+-    set ::scoreboard(p1name) [gets stdin]
+-    set ::scoreboard(p1country) [gets stdin]
+-    set ::scoreboard(p1score) [gets stdin]
+-    set ::scoreboard(p1team) [gets stdin]
+-    set ::scoreboard(p2name) [gets stdin]
+-    set ::scoreboard(p2country) [gets stdin]
+-    set ::scoreboard(p2score) [gets stdin]
+-    set ::scoreboard(p2team) [gets stdin]
++proc loadscoreboard {} {
++    set sb [ipc &quot;getscoreboard&quot;]
++    set ::scoreboard(description) [lindex $sb 0]
++    set ::scoreboard(subtitle) [lindex $sb 1]
++    set ::scoreboard(p1name) [lindex $sb 2]
++    set ::scoreboard(p1country) [lindex $sb 3]
++    set ::scoreboard(p1score) [lindex $sb 4]
++    set ::scoreboard(p1team) [lindex $sb 5]
++    set ::scoreboard(p2name) [lindex $sb 6]
++    set ::scoreboard(p2country) [lindex $sb 7]
++    set ::scoreboard(p2score) [lindex $sb 8]
++    set ::scoreboard(p2team) [lindex $sb 9]
+     update_applied_scoreboard
+ }
+ 
+ proc applyscoreboard {} {
+-    puts &quot;applyscoreboard&quot;
+-    puts $::scoreboard(description)
+-    puts $::scoreboard(subtitle)
+-    puts $::scoreboard(p1name)
+-    puts $::scoreboard(p1country)
+-    puts $::scoreboard(p1score)
+-    puts $::scoreboard(p1team)
+-    puts $::scoreboard(p2name)
+-    puts $::scoreboard(p2country)
+-    puts $::scoreboard(p2score)
+-    puts $::scoreboard(p2team)
++    set sb [ \
++        ipc &quot;applyscoreboard&quot; \
++        $::scoreboard(description) \
++        $::scoreboard(subtitle) \
++        $::scoreboard(p1name) \
++        $::scoreboard(p1country) \
++        $::scoreboard(p1score) \
++        $::scoreboard(p1team) \
++        $::scoreboard(p2name) \
++        $::scoreboard(p2country) \
++        $::scoreboard(p2score) \
++        $::scoreboard(p2team) \
++    ]
+     update_applied_scoreboard
+ }
+ 
+-proc readplayernames {} {
+-    set playernames {}
+-    puts &quot;readplayernames&quot;
+-    set line [gets stdin]
+-    while {$line != &quot;end&quot;} {
+-        lappend playernames $line
+-        set line [gets stdin]
+-    }
++proc loadplayernames {} {
++    set playernames [ipc &quot;searchplayers&quot; &quot;&quot;]
+     .n.m.players.p1name configure -values $playernames
+     .n.m.players.p2name configure -values $playernames
+ }
+diff --git a/tcl/netstring.tcl b/tcl/netstring.tcl
+index fa510b1..bfb9bb3 100644
+--- a/tcl/netstring.tcl
++++ b/tcl/netstring.tcl
+@@ -23,3 +23,19 @@ proc readnetstring {chan} {
+     read $chan 1; # consume the trailing &quot;,&quot;
+     return $nstr
+ }
++
++# Assumes input is multiple well formed netstrings concatenated.
++# Returns list of decoded values.
++proc decodenetstrings {ns} {
++    set results {}
++    while {$ns != &quot;&quot;} {
++        set colonIdx [string first : $ns]
++        set len [string range $ns 0 [expr { $colonIdx - 1 }]]
++        set startIdx [expr {$colonIdx + 1}]
++        set endIdx [expr {$startIdx + $len - 1}]
++        set str [string range $ns $startIdx $endIdx]
++        lappend results $str
++        set ns [string range $ns [expr {$endIdx + 2}] end];
++    }
++    return $results
++}
+</pre></body></html>

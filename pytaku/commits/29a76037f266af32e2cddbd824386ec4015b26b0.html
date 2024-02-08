@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[29a76037f2] decrease default number of gunicorn workers | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 29a76037f2</strong><hr><pre>commit 29a76037f266af32e2cddbd824386ec4015b26b0
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 30 13:38:37 2020 +0700
+
+    decrease default number of gunicorn workers
+    
+    Should be fine now, what with the filesystem cache and CDN.
+    I&#39;d probably still need some sort of preload mechanism though.
+
+diff --git a/contrib/systemd/pytaku.service b/contrib/systemd/pytaku.service
+index d369e16..f70e1d3 100644
+--- a/contrib/systemd/pytaku.service
++++ b/contrib/systemd/pytaku.service
+@@ -10,7 +10,7 @@ Description=Pytaku server
+ 
+ [Service]
+ Environment=&quot;PYTHONUNBUFFERED=1&quot;
+-ExecStart=/bin/bash -c &#39;export PATH=$PATH:$HOME/.local/bin; pytaku -w 10 -b 0.0.0.0:5001&#39;
++ExecStart=/bin/bash -c &#39;export PATH=$PATH:$HOME/.local/bin; pytaku -w 5 -b 0.0.0.0:5001&#39;
+ WorkingDirectory=/home/pytaku/pytaku
+ Restart=always
+ 
+diff --git a/pyproject.toml b/pyproject.toml
+index c95133f..4a5cb5b 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.12&quot;
++version = &quot;0.3.13&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+</pre></body></html>

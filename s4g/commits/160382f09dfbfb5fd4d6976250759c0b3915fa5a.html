@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[160382f09d] show error page; restart server when root changes | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 160382f09d</strong><hr><pre>commit 160382f09dfbfb5fd4d6976250759c0b3915fa5a
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jul 15 13:33:07 2023 +0700
+
+    show error page; restart server when root changes
+    
+    TODO: when Root changes from a subpath to &quot;/&quot;, the server will return
+    a 404 instead of redirecting user to new path. Should fix that.
+
+diff --git a/feed.go b/feed.go
+index 7ecd3dd..c49dff7 100644
+--- a/feed.go
++++ b/feed.go
+@@ -9,7 +9,7 @@
+ 
+ // TODO: Use Article&#39;s updated date instead of PostedAt.
+ // I need to implement Article.UpdatedAt first though.
+-func generateFeed(site SiteMetadata, posts []Article, path string) []byte {
++func generateFeed(site *SiteMetadata, posts []Article, path string) []byte {
+ 	siteAddr := site.Address
+ 	if !strings.HasSuffix(siteAddr, &quot;/&quot;) {
+ 		siteAddr += &quot;/&quot;
+diff --git a/livereload/error.html b/livereload/error.html
+new file mode 100644
+index 0000000..c2d392e
+--- /dev/null
++++ b/livereload/error.html
+@@ -0,0 +1,17 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;meta charset=&quot;utf-8&quot; /&gt;
++    &lt;title&gt;Error&lt;/title&gt;
++    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    &lt;b&gt;Error:&lt;/b&gt; {{.}}
++    &lt;style&gt;
++      body {
++        background-color: pink;
++        color: red;
++      }
++    &lt;/style&gt;
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/livereload/livereload.go b/livereload/livereload.go
+index 6bd7e02..898e6dd 100644
+--- a/livereload/livereload.go
++++ b/livereload/livereload.go
+@@ -7,6 +7,7 @@
+ 	&quot;net/http&quot;
+ 	&quot;strings&quot;
+ 	&quot;sync&quot;
++	&quot;text/template&quot;
+ 
+ 	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
+ )
+@@ -17,6 +18,9 @@
+ //go:embed livereload.html
+ var lrScript []byte
+ 
++//go:embed error.html
++var errorTmpl string
++
+ var pleaseReload = []byte(&quot;1&quot;)
+ var dontReload = []byte(&quot;0&quot;)
+ 
+@@ -25,8 +29,10 @@
+ 	//
+ 	// Client IDs are generated on client side so that an open tab&#39;s
+ 	// livereload feature keeps working even when the server is restarted.
+-	clients map[string]bool
+-	mut     sync.RWMutex
++	clients    map[string]bool
++	clientsMut sync.RWMutex
++	err        error
++	errMut     sync.RWMutex
+ }{
+ 	clients: make(map[string]bool),
+ }
+@@ -45,16 +51,16 @@ func init() {
+ 
+ func handleFunc(w http.ResponseWriter, r *http.Request) {
+ 	clientId := r.Header.Get(clientIdHeader)
+-	state.mut.RLock()
++	state.clientsMut.RLock()
+ 	shouldReload, ok := state.clients[clientId]
+-	state.mut.RUnlock()
++	state.clientsMut.RUnlock()
+ 
+ 	// New client: add client to state, don&#39;t reload
+ 	if !ok {
+ 		//fmt.Println(&quot;New livereload client:&quot;, clientId)
+-		state.mut.Lock()
++		state.clientsMut.Lock()
+ 		state.clients[clientId] = false
+-		state.mut.Unlock()
++		state.clientsMut.Unlock()
+ 		w.Write(dontReload)
+ 		return
+ 	}
+@@ -64,21 +70,30 @@ func handleFunc(w http.ResponseWriter, r *http.Request) {
+ 		w.Write(pleaseReload)
+ 		// On reload, the browser tab will generate another client ID,
+ 		// so we can safely delete the old client ID now:
+-		state.mut.Lock()
++		state.clientsMut.Lock()
+ 		delete(state.clients, clientId)
+-		state.mut.Unlock()
++		state.clientsMut.Unlock()
+ 	} else {
+ 		w.Write(dontReload)
+ 	}
+ }
+ 
+ // For html pages, insert a script tag to enable livereload
+-func Middleware(root string, fsys writablefs.FS, f http.Handler) http.Handler {
++func Middleware(mux *http.ServeMux, root string, fsys writablefs.FS, f http.Handler) http.Handler {
+ 
+ 	// Handle AJAX endpoint
+-	http.HandleFunc(endpoint, handleFunc)
++	mux.HandleFunc(endpoint, handleFunc)
+ 
+ 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++		var err error
++		state.errMut.RLock()
++		err = state.err
++		state.errMut.RUnlock()
++		if err != nil {
++			serveError(w, r, err)
++			return
++		}
++
+ 		path := r.URL.Path
+ 
+ 		// For non-html requests, fall through to default FileServer handler
+@@ -107,13 +122,22 @@ func Middleware(root string, fsys writablefs.FS, f http.Handler) http.Handler {
+ 
+ // Tell current browser tabs to reload
+ func Trigger() {
+-	state.mut.Lock()
+-	defer state.mut.Unlock()
++	state.clientsMut.Lock()
++	defer state.clientsMut.Unlock()
+ 	for k := range state.clients {
+ 		state.clients[k] = true
+ 	}
+ }
+ 
++// When a non-nil error is set, the local webserver returns
++// the error page for every path (except livereload duh).
++func SetError(err error) {
++	state.errMut.Lock()
++	state.err = err
++	state.errMut.Unlock()
++	Trigger()
++}
++
+ func withLiveReload(original []byte) []byte {
+ 	bodyEndPos := bytes.LastIndex(original, []byte(&quot;&lt;/body&gt;&quot;))
+ 	if bodyEndPos == -1 {
+@@ -128,3 +152,12 @@ func withLiveReload(original []byte) []byte {
+ 	copy(result[bodyEndPos+len(lrScript):], original[bodyEndPos:])
+ 	return result
+ }
++
++var errTmpl = template.Must(template.New(&quot;error&quot;).Parse(errorTmpl))
++
++func serveError(w http.ResponseWriter, r *http.Request, err error) {
++	var buf bytes.Buffer
++	errTmpl.Execute(&amp;buf, err.Error())
++	body := withLiveReload(buf.Bytes())
++	w.Write(body)
++}
+diff --git a/main.go b/main.go
+index 7e7b6f7..7eb15a6 100644
+--- a/main.go
++++ b/main.go
+@@ -2,6 +2,7 @@
+ 
+ import (
+ 	&quot;bytes&quot;
++	&quot;context&quot;
+ 	&quot;flag&quot;
+ 	&quot;fmt&quot;
+ 	&quot;html/template&quot;
+@@ -13,6 +14,7 @@
+ 	&quot;path/filepath&quot;
+ 	&quot;sort&quot;
+ 	&quot;strings&quot;
++	&quot;sync&quot;
+ 	&quot;time&quot;
+ 
+ 	&quot;go.imnhan.com/webmaker2000/djot&quot;
+@@ -81,8 +83,34 @@ func handleServeCmd(folder, port string) {
+ 	}
+ 
+ 	fsys := writablefs.WriteDirFS(absolutePath)
++	site, err := ReadSiteMetadata(fsys)
++	if err != nil {
++		panic(err)
++	}
+ 
+-	site := regenerate(fsys)
++	webRootUpdates := make(chan string)
++
++	var wg sync.WaitGroup
++	wg.Add(1)
++	go func(webRoot string) {
++		defer wg.Done()
++
++		srv := runServer(fsys, webRoot, port)
++
++		for {
++			newRoot := &lt;-webRootUpdates
++			if newRoot == webRoot {
++				continue
++			}
++			fmt.Println(&quot;Root changed =&gt; restarting server&quot;)
++			webRoot = newRoot
++			err := srv.Shutdown(context.TODO())
++			if err != nil {
++				panic(err)
++			}
++			srv = runServer(fsys, webRoot, port)
++		}
++	}(site.Root)
+ 
+ 	// TODO: only rebuild necessary bits instead of regenerating
+ 	// the whole thing. To do that I&#39;ll probably need to:
+@@ -93,35 +121,61 @@ func handleServeCmd(folder, port string) {
+ 	// directory.
+ 	closeWatcher := WatchLocalFS(fsys, func() {
+ 		fmt.Println(&quot;Change detected. Regenerating...&quot;)
+-		regenerate(fsys)
+-		livereload.Trigger()
++		newSite, err := regenerate(fsys)
++		livereload.SetError(err)
++		if err == nil {
++			fmt.Println(&quot;Sending&quot;, newSite.Root)
++			webRootUpdates &lt;- newSite.Root
++			fmt.Println(&quot;Done&quot;, newSite.Root)
++		}
+ 	})
+ 	defer closeWatcher()
+ 
+-	println(&quot;Serving local website at http://localhost:&quot; + port + site.Root)
+-	http.Handle(
+-		site.Root,
++	site, err = regenerate(fsys)
++	livereload.SetError(err)
++
++	wg.Wait()
++}
++
++// Non-blocking. Returns srv handle to allow calling Shutdown() later.
++func runServer(fsys writablefs.FS, webRoot string, port string) *http.Server {
++	println(&quot;Serving local website at http://localhost:&quot; + port + webRoot)
++	mux := http.NewServeMux()
++	mux.Handle(
++		webRoot,
+ 		livereload.Middleware(
+-			site.Root,
++			mux,
++			webRoot,
+ 			fsys,
+-			http.StripPrefix(site.Root, http.FileServer(http.FS(fsys))),
++			http.StripPrefix(webRoot, http.FileServer(http.FS(fsys))),
+ 		),
+ 	)
+ 
+-	if site.Root != &quot;/&quot; {
+-		http.Handle(&quot;/&quot;, http.RedirectHandler(site.Root, http.StatusTemporaryRedirect))
++	if webRoot != &quot;/&quot; {
++		mux.Handle(&quot;/&quot;, http.RedirectHandler(webRoot, http.StatusTemporaryRedirect))
+ 	}
+ 
+-	err = http.ListenAndServe(&quot;127.0.0.1:&quot;+port, nil)
+-	if err != nil {
+-		panic(err)
++	srv := &amp;http.Server{
++		Addr:    &quot;127.0.0.1:&quot; + port,
++		Handler: mux,
+ 	}
++
++	go func() {
++		srv.ListenAndServe()
++	}()
++
++	return srv
+ }
+ 
+-func regenerate(fsys writablefs.FS) (site SiteMetadata) {
++func regenerate(fsys writablefs.FS) (site *SiteMetadata, err error) {
+ 	defer timer(&quot;Took %s&quot;)()
+ 
+-	site = ReadSiteMetadata(fsys)
++	site, err = ReadSiteMetadata(fsys)
++	if err != nil {
++		livereload.SetError(err)
++		return nil, err
++	}
++
+ 	articles := findArticles(fsys, site)
+ 
+ 	if len(articles) == 0 {
+@@ -136,8 +190,8 @@ func regenerate(fsys writablefs.FS) (site SiteMetadata) {
+ 	for _, link := range site.NavbarLinks {
+ 		a, ok := articles[link]
+ 		if !ok {
+-			fmt.Printf(&quot;NavbarLinks: %s not found\n&quot;, link)
+-			continue
++			return nil,
++				fmt.Errorf(&quot;%s: NavbarLinks: %s not found&quot;, FeedPath, link)
+ 		}
+ 		articlesInNav = append(articlesInNav, a)
+ 	}
+@@ -160,7 +214,7 @@ func regenerate(fsys writablefs.FS) (site SiteMetadata) {
+ 
+ 	for _, a := range articles {
+ 		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Title)
+-		a.WriteHtmlFile(&amp;site, articlesInNav, articlesInFeed, startYear)
++		a.WriteHtmlFile(site, articlesInNav, articlesInFeed, startYear)
+ 		generatedFiles[a.OutputPath] = true
+ 	}
+ 	fmt.Printf(&quot;Processed %d articles\n&quot;, len(articles))
+@@ -270,7 +324,7 @@ func (a *Article) WriteHtmlFile(
+ 	}
+ }
+ 
+-func findArticles(fsys writablefs.FS, site SiteMetadata) map[string]Article {
++func findArticles(fsys writablefs.FS, site *SiteMetadata) map[string]Article {
+ 	result := make(map[string]Article)
+ 
+ 	fs.WalkDir(fsys, &quot;.&quot;, func(path string, d fs.DirEntry, err error) error {
+diff --git a/metadata.go b/metadata.go
+index a047d37..d32badb 100644
+--- a/metadata.go
++++ b/metadata.go
+@@ -42,12 +42,12 @@ func NewSiteMetadata() SiteMetadata {
+ 	}
+ }
+ 
+-func ReadSiteMetadata(fsys writablefs.FS) SiteMetadata {
++func ReadSiteMetadata(fsys writablefs.FS) (*SiteMetadata, error) {
+ 	sm := NewSiteMetadata()
+ 
+ 	data, err := fs.ReadFile(fsys, SiteFileName)
+ 	if err != nil {
+-		panic(err)
++		return nil, fmt.Errorf(&quot;ReadSiteMetadata: %w&quot;, err)
+ 	}
+ 
+ 	UnmarshalMetadata(data, &amp;sm)
+@@ -60,7 +60,7 @@ func ReadSiteMetadata(fsys writablefs.FS) SiteMetadata {
+ 		sm.Root = fmt.Sprintf(&quot;/%s/&quot;, trimmed)
+ 	}
+ 
+-	return sm
++	return &amp;sm, nil
+ }
+ 
+ // Similar API to json.Unmarshal but supports neither struct tags nor nesting.
+</pre></body></html>

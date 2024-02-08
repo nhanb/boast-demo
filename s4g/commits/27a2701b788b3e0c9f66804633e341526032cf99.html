@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[27a2701b78] livereload: support malformed html; delete old ids | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 27a2701b78</strong><hr><pre>commit 27a2701b788b3e0c9f66804633e341526032cf99
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jul 11 13:44:06 2023 +0700
+
+    livereload: support malformed html; delete old ids
+
+diff --git a/livereload/livereload.go b/livereload/livereload.go
+index dfd7926..3e4fbc4 100644
+--- a/livereload/livereload.go
++++ b/livereload/livereload.go
+@@ -68,8 +68,10 @@ func Middleware(fsys writablefs.FS, f http.Handler) http.Handler {
+ 			// Existing client:
+ 			if shouldReload {
+ 				w.Write(pleaseReload)
++				// On reload, the browser tab will generate another client ID,
++				// so we can safely delete the old client ID now:
+ 				state.mut.Lock()
+-				state.clients[clientId] = false
++				delete(state.clients, clientId)
+ 				state.mut.Unlock()
+ 			} else {
+ 				w.Write(dontReload)
+@@ -110,6 +112,12 @@ func Trigger() {
+ 
+ func withLiveReload(original []byte) []byte {
+ 	bodyEndPos := bytes.LastIndex(original, []byte(&quot;&lt;/body&gt;&quot;))
++	if bodyEndPos == -1 {
++		// If the HTML is so malformed that it doesn&#39;t close its body,
++		// then just append our livereload script at the end and hope
++		// for the best.
++		bodyEndPos = len(original)
++	}
+ 	result := make([]byte, len(original)+len(lrScript))
+ 	copy(result, original[:bodyEndPos])
+ 	copy(result[bodyEndPos:], lrScript)
+diff --git a/livereload/livereload.html b/livereload/livereload.html
+index d3feba0..0333797 100644
+--- a/livereload/livereload.html
++++ b/livereload/livereload.html
+@@ -1,3 +1,8 @@
++&lt;!-- Start LiveReload script
++This &lt;script&gt; tag is injected by WebMaker2000&#39;s local server to force the
++browser tab to refresh whenever you make a change to your website folder.
++It will not appear in your published website.
++--&gt;
+ &lt;script&gt;
+   const clientId =
+     Date.now().toString(36) + Math.random().toString(36).substr(2);
+@@ -12,3 +17,4 @@
+       });
+   }, 500);
+ &lt;/script&gt;
++&lt;!-- End LiveReload script --&gt;
+</pre></body></html>

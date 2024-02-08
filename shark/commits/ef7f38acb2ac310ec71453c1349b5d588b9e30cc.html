@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ef7f38acb2] fix GH action | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / ef7f38acb2</strong><hr><pre>commit ef7f38acb2ac310ec71453c1349b5d588b9e30cc
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jun 30 18:59:19 2022 +0700
+
+    fix GH action
+
+diff --git a/.github/workflows/main.yml b/.github/workflows/main.yml
+index 7b54063..3b245c8 100644
+--- a/.github/workflows/main.yml
++++ b/.github/workflows/main.yml
+@@ -1,34 +1,56 @@
+-name: Build
++name: Go
+ 
+-on: [push]
++on:
++  push:
++    branches: [ &quot;master&quot; ]
++  pull_request:
++    branches: [ &quot;master&quot; ]
+ 
+ jobs:
+-  build:
+-    runs-on: [&#39;ubuntu-latest&#39;, &#39;windows-latest&#39;, &#39;macos-latest&#39;]
++
++  build-linux-win:
++    runs-on: ubuntu-latest
+     steps:
+-      - uses: actions/checkout@v3
+-      - name: Set up Go
+-        uses: actions/setup-go@v3
+-        with:
+-          go-version: 1.18
+-      - name: Build
+-        run: go build -v ./...
+-      - name: Upload linux
+-        #if: runner.os == &#39;Linux&#39;
+-        uses: actions/upload-artifact@v3
+-        with:
+-          name: shark-linux
+-          path: shark
+-      #- name: Upload macOS
+-        #if: runner.os == &#39;macOS&#39;
+-        #uses: actions/upload-artifact@v3
+-        #with:
+-          #name: shark-osx
+-          #path: shark
+-
+-      #- name: Upload Windows
+-        #if: runner.os == &#39;Windows&#39;
+-        #uses: actions/upload-artifact@v3
+-        #with:
+-          #name: shark-win.exe
+-          #path: shark.exe
++    - uses: actions/checkout@v3
++
++    - name: Set up Go
++      uses: actions/setup-go@v3
++      with:
++        go-version: 1.18
++
++    - name: Install ebiten deps
++      run: sudo apt-get install -y libc6-dev libglu1-mesa-dev libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libxxf86vm-dev libasound2-dev pkg-config
++
++    - name: Build
++      run: |
++        make linux
++        make win
++
++    - name: Upload Linux build
++      uses: actions/upload-artifact@v3
++      with:
++        name: Linux build
++        path: dist/shark-linux
++
++    - name: Upload Windows build
++      uses: actions/upload-artifact@v3
++      with:
++        name: Windows build
++        path: dist/shark-win.exe
++
++  build-mac:
++    runs-on: macos-latest
++    steps:
++    - uses: actions/checkout@v3
++
++    - uses: actions/setup-go@v3
++      with:
++        go-version: 1.18
++
++    - run: make mac
++
++    - name: Upload macOS build
++      uses: actions/upload-artifact@v3
++      with:
++        name: macOS build
++        path: dist/shark-mac
+diff --git a/Makefile b/Makefile
+index f32a4b2..29824a6 100644
+--- a/Makefile
++++ b/Makefile
+@@ -10,5 +10,8 @@ linux:
+ win:
+ 	GOOS=windows GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-win.exe
+ 
++mac:
++	GOOS=darwin GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-mac
++
+ clean:
+ 	rm -f dist/*
+</pre></body></html>

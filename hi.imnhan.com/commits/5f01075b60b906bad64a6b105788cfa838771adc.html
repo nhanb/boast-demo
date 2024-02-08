@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[5f01075b60] WIP md to dj | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 5f01075b60</strong><hr><pre>commit 5f01075b60b906bad64a6b105788cfa838771adc
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 19 23:49:34 2023 +0700
+
+    WIP md to dj
+
+diff --git a/about/index.html b/about/index.html
+index f75b22e..a4bc919 100644
+--- a/about/index.html
++++ b/about/index.html
+@@ -36,7 +36,7 @@ &lt;h1&gt;About&lt;/h1&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2023 nhanb&lt;br&gt;
++© 2014–2023 nhanb&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+diff --git a/content/posts/acer-chromebook-spin.md b/chromebook/index.dj
+similarity index 91%
+rename from content/posts/acer-chromebook-spin.md
+rename to chromebook/index.dj
+index 9a89df4..30f1ad4 100644
+--- a/content/posts/acer-chromebook-spin.md
++++ b/chromebook/index.dj
+@@ -1,16 +1,16 @@
+ Title: Acer Chromebook Spin 713 &quot;Voxel&quot;: an adequate Crostini device, a buggy Linux laptop
+-Date: 2023-04-22 15:55
+-Slug: acer-chromebook-spin
+-Category: consoom
++PostedAt: 2023-04-22 15:55
+ Thumb: images/voxel_battery.jpg
+ 
+-**June 2023 update**: I [learned][11] that using pulseaudio instead of
++---
++
++*June 2023 update*: I [learned][11] that using pulseaudio instead of
+ pipewire works around the audio issue. The following is the original article.
+ 
+ ---
+ 
+ 
+-**TL;DR:** bright crisp screen, acceptable keyboard, thin &amp; light build, random
++*TL;DR:* bright crisp screen, acceptable keyboard, thin &amp; light build, random
+ touchpad lag on both ChromeOS and Linux, almost usable on MrChromebox UEFI +
+ Arch Linux except for the fact that internal speakers crash most of the time
+ (wired headphones work fine though). It&#39;s absolutely not worth the sticker
+@@ -37,9 +37,9 @@ ## The hardware
+ 
+ Here it is sandwiched between a Samsung Tab S8 and a Thinkpad T530:
+ 
+-![size](/images/voxel_size.jpg)
++![size](voxel_size.jpg)
+ 
+-![thickness](/images/voxel_thickness.jpg)
++![thickness](voxel_thickness.jpg)
+ 
+ ## ChromeOS/Crostini
+ 
+@@ -98,11 +98,12 @@ ## Real Arch Linux on MrChromebox UEFI
+ protection. Fortunately, for this device all I needed to do was opening up the
+ laptop and [disconnecting the battery][7]:
+ 
+-![internals](/images/voxel_internals.jpg)
++![internals](voxel_internals.jpg)
+ 
+-![battery-connector](/images/voxel_battery.jpg)
++![battery-connector](voxel_battery.jpg)
+ 
+-If you need more detailed instructions, here&#39;s the [official manual][8].
++If you need more detailed instructions, here&#39;s the
++[official manual](voxel_chromebook_cp7133w.pdf).
+ 
+ Then go [here][9] for instructions on how to download and run the MrChromebox
+ utility script. In my case, I also needed to enable developer mode to get
+@@ -120,7 +121,7 @@ ## Real Arch Linux on MrChromebox UEFI
+ configs lifted straight from ChromeOS upstream. Sure enough, the device showed
+ up:
+ 
+-![default-profile-get](/images/voxel_audio_device.png &quot;&quot;)
++![default-profile-get](voxel_audio_device.png)
+ 
+ And it would actually play sound... for a while until it crashes. I later found
+ out that wired headphones and HDMI audio work just fine, so only using internal
+@@ -149,7 +150,7 @@ ## Aside: Chromebook keyboard quirks on KDE
+ `hyper`, or `meta`). It&#39;s not a huge problem for me: I always make `capslock`
+ act as a `ctrl` key, so I can turn the original `ctrl` into `windows` instead:
+ 
+-![changed-modifier-keys](/images/voxel_keys_mod.jpg)
++![changed-modifier-keys](voxel_keys_mod.jpg)
+ 
+ Another problem is that the F1-12 keys are not usable: they are [mapped to
+ function keys][10] in MrChromebox UEFI firmware, and there&#39;s no modifier to use
+@@ -159,16 +160,15 @@ ## Aside: Chromebook keyboard quirks on KDE
+ application-specific features that are hardwired to use F-keys are simply
+ unreachable: `htop` is one such example.
+ 
+-![htop-fkeys-unusable](/images/voxel_keys_f.png)
++![htop-fkeys-unusable](voxel_keys_f.png)
+ 
+ [1]: https://www.acer.com/us-en/chromebooks/acer-chromebook-enterprise-spin-713-cp713-3w/pdp/NX.AHAAA.006
+ [2]: https://git.sr.ht/~nhanb/neodots
+ [3]: https://wiki.archlinux.org/title/Chrome_OS_devices/Crostini
+ [4]: https://go.dev/
+-[5]: /images/put.io_01_mpv.mp4
++[5]: ../video-streaming-3/put.io-drag-n-drop.mp4
+ [6]: https://orib.dev/interject.html
+ [7]: https://wiki.mrchromebox.tech/Firmware_Write_Protect#Hardware_Write_Protection
+-[8]: /images/voxel_chromebook_cp7133w.pdf
+ [9]: https://mrchromebox.tech/#fwscript
+ [10]: https://github.com/MrChromebox/firmware/issues/349
+ [11]: https://github.com/WeirdTreeThing/chromebook-linux-audio/issues/2#issuecomment-1578962117
+diff --git a/chromebook/index.html b/chromebook/index.html
+new file mode 100644
+index 0000000..5c0da84
+--- /dev/null
++++ b/chromebook/index.html
+@@ -0,0 +1,183 @@
++&lt;!DOCTYPE html&gt;
++&lt;html&gt;
++
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;Acer Chromebook Spin 713 &amp;#34;Voxel&amp;#34;: an adequate Crostini device, a buggy Linux laptop | Hi, I&amp;#39;m Nhân&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;nav&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;span class=&quot;posted-on&quot;&gt;
++    Posted on
++    &lt;time datetime=&quot;2023-04-22&quot;&gt;
++        Saturday, 22 Apr 2023
++    &lt;/time&gt;
++  &lt;/span&gt;
++
++&lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
++
++
++&lt;main&gt;
++&lt;h1&gt;Acer Chromebook Spin 713 &amp;#34;Voxel&amp;#34;: an adequate Crostini device, a buggy Linux laptop&lt;/h1&gt;
++&lt;p&gt;&lt;strong&gt;June 2023 update&lt;/strong&gt;: I &lt;a href=&quot;https://github.com/WeirdTreeThing/chromebook-linux-audio/issues/2#issuecomment-1578962117&quot;&gt;learned&lt;/a&gt; that using pulseaudio instead of
++pipewire works around the audio issue. The following is the original article.&lt;/p&gt;
++&lt;hr&gt;
++&lt;p&gt;&lt;strong&gt;TL;DR:&lt;/strong&gt; bright crisp screen, acceptable keyboard, thin &amp;amp; light build, random
++touchpad lag on both ChromeOS and Linux, almost usable on MrChromebox UEFI +
++Arch Linux except for the fact that internal speakers crash most of the time
++(wired headphones work fine though). It’s absolutely not worth the sticker
++price at &lt;a href=&quot;https://www.acer.com/us-en/chromebooks/acer-chromebook-enterprise-spin-713-cp713-3w/pdp/NX.AHAAA.006&quot;&gt;$1,099.99&lt;/a&gt; (lol). Maybe consider buying if you can find it at a
++heavy discount and the speakers issue has been fixed somehow.&lt;/p&gt;
++&lt;section id=&quot;Context&quot;&gt;
++&lt;h2&gt;Context&lt;/h2&gt;
++&lt;p&gt;Around 2022 I was looking for a replacement for my T530—something lighter
++with a better screen—and saw a listing for a used Acer Chromebook Spin 713-3W
++at only 10mil VND ($425, give or take). A recently released HiDPI laptop with
++an i5-1135G7 at 425 freedom dollars? And I get to play with ChromeOS/Crostini
++on a not-pathetically-weak x86 device? Sign me right up, I thought. The plan
++was to run ChromeOS/Android apps for GUI stuff, and install my usual tmux+vim
++based development &lt;a href=&quot;https://git.sr.ht/~nhanb/neodots&quot;&gt;environment&lt;/a&gt; on Crostini.&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;The-hardware&quot;&gt;
++&lt;h2&gt;The hardware&lt;/h2&gt;
++&lt;ul&gt;
++&lt;li&gt;
++Specs: i5-1135G7 (Tiger Lake), Xe graphics, 8GB RAM, 256GB SSD
++&lt;/li&gt;
++&lt;li&gt;
++Keyboard: acceptable
++&lt;/li&gt;
++&lt;li&gt;
++Screen: 2256x1504 (3:2) at 13.5“ (200dpi). Subjectively speaking, it’s
++bright, colorful and delivers crisp text—I have nothing but praise here.
++&lt;/li&gt;
++&lt;li&gt;
++Speakers: worse and quieter than my Samsung Tab S8 tablet
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;p&gt;Here it is sandwiched between a Samsung Tab S8 and a Thinkpad T530:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;size&quot; src=&quot;voxel_size.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;thickness&quot; src=&quot;voxel_thickness.jpg&quot;&gt;&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;ChromeOS-Crostini&quot;&gt;
++&lt;h2&gt;ChromeOS/Crostini&lt;/h2&gt;
++&lt;blockquote&gt;
++&lt;p&gt;I’d just like to interject for a moment. What you’re referring to as Linux,
++is in fact, CHROME/Linux, or as I’ve recently taken to calling it, CHROME
++plus Linux. Linux is not an operating system unto itself, but rather another
++free component of a fully functioning CHROME system made useful by the CHROME
++v8, css utililties, and other vital system components comprising a full OS as
++defined by the W3C.&lt;/p&gt;
++&lt;p&gt;&lt;em&gt;– &lt;a href=&quot;https://orib.dev/interject.html&quot;&gt;some weird internet person&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
++&lt;/blockquote&gt;
++&lt;p&gt;As advertised, the laptop could run ChromeOS apps, Android apps, and Linux apps
++via containers. By default I got a Debian container, but since I needed
++up-to-date software for development, I set up an Arch container instead. &lt;a href=&quot;https://wiki.archlinux.org/title/Chrome_OS_devices/Crostini&quot;&gt;The
++process&lt;/a&gt; itself was straightforward enough.&lt;/p&gt;
++&lt;p&gt;Zoom for Android worked as expected, and to my surprise, Tailscale for Android
++managed to wrangle traffic correctly for programs running inside Crostini too!
++The only hiccup was that Magic DNS didn’t work, so I needed to put the
++hostname-IP pairs into /etc/hosts manually. I also had to change the temp dir
++from /tmp to ~/tmp for &lt;a href=&quot;https://go.dev/&quot;&gt;Go&lt;/a&gt; tools to work, because Crostini programs weren’t
++allowed to exec files inside /tmp. Once I’d worked out those kinks, I could
++open up a terminal and start working as if I were on one of my Arch PCs. Hell,
++even docker/docker-compose Just Worked™ inside the container.&lt;/p&gt;
++&lt;p&gt;But then came the papercuts.&lt;/p&gt;
++&lt;p&gt;The touchpad would randomly lag, as in, dragging still
++worked but there was a noticeable delay between my dragging and seeing the
++cursor actually moving. The problem would just go away as randomly as it
++happened.&lt;/p&gt;
++&lt;p&gt;Back when I used an actual Linux machine, I was used to having 10 virtual
++desktops, numbered from 1 to 10, with Alt-n mapped to “jump to desktop #n”, and
++Windows-n mapped to “move window to desktop #n” (the &lt;code&gt;0&lt;/code&gt; key maps to
++desktop #10, naturally). While ChromeOS has a “workspaces” feature, there’s no
++way to navigate and juggle windows between them precisely and instantly.
++&lt;em&gt;Instantly&lt;/em&gt; is an important keyword here: many tasks, while doable, suffered
++from gratuitous animations and tedious step-by-step navigation. This reminded
++me of when I tried to use a Macbook professionally: things kinda worked, but
++the experience would always be intrinsically worse.&lt;/p&gt;
++&lt;p&gt;While Linux GUI programs were automagically put on the ChromeOS applications
++list as first class citizens, certain quality-of-life features didn’t work. For
++example, on KDE I used to be able to drag a video streaming link from the
++browser onto MPV’s taskbar icon &lt;a href=&quot;../video-streaming-3/put.io-drag-n-drop.mp4&quot;&gt;to play it&lt;/a&gt;. This no longer worked on
++ChromeOS.&lt;/p&gt;
++&lt;p&gt;So I jumped ship.&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Real-Arch-Linux-on-MrChromebox-UEFI&quot;&gt;
++&lt;h2&gt;Real Arch Linux on MrChromebox UEFI&lt;/h2&gt;
++&lt;p&gt;Installing &lt;em&gt;real&lt;/em&gt; Linux on this device requires installing the MrChromebox
++custom UEFI firmware, which in turn requires disabling the firmware write
++protection. Fortunately, for this device all I needed to do was opening up the
++laptop and &lt;a href=&quot;https://wiki.mrchromebox.tech/Firmware_Write_Protect#Hardware_Write_Protection&quot;&gt;disconnecting the battery&lt;/a&gt;:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;internals&quot; src=&quot;voxel_internals.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;battery-connector&quot; src=&quot;voxel_battery.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;If you need more detailed instructions, here’s the
++&lt;a href=&quot;voxel_chromebook_cp7133w.pdf&quot;&gt;official manual&lt;/a&gt;.&lt;/p&gt;
++&lt;p&gt;Then go &lt;a href=&quot;https://mrchromebox.tech/#fwscript&quot;&gt;here&lt;/a&gt; for instructions on how to download and run the MrChromebox
++utility script. In my case, I also needed to enable developer mode to get
++access to the chrosh shell.&lt;/p&gt;
++&lt;p&gt;After this I got a normal UEFI boot menu so I could pop in an Arch installer
++USB drive and carried out the installation as usual.&lt;/p&gt;
++&lt;p&gt;I managed to install KDE plasma and everything worked except for audio: the
++usual “default” audio profile wouldn’t show up, even after I installed the
++necessary packages: &lt;code&gt;sof-firmware&lt;/code&gt; (sound firmware for recent Intel
++generations) and &lt;code&gt;alsa-ucm-conf&lt;/code&gt; (so-called topologies for these newer
++devices). After some desperate googling I found
++&lt;a href=&quot;https://github.com/eupnea-linux/audio-scripts&quot;&gt;https://github.com/eupnea-linux/audio-scripts&lt;/a&gt; which installed some missing
++configs lifted straight from ChromeOS upstream. Sure enough, the device showed
++up:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;default-profile-get&quot; src=&quot;voxel_audio_device.png&quot;&gt;&lt;/p&gt;
++&lt;p&gt;And it would actually play sound… for a while until it crashes. I later found
++out that wired headphones and HDMI audio work just fine, so only using internal
++speakers is problematic.&lt;/p&gt;
++&lt;p&gt;I collected logs and tried googling but nothing comes up that matches my case.
++Asking in the eupnea discord server yielded an uncertain response:&lt;/p&gt;
++&lt;blockquote&gt;
++&lt;p&gt;looks like yet again intel broke something&lt;/p&gt;
++&lt;/blockquote&gt;
++&lt;p&gt;Oh, and the random touchpad delay issue was still there, so I’m starting to
++think the touchpad hardware itself is problematic.&lt;/p&gt;
++&lt;p&gt;And that’s where I’m at. I’ll probably gather more logs and submit an issue to
++the SOF project. For now, consider this a warning: the laptop as of now is
++probably not worth buying. Hell, in Vietnam you can get a second hand X1 Carbon
++6th gen with an i7-8650U and 16GB of RAM for $460 right now from
++&lt;a href=&quot;https://chotot.com&quot;&gt;https://chotot.com&lt;/a&gt;; that’s a guaranteed best-in-class keyboard, decent
++screen and Linux compatibility, at just a slight decrease in performance.&lt;/p&gt;
++&lt;p&gt;But hey, I would have never known any of this if I hadn’t tried, right?&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Aside-Chromebook-keyboard-quirks-on-KDE&quot;&gt;
++&lt;h2&gt;Aside: Chromebook keyboard quirks on KDE&lt;/h2&gt;
++&lt;p&gt;The most glaring issue is the absence of the &lt;code&gt;windows&lt;/code&gt; key (aka &lt;code&gt;super&lt;/code&gt;,
++&lt;code&gt;hyper&lt;/code&gt;, or &lt;code&gt;meta&lt;/code&gt;). It’s not a huge problem for me: I always make &lt;code&gt;capslock&lt;/code&gt;
++act as a &lt;code&gt;ctrl&lt;/code&gt; key, so I can turn the original &lt;code&gt;ctrl&lt;/code&gt; into &lt;code&gt;windows&lt;/code&gt; instead:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;changed-modifier-keys&quot; src=&quot;voxel_keys_mod.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;Another problem is that the F1-12 keys are not usable: they are &lt;a href=&quot;https://github.com/MrChromebox/firmware/issues/349&quot;&gt;mapped to
++function keys&lt;/a&gt; in MrChromebox UEFI firmware, and there’s no modifier to use
++them as F-keys either. That means no F11 to toggle fullscreen, no Alt-F4, no F9
++to toggle drop-down terminal, etc. Fortunately such global shortcuts can be
++configured trivially from KDE’s system preferences. On the other hand,
++application-specific features that are hardwired to use F-keys are simply
++unreachable: &lt;code&gt;htop&lt;/code&gt; is one such example.&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;htop-fkeys-unusable&quot; src=&quot;voxel_keys_f.png&quot;&gt;&lt;/p&gt;
++&lt;/section&gt;
++
++&lt;/main&gt;
++
++&lt;footer&gt;
++© 2014–2023 nhanb&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++&lt;/footer&gt;
++
++&lt;/body&gt;
++
++&lt;/html&gt;
+diff --git a/content/images/voxel_audio_device.png b/chromebook/voxel_audio_device.png
+similarity index 100%
+rename from content/images/voxel_audio_device.png
+rename to chromebook/voxel_audio_device.png
+diff --git a/content/images/voxel_battery.jpg b/chromebook/voxel_battery.jpg
+similarity index 100%
+rename from content/images/voxel_battery.jpg
+rename to chromebook/voxel_battery.jpg
+diff --git a/content/images/voxel_chromebook_cp7133w.pdf b/chromebook/voxel_chromebook_cp7133w.pdf
+similarity index 100%
+rename from content/images/voxel_chromebook_cp7133w.pdf
+rename to chromebook/voxel_chromebook_cp7133w.pdf
+diff --git a/content/images/voxel_internals.jpg b/chromebook/voxel_internals.jpg
+similarity index 100%
+rename from content/images/voxel_internals.jpg
+rename to chromebook/voxel_internals.jpg
+diff --git a/content/images/voxel_keys_f.png b/chromebook/voxel_keys_f.png
+similarity index 100%
+rename from content/images/voxel_keys_f.png
+rename to chromebook/voxel_keys_f.png
+diff --git a/content/images/voxel_keys_mod.jpg b/chromebook/voxel_keys_mod.jpg
+similarity index 100%
+rename from content/images/voxel_keys_mod.jpg
+rename to chromebook/voxel_keys_mod.jpg
+diff --git a/content/images/voxel_size.jpg b/chromebook/voxel_size.jpg
+similarity index 100%
+rename from content/images/voxel_size.jpg
+rename to chromebook/voxel_size.jpg
+diff --git a/content/images/voxel_thickness.jpg b/chromebook/voxel_thickness.jpg
+similarity index 100%
+rename from content/images/voxel_thickness.jpg
+rename to chromebook/voxel_thickness.jpg
+diff --git a/content/posts/modern-vim-plugin-management-pathogen-vs-vundle_vi.md b/content/posts/modern-vim-plugin-management-pathogen-vs-vundle_vi.md
+deleted file mode 100644
+index 66457f0..0000000
+--- a/content/posts/modern-vim-plugin-management-pathogen-vs-vundle_vi.md
++++ /dev/null
+@@ -1,272 +0,0 @@
+-date: 2013-05-13 12:00
+-title: Quản lý plugin trong vim - Pathogen vs Vundle
+-slug: modern-vim-plugin-management-pathogen-vs-vundle
+-lang: vi
+-category: Tutorials
+-tags: vim
+-summary: Pimp your vim with little effort.
+-
+-Dành cho những ai lười đọc: Vundle tốt hơn Pathogen.
+-
+-Bài viết này sẽ giải thich cách hoạt động của plugin trong vim và cách quản lý plugins bằng những
+-công cụ được cộng đồng phát triển: Pathogen hoặc Vundle. Trong bài viết này tôi chỉ làm hướng dẫn
+-cụ thể cho máy chạy Linux và đã cài sẵn git. Nếu không rõ cách cài git, bạn có thể hỏi
+-Google.
+-
+-# Cấu trúc vim plugins
+-
+-Một plugin trong vim đơn giản chỉ là 1 nhóm các files có nhiệm vụ thay đổi hoặc thêm tính
+-năng cho vim. Theo mặc định thì vim sẽ tìm trong home folder của người dùng (chính là
+-`/home/username` hoặc có thể viết tắt là `~`):
+-
+-## ~/.vimrc (file)
+-
+-Đây là nơi bạn tùy biến mọi thứ trong vim: căn lề, gán phím, vân vân... Bài viết này sẽ không đề
+-cập chi tiết cách tùy biến như thế nào. Lúc này bạn chỉ cần biết là nó có 1 file đó.
+-
+-Để tiện quản lý, chúng ta hãy đem file này vào folder `~/.vim`. Hãy tạo một file `~/.vim/vimrc`
+-rồi dẫn symlink trỏ vào nó:
+-
+-    :::bash
+-    touch ~/.vim/vimrc
+-    ln -s ~/.vim/vimrc ~/.vimrc
+-
+-## ~/.vim (directory)
+-
+-Folder này sẽ chứa một vài folder con khác. Ví dụ:
+-
+-- autoload
+-- ftplugin
+-- colors
+-- syntax
+-- doc
+-
+-Mỗi folder đều có một nhiệm vụ nhất định: `colors` chứa colorschemes, `syntax` cho phép
+-bạn tùy chỉnh tô màu code, `doc` chứa tài liệu hướng dẫn... Một plugin thường sẽ chèn nhiều
+-file vào nhiều folder ở đây. Hãy lấy plugin [tagbar](https://github.com/majutsushi/tagbar)
+-làm ví dụ: ta sẽ cài nó bằng cách copy hết nội dung của nó vào `~/.vim`:
+-
+-    :::bash
+-    ~/.vim
+-    ├── autoload
+-    │   └── tagbar.vim
+-    ├── doc
+-    │   ├── tagbar.txt
+-    │   └── tags
+-    ├── plugin
+-    │   └── tagbar.vim
+-    ├── README
+-    └── syntax
+-        └── tagbar.vim
+-
+-Everything looks good. Just copy and paste the whole thing, nice and simple. How about adding a
+-decent colorscheme? Let&#39;s install [solarized](https://github.com/altercation/vim-colors-solarized):
+-
+-    :::bash
+-    ├── autoload
+-    │   └── togglebg.vim
+-    ├── bitmaps
+-    │   └── togglebg.png
+-    ├── colors
+-    │   └── solarized.vim
+-    ├── doc
+-    │   ├── solarized.txt
+-    │   └── tags
+-    └── README.mkd
+-
+-Wait, `doc/tags` is already there. Ok, no problem! Let&#39;s just copy the content of solarized&#39;s
+-tags file and paste it into the existing one. Now we have:
+-
+-    :::bash
+-    ~/.vim
+-    ├── autoload
+-    │   ├── tagbar.vim
+-    │   └── togglebg.vim
+-    ├── bitmaps
+-    │   └── togglebg.png
+-    ├── colors
+-    │   └── solarized.vim
+-    ├── doc
+-    │   ├── solarized.txt
+-    │   ├── tagbar.txt
+-    │   └── tags
+-    ├── plugin
+-    │   └── tagbar.vim
+-    ├── README
+-    ├── README.mkd
+-    └── syntax
+-        └── tagbar.vim
+-
+-Now what if you you decide that solarized sucks and want to get rid of it? Good luck finding
+-which file belongs to which plugin. Oh, don&#39;t forget the merged `doc/tags` file!
+-Now imagine you have 20-30 plugins installed (which is normal, by the way). It&#39;s not a
+-pretty sight now, is it?
+-
+-# Pathogen to the rescue!
+-
+-The legendary Tim Pope came up with a genius solution:
+-[pathogen](https://github.com/tpope/vim-pathogen).
+-Now let&#39;s install it like any regular plugin (I&#39;ve omitted the README):
+-
+-    :::bash
+-    ~/.vim
+-    └── autoload
+-        └── pathogen.vim
+-
+-Put this at the beginning of your `~/.vimrc`:
+-
+-    :::vim
+-    execute pathogen#infect()
+-
+-Create this directory: `~/.vim/bundle`. To install tagbar and solarized, just create their own
+-directories here:
+-
+-    :::bash
+-    path
+-    ├── autoload
+-    │   └── pathogen.vim
+-    └── bundle
+-        ├── tagbar
+-        │   ├── autoload
+-        │   │   └── tagbar.vim
+-        │   ├── doc
+-        │   │   ├── tagbar.txt
+-        │   │   └── tags
+-        │   ├── plugin
+-        │   │   └── tagbar.vim
+-        │   ├── README
+-        │   └── syntax
+-        │       └── tagbar.vim
+-        └── vim-colors-solarized
+-            ├── autoload
+-            │   └── togglebg.vim
+-            ├── bitmaps
+-            │   └── togglebg.png
+-            ├── colors
+-            │   └── solarized.vim
+-            ├── doc
+-            │   ├── solarized.txt
+-            │   └── tags
+-            └── README.mkd
+-
+-What Pathogen does is that it adds every directory inside `bundle` into vim&#39;s &quot;runtimepath&quot;.
+-It means that each folder here can be considered a new `.vim` folder where vim looks for
+-appropriate configuration files. The plugins are now isolated so removing or updating them
+-becomes trivial: just remove or update its own directory.
+-
+-# Pathogen + Git
+-
+-Everything goes to the cloud these days, and certainly your vim setup should as well. If you
+-haven&#39;t created a [Github](https://github.com) account, do it now. Create an empty repository
+-with any name you want (mine is `.vim`). Don&#39;t commit yet. Create a file: `~/.vim/.gitignore`,
+-add these lines to its content:
+-
+-    :::bash
+-    bundle/
+-    .netrwhist
+-
+-.netrwhist is a local file generated by vim that is better off ignored. We also ignore bundle
+-directory because the plugins will be included as git submodules (google *git submodule*
+-for details). Remember to delete everything inside `bundle/`, because we will install the
+-plugins again with git.
+-
+-Git init, commit and push to your github repo: (on the *git remote add...* line, replace `nhanb`
+-with your github username, `.vim` with your repo name)
+-
+-    :::bash
+-    cd ~/.vim
+-    git init
+-    git add .
+-    git commit -m &#39;init&#39;
+-
+-    git remote add origin https://github.com/nhanb/.vim.git
+-    git push -u origin master
+-
+-Everytime you edit anything in your .vim directory, remember to commit the changes and push to
+-github:
+-
+-    :::bash
+-    git add . 
+-    git commit -m &#39;some message here&#39;
+-    git push
+-
+-If you want to install a plugin, see if it has a git repo (9 out of 10 times it has a
+-github repo). Find its git url and add to your .vim as a submodule:
+-
+-    :::bash
+-    cd ~/.vim
+-    git add submodule https://github.com/majutsushi/tagbar.git bundle/tagbar
+-    git add submodule https://github.com/altercation/vim-colors-solarized.git bundle/solarized
+-    git submodule update --init
+-    git submodule foreach git pull origin master
+-
+-When you need to update your plugins, just run the last line to make git pull updates for all
+-plugins. 
+-
+-Here&#39;s the awesome part: when you&#39;re using a whole new computer and want to get all your vim settings
+-from the cloud, simply clone your github repo, make a symlink for .vimrc and pull all plugins:
+-
+-    :::bash
+-    cd ~
+-    git clone https://github.com/nhanb/.vim.git .vim
+-    ln -s ~/.vim/vimrc ~/.vimrc
+-    cd .vim
+-    git submodule update --init &amp;&amp; git submodule foreach git pull origin master
+-
+-Now you must be really excited, no? Git does everything for you: upload/download, add plugins,
+-update plugins *and* remove plugins... There must be some simple git command to remove a
+-submodule, right?
+-
+-**NO**. Sadly, no. To remove a git submodule, you&#39;ll need to manually edit 2 git files and
+-remove the folder by hand. See
+-[this Stackoverflow question](http://stackoverflow.com/questions/1260748/how-do-i-remove-a-git-submodule)
+-for detailed instructions.
+-
+-# Vundle, the new cool kid
+-
+-This time let&#39;s start fresh: remove all submodules and pathogen. Your bundle folder should be
+-now empty. Clone [Vundle](https://github.com/gmarik/vundle):
+-
+-    :::bash
+-    git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
+-
+-Put this in your .vimrc (preferably at the beginning):
+-
+-    :::vim
+-    set nocompatible               &quot; be iMproved
+-    filetype off                   &quot; required!
+-
+-    set rtp+=~/.vim/bundle/vundle/
+-    call vundle#rc()
+-
+-    &quot; let Vundle manage Vundle
+-    &quot; required! 
+-    Bundle &#39;gmarik/vundle&#39;
+-
+-    &quot; My Bundles here:
+-    &quot;
+-    &quot; original repos on github
+-    Bundle &#39;majutsushi/tagbar&#39;
+-    Bundle &#39;altercation/vim-colors-solarized&#39;
+-
+-    &quot; Github repos of the user &#39;vim-scripts&#39;
+-    &quot; =&gt; can omit the username part
+-    Bundle &#39;L9&#39;
+-    Bundle &#39;FuzzyFinder&#39;
+-
+-    &quot; non github repos
+-    Bundle &#39;git://git.wincent.com/command-t.git&#39;
+-    &quot; ...
+-
+-    filetype plugin indent on     &quot; required!
+-
+-Relaunch vim, run `:BundleInstall` to install the &quot;bundles&quot; you listed in .vimrc. When you want
+-to update them, `:BundleUpdate`. To remove a plugin, just delete its line in your .vimrc file
+-then relaunch vim and run `:BundleClean` to remove its folder inside ~/.vim/bundle/
+-
+-Vundle follows Pathogen&#39;s approach: putting plugins in their separate directories. However,
+-it also takes care of the git stuff for us too! Note that by default it uses `git clone`, not
+-`git add submodule` to add plugins. If you&#39;re using Windows, there&#39;s Vundle for Windows too,
+-though I&#39;ve never tried it.
+-
+-That&#39;s it, happy coding! Feel free to leave your comments if there&#39;s anything wrong/unclear here.
+diff --git a/content/images/ajmg.png b/cool/ajmg.png
+similarity index 100%
+rename from content/images/ajmg.png
+rename to cool/ajmg.png
+diff --git a/content/images/cinema_1.png b/cool/cinema_1.png
+similarity index 100%
+rename from content/images/cinema_1.png
+rename to cool/cinema_1.png
+diff --git a/content/images/cinema_2.png b/cool/cinema_2.png
+similarity index 100%
+rename from content/images/cinema_2.png
+rename to cool/cinema_2.png
+diff --git a/content/posts/have-you-built-anything-cool-.md b/cool/index.dj
+similarity index 86%
+rename from content/posts/have-you-built-anything-cool-.md
+rename to cool/index.dj
+index 00154c7..f24ad19 100644
+--- a/content/posts/have-you-built-anything-cool-.md
++++ b/cool/index.dj
+@@ -1,52 +1,57 @@
+ Title: &quot;Have you built anything cool?&quot;
+-Slug: have-you-built-anything-cool
+-Date: 2014-01-25 10:37
+-Category: misc
++PostedAt: 2014-01-25 10:37
+ Thumb: images/sealord.png
+ 
+-So recently I went to a *networking event*--something I have never liked or been good at. I&#39;m
++---
++
++So recently I went to a _networking event_--something I have never liked or been good at. I&#39;m
+ not sure if I&#39;m one of those introverts or if I&#39;m just socially awkward, but the very idea of
+ going around trying to converse with total strangers just to exchange business cards is not at all
+ appealing to me. Anyway, that&#39;s another story. Right now I want to write about something a guy
+ from a non-tech company asked me:
+ 
+-&gt; \- Have you built anything cool?  
+-&gt; \- [pause] Well, more or less...  
+-&gt; \- What do you mean by &quot;more or less&quot;? [...] Have you built anything at all?  
++&gt; \- Have you built anything cool?
++&gt;
++&gt; \- [pause] Well, more or less...
++&gt;
++&gt; \- What do you mean by &quot;more or less&quot;? [...] Have you built anything at all?
+ 
+-Then I went on trying to explain what my recent side project--
+-[pytaku](https://pytaku-legacy.appspot.com)--does and why it is awesome for me. He seemed to be
+-disinterested halfway through so I decided to shut up anyway.
++Then I went on trying to explain what my recent side
++project---[pytaku](https://pytaku-legacy.appspot.com)---does and why it is
++awesome for me. He seemed to be disinterested halfway through so I decided to shut up anyway.
+ 
+ Sure, I have done stuff now and then, be it assignment work or something I decided to create
+ for my own amusement. It is just funny how I have already stepped into to my final year without
+ taking a proper look back at what I have done in these past 2 years, so I&#39;m going to do just that.
+ 
+-If you--Nicholas--are reading this and don&#39;t want all the nerdy stuff, here are my condensed
++If you---Nicholas---are reading this and don&#39;t want all the nerdy stuff, here are my condensed
+ answers:
+ 
+-### Have you built anything?  
++### Have you built anything?
++
+ Yes, I have made desktop and Android games, a movie ticket sales program, a desktop manga
+ grabber, a web version of it that talks to dropbox, and several small shell scripts / web
+ utilities.
+ 
+-### So, nothing cool?  
++### So, nothing cool?
++
+ If you&#39;re neither a tech geek nor an otaku (which I assume you&#39;re not) then no, there&#39;s probably
+ nothing I&#39;ve done that you would find interesting.
+ 
+-## Nerd alert!  
+-The rest of this post is aimed at the &lt;del&gt;nerdier&lt;/del&gt; more tech-savvy audience. You have been
++## Nerd alert!
++
++The rest of this post is aimed at the {-nerdier-} more tech-savvy audience. You have been
+ warned ;)
+ 
+-## First year--Welcome to the web, and the GUI programming disillusionment
++## First year: Welcome to the web, and the GUI programming disillusionment
+ 
+-I had touched *web stuff* before in high school: a vBulletin forum that I created (unofficially)
++I had touched _web stuff_ before in high school: a vBulletin forum that I created (unofficially)
+ for students in my middle school. However, I only properly learned PHP and JS when I started the
+ Web Programming course here. With (moderately) great power came great desires, so I set out to
+ build a basic PHP site to scrape a youtube view page&#39;s HTML to get direct video links (not working
+-anymore since a recent youtube update)
++anymore since a recent youtube update):
+ 
+-![tubegrab v2.9](/images/tubegrab.jpg &quot;tubegrab v2.9&quot;)
++![tubegrab v2.9](tubegrab.jpg)
+ 
+ That was my first touch on jQueryUI and regular expressions; I also learned how RMIT&#39;s mekong
+ server sucked to the point that it didn&#39;t allow `get_file_contents()`.
+@@ -56,11 +61,11 @@ ## First year--Welcome to the web, and the GUI programming disillusionment
+ 
+ I also learned about MVC and GUI programming with Java swing. I did write a movie ticket program
+ with a (pretty minimal) seat picker and
+-[a battleship-inspired game](https://github.com/nhanb/sealord): 
++[a battleship-inspired game](https://github.com/nhanb/sealord):
+ 
+-![Cinema Movie Picker](/images/cinema_1.png &quot;Cinema Movie Picker&quot;)
+-![Seat Picker](/images/cinema_2.png &quot;Seat Picker&quot;)
+-![Sealord](/images/sealord.png)
++![Cinema Movie Picker](cinema_1.png)
++![Seat Picker](cinema_2.png)
++![Sealord](sealord.png)
+ 
+ Then it occurred to me that programming GUI interfaces for desktop programs was much more tedious
+ than doing it for the web, especially when working with the now-not-favored Swing toolkit.
+@@ -75,7 +80,7 @@ ## First year--Welcome to the web, and the GUI programming disillusionment
+ 
+ To rub salt in the wound, I came to realize that nobody cared how Swing looked on any desktop
+ environment other than OS X and Windows. Font rendering was painful to look at, and the only way to
+-make it *a little bit* more acceptable was using a
++make it _a little bit_ more acceptable was using a
+ [forked version of OpenJDK](http://www.webupd8.org/2013/06/install-openjdk-patched-with-font-fixes.html).
+ WTF guys? And that&#39;s not the only problem; let&#39;s talk Look And Feel. Java&#39;s built-in
+ getSystemLookAndFeel() could only detect GNOME&#39;s. When developing `ajmg` I discovered that and had
+@@ -83,7 +88,7 @@ ## First year--Welcome to the web, and the GUI programming disillusionment
+ &quot;What the hell, why do I even have to do this?&quot; and decided that Swing was dead to me (or any
+ desktop Linux user for that matter).
+ 
+-## Second year: enough of this &lt;del&gt;bull&lt;/del&gt; school crap. I&#39;m making stuff for myself!
++## Second year: enough of this {-bull-} school crap. I&#39;m making stuff for myself!
+ 
+ To be fair, the following year has offered a number of new stuff: C/C++ programming, a taste of the
+ M$ .NET C# stack (still impressed by Visual Studio&#39;s vi mode plugin), more Java,
+@@ -112,7 +117,7 @@ ### AJMG, then Pytaku, then... who knows?
+ it, because open source is awesome&quot;, I thought. Then I spent some time and got the minimal program
+ working program:
+ 
+-![](/images/ajmg.png)
++![](ajmg.png)
+ 
+ This program did help me get a firm knowledge of java&#39;s thread manipulation and using http proxy
+ (so I could exploit RMIT&#39;s awesome network bandwidth). I also succeeded in achieving separation of
+diff --git a/cool/index.html b/cool/index.html
+new file mode 100644
+index 0000000..d002180
+--- /dev/null
++++ b/cool/index.html
+@@ -0,0 +1,180 @@
++&lt;!DOCTYPE html&gt;
++&lt;html&gt;
++
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;&amp;#34;Have you built anything cool?&amp;#34; | Hi, I&amp;#39;m Nhân&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;nav&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;span class=&quot;posted-on&quot;&gt;
++    Posted on
++    &lt;time datetime=&quot;2014-01-25&quot;&gt;
++        Saturday, 25 Jan 2014
++    &lt;/time&gt;
++  &lt;/span&gt;
++
++&lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
++
++
++&lt;main&gt;
++&lt;h1&gt;&amp;#34;Have you built anything cool?&amp;#34;&lt;/h1&gt;
++&lt;p&gt;So recently I went to a &lt;em&gt;networking event&lt;/em&gt;–something I have never liked or been good at. I’m
++not sure if I’m one of those introverts or if I’m just socially awkward, but the very idea of
++going around trying to converse with total strangers just to exchange business cards is not at all
++appealing to me. Anyway, that’s another story. Right now I want to write about something a guy
++from a non-tech company asked me:&lt;/p&gt;
++&lt;blockquote&gt;
++&lt;p&gt;- Have you built anything cool?&lt;/p&gt;
++&lt;p&gt;- [pause] Well, more or less…&lt;/p&gt;
++&lt;p&gt;- What do you mean by “more or less”? […] Have you built anything at all?&lt;/p&gt;
++&lt;/blockquote&gt;
++&lt;p&gt;Then I went on trying to explain what my recent side
++project—&lt;a href=&quot;https://pytaku-legacy.appspot.com&quot;&gt;pytaku&lt;/a&gt;—does and why it is
++awesome for me. He seemed to be disinterested halfway through so I decided to shut up anyway.&lt;/p&gt;
++&lt;p&gt;Sure, I have done stuff now and then, be it assignment work or something I decided to create
++for my own amusement. It is just funny how I have already stepped into to my final year without
++taking a proper look back at what I have done in these past 2 years, so I’m going to do just that.&lt;/p&gt;
++&lt;p&gt;If you—Nicholas—are reading this and don’t want all the nerdy stuff, here are my condensed
++answers:&lt;/p&gt;
++&lt;section id=&quot;Have-you-built-anything&quot;&gt;
++&lt;h3&gt;Have you built anything?&lt;/h3&gt;
++&lt;p&gt;Yes, I have made desktop and Android games, a movie ticket sales program, a desktop manga
++grabber, a web version of it that talks to dropbox, and several small shell scripts / web
++utilities.&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;So-nothing-cool&quot;&gt;
++&lt;h3&gt;So, nothing cool?&lt;/h3&gt;
++&lt;p&gt;If you’re neither a tech geek nor an otaku (which I assume you’re not) then no, there’s probably
++nothing I’ve done that you would find interesting.&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Nerd-alert&quot;&gt;
++&lt;h2&gt;Nerd alert!&lt;/h2&gt;
++&lt;p&gt;The rest of this post is aimed at the &lt;del&gt;nerdier&lt;/del&gt; more tech-savvy audience. You have been
++warned ;)&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;First-year-Welcome-to-the-web-and-the-GUI-programming-disillusionment&quot;&gt;
++&lt;h2&gt;First year: Welcome to the web, and the GUI programming disillusionment&lt;/h2&gt;
++&lt;p&gt;I had touched &lt;em&gt;web stuff&lt;/em&gt; before in high school: a vBulletin forum that I created (unofficially)
++for students in my middle school. However, I only properly learned PHP and JS when I started the
++Web Programming course here. With (moderately) great power came great desires, so I set out to
++build a basic PHP site to scrape a youtube view page’s HTML to get direct video links (not working
++anymore since a recent youtube update):&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;tubegrab v2.9&quot; src=&quot;tubegrab.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;That was my first touch on jQueryUI and regular expressions; I also learned how RMIT’s mekong
++server sucked to the point that it didn’t allow &lt;code&gt;get_file_contents()&lt;/code&gt;.&lt;/p&gt;
++&lt;p&gt;About school assignments? Nothing interesting: standard minimal LAMP CMS with jQuery glitter
++sprinkled on top. Not a bad experience but meh.&lt;/p&gt;
++&lt;p&gt;I also learned about MVC and GUI programming with Java swing. I did write a movie ticket program
++with a (pretty minimal) seat picker and
++&lt;a href=&quot;https://github.com/nhanb/sealord&quot;&gt;a battleship-inspired game&lt;/a&gt;:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;Cinema Movie Picker&quot; src=&quot;cinema_1.png&quot;&gt;
++&lt;img alt=&quot;Seat Picker&quot; src=&quot;cinema_2.png&quot;&gt;
++&lt;img alt=&quot;Sealord&quot; src=&quot;sealord.png&quot;&gt;&lt;/p&gt;
++&lt;p&gt;Then it occurred to me that programming GUI interfaces for desktop programs was much more tedious
++than doing it for the web, especially when working with the now-not-favored Swing toolkit.
++Nightmarish days…&lt;/p&gt;
++&lt;p&gt;Another lesson learned the hard way was that “MVC” is not even a concrete thing, and there is
++hardly any obvious “one true way” to implement that. I spent much more time planning for plumbing
++code than I the time I spent actually writing “feature” code. And the result, now looking back, was
++not even that good. And yeah, there was no such thing as “separation of concerns” in my code back
++then, which eventually led to countless times of tracing obscure stack traces for debugging (good
++thing I had a lot of free time back then).&lt;/p&gt;
++&lt;p&gt;To rub salt in the wound, I came to realize that nobody cared how Swing looked on any desktop
++environment other than OS X and Windows. Font rendering was painful to look at, and the only way to
++make it &lt;em&gt;a little bit&lt;/em&gt; more acceptable was using a
++&lt;a href=&quot;http://www.webupd8.org/2013/06/install-openjdk-patched-with-font-fixes.html&quot;&gt;forked version of OpenJDK&lt;/a&gt;.
++WTF guys? And that’s not the only problem; let’s talk Look And Feel. Java’s built-in
++getSystemLookAndFeel() could only detect GNOME’s. When developing &lt;code&gt;ajmg&lt;/code&gt; I discovered that and had
++to write my own method that extended the thing to detect more DEs, but soon after that I thought
++“What the hell, why do I even have to do this?” and decided that Swing was dead to me (or any
++desktop Linux user for that matter).&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Second-year-enough-of-this-bull-school-crap-I-m-making-stuff-for-myself&quot;&gt;
++&lt;h2&gt;Second year: enough of this &lt;del&gt;bull&lt;/del&gt; school crap. I’m making stuff for myself!&lt;/h2&gt;
++&lt;p&gt;To be fair, the following year has offered a number of new stuff: C/C++ programming, a taste of the
++M$ .NET C# stack (still impressed by Visual Studio’s vi mode plugin), more Java,
++&lt;a href=&quot;http://truongtx.me/2013/05/02/agent-069-game/&quot;&gt;Android app programming&lt;/a&gt;, and some neat security
++tricks. However, none of those intrigued me much, so I decided to start making things for my own:&lt;/p&gt;
++&lt;section id=&quot;Shell-scripts&quot;&gt;
++&lt;h3&gt;Shell scripts&lt;/h3&gt;
++&lt;p&gt;If you have taken a look at my &lt;a href=&quot;https://github.com/nhanb/dotfiles&quot;&gt;dotfiles&lt;/a&gt;, you’ll notice that I
++do write a bunch of shell scripts to automate stuff I do often. The one I’m currently proudest of
++is &lt;a href=&quot;https://github.com/nhanb/dotfiles/blob/master/scripts/rmitproxy_silent&quot;&gt;rmiproxy_silent&lt;/a&gt;, a
++script that automatically detects whether I am using RMIT’s network and set/clear the appropriate
++proxy settings. Another one that I can’t live without is
++&lt;a href=&quot;https://github.com/nhanb/dotfiles/blob/master/install.sh&quot;&gt;install.sh&lt;/a&gt;, a script that helps install
++all my dotfiles, sets up zsh and various things. It saved me &lt;strong&gt;a lot&lt;/strong&gt; of time whenever I reinstall
++my system.&lt;/p&gt;
++&lt;p&gt;Obligatory shout-out to &lt;a href=&quot;https://github.com/robbyrussell/oh-my-zsh/&quot;&gt;oh-my-zsh&lt;/a&gt;, greatest invention
++since sliced bread! Those guys are awesome!&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;AJMG-then-Pytaku-then-who-knows&quot;&gt;
++&lt;h3&gt;AJMG, then Pytaku, then… who knows?&lt;/h3&gt;
++&lt;p&gt;The original idea was actually creating a Java Swing program that helps download manga. It was born
++out of frustration of &lt;a href=&quot;http://blog.domdomsoft.com/&quot;&gt;DomDomSoft&lt;/a&gt;, a manga downloader that requires
++“donation” to unlock full functionalities. “I could do that, and I’ll open source the crap out of
++it, because open source is awesome”, I thought. Then I spent some time and got the minimal program
++working program:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;ajmg.png&quot;&gt;&lt;/p&gt;
++&lt;p&gt;This program did help me get a firm knowledge of java’s thread manipulation and using http proxy
++(so I could exploit RMIT’s awesome network bandwidth). I also succeeded in achieving separation of
++concern to a certain level this time, allowing contributors (if any) to easily add support for
++other manga reader sites. But then again, Swing’s quirks put me off, so my bad habit of losing
++interest quickly kicked in and the project stopped there.&lt;/p&gt;
++&lt;p&gt;Then came &lt;a href=&quot;https://pytaku-legacy.appspot.com&quot;&gt;Pytaku&lt;/a&gt;, ajmg’s spiritual successor. At this point I
++knew enough of python and wanted to try out Google App Engine, so I decided to make a web version
++of AJMG, with the difference that instead of downloading directly, it forwards everything to the
++user’s Dropbox folder. Why not Google Drive you ask? Because they haven’t even bothered to release
++an official Linux client for it. Shame on you, Google!&lt;/p&gt;
++&lt;p&gt;Loads of exciting things were learned along the way: how URL handling works in webapp2 and in other
++web frameworks in general, proper templating (can’t believe I ever wrote &lt;code&gt;&amp;lt;title&amp;gt;&amp;lt;?php echo $title;
++?&amp;gt;&amp;lt;/title&amp;gt;&lt;/code&gt;… not cool!), OAuth2 (more than a few “Aha!” moments working with this little guy…),
++Google’s Datastore and NoSQL in general, and of course, Twitter Bootstrap–saving clueless
++non-designer developers since its inception.&lt;/p&gt;
++&lt;p&gt;And now, I’m rewriting it from scratch, this time trying out TDD, making use of
++&lt;a href=&quot;https://travis-ci.org/nhanb/pytaku&quot;&gt;travis-ci&lt;/a&gt;, which will be especially helpful to periodically
++test if a manga site has changed its page layout and screwed up Pytaku’s scraping code. I have
++encountered a number of quirks when trying to set up the correct testing boilerplate for a Google
++App Engine project, but it seems everything will be smooth from now on. This holiday season I plan
++to at least roll out an alpha version to show off. Stay tuned if you’re interested!&lt;/p&gt;
++&lt;/section&gt;
++&lt;/section&gt;
++&lt;section id=&quot;To-sum-it-up&quot;&gt;
++&lt;h2&gt;To sum it up…&lt;/h2&gt;
++&lt;p&gt;I don’t believe in developing products I myself don’t want to use. I want to make things that make
++my life easier, and if that helps others too then it’s a huge bonus. This is why Github is my
++favorite company right now, and
++&lt;a href=&quot;https://www.youtube.com/watch?v=qyz3jkOBbQY&quot;&gt;How GitHub uses GitHub to build GitHub&lt;/a&gt; remains the
++best developer speech I have ever seen.&lt;/p&gt;
++&lt;p&gt;Right now I haven’t made a full-blown program that I can confidently distribute to end users, but I
++certainly have made quite a few nifty tools to improve my day-to-day computing tasks and learned a
++lot along the way. Right now I cannot confidently answer this big question by pointing them to a
++polished website detailing every nook and cranny of my shiny widely-used, battle-tested program,
++but I’m confident I have the right knowledge to get there. If there is such a thing as “Lunar New
++Year Resolution”, I guess mine is that one year from now, I will have a satisfying answer to this
++question. Watch out world, I’m coming!&lt;/p&gt;
++&lt;p&gt;If you managed to get here, you are probably a tech geek like me. So, have &lt;strong&gt;you&lt;/strong&gt; built anything
++cool recently?&lt;/p&gt;
++&lt;/section&gt;
++
++&lt;/main&gt;
++
++&lt;footer&gt;
++© 2014–2023 nhanb&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++&lt;/footer&gt;
++
++&lt;/body&gt;
++
++&lt;/html&gt;
+diff --git a/content/images/sealord.png b/cool/sealord.png
+similarity index 100%
+rename from content/images/sealord.png
+rename to cool/sealord.png
+diff --git a/content/images/tubegrab.jpg b/cool/tubegrab.jpg
+similarity index 100%
+rename from content/images/tubegrab.jpg
+rename to cool/tubegrab.jpg
+diff --git a/content/posts/look-ma-no-stock-theme.md b/custom-theme/index.dj
+similarity index 90%
+rename from content/posts/look-ma-no-stock-theme.md
+rename to custom-theme/index.dj
+index 5d76ca4..5991290 100644
+--- a/content/posts/look-ma-no-stock-theme.md
++++ b/custom-theme/index.dj
+@@ -1,7 +1,8 @@
+ Title: Look ma, no stock theme!
+-Date: 2015-06-05 13:54
++PostedAt: 2015-06-05 13:54
++---
+ 
+-**2023 Update**: I just realized that em dashes in certain default sans-serif
++*2023 Update*: I just realized that em dashes in certain default sans-serif
+ fonts look terrible (no space around the dash), so I now explicitly use Source
+ Sans Pro and Ubuntu Mono. Using specific fonts allow me to fine-tune my
+ typography again (e.g. making code block text a bit smaller).
+@@ -13,13 +14,13 @@
+ I also took this chance to go full black-on-white, which I think looks way
+ crisper than black-on-cornsilk.
+ 
+-**2020 Update**: I bit the bullet and removed all web fonts, relying on the
++*2020 Update*: I bit the bullet and removed all web fonts, relying on the
+ browser&#39;s configured sans-serif/monospace fonts instead. It&#39;s probably fine,
+ since even stock fonts seem to cover Vietnamese glyphs well these days.
+ Otherwise, people who care enough to be bothered by fallback fonts are likely
+ to know how to configure their browser with proper fonts anyway.
+ 
+-**2017 Update**: Now that I like high contrast more, I just updated the
++*2017 Update*: Now that I like high contrast more, I just updated the
+ theme to a black/white/red palette with a [high-quality serif font][8]
+ instead. Thanks [Mr. Butterick][9]!
+ 
+@@ -54,7 +55,7 @@ ## Clean and lightweight
+ That&#39;s why I decided to do no fancy cosmetic JS and try to keep my use of static assets to a
+ minimum:
+ 
+-![](/images/mofo_01_loads.png)
++![](mofo_01_loads.png)
+ 
+ I guess there&#39;s nothing I can do about the font files though, since I need to make sure my
+ Vietnamese posts are rendered in a font that supports it. Oh well, at least it looks awesome.
+@@ -82,7 +83,7 @@ ## That&#39;s it!
+ You can find the source code to my theme [on GitHub][7]. I don&#39;t recommend using it as-is though,
+ since I haven&#39;t implemented many required templates (authors, tags, categories, etc.) because I
+ don&#39;t use them. There&#39;s also the hardcoded content in footer and probably a few more places. Maybe
+-someday I&#39;ll stop being lazy and fix all that. *Maybe*.
++someday I&#39;ll stop being lazy and fix all that. _Maybe_.
+ 
+ [1]: https://github.com/duilio/pelican-octopress-theme/
+ [2]: https://developers.google.com/fonts/docs/getting_started#Effects
+@@ -93,4 +94,4 @@ ## That&#39;s it!
+ [7]: https://github.com/nhanb/motherfucking-pelican-theme
+ [8]: https://github.com/adobe-fonts/source-serif-pro
+ [9]: https://practicaltypography.com/
+-[10]: http://localhost:8000/posts/working-with-sqlite-in-python-without-an-orm-or-migration-framework/
++[10]: ../posts/working-with-sqlite-in-python-without-an-orm-or-migration-framework/
+diff --git a/custom-theme/index.html b/custom-theme/index.html
+new file mode 100644
+index 0000000..0c4d1dd
+--- /dev/null
++++ b/custom-theme/index.html
+@@ -0,0 +1,119 @@
++&lt;!DOCTYPE html&gt;
++&lt;html&gt;
++
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;Look ma, no stock theme! | Hi, I&amp;#39;m Nhân&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;nav&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;span class=&quot;posted-on&quot;&gt;
++    Posted on
++    &lt;time datetime=&quot;2015-06-05&quot;&gt;
++        Friday, 05 Jun 2015
++    &lt;/time&gt;
++  &lt;/span&gt;
++
++&lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
++
++
++&lt;main&gt;
++&lt;h1&gt;Look ma, no stock theme!&lt;/h1&gt;
++&lt;p&gt;&lt;strong&gt;2023 Update&lt;/strong&gt;: I just realized that em dashes in certain default sans-serif
++fonts look terrible (no space around the dash), so I now explicitly use Source
++Sans Pro and Ubuntu Mono. Using specific fonts allow me to fine-tune my
++typography again (e.g. making code block text a bit smaller).&lt;/p&gt;
++&lt;p&gt;The extra http load is not that bad: each woff2 font variant averages at 50KB,
++and is only loaded if a page’s content actually calls for it. A particularly
++&lt;a href=&quot;../posts/working-with-sqlite-in-python-without-an-orm-or-migration-framework/&quot;&gt;bad case&lt;/a&gt; loads 6 variants, clocking in at ~300KB. I can live with that.&lt;/p&gt;
++&lt;p&gt;I also took this chance to go full black-on-white, which I think looks way
++crisper than black-on-cornsilk.&lt;/p&gt;
++&lt;p&gt;&lt;strong&gt;2020 Update&lt;/strong&gt;: I bit the bullet and removed all web fonts, relying on the
++browser’s configured sans-serif/monospace fonts instead. It’s probably fine,
++since even stock fonts seem to cover Vietnamese glyphs well these days.
++Otherwise, people who care enough to be bothered by fallback fonts are likely
++to know how to configure their browser with proper fonts anyway.&lt;/p&gt;
++&lt;p&gt;&lt;strong&gt;2017 Update&lt;/strong&gt;: Now that I like high contrast more, I just updated the
++theme to a black/white/red palette with a &lt;a href=&quot;https://github.com/adobe-fonts/source-serif-pro&quot;&gt;high-quality serif font&lt;/a&gt;
++instead. Thanks &lt;a href=&quot;https://practicaltypography.com/&quot;&gt;Mr. Butterick&lt;/a&gt;!&lt;/p&gt;
++&lt;p&gt;The original post follows.&lt;/p&gt;
++&lt;hr&gt;
++&lt;p&gt;I just redesigned my blog.&lt;/p&gt;
++&lt;p&gt;To be totally honest, the previous design was not mine at all. I’ve always been using
++&lt;a href=&quot;https://github.com/duilio/pelican-octopress-theme/&quot;&gt;pelican-octopress-theme&lt;/a&gt;, which is a Pelican port of the default theme for Octopress. It’s not
++that I have anything to complain about that theme: it was clean, readable and easy on the eyes. I
++just want my site to look unique. Content is king, sure, but it wouldn’t hurt to stand out from the
++crowd once in a while.&lt;/p&gt;
++&lt;p&gt;I’m not a professional designer, but everything turned out quite well if I could say so. In this
++post I’ll explain my design goals and how I (hopefully) achieved them.&lt;/p&gt;
++&lt;section id=&quot;Clean-and-lightweight&quot;&gt;
++&lt;h2&gt;Clean and lightweight&lt;/h2&gt;
++&lt;p&gt;The web is messy. I’m not talking blinking-marquee-fire-animated-header messy (thank god we’re done
++with that… &lt;a href=&quot;https://developers.google.com/fonts/docs/getting_started#Effects&quot;&gt;or are we?&lt;/a&gt;). I’m talking megabytes-of-useless-javascript-and-css messy. For
++whatever reason, some people now think it’s cool to include Bootstrap/Foundation to every project,
++or to include that new shiny parallax library to ruin scrolling for everybody. Oh, and don’t forget
++the marvellous invention that is &lt;a href=&quot;https://xkcd.com/1309/&quot;&gt;“infinite scrolling”&lt;/a&gt;:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;https://imgs.xkcd.com/comics/infinite_scrolling.png&quot;&gt;&lt;/p&gt;
++&lt;p&gt;In fact, the main motivation of my new theme is &lt;a href=&quot;http://motherfuckingwebsite.com/&quot;&gt;this satire page&lt;/a&gt; on the sad state of the web
++we’re in today.&lt;/p&gt;
++&lt;p&gt;That’s why I decided to do no fancy cosmetic JS and try to keep my use of static assets to a
++minimum:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;mofo_01_loads.png&quot;&gt;&lt;/p&gt;
++&lt;p&gt;I guess there’s nothing I can do about the font files though, since I need to make sure my
++Vietnamese posts are rendered in a font that supports it. Oh well, at least it looks awesome.&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Content-is-king&quot;&gt;
++&lt;h2&gt;Content is king&lt;/h2&gt;
++&lt;p&gt;No more distracting sidebar with “latest news”, “related posts”, etc. with thumbnails popping up
++all over the place, just a good old article body from start to finish.&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Easy-on-the-eye&quot;&gt;
++&lt;h2&gt;Easy on the eye&lt;/h2&gt;
++&lt;p&gt;While &lt;a href=&quot;http://bettermotherfuckingwebsite.com/&quot;&gt;bettermotherfuckingwebsite&lt;/a&gt; does a good job at demonstrating how far you can go with a
++few simple CSS rules (hint: very far), I found Tommi Kaikkonen’s &lt;a href=&quot;http://www.kaikkonendesign.fi/typography/&quot;&gt;Interactive Guide to Blog
++Typography&lt;/a&gt; much more comprehensive and informative. I implemented many of the ideas found
++in that guide:&lt;/p&gt;
++&lt;ul&gt;
++&lt;li&gt;
++Big body font
++&lt;/li&gt;
++&lt;li&gt;
++Constrained line width to aid reading
++&lt;/li&gt;
++&lt;li&gt;
++Generous line height, liberal whitespace to help with visual hierarchy
++&lt;/li&gt;
++&lt;li&gt;
++Lower background-foreground contrast. I also find the slightly yellow-ish background somewhat
++soothing.
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;/section&gt;
++&lt;section id=&quot;That-s-it&quot;&gt;
++&lt;h2&gt;That’s it!&lt;/h2&gt;
++&lt;p&gt;You can find the source code to my theme &lt;a href=&quot;https://github.com/nhanb/motherfucking-pelican-theme&quot;&gt;on GitHub&lt;/a&gt;. I don’t recommend using it as-is though,
++since I haven’t implemented many required templates (authors, tags, categories, etc.) because I
++don’t use them. There’s also the hardcoded content in footer and probably a few more places. Maybe
++someday I’ll stop being lazy and fix all that. &lt;em&gt;Maybe&lt;/em&gt;.&lt;/p&gt;
++&lt;/section&gt;
++
++&lt;/main&gt;
++
++&lt;footer&gt;
++© 2014–2023 nhanb&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++&lt;/footer&gt;
++
++&lt;/body&gt;
++
++&lt;/html&gt;
+diff --git a/content/images/mofo_01_loads.png b/custom-theme/mofo_01_loads.png
+similarity index 100%
+rename from content/images/mofo_01_loads.png
+rename to custom-theme/mofo_01_loads.png
+diff --git a/content/images/fcitx-skype.png b/fcitx/fcitx-skype.png
+similarity index 100%
+rename from content/images/fcitx-skype.png
+rename to fcitx/fcitx-skype.png
+diff --git a/content/posts/ibus-is-dead-to-me-use-fcitx-instead.md b/fcitx/index.dj
+similarity index 87%
+rename from content/posts/ibus-is-dead-to-me-use-fcitx-instead.md
+rename to fcitx/index.dj
+index 544c54c..ba0d01b 100644
+--- a/content/posts/ibus-is-dead-to-me-use-fcitx-instead.md
++++ b/fcitx/index.dj
+@@ -1,10 +1,8 @@
+ Title: Dẹp ibus-unikey đi, dùng fcitx-unikey nhé!
+-Slug: ibus-is-dead-to-me-use-fcitx-instead
+-Date: 2015-01-29 20:41
+-Category: tutorials
+-lang: vi
++PostedAt: 2015-01-29 20:41
++---
+ 
+-**Cập nhật tháng 1/2021:** hiện tại mình dùng fcitx5 trên Arch + KDE, [cài đặt
++*Cập nhật tháng 1/2021:* hiện tại mình dùng fcitx5 trên Arch + KDE, [cài đặt
+ và config](https://wiki.archlinux.org/title/Fcitx5) không thể đơn giản hơn:
+ 
+ ```sh
+@@ -32,8 +30,8 @@
+ Sáng ra Netrunner bảo có vài chục cái update, mình chủ quan `dist-upgrade -y` rồi để đó không màng
+ đến nữa. Nửa tiếng sau, ibus không thèm chơi với firefox!  :|
+ 
+-Chuyện gõ tiếng Việt trên linux thì muôn đời trần ai rồi, mình không muốn bàn thêm nữa. Ngô &quot;Chin&quot;
+-- một trong những người phát triển chính của [ibus-bogo][1] - đã viết một bài blog rất hay về tình
++Chuyện gõ tiếng Việt trên linux thì muôn đời trần ai rồi, mình không muốn bàn thêm nữa.
++Trung Ngô---một trong những người phát triển chính của [ibus-bogo][1]---đã viết một bài blog rất hay về tình
+ trạng gõ tiếng Việt hiện nay trên linux nói chung, ai quan tâm có thể tham khảo thêm [ở đây][2].
+ 
+ ## fcitx-unikey
+@@ -60,7 +58,7 @@ ## fcitx-unikey
+ Một điểm trừ là khi dùng trên skype, phần text đang trong preedit bị hiển thị trong một ô riêng chứ
+ không chỉ là text bị gạch dưới như trong những chương trình khác. (xem hình dưới)
+ 
+-![](/images/fcitx-skype.png)
++![](fcitx-skype.png)
+ 
+ ## vim-fcitx
+ 
+@@ -73,12 +71,12 @@ ## vim-fcitx
+ bằng cách sửa mã nguồn của fcitx-unikey.
+ 
+ Mình gõ tiếng Việt kiểu VNI nên bộ gõ chắc chắn không bao giờ xử lý ký tự `j` =&gt; có thể thêm ký tự
+-`j` vào danh sách WordBreakSyms trong **src/unikey-im.cpp**. ([xem tại đây][7])
++`j` vào danh sách WordBreakSyms trong *src/unikey-im.cpp*. ([xem tại đây][7])
+ 
+ Sau đó chỉ cần compile lại fcitx-unikey là xong!
+ 
+ [1]: http://ibus-bogo.readthedocs.org/
+-[2]: http://ngochin.com/2014/07/31/uoc-mo-bo-go-kieu-unikey/
++[2]: https://lewtds.notion.site/c-m-b-g-ki-u-Unikey-tr-n-Linux-9b12cc2fcdbe43149b10eefc7db6b161
+ [3]: https://github.com/BoGoEngine/fcitx-bogo
+ [4]: https://github.com/fcitx/fcitx
+ [5]: https://github.com/fcitx/fcitx-unikey
+diff --git a/fcitx/index.html b/fcitx/index.html
+new file mode 100644
+index 0000000..c7e9956
+--- /dev/null
++++ b/fcitx/index.html
+@@ -0,0 +1,101 @@
++&lt;!DOCTYPE html&gt;
++&lt;html&gt;
++
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;Dẹp ibus-unikey đi, dùng fcitx-unikey nhé! | Hi, I&amp;#39;m Nhân&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;nav&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;span class=&quot;posted-on&quot;&gt;
++    Posted on
++    &lt;time datetime=&quot;2015-01-29&quot;&gt;
++        Thursday, 29 Jan 2015
++    &lt;/time&gt;
++  &lt;/span&gt;
++
++&lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
++
++
++&lt;main&gt;
++&lt;h1&gt;Dẹp ibus-unikey đi, dùng fcitx-unikey nhé!&lt;/h1&gt;
++&lt;p&gt;&lt;strong&gt;Cập nhật tháng 1/2021:&lt;/strong&gt; hiện tại mình dùng fcitx5 trên Arch + KDE, &lt;a href=&quot;https://wiki.archlinux.org/title/Fcitx5&quot;&gt;cài đặt
++và config&lt;/a&gt; không thể đơn giản hơn:&lt;/p&gt;
++&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;sudo pacman -S fcitx5 fcitx5-qt fcitx5-gtk fcitx5-unikey kcm-fcitx5
++&lt;/code&gt;&lt;/pre&gt;
++&lt;p&gt;Sau đó thêm đoạn này vào /etc/environment:&lt;/p&gt;
++&lt;pre&gt;&lt;code&gt;GTK_IM_MODULE=fcitx
++QT_IM_MODULE=fcitx
++XMODIFIERS=@im=fcitx
++&lt;/code&gt;&lt;/pre&gt;
++&lt;p&gt;Vào System Settings &amp;gt; Regional Settings &amp;gt; Input Method &amp;gt; Add Input Method,
++chọn Unikey, tùy chỉnh tùy ý.&lt;/p&gt;
++&lt;p&gt;Fcitx5 khắc phục được lỗi crash renderer khi dùng facebook messenger trên
++Firefox, và gõ được trên Telegram 🤷.&lt;/p&gt;
++&lt;p&gt;Còn dưới đây là bài viết cũ:&lt;/p&gt;
++&lt;hr&gt;
++&lt;p&gt;Sáng ra Netrunner bảo có vài chục cái update, mình chủ quan &lt;code&gt;dist-upgrade -y&lt;/code&gt; rồi để đó không màng
++đến nữa. Nửa tiếng sau, ibus không thèm chơi với firefox!  :|&lt;/p&gt;
++&lt;p&gt;Chuyện gõ tiếng Việt trên linux thì muôn đời trần ai rồi, mình không muốn bàn thêm nữa.
++Trung Ngô—một trong những người phát triển chính của &lt;a href=&quot;http://ibus-bogo.readthedocs.org/&quot;&gt;ibus-bogo&lt;/a&gt;—đã viết một bài blog rất hay về tình
++trạng gõ tiếng Việt hiện nay trên linux nói chung, ai quan tâm có thể tham khảo thêm &lt;a href=&quot;https://lewtds.notion.site/c-m-b-g-ki-u-Unikey-tr-n-Linux-9b12cc2fcdbe43149b10eefc7db6b161&quot;&gt;ở đây&lt;/a&gt;.&lt;/p&gt;
++&lt;section id=&quot;fcitx-unikey&quot;&gt;
++&lt;h2&gt;fcitx-unikey&lt;/h2&gt;
++&lt;p&gt;Lọ mọ trên trang github của bogo, mình vô tình phát hiện ra &lt;a href=&quot;https://github.com/BoGoEngine/fcitx-bogo&quot;&gt;fcitx-bogo&lt;/a&gt;: dự án này thực chất
++cũng dùng bogo-engine nhưng chạy với &lt;a href=&quot;https://github.com/fcitx/fcitx&quot;&gt;fcitx&lt;/a&gt; chứ không phải ibus như bình thường. Rất tiếc là
++khi mình cài đặt và chạy thử fcitx-bogo thì nó luôn crash fcitx trước khi xử lý ra được chữ tiếng
++Việt nào. :P&lt;/p&gt;
++&lt;p&gt;Dạo một vòng quanh trang github của fcitx, mình thấy dự án này vẫn được phát triển đều đặn chứ
++không bị cảnh đem con bỏ chợ như ibus, và thứ làm mình ngạc nhiên và mừng nhất chính là một repo
++với cái tên rất hứa hẹn: &lt;a href=&quot;https://github.com/fcitx/fcitx-unikey&quot;&gt;fcitx-unikey&lt;/a&gt;.&lt;/p&gt;
++&lt;p&gt;Cách compile và cài đặt đã được nêu rõ trên README nên mình sẽ không nói lại ở đây nữa. Một vài
++nhận xét sau khi dùng thử trên Netrunner 14 (em họ của Kubuntu):&lt;/p&gt;
++&lt;ul&gt;
++&lt;li&gt;
++Không hiện popup vô duyên khi chuyển method như ibus.
++&lt;/li&gt;
++&lt;li&gt;
++Không bật method tiếng Việt vô tội vạ như ibus. Trước đây khi dùng ibus, mặc dù đã tắt tính năng
++“Share same input method among all applications”, method tiếng Việt vẫn được kích hoạt mặc định
++trong các system dialog của KDE, rất khó chịu (bực nhất là nó bật preedit trên ô điền password
++nên mỗi khi khóa máy rồi login lại là password hiện lên hết). Fcitx không bị như vậy, vì method
++mặc định luôn là tiếng Anh.
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;p&gt;Một điểm trừ là khi dùng trên skype, phần text đang trong preedit bị hiển thị trong một ô riêng chứ
++không chỉ là text bị gạch dưới như trong những chương trình khác. (xem hình dưới)&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fcitx-skype.png&quot;&gt;&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;vim-fcitx&quot;&gt;
++&lt;h2&gt;vim-fcitx&lt;/h2&gt;
++&lt;p&gt;Những ai đã thử gõ tiếng Việt trên vim chắc chắn đều biết: không tài nào dùng normal mode khi
++preedit đang bật được. Ngày xưa khi dùng ibus mình có thử viết &lt;a href=&quot;https://github.com/nhanb/vim-bogo&quot;&gt;một plugin&lt;/a&gt; để bật tiếng Việt
++khi vào insert mode và trở lại tiếng Anh khi ra normal mode, nhưng cuối cùng không dùng vì preedit
++trong insert mode làm hư &lt;code&gt;inoremap jj &amp;lt;esc&amp;gt;&lt;/code&gt;.&lt;/p&gt;
++&lt;p&gt;Plugin &lt;a href=&quot;https://github.com/nhanb/vim-bogo&quot;&gt;vim-fcitx&lt;/a&gt; hoạt động tương tự như trên, và vấn đề map jj nêu trên có thể được giải quyết
++bằng cách sửa mã nguồn của fcitx-unikey.&lt;/p&gt;
++&lt;p&gt;Mình gõ tiếng Việt kiểu VNI nên bộ gõ chắc chắn không bao giờ xử lý ký tự &lt;code&gt;j&lt;/code&gt; =&amp;gt; có thể thêm ký tự
++&lt;code&gt;j&lt;/code&gt; vào danh sách WordBreakSyms trong &lt;strong&gt;src/unikey-im.cpp&lt;/strong&gt;. (&lt;a href=&quot;https://github.com/nhanb/fcitx-unikey/commit/d976a64f560510125bfddf02bd892d42bc94e5b5&quot;&gt;xem tại đây&lt;/a&gt;)&lt;/p&gt;
++&lt;p&gt;Sau đó chỉ cần compile lại fcitx-unikey là xong!&lt;/p&gt;
++&lt;/section&gt;
++
++&lt;/main&gt;
++
++&lt;footer&gt;
++© 2014–2023 nhanb&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++&lt;/footer&gt;
++
++&lt;/body&gt;
++
++&lt;/html&gt;
+diff --git a/feed.xml b/feed.xml
+index 9645ccc..7ece612 100644
+--- a/feed.xml
++++ b/feed.xml
+@@ -2,17 +2,45 @@
+   &lt;title&gt;Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;id&gt;https://hi.imnhan.com/&lt;/id&gt;
+   &lt;link rel=&quot;self&quot; href=&quot;/feed.xml&quot;&gt;&lt;/link&gt;
+-  &lt;updated&gt;0001-01-01T00:00:00+00:00&lt;/updated&gt;
++  &lt;updated&gt;2023-04-22T15:55:00+07:00&lt;/updated&gt;
+   &lt;author&gt;
+     &lt;name&gt;nhanb&lt;/name&gt;
+     &lt;uri&gt;https://hi.imnhan.com&lt;/uri&gt;
+     &lt;email&gt;hi@imnhan.com&lt;/email&gt;
+   &lt;/author&gt;
+   &lt;entry&gt;
+-    &lt;title&gt;Projects&lt;/title&gt;
+-    &lt;id&gt;https://hi.imnhan.com/projects/&lt;/id&gt;
+-    &lt;link href=&quot;https://hi.imnhan.com/projects/&quot;&gt;&lt;/link&gt;
+-    &lt;published&gt;0001-01-01T00:00:00+00:00&lt;/published&gt;
+-    &lt;updated&gt;0001-01-01T00:00:00+00:00&lt;/updated&gt;
++    &lt;title&gt;Acer Chromebook Spin 713 &amp;#34;Voxel&amp;#34;: an adequate Crostini device, a buggy Linux laptop&lt;/title&gt;
++    &lt;id&gt;https://hi.imnhan.com/chromebook/&lt;/id&gt;
++    &lt;link href=&quot;https://hi.imnhan.com/chromebook/&quot;&gt;&lt;/link&gt;
++    &lt;published&gt;2023-04-22T15:55:00+07:00&lt;/published&gt;
++    &lt;updated&gt;2023-04-22T15:55:00+07:00&lt;/updated&gt;
++  &lt;/entry&gt;
++  &lt;entry&gt;
++    &lt;title&gt;The video streaming finale, or why put.io is awesome&lt;/title&gt;
++    &lt;id&gt;https://hi.imnhan.com/video-streaming-3/&lt;/id&gt;
++    &lt;link href=&quot;https://hi.imnhan.com/video-streaming-3/&quot;&gt;&lt;/link&gt;
++    &lt;published&gt;2020-10-21T11:45:00+07:00&lt;/published&gt;
++    &lt;updated&gt;2020-10-21T11:45:00+07:00&lt;/updated&gt;
++  &lt;/entry&gt;
++  &lt;entry&gt;
++    &lt;title&gt;Look ma, no stock theme!&lt;/title&gt;
++    &lt;id&gt;https://hi.imnhan.com/custom-theme/&lt;/id&gt;
++    &lt;link href=&quot;https://hi.imnhan.com/custom-theme/&quot;&gt;&lt;/link&gt;
++    &lt;published&gt;2015-06-05T13:54:00+07:00&lt;/published&gt;
++    &lt;updated&gt;2015-06-05T13:54:00+07:00&lt;/updated&gt;
++  &lt;/entry&gt;
++  &lt;entry&gt;
++    &lt;title&gt;Dẹp ibus-unikey đi, dùng fcitx-unikey nhé!&lt;/title&gt;
++    &lt;id&gt;https://hi.imnhan.com/fcitx/&lt;/id&gt;
++    &lt;link href=&quot;https://hi.imnhan.com/fcitx/&quot;&gt;&lt;/link&gt;
++    &lt;published&gt;2015-01-29T20:41:00+07:00&lt;/published&gt;
++    &lt;updated&gt;2015-01-29T20:41:00+07:00&lt;/updated&gt;
++  &lt;/entry&gt;
++  &lt;entry&gt;
++    &lt;title&gt;&amp;#34;Have you built anything cool?&amp;#34;&lt;/title&gt;
++    &lt;id&gt;https://hi.imnhan.com/cool/&lt;/id&gt;
++    &lt;link href=&quot;https://hi.imnhan.com/cool/&quot;&gt;&lt;/link&gt;
++    &lt;published&gt;2014-01-25T10:37:00+07:00&lt;/published&gt;
++    &lt;updated&gt;2014-01-25T10:37:00+07:00&lt;/updated&gt;
+   &lt;/entry&gt;
+ &lt;/feed&gt;
+\ No newline at end of file
+diff --git a/content/posts/my-first-diy-fightstick.md b/fightstick-1/index.dj
+similarity index 100%
+rename from content/posts/my-first-diy-fightstick.md
+rename to fightstick-1/index.dj
+diff --git a/content/posts/my-first-diy-fightstick-2.md b/fightstick-2/index.dj
+similarity index 100%
+rename from content/posts/my-first-diy-fightstick-2.md
+rename to fightstick-2/index.dj
+diff --git a/content/posts/go-postgres-caddy-systemd-stack.md b/go-stack/index.dj
+similarity index 100%
+rename from content/posts/go-postgres-caddy-systemd-stack.md
+rename to go-stack/index.dj
+diff --git a/content/posts/bypass-rmit-domain-blocker-to-watch-hdviet.md b/hdviet/index.dj
+similarity index 100%
+rename from content/posts/bypass-rmit-domain-blocker-to-watch-hdviet.md
+rename to hdviet/index.dj
+diff --git a/ideas/index.html b/ideas/index.html
+index 94943f4..f5f7acc 100644
+--- a/ideas/index.html
++++ b/ideas/index.html
+@@ -85,7 +85,7 @@ &lt;h2&gt;Discord bot that launches CSGO/etc. server on demand&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2023 nhanb&lt;br&gt;
++© 2014–2023 nhanb&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+diff --git a/index.html b/index.html
+index dc1bb44..44b5a3c 100644
+--- a/index.html
++++ b/index.html
+@@ -35,9 +35,29 @@ &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
+ 
+ &lt;ul&gt;
+   &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;0001-01-01 — &lt;/span&gt;
+-    &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(0001-01-01)&lt;/span&gt;
++    &lt;span class=&quot;time-prefix&quot;&gt;2023-04-22 — &lt;/span&gt;
++    &lt;a href=&quot;/chromebook/&quot;&gt;Acer Chromebook Spin 713 &amp;#34;Voxel&amp;#34;: an adequate Crostini device, a buggy Linux laptop&lt;/a&gt;
++    &lt;span class=&quot;time-suffix&quot;&gt;(2023-04-22)&lt;/span&gt;
++  &lt;/li&gt;
++  &lt;li&gt;
++    &lt;span class=&quot;time-prefix&quot;&gt;2020-10-21 — &lt;/span&gt;
++    &lt;a href=&quot;/video-streaming-3/&quot;&gt;The video streaming finale, or why put.io is awesome&lt;/a&gt;
++    &lt;span class=&quot;time-suffix&quot;&gt;(2020-10-21)&lt;/span&gt;
++  &lt;/li&gt;
++  &lt;li&gt;
++    &lt;span class=&quot;time-prefix&quot;&gt;2015-06-05 — &lt;/span&gt;
++    &lt;a href=&quot;/custom-theme/&quot;&gt;Look ma, no stock theme!&lt;/a&gt;
++    &lt;span class=&quot;time-suffix&quot;&gt;(2015-06-05)&lt;/span&gt;
++  &lt;/li&gt;
++  &lt;li&gt;
++    &lt;span class=&quot;time-prefix&quot;&gt;2015-01-29 — &lt;/span&gt;
++    &lt;a href=&quot;/fcitx/&quot;&gt;Dẹp ibus-unikey đi, dùng fcitx-unikey nhé!&lt;/a&gt;
++    &lt;span class=&quot;time-suffix&quot;&gt;(2015-01-29)&lt;/span&gt;
++  &lt;/li&gt;
++  &lt;li&gt;
++    &lt;span class=&quot;time-prefix&quot;&gt;2014-01-25 — &lt;/span&gt;
++    &lt;a href=&quot;/cool/&quot;&gt;&amp;#34;Have you built anything cool?&amp;#34;&lt;/a&gt;
++    &lt;span class=&quot;time-suffix&quot;&gt;(2014-01-25)&lt;/span&gt;
+   &lt;/li&gt;
+ &lt;/ul&gt;
+ 
+@@ -91,7 +111,7 @@ &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
+ &lt;/style&gt;
+ 
+ &lt;footer&gt;
+-© 2023 nhanb&lt;br&gt;
++© 2014–2023 nhanb&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+diff --git a/content/posts/why-i-use-linux-automation.md b/linux-automation/index.dj
+similarity index 100%
+rename from content/posts/why-i-use-linux-automation.md
+rename to linux-automation/index.dj
+diff --git a/manifest.txt b/manifest.txt
+index 2bb9e07..0bb25ff 100644
+--- a/manifest.txt
++++ b/manifest.txt
+@@ -1,4 +1,8 @@
+ about/index.html
++chromebook/index.html
++cool/index.html
++custom-theme/index.html
++fcitx/index.html
+ feed.xml
+ ideas/index.html
+ index.html
+@@ -31,4 +35,5 @@ posts/what-i-did-after-installing-manjaro-xfce/index.html
+ posts/why-i-use-linux-automation/index.html
+ posts/working-with-sqlite-in-python-without-an-orm-or-migration-framework/index.html
+ projects/index.html
++video-streaming-3/index.html
+ yaks/index.html
+\ No newline at end of file
+diff --git a/content/posts/what-i-did-after-installing-manjaro.md b/manjaro-xfce/index.dj
+similarity index 100%
+rename from content/posts/what-i-did-after-installing-manjaro.md
+rename to manjaro-xfce/index.dj
+diff --git a/content/posts/introducing-mcross.md b/mcross/index.dj
+similarity index 100%
+rename from content/posts/introducing-mcross.md
+rename to mcross/index.dj
+diff --git a/content/posts/set-up-node-webkit-development-environment.md b/node-webkit/index.dj
+similarity index 100%
+rename from content/posts/set-up-node-webkit-development-environment.md
+rename to node-webkit/index.dj
+diff --git a/notes/index.html b/notes/index.html
+index e3b1fbb..5d2ad25 100644
+--- a/notes/index.html
++++ b/notes/index.html
+@@ -68,7 +68,7 @@ &lt;h2&gt;SRE&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2023 nhanb&lt;br&gt;
++© 2014–2023 nhanb&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+diff --git a/content/posts/modern-vim-plugin-management-pathogen-vs-vundle.md b/pathogen-vs-vundle/index.dj
+similarity index 100%
+rename from content/posts/modern-vim-plugin-management-pathogen-vs-vundle.md
+rename to pathogen-vs-vundle/index.dj
+diff --git a/content/posts/i-did-not-sign-that-stupid-petition.md b/petition-fraud/index.dj
+similarity index 100%
+rename from content/posts/i-did-not-sign-that-stupid-petition.md
+rename to petition-fraud/index.dj
+diff --git a/content/posts/i-made-my-python-webapp-pip-installable.md b/pippable-webapp/index.dj
+similarity index 100%
+rename from content/posts/i-made-my-python-webapp-pip-installable.md
+rename to pippable-webapp/index.dj
+diff --git a/projects/index.dj b/projects/index.dj
+index 2d2ff31..dc87ab4 100644
+--- a/projects/index.dj
++++ b/projects/index.dj
+@@ -1,4 +1,5 @@
+ Title: Projects
++ShowInFeed: false
+ Thumb: images/keyboard-warrior.jpg
+ ---
+ 
+diff --git a/projects/index.html b/projects/index.html
+index 99175de..0f428ef 100644
+--- a/projects/index.html
++++ b/projects/index.html
+@@ -78,7 +78,7 @@ &lt;h2&gt;Caophim&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2023 nhanb&lt;br&gt;
++© 2014–2023 nhanb&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+diff --git a/content/posts/how-to-install-pyqt5-on-virtualenv-on-ubuntu-14.04.md b/pyqt5/index.dj
+similarity index 100%
+rename from content/posts/how-to-install-pyqt5-on-virtualenv-on-ubuntu-14.04.md
+rename to pyqt5/index.dj
+diff --git a/content/posts/introducing-pytaku.md b/pytaku/index.dj
+similarity index 100%
+rename from content/posts/introducing-pytaku.md
+rename to pytaku/index.dj
+diff --git a/content/posts/fix-rmit-wifi-issue-with-ubuntu-13-04.md b/rmit-wifi/index.dj
+similarity index 100%
+rename from content/posts/fix-rmit-wifi-issue-with-ubuntu-13-04.md
+rename to rmit-wifi/index.dj
+diff --git a/content/posts/working-with-sqlite-without-an-orm.md b/sqlite-python/index.dj
+similarity index 100%
+rename from content/posts/working-with-sqlite-without-an-orm.md
+rename to sqlite-python/index.dj
+diff --git a/content/posts/simplest-possible-stepmania-soft-to-hard-pad-mod.md b/stepmania-pad/index.dj
+similarity index 100%
+rename from content/posts/simplest-possible-stepmania-soft-to-hard-pad-mod.md
+rename to stepmania-pad/index.dj
+diff --git a/content/posts/italic-text-in-vim-tmux-gnome-terminal.md b/tmux-italics/index.dj
+similarity index 100%
+rename from content/posts/italic-text-in-vim-tmux-gnome-terminal.md
+rename to tmux-italics/index.dj
+diff --git a/content/posts/installing-programs-in-ubuntu.md b/ubuntu-programs/index.dj
+similarity index 100%
+rename from content/posts/installing-programs-in-ubuntu.md
+rename to ubuntu-programs/index.dj
+diff --git a/content/posts/towards-an-acceptable-video-playing-experience.md b/video-streaming-1/index.dj
+similarity index 100%
+rename from content/posts/towards-an-acceptable-video-playing-experience.md
+rename to video-streaming-1/index.dj
+diff --git a/content/posts/streaming-videos-from-google-drive.md b/video-streaming-2/index.dj
+similarity index 100%
+rename from content/posts/streaming-videos-from-google-drive.md
+rename to video-streaming-2/index.dj
+diff --git a/content/posts/video-streaming-finale-or-why-put-io-is-awesome.md b/video-streaming-3/index.dj
+similarity index 79%
+rename from content/posts/video-streaming-finale-or-why-put-io-is-awesome.md
+rename to video-streaming-3/index.dj
+index a14d360..e6d2651 100644
+--- a/content/posts/video-streaming-finale-or-why-put-io-is-awesome.md
++++ b/video-streaming-3/index.dj
+@@ -1,9 +1,10 @@
+ Title: The video streaming finale, or why put.io is awesome
+-Date: 2020-10-21 11:45
++PostedAt: 2020-10-21 11:45
+ 
++---
+ 
+-[Previously](/posts/streaming-videos-from-google-drive-a-second-attempt/),
+-[previously](/posts/towards-an-acceptable-video-playing-experience/).
++[Previously](../video-streaming-2),
++[previously](../video-streaming-1).
+ 
+ 
+ I ditched the whole self hosted mess and just bought a [put.io](https://put.io)
+@@ -22,10 +23,12 @@
+ audio tracks, I can always drag-n-drop the original file&#39;s streaming URL from
+ the browser straight to an mpv launcher like this:
+ 
++``` =html
+ &lt;video controls&gt;
+-  &lt;source src=&quot;/images/put.io_01_mpv.mp4&quot; type=&quot;video/mp4&quot;&gt;
+-  &lt;a href=&quot;/images/put.io_01_mpv.mp4&quot;&gt;Video: /images/put.io_01_mpv.mp4&lt;/a&gt;
++  &lt;source src=&quot;put.io-drag-n-drop.mp4&quot; type=&quot;video/mp4&quot;&gt;
++  &lt;a href=&quot;put.io-drag-n-drop.mp4&quot;&gt;Video: put.io-drag-n-drop.mp4&lt;/a&gt;
+ &lt;/video&gt;
++```
+ 
+ 
+ It also has a open source third-party [Android app][1] that lets me browse and
+diff --git a/video-streaming-3/index.html b/video-streaming-3/index.html
+new file mode 100644
+index 0000000..471725e
+--- /dev/null
++++ b/video-streaming-3/index.html
+@@ -0,0 +1,67 @@
++&lt;!DOCTYPE html&gt;
++&lt;html&gt;
++
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;The video streaming finale, or why put.io is awesome | Hi, I&amp;#39;m Nhân&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;nav&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;span class=&quot;posted-on&quot;&gt;
++    Posted on
++    &lt;time datetime=&quot;2020-10-21&quot;&gt;
++        Wednesday, 21 Oct 2020
++    &lt;/time&gt;
++  &lt;/span&gt;
++
++&lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
++
++
++&lt;main&gt;
++&lt;h1&gt;The video streaming finale, or why put.io is awesome&lt;/h1&gt;
++&lt;p&gt;&lt;a href=&quot;../video-streaming-2&quot;&gt;Previously&lt;/a&gt;,
++&lt;a href=&quot;../video-streaming-1&quot;&gt;previously&lt;/a&gt;.&lt;/p&gt;
++&lt;p&gt;I ditched the whole self hosted mess and just bought a &lt;a href=&quot;https://put.io&quot;&gt;put.io&lt;/a&gt;
++subscription instead. This has become the smoothest, most no-nonsense video
++streaming experience I’ve ever had.&lt;/p&gt;
++&lt;p&gt;It’s a seedbox.&lt;/p&gt;
++&lt;p&gt;It transcodes.&lt;/p&gt;
++&lt;p&gt;It streams.&lt;/p&gt;
++&lt;p&gt;It has a web-based video player that lets me pick subtitles.&lt;/p&gt;
++&lt;p&gt;In cases when the subtitles aren’t recognized, or when I want to switch between
++audio tracks, I can always drag-n-drop the original file’s streaming URL from
++the browser straight to an mpv launcher like this:&lt;/p&gt;
++&lt;video controls&gt;
++  &lt;source src=&quot;put.io-drag-n-drop.mp4&quot; type=&quot;video/mp4&quot;&gt;
++  &lt;a href=&quot;put.io-drag-n-drop.mp4&quot;&gt;Video: put.io-drag-n-drop.mp4&lt;/a&gt;
++&lt;/video&gt;
++&lt;p&gt;It also has a open source third-party &lt;a href=&quot;https://github.com/DSteve595/Put.io&quot;&gt;Android app&lt;/a&gt; that lets me browse and
++stream via mpv-android. As icing on the cake, this app supports casting to
++Chromecast-enabled TVs - everything Just Works (tm).&lt;/p&gt;
++&lt;p&gt;The above is only possible because put.io exposes a powerful, well-documented
++API for everyone to play with.&lt;/p&gt;
++&lt;p&gt;The web player is clean, snappy (see that, Google Drive team?) and has
++autoplay disabled by default (screw you, Netflix).&lt;/p&gt;
++&lt;p&gt;It’s refreshing to find software that works &lt;em&gt;for&lt;/em&gt; instead of &lt;em&gt;against&lt;/em&gt; its
++users these days.&lt;/p&gt;
++
++&lt;/main&gt;
++
++&lt;footer&gt;
++© 2014–2023 nhanb&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++&lt;/footer&gt;
++
++&lt;/body&gt;
++
++&lt;/html&gt;
+diff --git a/content/images/put.io_01_mpv.mp4 b/video-streaming-3/put.io-drag-n-drop.mp4
+similarity index 100%
+rename from content/images/put.io_01_mpv.mp4
+rename to video-streaming-3/put.io-drag-n-drop.mp4
+diff --git a/content/posts/open-http-link-under-cursor-in-vim.md b/vim-open-link/index.dj
+similarity index 100%
+rename from content/posts/open-http-link-under-cursor-in-vim.md
+rename to vim-open-link/index.dj
+diff --git a/content/posts/virtualenvwrapper-with-python2-python3.md b/virtualenvwrapper/index.dj
+similarity index 100%
+rename from content/posts/virtualenvwrapper-with-python2-python3.md
+rename to virtualenvwrapper/index.dj
+diff --git a/yaks/index.html b/yaks/index.html
+index 31f5cb4..808cd40 100644
+--- a/yaks/index.html
++++ b/yaks/index.html
+@@ -92,7 +92,7 @@ &lt;h2&gt;Home server&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2023 nhanb&lt;br&gt;
++© 2014–2023 nhanb&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+</pre></body></html>

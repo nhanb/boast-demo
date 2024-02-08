@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[808083f6fc] fix thumbnail links | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 808083f6fc</strong><hr><pre>commit 808083f6fc6dea22504675bc5b2cc860ef231f05
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 6 20:13:50 2020 +0700
+
+    fix thumbnail links
+    
+    mangadex&#39;s resized images are always in `jpg` format
+
+diff --git a/pyproject.toml b/pyproject.toml
+index fa366d1..da4e8cf 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.1.6&quot;
++version = &quot;0.1.7&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/templates/follows.html b/src/pytaku/templates/follows.html
+index e73f057..e166017 100644
+--- a/src/pytaku/templates/follows.html
++++ b/src/pytaku/templates/follows.html
+@@ -63,7 +63,7 @@
+   &lt;div&gt;
+     &lt;a href=&quot;{{ title_url }}&quot;&gt;
+       &lt;img class=&quot;cover&quot;
+-           src=&quot;https://mangadex.org/images/manga/{{ title[&#39;id&#39;] }}.large.{{ title[&#39;cover_ext&#39;] }}&quot;
++           src=&quot;https://mangadex.org/images/manga/{{ title[&#39;id&#39;] }}.large.jpg&quot;
+            alt=&quot;{{ title[&#39;name&#39;] }}&quot; /&gt;
+     &lt;/a&gt;
+   &lt;/div&gt;
+diff --git a/src/pytaku/templates/search.html b/src/pytaku/templates/search.html
+index feb098d..d0dd325 100644
+--- a/src/pytaku/templates/search.html
++++ b/src/pytaku/templates/search.html
+@@ -48,7 +48,7 @@ &lt;h1&gt;No results for &quot;{{ query }}&quot;.&lt;/h1&gt;
+   {% for title in titles %}
+     &lt;a class=&quot;result&quot; href=&quot;{{ url_for(&#39;title_view&#39;, title_id=title[&#39;id&#39;], site=title[&#39;site&#39;]) }}&quot;
+        title=&quot;{{ title[&#39;name&#39;] }}&quot;&gt;
+-      &lt;img src=&quot;https://mangadex.org/images/manga/{{ title[&#39;id&#39;] }}.large.jpg&quot; alt=&quot;&quot;&gt;
++      &lt;img src=&quot;https://mangadex.org/images/manga/{{ title[&#39;id&#39;] }}.large.jpg&quot; alt=&quot;{{ title[&#39;name&#39;] }}&quot;&gt;
+       &lt;span&gt;{{ title[&#39;name&#39;] | truncate(50) }}&lt;/span&gt;
+     &lt;/a&gt;
+   {% endfor %}
+</pre></body></html>

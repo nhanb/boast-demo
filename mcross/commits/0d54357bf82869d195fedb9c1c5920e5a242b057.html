@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[0d54357bf8] fix preformatted block with alt text | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 0d54357bf8</strong><hr><pre>commit 0d54357bf82869d195fedb9c1c5920e5a242b057
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Nov 2 11:25:46 2020 +0700
+
+    fix preformatted block with alt text
+    
+    I really need to do proper parser tests one of these days...
+
+diff --git a/src/mcross/document.py b/src/mcross/document.py
+index 821f673..d44c698 100644
+--- a/src/mcross/document.py
++++ b/src/mcross/document.py
+@@ -54,7 +54,13 @@ def __repr__(self):
+ 
+ 
+ class PreformattedNode(GeminiNode):
+-    pass
++    __slots__ = (&quot;alt&quot;, &quot;text&quot;)
++    alt: str
++    text: str
++
++    def __init__(self, alt, text):
++        self.alt = alt
++        self.text = text
+ 
+ 
+ def parse(text):
+@@ -66,18 +72,21 @@ def parse(text):
+ 
+     for line in text.strip().split(NEWLINE):
+ 
+-        if line == &quot;```&quot;:
++        if line.startswith(&quot;```&quot;):
+             if preformatted is None:
+                 # start preformatted mode
+-                preformatted = &quot;&quot;
++                preformatted = {&quot;alt&quot;: line[3:], &quot;text&quot;: &quot;&quot;}
+             else:
+-                nodes.append(PreformattedNode(preformatted))
++                # maybe FIXME: in case a closing ``` has trailing text, that text
++                # will be thrown away. Who cares since that would probably
++                # mean malformed gemini anyway.
++                nodes.append(PreformattedNode(**preformatted))
+                 preformatted = None
+ 
+         elif preformatted is not None:
+-            if len(preformatted) &gt; 0:
+-                preformatted += &quot;\n&quot;
+-            preformatted += line
++            if len(preformatted[&quot;text&quot;]) &gt; 0:
++                preformatted[&quot;text&quot;] += &quot;\n&quot;
++            preformatted[&quot;text&quot;] += line
+ 
+         elif line.startswith(&quot;=&gt; &quot;):
+             match = LINK_LINE_PATTERN.match(line)
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index bd0fa34..1a8ae95 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -3,16 +3,8 @@
+ from tkinter import Text, Tk, font, ttk
+ 
+ from .. import conf
+-from ..document import (
+-    GeminiNode,
+-    H1Node,
+-    H2Node,
+-    H3Node,
+-    LinkNode,
+-    ListItemNode,
+-    PreformattedNode,
+-    TextNode,
+-)
++from ..document import (GeminiNode, H1Node, H2Node, H3Node, LinkNode,
++                        ListItemNode, PreformattedNode, TextNode)
+ from .model import Model
+ from .widgets import AltButton, McEntry, ReadOnlyText
+ 
+@@ -271,7 +263,7 @@ def render_node(node: GeminiNode, widget: Text):
+         if node.name:
+             widget.insert(&quot;end&quot;, f&quot; {node.name}&quot;)
+     elif nodetype is PreformattedNode:
+-        widget.insert(&quot;end&quot;, f&quot;```\n{node.text}\n```&quot;, (&quot;pre&quot;,))
++        widget.insert(&quot;end&quot;, f&quot;```{node.alt}\n{node.text}\n```&quot;, (&quot;pre&quot;,))
+     elif nodetype is ListItemNode:
+         widget.insert(&quot;end&quot;, node.text, (&quot;listitem&quot;,))
+     elif nodetype is H1Node:
+</pre></body></html>

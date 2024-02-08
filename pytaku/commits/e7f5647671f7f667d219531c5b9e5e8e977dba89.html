@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e7f5647671] add mechanism to nuke all sessions in 1 code push | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / e7f5647671</strong><hr><pre>commit e7f5647671f7f667d219531c5b9e5e8e977dba89
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 8 01:41:51 2020 +0700
+
+    add mechanism to nuke all sessions in 1 code push
+
+diff --git a/src/pytaku/decorators.py b/src/pytaku/decorators.py
+index 8d7b0bc..6863355 100644
+--- a/src/pytaku/decorators.py
++++ b/src/pytaku/decorators.py
+@@ -5,6 +5,27 @@
+ from .persistence import read
+ 
+ 
++def ensure_session_version(f, CURRENT_VERSION=1):
++    &quot;&quot;&quot;
++    Increment CURRENT_VERSION to nuke all current sessions.
++    Useful for when I try to change session structure or something. Maybe.
++    &quot;&quot;&quot;
++
++    @wraps(f)
++    def decorated_function(*args, **kwargs):
++        if (
++            not session.get(&quot;version&quot;)
++            or not isinstance(session[&quot;version&quot;], int)
++            or session[&quot;version&quot;] &lt; CURRENT_VERSION
++        ):
++            session.clear()
++            session[&quot;version&quot;] = CURRENT_VERSION
++            return redirect(&quot;/&quot;)
++        return f(*args, **kwargs)
++
++    return decorated_function
++
++
+ def require_login(f):
+     @wraps(f)
+     def decorated_function(*args, **kwargs):
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index af04fb9..a1903a8 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -17,7 +17,7 @@
+ 
+ from . import mangadex
+ from .conf import config
+-from .decorators import require_login, trigger_has_read
++from .decorators import ensure_session_version, require_login, trigger_has_read
+ from .persistence import (
+     follow,
+     get_followed_titles,
+@@ -38,6 +38,7 @@
+ 
+ 
+ @app.route(&quot;/&quot;)
++@ensure_session_version
+ def home_view():
+     if session.get(&quot;user&quot;):
+         return redirect(url_for(&quot;follows_view&quot;))
+@@ -45,6 +46,7 @@ def home_view():
+ 
+ 
+ @app.route(&quot;/me&quot;, methods=[&quot;GET&quot;])
++@ensure_session_version
+ @require_login
+ def follows_view():
+     titles = get_followed_titles(session[&quot;user&quot;][&quot;id&quot;])
+@@ -52,6 +54,7 @@ def follows_view():
+ 
+ 
+ @app.route(&quot;/follow/&lt;site&gt;/&lt;title_id&gt;&quot;, methods=[&quot;POST&quot;])
++@ensure_session_version
+ @require_login
+ def follow_view(site, title_id):
+     follow(session[&quot;user&quot;][&quot;id&quot;], site, title_id)
+@@ -59,6 +62,7 @@ def follow_view(site, title_id):
+ 
+ 
+ @app.route(&quot;/unfollow/&lt;site&gt;/&lt;title_id&gt;&quot;, methods=[&quot;POST&quot;])
++@ensure_session_version
+ @require_login
+ def unfollow_view(site, title_id):
+     unfollow(session[&quot;user&quot;][&quot;id&quot;], site, title_id)
+@@ -66,12 +70,14 @@ def unfollow_view(site, title_id):
+ 
+ 
+ @app.route(&quot;/logout&quot;, methods=[&quot;POST&quot;])
++@ensure_session_version
+ def logout_view():
+     session.pop(&quot;user&quot;)
+     return redirect(&quot;/&quot;)
+ 
+ 
+ @app.route(&quot;/auth&quot;, methods=[&quot;GET&quot;, &quot;POST&quot;])
++@ensure_session_version
+ def auth_view():
+     if session.get(&quot;user&quot;):
+         return redirect(url_for(&quot;home_view&quot;))
+@@ -155,6 +161,7 @@ def auth_view():
+ 
+ 
+ @app.route(&quot;/title/&lt;site&gt;/&lt;title_id&gt;&quot;)
++@ensure_session_version
+ @trigger_has_read
+ def title_view(site, title_id):
+     user = session.get(&quot;user&quot;, None)
+@@ -172,6 +179,7 @@ def title_view(site, title_id):
+ 
+ 
+ @app.route(&quot;/chapter/&lt;site&gt;/&lt;chapter_id&gt;&quot;)
++@ensure_session_version
+ @trigger_has_read
+ def chapter_view(site, chapter_id):
+     chapter = load_chapter(site, chapter_id)
+@@ -197,6 +205,7 @@ def chapter_view(site, chapter_id):
+ 
+ 
+ @app.route(&quot;/search&quot;)
++@ensure_session_version
+ def search_view():
+     query = request.args.get(&quot;q&quot;, &quot;&quot;).strip()
+     titles = []
+</pre></body></html>

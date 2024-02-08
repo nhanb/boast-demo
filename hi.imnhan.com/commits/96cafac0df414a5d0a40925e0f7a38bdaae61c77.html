@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[96cafac0df] add notes page | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 96cafac0df</strong><hr><pre>commit 96cafac0df414a5d0a40925e0f7a38bdaae61c77
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Sep 18 23:23:37 2023 +0700
+
+    add notes page
+
+diff --git a/_s4g/manifest b/_s4g/manifest
+index bf7c14e..3360c75 100644
+--- a/_s4g/manifest
++++ b/_s4g/manifest
+@@ -18,6 +18,7 @@ movie-streaming/gflick/index.html
+ movie-streaming/index.html
+ movie-streaming/put.io/index.html
+ node-webkit/index.html
++notes.html
+ pathogen-vs-vundle/index.html
+ petition-fraud/index.html
+ pippable-webapp/index.html
+diff --git a/notes.dj b/notes.dj
+new file mode 100644
+index 0000000..95046a0
+--- /dev/null
++++ b/notes.dj
+@@ -0,0 +1,21 @@
++Title: Notes
++PostedAt: 2023-09-18 23:21
++ShowInFeed: false
++---
++
++## sftp/sshfs only
++
++Per [Hacker News](https://news.ycombinator.com/item?id=37390184#37427965):
++
++&gt; If the user account is only supposed to have file transfer capabilities/no
++&gt; shell access, add it a to a specific group e.g. `sftponly`, and only allow
++&gt; this group to use the `internal-sftp` command in `/etc/ssh/sshd_config`
++&gt;
++&gt; ```
++&gt; Match Group sftponly
++&gt; ForceCommand internal-sftp -l INFO -f LOCAL6
++&gt; AllowTcpForwarding no
++&gt; AllowAgentForwarding no
++&gt; GatewayPorts no
++&gt; X11Forwarding no
++&gt; ```
+diff --git a/notes.html b/notes.html
+new file mode 100644
+index 0000000..6159d97
+--- /dev/null
++++ b/notes.html
+@@ -0,0 +1,69 @@
++&lt;!DOCTYPE html&gt;
++&lt;html&gt;
++
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;Notes | Hi, I&amp;#39;m Nhân&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
++
++  &lt;meta property=&quot;og:title&quot; content=&quot;Notes&quot; /&gt;
++  &lt;meta name=&quot;twitter:title&quot; content=&quot;Notes&quot; /&gt;
++  &lt;meta name=&quot;twitter:card&quot; content=&quot;summary&quot; /&gt;&lt;meta property=&quot;og:image&quot; content=&quot;https://hi.imnhan.com/about/keyboard-warrior.jpg&quot; /&gt;
++    &lt;meta name=&quot;twitter:image&quot; content=&quot;https://hi.imnhan.com/about/keyboard-warrior.jpg&quot; /&gt;&lt;meta name=&quot;twitter:site&quot; content=&quot;@nhanb&quot; /&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
++&lt;nav&gt;
++  &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
++  &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
++
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
++  &lt;span class=&quot;posted-on&quot;&gt;
++    Posted on
++    &lt;time datetime=&quot;2023-09-18&quot;&gt;
++        Monday, 18 Sep 2023
++    &lt;/time&gt;
++  &lt;/span&gt;
++
++&lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
++
++
++&lt;main&gt;
++
++&lt;h1&gt;Notes&lt;/h1&gt;
++
++&lt;section id=&quot;sftp-sshfs-only&quot;&gt;
++&lt;h2&gt;sftp/sshfs only&lt;a href=&quot;#sftp-sshfs-only&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
++&lt;p&gt;Per &lt;a href=&quot;https://news.ycombinator.com/item?id=37390184#37427965&quot;&gt;Hacker News&lt;/a&gt;:&lt;/p&gt;
++&lt;blockquote&gt;
++&lt;p&gt;If the user account is only supposed to have file transfer capabilities/no
++shell access, add it a to a specific group e.g. &lt;code&gt;sftponly&lt;/code&gt;, and only allow
++this group to use the &lt;code&gt;internal-sftp&lt;/code&gt; command in &lt;code&gt;/etc/ssh/sshd_config&lt;/code&gt;&lt;/p&gt;
++&lt;pre&gt;&lt;code&gt;Match Group sftponly
++ForceCommand internal-sftp -l INFO -f LOCAL6
++AllowTcpForwarding no
++AllowAgentForwarding no
++GatewayPorts no
++X11Forwarding no
++&lt;/code&gt;&lt;/pre&gt;
++&lt;/blockquote&gt;
++&lt;/section&gt;
++
++&lt;/main&gt;
++
++&lt;footer&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà&amp;nbsp;phê&amp;nbsp;sữa&amp;nbsp;đá&lt;/a&gt;
++&lt;/footer&gt;
++
++&lt;/body&gt;
++
++&lt;/html&gt;
+</pre></body></html>

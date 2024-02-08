@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[baaf53e72f] not-so-secret sauce proxy | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / baaf53e72f</strong><hr><pre>commit baaf53e72fadb66323860ddcdcbadf4e635d5092
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jun 19 16:20:52 2021 +0700
+
+    not-so-secret sauce proxy
+    
+    Until they&#39;re on to us again I guess
+
+diff --git a/src/mangoapi/base_site.py b/src/mangoapi/base_site.py
+index 08f4332..9189367 100644
+--- a/src/mangoapi/base_site.py
++++ b/src/mangoapi/base_site.py
+@@ -1,9 +1,12 @@
+ import functools
+ from abc import ABC, abstractmethod
++from urllib.parse import urlparse
+ 
+ import cloudscraper
+ import requests
+ 
++from pytaku.conf import config
++
+ from .exceptions import (
+     SourceSite5xxError,
+     SourceSiteTimeoutError,
+@@ -55,9 +58,21 @@ def login(self, username, password):
+         raise NotImplementedError()
+ 
+     def _http_request(self, method, url, *args, **kwargs):
++        headers = kwargs.get(&quot;headers&quot;, {})
+         if &quot;timeout&quot; not in kwargs:
+             kwargs[&quot;timeout&quot;] = 5
+ 
++        # Proxy shit
++        parsed_url = urlparse(url)
++        url = parsed_url._replace(
++            netloc=config.FAASPROXY_NETLOC,
++            scheme=&quot;https&quot;,
++            path=config.FAASPROXY_PATH + parsed_url.path,
++        ).geturl()
++        headers[&quot;Faasproxy-Target-Host&quot;] = parsed_url.netloc
++        headers[&quot;Faasproxy-Key&quot;] = config.FAASPROXY_KEY
++        kwargs[&quot;headers&quot;] = headers
++
+         request_func = getattr(self._session, method)
+         try:
+             resp = request_func(url, *args, **kwargs)
+diff --git a/src/pytaku/__init__.py b/src/pytaku/__init__.py
+index f320f42..c3c9882 100644
+--- a/src/pytaku/__init__.py
++++ b/src/pytaku/__init__.py
+@@ -56,6 +56,7 @@ def generate_config():
+ 
+ 
+ def scheduler():
++    config.load()
+     from .scheduler import main_loop
+ 
+     main_loop()
+diff --git a/src/pytaku/conf.py b/src/pytaku/conf.py
+index 5fe3d0e..ff1a9cc 100644
+--- a/src/pytaku/conf.py
++++ b/src/pytaku/conf.py
+@@ -14,5 +14,9 @@ class Config(GoodConf):
+     PROXY_CACHE_MAX_SIZE = Value(default=1024 * 1024 * 1024 * 5)  # 5GiB in bytes
+     PROXY_CACHE_MAX_AGE = Value(default=3600 * 24 * 2)  # 2 days in seconds
+ 
++    FAASPROXY_NETLOC = Value()
++    FAASPROXY_PATH = Value()
++    FAASPROXY_KEY = Value()
++
+ 
+ config = Config(default_files=[&quot;pytaku.conf.json&quot;])
+diff --git a/src/pytaku/scheduler.py b/src/pytaku/scheduler.py
+index c8dff33..389228e 100644
+--- a/src/pytaku/scheduler.py
++++ b/src/pytaku/scheduler.py
+@@ -76,7 +76,7 @@ def run(self):
+                 save_title(updated_title)
+                 print(&quot; done&quot;)
+                 if title[&quot;site&quot;] == &quot;mangasee&quot;:
+-                    time.sleep(random.randint(5, 10))
++                    time.sleep(2)
+             except (SourceSite5xxError, ReadTimeout, JSONDecodeError) as e:
+                 print(&quot; skipped because of server error:&quot;, e.__class__.__name__, str(e))
+ 
+</pre></body></html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[54d2b067ff] fix if clause | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 54d2b067ff</strong><hr><pre>commit 54d2b067ff5be569ec0664b3a8fafb855eafb4a7
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jun 19 14:39:46 2023 +0700
+
+    fix if clause
+
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index 9a3b451..69e12d2 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -149,7 +149,7 @@ proc applystate {} {
+ # Minimizing then re-opening it seems to do the trick.
+ # This workaround, however, makes the window unfocused on KDE, so
+ # let&#39;s only use it on Windows.
+-if {$tcl_platform(platform) == windows} {
++if {$tcl_platform(platform) == &quot;windows&quot;} {
+     wm iconify .
+     wm deiconify .
+ }
+</pre></body></html>

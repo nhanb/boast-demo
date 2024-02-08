@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[7d6b58d325] bring back mangadex chapter names | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 7d6b58d325</strong><hr><pre>commit 7d6b58d3258aa0321f6e56dfff49a81791c16151
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Feb 2 00:10:15 2024 +0700
+
+    bring back mangadex chapter names
+    
+    Turns out there&#39;s another API that lists chapters. Oh well.
+
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index f765078..32479dc 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -59,39 +59,36 @@ def get_title(self, title_id):
+         return title
+ 
+     def get_chapters_list(self, title_id):
+-        resp = self.http_get(
+-            f&quot;https://api.mangadex.org/manga/{title_id}/aggregate&quot;,
+-            params={&quot;translatedLanguage[]&quot;: &quot;en&quot;},
+-        )
+-        assert resp.status_code == 200
+-        volumes: dict = resp.json()[&quot;volumes&quot;]
+         chapters = []
+-
+-        # If there are no volumes, it&#39;s an empty list.
+-        # But if there are actual volumes, it&#39;s a dict.
+-        if type(volumes) is list:
+-            return []
+-        for vol in volumes.values():
+-            # Counting on python&#39;s spanking new key-order-preserving dicts here.
+-            # But WHY THE ACTUAL FUCK would you (mangadex) depend on JSON&#39;s key-value
+-            # pairs ordering?  A JSON object&#39;s keys is supposed to be unordered FFS.
+-            # If it actually becomes a problem I&#39;ll do chapter sorting later. Soon. Ish.
+-            chapters += (
+-                [
+-                    {
+-                        &quot;id&quot;: chap[&quot;id&quot;],
+-                        &quot;name&quot;: &quot;&quot;,
+-                        &quot;groups&quot;: [],  # TODO
+-                        &quot;volume&quot;: vol[&quot;volume&quot;]
+-                        if vol[&quot;volume&quot;] not in (None, &quot;none&quot;)
+-                        else &quot;&quot;,
+-                        **_parse_chapter_number(chap[&quot;chapter&quot;]),
+-                    }
+-                    for chap in vol[&quot;chapters&quot;].values()  # again, fucking yikes
+-                ]
+-                if type(vol[&quot;chapters&quot;]) is dict
+-                else []
++        offset = 0
++        limit = 100  # max allowed by mangadex api; will be 400 if we try any higher
++        while True:
++            resp = self.http_get(
++                &quot;https://api.mangadex.org/chapter&quot;,
++                params={
++                    &quot;manga&quot;: title_id,
++                    &quot;translatedLanguage[]&quot;: &quot;en&quot;,
++                    &quot;order[chapter]&quot;: &quot;desc&quot;,
++                    &quot;offset&quot;: offset,
++                    &quot;limit&quot;: limit,
++                },
+             )
++            assert resp.status_code == 200
++            body = resp.json()
++            chapters += [
++                {
++                    &quot;id&quot;: chap[&quot;id&quot;],
++                    &quot;name&quot;: chap[&quot;attributes&quot;][&quot;title&quot;],
++                    &quot;groups&quot;: [],  # TODO
++                    &quot;volume&quot;: chap[&quot;attributes&quot;][&quot;volume&quot;],
++                    **_parse_chapter_number(chap[&quot;attributes&quot;][&quot;chapter&quot;]),
++                }
++                for chap in body[&quot;data&quot;]
++            ]
++
++            offset += limit
++            if len(chapters) &lt; limit or offset &gt;= body[&quot;total&quot;]:
++                break
+ 
+         return chapters
+ 
+diff --git a/tests/mangoapi/test_mangadex.py b/tests/mangoapi/test_mangadex.py
+index 3783eda..2ff93d8 100644
+--- a/tests/mangoapi/test_mangadex.py
++++ b/tests/mangoapi/test_mangadex.py
+@@ -25,15 +25,23 @@ def test_get_title():
+         &quot;is_webtoon&quot;: False,
+     }
+ 
+-    assert len(chapters) == 252
++    assert len(chapters) == 251
+     assert chapters[1] == {
+         &quot;id&quot;: &quot;dfd3fd5a-a20f-460f-b726-e9cb168bfe3d&quot;,
+-        &quot;name&quot;: &quot;&quot;,
++        &quot;name&quot;: &quot;Love Blooms in The Season of Partings&quot;,
+         &quot;volume&quot;: &quot;28&quot;,
+         &quot;groups&quot;: [],
+         &quot;number&quot;: &quot;245&quot;,
+         &quot;num_major&quot;: 245,
+     }
++    assert chapters[-1] == {
++        &quot;groups&quot;: [],
++        &quot;id&quot;: &quot;91ee8504-db4e-4b67-ac89-8fb291f67f7e&quot;,
++        &quot;name&quot;: &quot;I Picked up the Devil King&quot;,
++        &quot;num_major&quot;: 1,
++        &quot;number&quot;: &quot;1&quot;,
++        &quot;volume&quot;: &quot;1&quot;,
++    }
+ 
+ 
+ def test_get_title_webtoon():
+</pre></body></html>

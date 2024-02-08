@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[483f278a6c] force push to output html repo | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 483f278a6c</strong><hr><pre>commit 483f278a6c6989b19055791d2f0e0861c48d4f4a
+Author: nhanb &lt;nhan@nerdyweekly.com&gt;
+Date:   Sat Feb 14 23:06:17 2015 +0700
+
+    force push to output html repo
+
+diff --git a/Makefile b/Makefile
+index 3086dc3..6e96153 100644
+--- a/Makefile
++++ b/Makefile
+@@ -105,6 +105,6 @@ cf_upload: publish
+ 
+ github: publish
+ 	ghp-import $(OUTPUTDIR)
+-	git push git@github.com:nhanb/nhanb.github.io.git gh-pages:master
++	git push git@github.com:nhanb/nhanb.github.io.git gh-pages:master -f
+ 
+ .PHONY: html help clean regenerate serve devserver publish ssh_upload rsync_upload dropbox_upload ftp_upload s3_upload cf_upload github
+</pre></body></html>

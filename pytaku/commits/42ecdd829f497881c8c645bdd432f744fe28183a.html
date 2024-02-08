@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[42ecdd829f] CDN was a dud | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 42ecdd829f</strong><hr><pre>commit 42ecdd829f497881c8c645bdd432f744fe28183a
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 30 16:43:35 2020 +0700
+
+    CDN was a dud
+    
+    Bunnycdn kept routing me to US/EU edges for some reason (although they
+    do have a Singapore edge), so things were slooooow. Since I don&#39;t have
+    access to a better CDN, let&#39;s not use one at all. Therefore, there need
+    to be more web workers to serve static stuff.
+    
+    I should really look into async servers huh.
+
+diff --git a/contrib/systemd/pytaku.service b/contrib/systemd/pytaku.service
+index f70e1d3..d369e16 100644
+--- a/contrib/systemd/pytaku.service
++++ b/contrib/systemd/pytaku.service
+@@ -10,7 +10,7 @@ Description=Pytaku server
+ 
+ [Service]
+ Environment=&quot;PYTHONUNBUFFERED=1&quot;
+-ExecStart=/bin/bash -c &#39;export PATH=$PATH:$HOME/.local/bin; pytaku -w 5 -b 0.0.0.0:5001&#39;
++ExecStart=/bin/bash -c &#39;export PATH=$PATH:$HOME/.local/bin; pytaku -w 10 -b 0.0.0.0:5001&#39;
+ WorkingDirectory=/home/pytaku/pytaku
+ Restart=always
+ 
+diff --git a/pyproject.toml b/pyproject.toml
+index 1f37d3d..47d030f 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.15&quot;
++version = &quot;0.3.16&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+</pre></body></html>

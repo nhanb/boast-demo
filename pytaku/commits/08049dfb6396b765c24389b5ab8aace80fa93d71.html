@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[08049dfb63] update instructions | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 08049dfb63</strong><hr><pre>commit 08049dfb6396b765c24389b5ab8aace80fa93d71
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 6 00:07:53 2020 +0700
+
+    update instructions
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 0726a55..8df5c14 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.1.4&quot;
++version = &quot;0.1.5&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/templates/follows.html b/src/pytaku/templates/follows.html
+index 906df62..e73f057 100644
+--- a/src/pytaku/templates/follows.html
++++ b/src/pytaku/templates/follows.html
+@@ -57,7 +57,6 @@
+ 
+ {% block content %}
+ 
+-
+ {% for title in titles %}
+ {% set title_url = url_for(&#39;title_view&#39;, site=title[&#39;site&#39;], title_id=title[&#39;id&#39;]) %}
+ &lt;div class=&quot;title&quot;&gt;
+@@ -86,4 +85,8 @@
+ &lt;/div&gt;
+ {% endfor %}
+ 
++{% if not titles %}
++&lt;p&gt;You&#39;re not following any title yet. Try searching for some.&lt;/p&gt;
++{% endif %}
++
+ {% endblock %}
+diff --git a/src/pytaku/templates/home.html b/src/pytaku/templates/home.html
+index 74cf0dd..76030ea 100644
+--- a/src/pytaku/templates/home.html
++++ b/src/pytaku/templates/home.html
+@@ -5,7 +5,8 @@
+ {% endblock %}
+ 
+ {% block content %}
+-&lt;h1&gt;This is a work in progress&lt;/h1&gt;
+ &lt;p&gt;Try searching for some manga title using the box above.&lt;/p&gt;
+-&lt;p&gt;Account/Bookmarking aren&#39;t working yet.&lt;/p&gt;
++&lt;p&gt;Logging in allows you to follow manga titles.&lt;/p&gt;
++
++&lt;p&gt;&lt;strong&gt;This is a work in progress.&lt;/strong&gt; Expect bugs.&lt;/p&gt;
+ {% endblock %}
+</pre></body></html>

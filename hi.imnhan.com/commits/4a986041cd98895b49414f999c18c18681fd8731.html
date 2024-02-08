@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[4a986041cd] update ideas | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 4a986041cd</strong><hr><pre>commit 4a986041cd98895b49414f999c18c18681fd8731
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Sep 7 15:00:34 2023 +0700
+
+    update ideas
+
+diff --git a/_s4g/manifest b/_s4g/manifest
+index e04eba1..bf7c14e 100644
+--- a/_s4g/manifest
++++ b/_s4g/manifest
+@@ -8,7 +8,7 @@ fightstick-1/index.html
+ fightstick-2/index.html
+ go-stack/index.html
+ hdviet/index.html
+-ideas.html
++ideas/index.html
+ index.html
+ linux-automation/index.html
+ manjaro-xfce/index.html
+diff --git a/ideas/idea-man.jpg b/ideas/idea-man.jpg
+new file mode 100644
+index 0000000..b45c5e4
+Binary files /dev/null and b/ideas/idea-man.jpg differ
+diff --git a/ideas.dj b/ideas/index.dj
+similarity index 85%
+rename from ideas.dj
+rename to ideas/index.dj
+index 61e101b..ed3e891 100644
+--- a/ideas.dj
++++ b/ideas/index.dj
+@@ -1,11 +1,19 @@
+ Title: Potential project ideas
+ ShowInFeed: false
++Thumb: idea-man.jpg
++Description: &quot;The idea is there. It just needs implementation.&quot;
++---
++
++![](idea-man.jpg)
++
++&gt; The idea is there. It just needs implementation.
++
+ ---
+ 
+ ## Self hosted RSS reader in pure Go
+ 
+ - Single executable, web based
+-- bbolt
++- bbolt for persistence
+ - Bonus: e-ink friendly display
+ - Bonus: netsurf friendly
+ 
+diff --git a/ideas.html b/ideas/index.html
+similarity index 83%
+rename from ideas.html
+rename to ideas/index.html
+index a583170..381e803 100644
+--- a/ideas.html
++++ b/ideas/index.html
+@@ -11,8 +11,9 @@
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Potential project ideas&quot; /&gt;
+   &lt;meta name=&quot;twitter:title&quot; content=&quot;Potential project ideas&quot; /&gt;
+-  &lt;meta name=&quot;twitter:card&quot; content=&quot;summary&quot; /&gt;&lt;meta property=&quot;og:image&quot; content=&quot;https://hi.imnhan.com/about/keyboard-warrior.jpg&quot; /&gt;
+-    &lt;meta name=&quot;twitter:image&quot; content=&quot;https://hi.imnhan.com/about/keyboard-warrior.jpg&quot; /&gt;&lt;meta name=&quot;twitter:site&quot; content=&quot;@nhanb&quot; /&gt;
++  &lt;meta name=&quot;twitter:card&quot; content=&quot;summary&quot; /&gt;&lt;meta property=&quot;og:description&quot; content=&quot;&amp;#34;The idea is there. It just needs implementation.&amp;#34;&quot; /&gt;
++    &lt;meta name=&quot;twitter:description&quot; content=&quot;&amp;#34;The idea is there. It just needs implementation.&amp;#34;&quot; /&gt;&lt;meta property=&quot;og:image&quot; content=&quot;https://hi.imnhan.com/ideas/idea-man.jpg&quot; /&gt;
++    &lt;meta name=&quot;twitter:image&quot; content=&quot;https://hi.imnhan.com/ideas/idea-man.jpg&quot; /&gt;&lt;meta name=&quot;twitter:site&quot; content=&quot;@nhanb&quot; /&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+@@ -34,6 +35,11 @@
+ 
+ &lt;h1&gt;Potential project ideas&lt;/h1&gt;
+ 
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;idea-man.jpg&quot;&gt;&lt;/p&gt;
++&lt;blockquote&gt;
++&lt;p&gt;The idea is there. It just needs implementation.&lt;/p&gt;
++&lt;/blockquote&gt;
++&lt;hr&gt;
+ &lt;section id=&quot;Self-hosted-RSS-reader-in-pure-Go&quot;&gt;
+ &lt;h2&gt;Self hosted RSS reader in pure Go&lt;a href=&quot;#Self-hosted-RSS-reader-in-pure-Go&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;ul&gt;
+@@ -41,7 +47,7 @@ &lt;h2&gt;Self hosted RSS reader in pure Go&lt;a href=&quot;#Self-hosted-RSS-reader-in-pure-Go
+ Single executable, web based
+ &lt;/li&gt;
+ &lt;li&gt;
+-bbolt
++bbolt for persistence
+ &lt;/li&gt;
+ &lt;li&gt;
+ Bonus: e-ink friendly display
+</pre></body></html>

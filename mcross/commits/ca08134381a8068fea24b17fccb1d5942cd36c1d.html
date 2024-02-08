@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ca08134381] ctrl-l to jump to address bar | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / ca08134381</strong><hr><pre>commit ca08134381a8068fea24b17fccb1d5942cd36c1d
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu May 28 18:32:10 2020 +0700
+
+    ctrl-l to jump to address bar
+
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index 98ed551..33adee0 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -113,6 +113,12 @@ def __init__(self, root: Tk, model: Model):
+         address_bar.bind(&quot;&lt;KP_Enter&gt;&quot;, self._on_go)
+         address_bar.focus_set()
+ 
++        def on_ctrl_l(ev):
++            address_bar.focus()
++            address_bar.select_all()
++
++        root.bind(&quot;&lt;Control-l&gt;&quot;, on_ctrl_l)
++
+         # Go button
+         go_btn = ttk.Button(row1, text=&quot;三三ᕕ( ᐛ )ᕗ&quot;, command=self._on_go, width=10)
+         self.go_btn = go_btn
+diff --git a/src/mcross/gui/widgets.py b/src/mcross/gui/widgets.py
+index e5d63b8..846bd54 100644
+--- a/src/mcross/gui/widgets.py
++++ b/src/mcross/gui/widgets.py
+@@ -28,9 +28,9 @@ class McEntry(ttk.Entry):
+     def __init__(self, *args, **kwargs):
+         super().__init__(*args, **kwargs)
+ 
+-        self.bind(&quot;&lt;Control-a&gt;&quot;, self._on_ctrl_a)
++        self.bind(&quot;&lt;Control-a&gt;&quot;, self.select_all)
+ 
+-    def _on_ctrl_a(self, ev):
++    def select_all(self, ev=None):
+         self.select_range(0, &quot;end&quot;)
+         self.icursor(&quot;end&quot;)
+         return &quot;break&quot;
+</pre></body></html>

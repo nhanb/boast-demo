@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[65a6c08128] update dep because dependabot | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 65a6c08128</strong><hr><pre>commit 65a6c08128ebbc2b7d33a6b043798c69ac7dfebe
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jan 22 14:29:28 2022 +0700
+
+    update dep because dependabot
+
+diff --git a/README.md b/README.md
+index 7d0182d..f2c806e 100644
+--- a/README.md
++++ b/README.md
+@@ -34,6 +34,7 @@ ## Backend ##
+ pip install https://github.com/rogerbinns/apsw/releases/download/3.34.0-r1/apsw-3.34.0-r1.zip \
+       --global-option=fetch --global-option=--version --global-option=3.34.0 --global-option=--all \
+       --global-option=build --global-option=--enable-all-extensions
++# (using apsw 3.34 here to match the version on debian 11)
+ 
+ pytaku-generate-config &gt; pytaku.conf.json
+ # fill stuff as needed
+diff --git a/poetry.lock b/poetry.lock
+index d67011a..4073fde 100644
+--- a/poetry.lock
++++ b/poetry.lock
+@@ -171,7 +171,7 @@ python-versions = &quot;&gt;=3.5&quot;
+ 
+ [[package]]
+ name = &quot;importlib-metadata&quot;
+-version = &quot;4.10.0&quot;
++version = &quot;4.10.1&quot;
+ description = &quot;Read metadata from Python packages&quot;
+ category = &quot;dev&quot;
+ optional = false
+@@ -209,7 +209,7 @@ toml = {version = &quot;&gt;=0.10.2&quot;, markers = &quot;python_version &gt; \&quot;3.6\&quot;&quot;}
+ 
+ [[package]]
+ name = &quot;ipython&quot;
+-version = &quot;7.31.0&quot;
++version = &quot;7.31.1&quot;
+ description = &quot;IPython: Productive Interactive Computing&quot;
+ category = &quot;dev&quot;
+ optional = false
+@@ -397,7 +397,7 @@ python-versions = &quot;&gt;=3.5&quot;
+ 
+ [[package]]
+ name = &quot;pyparsing&quot;
+-version = &quot;3.0.6&quot;
++version = &quot;3.0.7&quot;
+ description = &quot;Python parsing module&quot;
+ category = &quot;dev&quot;
+ optional = false
+@@ -665,8 +665,8 @@ idna = [
+     {file = &quot;idna-3.3.tar.gz&quot;, hash = &quot;sha256:9d643ff0a55b762d5cdb124b8eaa99c66322e2157b69160bc32796e824360e6d&quot;},
+ ]
+ importlib-metadata = [
+-    {file = &quot;importlib_metadata-4.10.0-py3-none-any.whl&quot;, hash = &quot;sha256:b7cf7d3fef75f1e4c80a96ca660efbd51473d7e8f39b5ab9210febc7809012a4&quot;},
+-    {file = &quot;importlib_metadata-4.10.0.tar.gz&quot;, hash = &quot;sha256:92a8b58ce734b2a4494878e0ecf7d79ccd7a128b5fc6014c401e0b61f006f0f6&quot;},
++    {file = &quot;importlib_metadata-4.10.1-py3-none-any.whl&quot;, hash = &quot;sha256:899e2a40a8c4a1aec681feef45733de8a6c58f3f6a0dbed2eb6574b4387a77b6&quot;},
++    {file = &quot;importlib_metadata-4.10.1.tar.gz&quot;, hash = &quot;sha256:951f0d8a5b7260e9db5e41d429285b5f451e928479f19d80818878527d36e95e&quot;},
+ ]
+ iniconfig = [
+     {file = &quot;iniconfig-1.1.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3&quot;},
+@@ -676,8 +676,8 @@ ipdb = [
+     {file = &quot;ipdb-0.13.9.tar.gz&quot;, hash = &quot;sha256:951bd9a64731c444fd907a5ce268543020086a697f6be08f7cc2c9a752a278c5&quot;},
+ ]
+ ipython = [
+-    {file = &quot;ipython-7.31.0-py3-none-any.whl&quot;, hash = &quot;sha256:4c4234cdcc6b8f87c5b5c7af9899aa696ac5cfcf0e9f6d0688018bbee5c73bce&quot;},
+-    {file = &quot;ipython-7.31.0.tar.gz&quot;, hash = &quot;sha256:346c74db7312c41fa566d3be45d2e759a528dcc2994fe48aac1a03a70cd668a3&quot;},
++    {file = &quot;ipython-7.31.1-py3-none-any.whl&quot;, hash = &quot;sha256:55df3e0bd0f94e715abd968bedd89d4e8a7bce4bf498fb123fed4f5398fea874&quot;},
++    {file = &quot;ipython-7.31.1.tar.gz&quot;, hash = &quot;sha256:b5548ec5329a4bcf054a5deed5099b0f9622eb9ea51aaa7104d215fece201d8c&quot;},
+ ]
+ itsdangerous = [
+     {file = &quot;itsdangerous-1.1.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:b12271b2047cb23eeb98c8b5622e2e5c5e9abd9784a153e9d8ef9cb4dd09d749&quot;},
+@@ -772,8 +772,8 @@ pygments = [
+     {file = &quot;Pygments-2.11.2.tar.gz&quot;, hash = &quot;sha256:4e426f72023d88d03b2fa258de560726ce890ff3b630f88c21cbb8b2503b8c6a&quot;},
+ ]
+ pyparsing = [
+-    {file = &quot;pyparsing-3.0.6-py3-none-any.whl&quot;, hash = &quot;sha256:04ff808a5b90911829c55c4e26f75fa5ca8a2f5f36aa3a51f68e27033341d3e4&quot;},
+-    {file = &quot;pyparsing-3.0.6.tar.gz&quot;, hash = &quot;sha256:d9bdec0013ef1eb5a84ab39a3b3868911598afa494f5faa038647101504e2b81&quot;},
++    {file = &quot;pyparsing-3.0.7-py3-none-any.whl&quot;, hash = &quot;sha256:a6c06a88f252e6c322f65faf8f418b16213b51bdfaece0524c1c1bc30c63c484&quot;},
++    {file = &quot;pyparsing-3.0.7.tar.gz&quot;, hash = &quot;sha256:18ee9022775d270c55187733956460083db60b37d0d0fb357445f3094eed3eea&quot;},
+ ]
+ pytest = [
+     {file = &quot;pytest-6.2.5-py3-none-any.whl&quot;, hash = &quot;sha256:7310f8d27bc79ced999e760ca304d69f6ba6c6649c0b60fb0e04a4a77cacc134&quot;},
+</pre></body></html>

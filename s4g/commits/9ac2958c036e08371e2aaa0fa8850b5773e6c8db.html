@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[9ac2958c03] metadata: allow more time formats | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 9ac2958c03</strong><hr><pre>commit 9ac2958c036e08371e2aaa0fa8850b5773e6c8db
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 19 23:39:39 2023 +0700
+
+    metadata: allow more time formats
+    
+    To match those I already used in my current blog.
+    This makes migration easier.
+
+diff --git a/metadata.go b/metadata.go
+index c1ef2e6..ac6fffe 100644
+--- a/metadata.go
++++ b/metadata.go
+@@ -64,6 +64,12 @@ func ReadSiteMetadata(fsys writablefs.FS) (*SiteMetadata, error) {
+ 	return &amp;sm, nil
+ }
+ 
++var timeFormats []string = []string{
++	&quot;2006-01-02&quot;,
++	&quot;2006-01-02 15:04&quot;,
++	&quot;2006-01-02 15:04:05&quot;,
++}
++
+ // Similar API to json.Unmarshal but supports neither struct tags nor nesting.
+ func UnmarshalMetadata(data []byte, dest any) *errs.UserErr {
+ 	m := metaTextToMap(data)
+@@ -102,13 +108,21 @@ func UnmarshalMetadata(data []byte, dest any) *errs.UserErr {
+ 				s.Field(i).SetBool(val == &quot;true&quot;)
+ 
+ 			case &quot;time.Time&quot;:
+-				tVal, err := time.ParseInLocation(&quot;2006-01-02&quot;, val, time.Local)
++				var tVal time.Time
++				var err error
++				for _, f := range timeFormats {
++					tVal, err = time.ParseInLocation(f, val, time.Local)
++					if err == nil {
++						break
++					}
++				}
++
+ 				tVal = tVal.Local()
+ 				if err != nil {
+ 					return &amp;errs.UserErr{
+ 						Field: fieldName,
+ 						Msg: fmt.Sprintf(
+-							`invalid date: expected YYYY-MM-DD, got &quot;%s&quot;`, val,
++							`invalid date: expected YYYY-MM-DD[ HH:MM[:SS]], got &quot;%s&quot;`, val,
+ 						),
+ 					}
+ 				}
+</pre></body></html>

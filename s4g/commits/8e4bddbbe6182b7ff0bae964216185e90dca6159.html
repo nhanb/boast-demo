@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[8e4bddbbe6] scale post: tweak responsiveness | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 8e4bddbbe6</strong><hr><pre>commit 8e4bddbbe6182b7ff0bae964216185e90dca6159
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jul 11 21:28:14 2023 +0700
+
+    scale post: tweak responsiveness
+    
+    Set max width for content images.
+    
+    Put floated image below &quot;by Ted Dziuba&quot; line to avoid clumsy line
+    breaking in that line when viewport width gets small.
+
+diff --git a/theme/base.css b/theme/base.css
+index 05ffb70..813e870 100644
+--- a/theme/base.css
++++ b/theme/base.css
+@@ -10,6 +10,10 @@ ol {
+   line-height: 1.35rem;
+ }
+ 
++main img {
++  max-width: 100%;
++}
++
+ footer {
+   margin-top: 2rem;
+   text-align: right;
+diff --git a/www/scale/index.dj b/www/scale/index.dj
+index 4adeb61..efa2841 100644
+--- a/www/scale/index.dj
++++ b/www/scale/index.dj
+@@ -3,10 +3,10 @@ PostedAt: 2008-04-24
+ Templates: $_theme/base.tmpl, $_theme/includes.tmpl, scale.tmpl
+ ---
+ 
+-![scaleboner](bill.jpg)
+-
+ _by [Ted Dziuba][1]_
+ 
++![scaleboner](bill.jpg)
++
+ Engineers love to talk about scalability.  It makes us feel like the bad ass,
+ dick-swingin&#39; motherfuckers that we wish we could be.
+ 
+diff --git a/www/scale/index.html b/www/scale/index.html
+index 5c8bc7c..882841b 100644
+--- a/www/scale/index.html
++++ b/www/scale/index.html
+@@ -29,8 +29,8 @@
+ &lt;div class=&quot;main-container&quot;&gt;
+   &lt;main&gt;
+   &lt;h1&gt;I&amp;#39;m Going To Scale My Foot Up Your Ass&lt;/h1&gt;
+-  &lt;p&gt;&lt;img alt=&quot;scaleboner&quot; src=&quot;bill.jpg&quot;&gt;&lt;/p&gt;
+-&lt;p&gt;&lt;em&gt;by &lt;a href=&quot;http://widgetsandshit.com/teddziuba/2008/04/im-going-to-scale-my-foot-up-y.html&quot;&gt;Ted Dziuba&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
++  &lt;p&gt;&lt;em&gt;by &lt;a href=&quot;http://widgetsandshit.com/teddziuba/2008/04/im-going-to-scale-my-foot-up-y.html&quot;&gt;Ted Dziuba&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;scaleboner&quot; src=&quot;bill.jpg&quot;&gt;&lt;/p&gt;
+ &lt;p&gt;Engineers love to talk about scalability.  It makes us feel like the bad ass,
+ dick-swingin’ motherfuckers that we wish we could be.&lt;/p&gt;
+ &lt;p&gt;After we talk about scalability with our co-workers (&lt;em&gt;Yeah, Rails doesn’t
+@@ -152,10 +152,8 @@ &lt;h2&gt;tl;dr&lt;/h2&gt;
+   box-shadow: 1px 1px 3px #6F6F6F;
+ }
+ 
+-
+-h2 {
+-  font-size: 1em;
+-}
++h1 { font-size: 1.5rem; }
++h2 { font-size: 1em; }
+ &lt;/style&gt;
+ 
+ &lt;/body&gt;
+diff --git a/www/scale/scale.tmpl b/www/scale/scale.tmpl
+index 59ee909..9f48df1 100644
+--- a/www/scale/scale.tmpl
++++ b/www/scale/scale.tmpl
+@@ -69,9 +69,7 @@ main {
+   box-shadow: 1px 1px 3px #6F6F6F;
+ }
+ 
+-
+-h2 {
+-  font-size: 1em;
+-}
++h1 { font-size: 1.5rem; }
++h2 { font-size: 1em; }
+ &lt;/style&gt;
+ {{- end}}
+</pre></body></html>

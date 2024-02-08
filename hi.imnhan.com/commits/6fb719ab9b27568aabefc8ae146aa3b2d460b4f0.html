@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[6fb719ab9b] add og thumbnail + description via summary | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 6fb719ab9b</strong><hr><pre>commit 6fb719ab9b27568aabefc8ae146aa3b2d460b4f0
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jan 31 15:37:49 2022 +0700
+
+    add og thumbnail + description via summary
+
+diff --git a/content/images/byte_databases.jpg b/content/images/byte_databases.jpg
+new file mode 100644
+index 0000000..600f346
+Binary files /dev/null and b/content/images/byte_databases.jpg differ
+diff --git a/content/posts/working-with-sqlite-without-an-orm.md b/content/posts/working-with-sqlite-without-an-orm.md
+index 89b8b3f..2277605 100644
+--- a/content/posts/working-with-sqlite-without-an-orm.md
++++ b/content/posts/working-with-sqlite-without-an-orm.md
+@@ -1,8 +1,11 @@
+ Title: Working with SQLite in Python without an ORM or migration framework
+ Date: 2022-01-30 14:11
+-Summary: |
+-    Some notes on handling migrations, linking the latest SQLite, and sane
+-    driver defaults.
++Summary: Some notes on handling migrations, linking the latest SQLite,
++         and sane driver defaults.
++Thumb: images/byte_databases.jpg
++
++![byte-magazine-databases](/images/byte_databases.jpg &quot;&quot;)
++_[(seriously though, BYTE covers are the best)][18]_
+ 
+ 
+ I learned about SQLite&#39;s user_version pragma some time ago from a comment on
+@@ -193,3 +196,4 @@ # Use the parameter substitution API instead:
+ [15]: https://www.sqlite.org/lang_altertable.html#otheralter
+ [16]: https://vnhacker.blogspot.com/2021/08/bkav-bi-hack-nhu-nao.html
+ [17]: https://docs.python.org/3/library/sqlite3.html
++[18]: https://archive.org/details/byte-magazine
+diff --git a/nhanb-theme/templates/article.html b/nhanb-theme/templates/article.html
+index dcf2f51..cbe8901 100644
+--- a/nhanb-theme/templates/article.html
++++ b/nhanb-theme/templates/article.html
+@@ -9,7 +9,7 @@
+   &lt;meta name=&quot;twitter:card&quot; content=&quot;summary&quot; /&gt;
+   &lt;meta name=&quot;twitter:creator&quot; content=&quot;@nhanbt&quot; /&gt;
+   &lt;meta property=&quot;og:title&quot; content=&quot;{{ article.title|striptags }}&quot; /&gt;
+-  &lt;meta property=&quot;og:description&quot; content=&quot;{{ article.content|striptags|truncate(255) }}&quot; /&gt;
++  &lt;meta property=&quot;og:description&quot; content=&quot;{{ (article.summary or article.content) |striptags|truncate(255) }}&quot; /&gt;
+ 
+   {% if article.thumb %}
+     &lt;meta property=&quot;og:image&quot; content=&quot;{{ SITEURL }}/{{ article.thumb }}&quot; /&gt;
+</pre></body></html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[3795bcef38] standardize recoverable user errors as UserFileErr | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 3795bcef38</strong><hr><pre>commit 3795bcef3804a456d93c3464b88c03a217a4e024
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jul 19 00:33:34 2023 +0700
+
+    standardize recoverable user errors as UserFileErr
+
+diff --git a/README.md b/README.md
+index 1945f08..34f8944 100644
+--- a/README.md
++++ b/README.md
+@@ -19,7 +19,7 @@
+ 
+ - [x] Livereload with no browser plugin (works but currently polls which is
+   noisy, should probably upgrade to websockets)
+-- [ ] Shows user error messages on the livereloaded web page
++- [x] Shows user error messages on the livereloaded web page
+ - [ ] Just enough GUI so user doesn&#39;t have to touch a terminal
+ - [ ] 1-click deploy to popular static hosting targets (git push, rsync, etc.)
+ 
+diff --git a/errors.go b/errors.go
+deleted file mode 100644
+index a698240..0000000
+--- a/errors.go
++++ /dev/null
+@@ -1,23 +0,0 @@
+-package main
+-
+-import (
+-	&quot;fmt&quot;
+-	&quot;html/template&quot;
+-)
+-
+-type UserFileErr struct {
+-	File  string
+-	Field string
+-	Msg   string
+-}
+-
+-func (e *UserFileErr) Error() string {
+-	return fmt.Sprintf(&quot;UserFileErr - %s - %s: %s&quot;, e.File, e.Field, e.Msg)
+-}
+-
+-func (e *UserFileErr) Html() template.HTML {
+-	return template.HTML(fmt.Sprintf(
+-		&quot;&lt;p&gt;In file &lt;b&gt;%s&lt;/b&gt;, field &lt;b&gt;%s&lt;/b&gt;: %s &lt;/p&gt;&quot;,
+-		e.File, e.Field, e.Msg,
+-	))
+-}
+diff --git a/errs/errs.go b/errs/errs.go
+new file mode 100644
+index 0000000..6ad5572
+--- /dev/null
++++ b/errs/errs.go
+@@ -0,0 +1,45 @@
++package errs
++
++import (
++	&quot;fmt&quot;
++	&quot;html/template&quot;
++)
++
++// Represents a user input error, which in webmaker2000&#39;s case is almost
++// always some malformed file.
++type UserFileErr struct {
++	File string
++	Msg  string
++
++	// Optional. Zero value means unavailable.
++	Line int
++
++	// Optional. Zero value means unavailable.
++	Column int
++
++	// Optional. Zero value means unavailable.
++	Field string
++}
++
++func (e *UserFileErr) Error() string {
++	return fmt.Sprintf(
++		&quot;UserFileErr: %s - %d:%d:%s %s&quot;,
++		e.File, e.Line, e.Column, e.Field, e.Msg,
++	)
++}
++
++func (e *UserFileErr) Html() template.HTML {
++	content := fmt.Sprintf(&quot;In file &lt;b&gt;%s&lt;/b&gt;&quot;, e.File)
++	if e.Line != 0 {
++		content += fmt.Sprintf(&quot;, line %d&quot;, e.Line)
++	}
++	if e.Column != 0 {
++		content += fmt.Sprintf(&quot;, column %d&quot;, e.Column)
++	}
++	if e.Field != &quot;&quot; {
++		content += fmt.Sprintf(&quot;, field &lt;b&gt;%s&lt;/b&gt;&quot;, e.Field)
++	}
++
++	content = fmt.Sprintf(&quot;&lt;p&gt;%s: %s&lt;/p&gt;&quot;, content, e.Msg)
++	return template.HTML(content)
++}
+diff --git a/livereload/error.go b/livereload/error.go
+index ac650db..ac929ec 100644
+--- a/livereload/error.go
++++ b/livereload/error.go
+@@ -3,8 +3,11 @@
+ import (
+ 	&quot;bytes&quot;
+ 	_ &quot;embed&quot;
++	&quot;errors&quot;
+ 	&quot;html/template&quot;
+ 	&quot;net/http&quot;
++
++	&quot;go.imnhan.com/webmaker2000/errs&quot;
+ )
+ 
+ //go:embed error.html
+@@ -12,26 +15,27 @@
+ 
+ var errTmpl = template.Must(template.New(&quot;error&quot;).Parse(errorTmpl))
+ 
+-// Error that has a user-friendly HTML representation.
+-type htmlErr interface {
+-	error
+-	Html() template.HTML
++type errTmplInput struct {
++	Text string
++	Html template.HTML
+ }
+ 
+-func serveError(w http.ResponseWriter, r *http.Request, err error) {
++func serveError(w http.ResponseWriter, r *http.Request, e error) {
+ 	var buf bytes.Buffer
+-	_, ok := err.(htmlErr)
++	var uerr *errs.UserFileErr
++	ok := errors.As(e, &amp;uerr)
++
++	var tmplInput errTmplInput
+ 	if ok {
+-		errTmpl.Execute(&amp;buf, err)
++		tmplInput.Text = uerr.Error()
++		tmplInput.Html = uerr.Html()
+ 	} else {
+-		// Shim for errors that don&#39;t support HTML output
+-		errTmpl.Execute(&amp;buf, struct {
+-			Error string
+-			Html  template.HTML
+-		}{
+-			Error: err.Error(),
+-			Html:  template.HTML(err.Error()),
+-		})
++		tmplInput.Text = e.Error()
++		tmplInput.Html = template.HTML(e.Error())
++	}
++	err := errTmpl.Execute(&amp;buf, tmplInput)
++	if err != nil {
++		panic(err)
+ 	}
+ 	body := withLiveReload(buf.Bytes())
+ 	w.Write(body)
+diff --git a/livereload/error.html b/livereload/error.html
+index e59eb99..ab65a2d 100644
+--- a/livereload/error.html
++++ b/livereload/error.html
+@@ -2,7 +2,7 @@
+ &lt;html lang=&quot;en&quot;&gt;
+   &lt;head&gt;
+     &lt;meta charset=&quot;utf-8&quot; /&gt;
+-    &lt;title&gt;{{.Error}}&lt;/title&gt;
++    &lt;title&gt;{{.Text}}&lt;/title&gt;
+     &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+diff --git a/main.go b/main.go
+index 05cbe31..95f00f1 100644
+--- a/main.go
++++ b/main.go
+@@ -18,6 +18,7 @@
+ 	&quot;time&quot;
+ 
+ 	&quot;go.imnhan.com/webmaker2000/djot&quot;
++	&quot;go.imnhan.com/webmaker2000/errs&quot;
+ 	&quot;go.imnhan.com/webmaker2000/gui&quot;
+ 	&quot;go.imnhan.com/webmaker2000/livereload&quot;
+ 	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
+@@ -30,7 +31,7 @@
+ 
+ func main() {
+ 	invalidCommand := func() {
+-		fmt.Println(&quot;Usage: webfolder2000 new|serve [...]&quot;)
++		fmt.Println(&quot;Usage: webfolder2000 new|serve|gui [...]&quot;)
+ 		os.Exit(1)
+ 	}
+ 
+@@ -210,7 +211,7 @@ func regenerate(fsys writablefs.FS) (site *SiteMetadata, err error) {
+ 	for _, link := range site.NavbarLinks {
+ 		a, ok := articles[link]
+ 		if !ok {
+-			return nil, &amp;UserFileErr{
++			return nil, &amp;errs.UserFileErr{
+ 				File:  SiteFileName,
+ 				Field: &quot;NavbarLinks&quot;,
+ 				Msg:   fmt.Sprintf(`&quot;%s&quot; does not exist`, link),
+@@ -383,9 +384,10 @@ func findArticles(fsys writablefs.FS, site *SiteMetadata) (map[string]Article, e
+ 			},
+ 			ShowInFeed: true,
+ 		}
+-		err = UnmarshalMetadata(metaText, &amp;meta)
+-		if err != nil {
+-			return err
++		userErr := UnmarshalMetadata(metaText, &amp;meta)
++		if userErr != nil {
++			userErr.File = path
++			return fmt.Errorf(&quot;findArticles failed to unmarshall metadata: %w&quot;, userErr)
+ 		}
+ 
+ 		article := Article{
+diff --git a/metadata.go b/metadata.go
+index 6050bc7..2952388 100644
+--- a/metadata.go
++++ b/metadata.go
+@@ -11,6 +11,7 @@
+ 	&quot;strings&quot;
+ 	&quot;time&quot;
+ 
++	&quot;go.imnhan.com/webmaker2000/errs&quot;
+ 	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
+ )
+ 
+@@ -64,7 +65,7 @@ func ReadSiteMetadata(fsys writablefs.FS) (*SiteMetadata, error) {
+ }
+ 
+ // Similar API to json.Unmarshal but supports neither struct tags nor nesting.
+-func UnmarshalMetadata(data []byte, dest any) error {
++func UnmarshalMetadata(data []byte, dest any) *errs.UserFileErr {
+ 	m := metaTextToMap(data)
+ 
+ 	s := reflect.ValueOf(dest).Elem()
+@@ -81,7 +82,7 @@ func UnmarshalMetadata(data []byte, dest any) error {
+ 			case &quot;int&quot;:
+ 				intVal, err := strconv.Atoi(val)
+ 				if err != nil {
+-					return &amp;UserFileErr{
++					return &amp;errs.UserFileErr{
+ 						Field: fieldName,
+ 						Msg:   fmt.Sprintf(`invalid int: &quot;%s&quot;`, err),
+ 					}
+@@ -90,7 +91,7 @@ func UnmarshalMetadata(data []byte, dest any) error {
+ 
+ 			case &quot;bool&quot;:
+ 				if val != &quot;true&quot; &amp;&amp; val != &quot;false&quot; {
+-					return &amp;UserFileErr{
++					return &amp;errs.UserFileErr{
+ 						Field: fieldName,
+ 						Msg: fmt.Sprintf(
+ 							`invalid boolean: expected true/false, got &quot;%s&quot;`,
+@@ -104,7 +105,7 @@ func UnmarshalMetadata(data []byte, dest any) error {
+ 				tVal, err := time.ParseInLocation(&quot;2006-01-02&quot;, val, time.Local)
+ 				tVal = tVal.Local()
+ 				if err != nil {
+-					return &amp;UserFileErr{
++					return &amp;errs.UserFileErr{
+ 						Field: fieldName,
+ 						Msg: fmt.Sprintf(
+ 							`invalid date: expected YYYY-MM-DD, got &quot;%s&quot;`, val,
+</pre></body></html>

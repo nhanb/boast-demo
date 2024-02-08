@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[f449b0d140] don&#39;t check tls cert for now | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / f449b0d140</strong><hr><pre>commit f449b0d14010a7e289c1dcf7198d8e66f22742eb
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu May 28 19:25:51 2020 +0700
+
+    don&#39;t check tls cert for now
+    
+    Turns out there are more self-signed sites than otherwise. Apparently
+    the generally accepted way for gemini is trust-on-first-use. Before I
+    can implement that properly I&#39;ll just turn off cert validation
+    completely.
+
+diff --git a/src/mcross/transport.py b/src/mcross/transport.py
+index 1b1d547..afa0a5f 100644
+--- a/src/mcross/transport.py
++++ b/src/mcross/transport.py
+@@ -1,4 +1,5 @@
+ import re
++import ssl
+ from urllib.parse import urlparse
+ 
+ import curio
+@@ -100,9 +101,15 @@ def parse_absolute_url(text):
+ 
+ 
+ async def raw_get(url: GeminiUrl):
++    # TODO: actually implement TOFU for TLS!
++    # Right now it just accepts whatever
++    context = ssl.create_default_context()
++    context.check_hostname = False
++    context.verify_mode = ssl.CERT_NONE
+     sock = await curio.open_connection(
+-        url.host, url.port, ssl=True, server_hostname=url.host
++        url.host, url.port, ssl=context, server_hostname=url.host
+     )
++
+     async with sock:
+         await sock.sendall(f&quot;gemini://{url.host}{url.path}\r\n&quot;.encode())
+         header = (await sock.recv(MAX_RESP_HEADER_BYTES)).decode()
+</pre></body></html>

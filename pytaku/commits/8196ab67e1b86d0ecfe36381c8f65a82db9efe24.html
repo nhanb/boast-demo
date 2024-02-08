@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[8196ab67e1] fix generate-config, implement pytaku:serve | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 8196ab67e1</strong><hr><pre>commit 8196ab67e1b86d0ecfe36381c8f65a82db9efe24
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 8 11:32:31 2020 +0700
+
+    fix generate-config, implement pytaku:serve
+
+diff --git a/README.md b/README.md
+index c21953a..0abe6b0 100644
+--- a/README.md
++++ b/README.md
+@@ -10,7 +10,10 @@
+ pytaku-generate-config &gt; pytaku.conf.json
+ # fill stuff as needed
+ 
++# run migration script once
++pytaku-migrate
++
+ # run 2 processes:
+-gunicorn pytaku.main:app -w 7 -b 0.0.0.0:5001  # web server
++pytaku -w 7 -b 0.0.0.0:5001  # web server
+ pytaku-scheduler  # scheduled tasks e.g. update titles
+ ```
+diff --git a/pyproject.toml b/pyproject.toml
+index d1b7809..7cbe9d7 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.2.1&quot;
++version = &quot;0.2.2&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+@@ -10,6 +10,7 @@ packages = [
+ ]
+ 
+ [tool.poetry.scripts]
++pytaku = &quot;pytaku:serve&quot;
+ pytaku-migrate = &quot;pytaku:migrate&quot;
+ pytaku-generate-config = &quot;pytaku:generate_config&quot;
+ pytaku-scheduler = &quot;pytaku:scheduler&quot;
+diff --git a/src/pytaku/__init__.py b/src/pytaku/__init__.py
+index fca72ae..20ecd65 100644
+--- a/src/pytaku/__init__.py
++++ b/src/pytaku/__init__.py
+@@ -1,6 +1,24 @@
+ from pytaku.conf import config
+ 
+ 
++def serve():
++    &quot;&quot;&quot;
++    This command passes all CLI args to gunicorn, so for example:
++        pytaku -w 7 -b 0.0.0.0:5001
++    would mean:
++        gunicorn pytaku.main:app -w 7 -b 0.0.0.0:5001
++
++    It assumes your virtualenv&#39;s bin path is already in $PATH of course.
++    &quot;&quot;&quot;
++    import subprocess
++    from sys import argv
++
++    command = [&quot;gunicorn&quot;, &quot;pytaku.main:app&quot;] + argv[1:]
++    print(&quot;Running:&quot;, &quot; &quot;.join(command))
++
++    subprocess.run(command)
++
++
+ def migrate():
+     import argparse
+     from .database.migrator import migrate
+@@ -14,6 +32,7 @@ def migrate():
+     )
+     args = argparser.parse_args()
+ 
++    config.load()
+     migrate(overwrite_latest_schema=args.dev)
+ 
+ 
+diff --git a/src/pytaku/conf.py b/src/pytaku/conf.py
+index 1004b16..6d1ecb1 100644
+--- a/src/pytaku/conf.py
++++ b/src/pytaku/conf.py
+@@ -6,8 +6,7 @@
+ class Config(GoodConf):
+     MANGADEX_USERNAME = Value()
+     MANGADEX_PASSWORD = Value()
+-
+     FLASK_SECRET_KEY = Value(initial=lambda: token_urlsafe(50))
+ 
+ 
+-config = Config(default_files=[&quot;pytaku.conf.json&quot;], load=True)
++config = Config(default_files=[&quot;pytaku.conf.json&quot;])
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index a5d7ef6..11181ac 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -31,6 +31,8 @@
+     verify_username_password,
+ )
+ 
++config.load()
++
+ app = Flask(__name__)
+ app.config.update(
+     SECRET_KEY=config.FLASK_SECRET_KEY, PERMANENT_SESSION_LIFETIME=timedelta(days=365),
+diff --git a/src/pytaku/mangadex.py b/src/pytaku/mangadex.py
+index df5156a..f231611 100644
+--- a/src/pytaku/mangadex.py
++++ b/src/pytaku/mangadex.py
+@@ -1,9 +1,6 @@
+ from mangoapi import login
+ from pytaku.conf import config
+ 
+-assert config.MANGADEX_USERNAME
+-assert config.MANGADEX_PASSWORD
+-
+ _cookies = None
+ 
+ 
+</pre></body></html>

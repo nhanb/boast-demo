@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e9665ef363] fix go:embed asset paths | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / e9665ef363</strong><hr><pre>commit e9665ef36308aaa8a00378f39282f89608018db4
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jun 29 20:17:01 2022 +0700
+
+    fix go:embed asset paths
+    
+    Turns out in an embeded FS, the path separator is always &quot;/&quot;, even on
+    Windows.
+
+diff --git a/main.go b/main.go
+index ceca17c..a2f10bb 100644
+--- a/main.go
++++ b/main.go
+@@ -5,7 +5,6 @@
+ 	&quot;embed&quot;
+ 	_ &quot;image/png&quot;
+ 	&quot;log&quot;
+-	&quot;path/filepath&quot;
+ 
+ 	&quot;github.com/hajimehoshi/ebiten/v2&quot;
+ 	&quot;github.com/hajimehoshi/ebiten/v2/ebitenutil&quot;
+@@ -138,12 +137,12 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (w, h int) {
+ }
+ 
+ func NewAnim(sprites embed.FS, subdir string) *Anim {
+-	files, err := sprites.ReadDir(filepath.Join(&quot;sprites&quot;, subdir))
++	files, err := sprites.ReadDir(&quot;sprites/&quot; + subdir)
+ 	PanicIfErr(err)
+ 	var frames []*ebiten.Image
+ 	for _, direntry := range files {
+ 		fname := direntry.Name()
+-		frame, err := sprites.ReadFile(filepath.Join(&quot;sprites&quot;, subdir, fname))
++		frame, err := sprites.ReadFile(&quot;sprites/&quot; + subdir + &quot;/&quot; + fname)
+ 		PanicIfErr(err)
+ 		img, _, err := ebitenutil.NewImageFromReader(bytes.NewReader(frame))
+ 		PanicIfErr(err)
+</pre></body></html>

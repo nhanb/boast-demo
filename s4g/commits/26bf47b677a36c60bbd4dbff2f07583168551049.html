@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[26bf47b677] templates: use the whitespace trimming syntax | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 26bf47b677</strong><hr><pre>commit 26bf47b677a36c60bbd4dbff2f07583168551049
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jul 5 00:31:09 2023 +0700
+
+    templates: use the whitespace trimming syntax
+    
+    TIL.
+
+diff --git a/www/_theme/base.tmpl b/www/_theme/base.tmpl
+index 8ed98a4..70d9099 100644
+--- a/www/_theme/base.tmpl
++++ b/www/_theme/base.tmpl
+@@ -12,12 +12,12 @@
+ &lt;body&gt;
+ {{template &quot;body&quot; .}}
+ 
+-{{if .Site.ShowFooter}}
++{{- if .Site.ShowFooter}}
+ &lt;footer&gt;
+ © {{if eq .StartYear .Now.Year}}{{.StartYear}}{{else}}{{.StartYear}}–{{.Now.Year}}{{end}} {{.Site.Author.Name}}&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
+-{{end}}
++{{- end}}
+ 
+ &lt;/body&gt;
+ 
+diff --git a/www/_theme/home.tmpl b/www/_theme/home.tmpl
+index 09a71d4..b16dd45 100644
+--- a/www/_theme/home.tmpl
++++ b/www/_theme/home.tmpl
+@@ -8,9 +8,9 @@
+ 
+ &lt;div class=&quot;pages&quot;&gt;
+   &lt;a href=&quot;{{.Site.HomePath}}&quot;&gt;Home&lt;/a&gt;
+-{{range .Pages}}
++{{- range .Pages}}
+   &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Meta.Title}}&lt;/a&gt;
+-{{end}}
++{{- end}}
+   &lt;a class=&quot;feed-link&quot; href=&quot;{{.Feed}}&quot;&gt;
+     &lt;img src=&quot;{{.Site.HomePath}}_theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
+   &lt;/a&gt;
+@@ -21,14 +21,14 @@
+ &lt;p&gt;All posts, newest first:&lt;/p&gt;
+ 
+ &lt;ul&gt;
+-    {{range .Posts}}
+-    {{if not .Meta.IsDraft}}
+-    &lt;li&gt;
+-      {{.Meta.PostedAt.Local.Format &quot;2006-01-02&quot;}}
+-      — &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Meta.Title}}&lt;/a&gt;
+-    &lt;/li&gt;
+-    {{end}}
+-    {{end}}
++  {{- range .Posts}}
++  {{- if not .Meta.IsDraft}}
++  &lt;li&gt;
++    {{.Meta.PostedAt.Local.Format &quot;2006-01-02&quot;}} —
++    &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Meta.Title}}&lt;/a&gt;
++  &lt;/li&gt;
++  {{- end}}
++  {{- end}}
+ &lt;/ul&gt;
+ 
+ &lt;style&gt;
+diff --git a/www/_theme/post.tmpl b/www/_theme/post.tmpl
+index e8b6de0..4570873 100644
+--- a/www/_theme/post.tmpl
++++ b/www/_theme/post.tmpl
+@@ -1,15 +1,19 @@
+ {{define &quot;body&quot;}}
+ &lt;nav&gt;
+   &lt;a href=&quot;{{.Site.HomePath}}&quot;&gt;Home&lt;/a&gt;
+-  {{range .Pages}}&lt;a href=&quot;{{$.Site.HomePath}}{{.WebPath}}&quot;&gt;{{.Meta.Title}}&lt;/a&gt;{{end}}
+-{{if not .Post.Meta.PostedAt.IsZero}}
++  {{- range .Pages}}
++  &lt;a href=&quot;{{$.Site.HomePath}}{{.WebPath}}&quot;&gt;{{.Meta.Title}}&lt;/a&gt;
++  {{- end}}
++
++  {{- if not .Post.Meta.PostedAt.IsZero}}
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;{{.Post.Meta.PostedAt.Local.Format &quot;2006-01-02&quot;}}&quot;&gt;
+         {{.Post.Meta.PostedAt.Local.Format &quot;Monday, 02 Jan 2006&quot;}}
+     &lt;/time&gt;
+   &lt;/span&gt;
+-{{end}}
++  {{- end}}
++
+ &lt;/nav&gt;
+ 
+ &lt;hr&gt;
+@@ -28,5 +32,4 @@ nav &gt; a {
+   font-style: italic;
+ }
+ &lt;/style&gt;
+-
+ {{end}}
+diff --git a/www/about/index.html b/www/about/index.html
+index 435ff2a..b85f9f3 100644
+--- a/www/about/index.html
++++ b/www/about/index.html
+@@ -43,15 +43,11 @@ &lt;h2&gt;No really&lt;/h2&gt;
+ }
+ &lt;/style&gt;
+ 
+-
+-
+-
+ &lt;footer&gt;
+ © 2022–2023 Coolio McCool&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+-
+ &lt;/body&gt;
+ 
+ &lt;/html&gt;
+diff --git a/www/hello/index.html b/www/hello/index.html
+index c47619d..6ff14fc 100644
+--- a/www/hello/index.html
++++ b/www/hello/index.html
+@@ -14,7 +14,6 @@
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/index.html&quot;&gt;About&lt;/a&gt;
+-
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2022-01-02&quot;&gt;
+@@ -42,15 +41,11 @@ &lt;h1 class=&quot;post-title&quot;&gt;Hello&lt;/h1&gt;
+ }
+ &lt;/style&gt;
+ 
+-
+-
+-
+ &lt;footer&gt;
+ © 2022–2023 Coolio McCool&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+-
+ &lt;/body&gt;
+ 
+ &lt;/html&gt;
+diff --git a/www/index.html b/www/index.html
+index 938a3bb..add5104 100644
+--- a/www/index.html
++++ b/www/index.html
+@@ -20,9 +20,7 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ 
+ &lt;div class=&quot;pages&quot;&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+-
+   &lt;a href=&quot;about/index.html&quot;&gt;About&lt;/a&gt;
+-
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;
+     &lt;img src=&quot;/_theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
+   &lt;/a&gt;
+@@ -33,21 +31,14 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ &lt;p&gt;All posts, newest first:&lt;/p&gt;
+ 
+ &lt;ul&gt;
+-    
+-    
+-    &lt;li&gt;
+-      2023-04-05
+-      — &lt;a href=&quot;mfws.html&quot;&gt;This is a motherfucking website.&lt;/a&gt;
+-    &lt;/li&gt;
+-    
+-    
+-    
+-    &lt;li&gt;
+-      2022-01-02
+-      — &lt;a href=&quot;hello/index.html&quot;&gt;Hello&lt;/a&gt;
+-    &lt;/li&gt;
+-    
+-    
++  &lt;li&gt;
++    2023-04-05 —
++    &lt;a href=&quot;mfws.html&quot;&gt;This is a motherfucking website.&lt;/a&gt;
++  &lt;/li&gt;
++  &lt;li&gt;
++    2022-01-02 —
++    &lt;a href=&quot;hello/index.html&quot;&gt;Hello&lt;/a&gt;
++  &lt;/li&gt;
+ &lt;/ul&gt;
+ 
+ &lt;style&gt;
+@@ -79,14 +70,11 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ }
+ &lt;/style&gt;
+ 
+-
+-
+ &lt;footer&gt;
+ © 2022–2023 Coolio McCool&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+-
+ &lt;/body&gt;
+ 
+ &lt;/html&gt;
+diff --git a/www/mfws.html b/www/mfws.html
+index 08e28ca..9ff5b9e 100644
+--- a/www/mfws.html
++++ b/www/mfws.html
+@@ -14,7 +14,6 @@
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/index.html&quot;&gt;About&lt;/a&gt;
+-
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2023-04-05&quot;&gt;
+@@ -131,15 +130,11 @@ &lt;h2&gt;Epilogue&lt;/h2&gt;
+ }
+ &lt;/style&gt;
+ 
+-
+-
+-
+ &lt;footer&gt;
+ © 2022–2023 Coolio McCool&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+-
+ &lt;/body&gt;
+ 
+ &lt;/html&gt;
+</pre></body></html>

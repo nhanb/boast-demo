@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b7eed6179d] remove prints &amp; outdated docstring/comment/annotation | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / b7eed6179d</strong><hr><pre>commit b7eed6179de5229384fbc14e691786de63b2ba7b
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Apr 11 00:12:15 2021 +0700
+
+    remove prints &amp; outdated docstring/comment/annotation
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 27637eb..db670a0 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.4.2&quot;
++version = &quot;0.4.3&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+index 86a1faf..ded8b8c 100644
+--- a/src/mangoapi/mangasee.py
++++ b/src/mangoapi/mangasee.py
+@@ -59,7 +59,6 @@ def get_chapter(self, title_id, chapter_id):
+         index = chapter_id[0]
+         suffix = &quot;&quot; if index == &quot;1&quot; else f&quot;-index-{index}&quot;
+         url = f&quot;https://mangasee123.com/read-online/{title_id}-chapter-{numbers[&#39;number&#39;]}{suffix}.html&quot;
+-        print(&quot;&gt;&gt;&quot;, url)
+         resp = self.http_get(url)
+         html = resp.text
+ 
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 3de7507..88e51d1 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -98,7 +98,6 @@ def proxy_view(b64_url):
+         - be a polite netizen in general
+     &quot;&quot;&quot;
+     url = _decode_proxy_url(b64_url)
+-    print(&quot;Proxying url:&quot;, url)
+     if not _is_manga_img_url(url):
+         print(&quot;Invalid img url:&quot;, url)
+         return &quot;Nope&quot;, 400
+diff --git a/src/pytaku/scripts/migrate_mangasee_chapter_ids.py b/src/pytaku/scripts/migrate_mangasee_chapter_ids.py
+index b4a88ff..98f7a20 100644
+--- a/src/pytaku/scripts/migrate_mangasee_chapter_ids.py
++++ b/src/pytaku/scripts/migrate_mangasee_chapter_ids.py
+@@ -1,5 +1,4 @@
+ import subprocess
+-from typing import List, Tuple
+ 
+ from mangoapi.mangasee import Mangasee
+ from pytaku.database.common import get_conn, run_sql
+@@ -8,10 +7,7 @@
+ ms = Mangasee()
+ 
+ 
+-def fetch_title(title_id: str) -&gt; List[Tuple[str, str]]:
+-    &quot;&quot;&quot;
+-    Each tuple is (old_id, new_id)
+-    &quot;&quot;&quot;
++def fetch_title(title_id: str):
+     title = ms.get_title(title_id)
+     updates = [(title_id, ch[&quot;number&quot;], ch[&quot;id&quot;]) for ch in title[&quot;chapters&quot;]]
+     return title, updates
+</pre></body></html>

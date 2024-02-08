@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ff20e51f8c] implement pytaku-collect-static command | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / ff20e51f8c</strong><hr><pre>commit ff20e51f8c178bf981d80aa3737bf31a1059a506
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Oct 2 18:07:53 2021 +0700
+
+    implement pytaku-collect-static command
+
+diff --git a/.builds/debian.yml b/.builds/debian.yml
+index 1ef3eaa..6cf7d0b 100644
+--- a/.builds/debian.yml
++++ b/.builds/debian.yml
+@@ -69,7 +69,8 @@ tasks:
+         cd ~/pytaku &amp;&amp;
+         ~/.local/bin/pytaku-migrate &amp;&amp;
+         rm -r static &amp;&amp;
+-        cp -r ~/.local/lib/python3.9/site-packages/pytaku/static ./ &amp;&amp;
++        ~/.local/bin/pytaku-collect-static . &amp;&amp;
++        tree ./static &amp;&amp;
+         sudo systemctl restart pytaku pytaku-scheduler &amp;&amp;
+         echo &#39;All done.&#39;
+       &quot;
+diff --git a/README.md b/README.md
+index bef92b9..a9e50ee 100644
+--- a/README.md
++++ b/README.md
+@@ -127,6 +127,21 @@ # then restart `pytaku` &amp; `pytaku-scheduler` processes
+ network and let them worry about access control and end-to-end encryption for
+ you.
+ 
++## Optional optimization
++
++With the setup above, you&#39;re serving static assets using gunicorn, which is not
++ideal performance-wise. For private usage this doesn&#39;t really matter. However,
++if you want to properly serve static assets using nginx and the like, you can
++copy all static assets into a designated directory with:
++
++```sh
++pytaku-collect-static target_dir
++```
++
++This will copy all assets into `target_dir/static`. You can now instruct
++nginx/caddy/etc. to serve this dir on `/static/*` paths. There&#39;s an example
++caddyfile to do this in the ./contrib/ dir.
++
+ # LICENSE
+ 
+ Copyright (C) 2021 Bùi Thành Nhân
+diff --git a/pyproject.toml b/pyproject.toml
+index 1687773..64257ac 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.5.2&quot;
++version = &quot;0.6.0&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+@@ -18,6 +18,7 @@ pytaku-dev = &quot;pytaku:dev&quot;
+ pytaku-migrate = &quot;pytaku:migrate&quot;
+ pytaku-generate-config = &quot;pytaku:generate_config&quot;
+ pytaku-scheduler = &quot;pytaku:scheduler&quot;
++pytaku-collect-static = &quot;pytaku:collect_static&quot;
+ 
+ [tool.poetry.dependencies]
+ python = &quot;^3.7&quot;
+diff --git a/src/pytaku/__init__.py b/src/pytaku/__init__.py
+index c3c9882..c35f53b 100644
+--- a/src/pytaku/__init__.py
++++ b/src/pytaku/__init__.py
+@@ -60,3 +60,22 @@ def scheduler():
+     from .scheduler import main_loop
+ 
+     main_loop()
++
++
++def collect_static():
++    from sys import argv
++
++    if len(argv) != 2:
++        print(&quot;Usage: pytaku-collect-static path/to/static/dir&quot;)
++        print(&quot;A &#39;static&#39; dir will be created inside the provided path.&quot;)
++        exit(1)
++
++    import importlib.resources
++    from pathlib import Path
++    from shutil import copytree
++
++    destination = Path(argv[1]) / &quot;static&quot;
++
++    with importlib.resources.path(&quot;pytaku&quot;, &quot;__init__.py&quot;) as pytaku_path:
++        copytree(pytaku_path.parent / &quot;static&quot;, destination)
++    print(f&quot;Static files copied to {destination}&quot;)
+</pre></body></html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[066b4cd6ce] add jira trick | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 066b4cd6ce</strong><hr><pre>commit 066b4cd6ce724a20846bcbcab0396d5044797905
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 12 11:57:22 2021 +0700
+
+    add jira trick
+
+diff --git a/content/posts/open-http-link-under-cursor-in-vim.md b/content/posts/open-http-link-under-cursor-in-vim.md
+index fb95802..3eb7092 100644
+--- a/content/posts/open-http-link-under-cursor-in-vim.md
++++ b/content/posts/open-http-link-under-cursor-in-vim.md
+@@ -68,6 +68,58 @@
+ a shell command composed from arbitrary, potentially unsafe input (i.e. text
+ file content), don&#39;t worry: that&#39;s what [`shellescape()`][2] is for.
+ 
++## But why stop there?
++
++We&#39;re using Jira at work (I know, don&#39;t ask), and we have a convention to
++include the Jira ticket in all top-level git commit messages like this (French
++optional):
++
++```
++[SRE-123456] Finally fix the goddamn pipeline
++```
++
++That&#39;s no URL, but the jira ticket ID pattern is pretty simple, so I simply
++altered the regexp a bit like this:
++
++```vimscript
++function! OpenJira()
++  let l:jira_id = toupper(matchstr(expand(&quot;&lt;cWORD&gt;&quot;), &#39;\c\(id2\|sre\|csi\)-[0-9]\+&#39;))
++  if l:jira_id != &quot;&quot;
++    let l:command = &quot;!xdg-open https://my-company.atlassian.net/browse/&quot;.l:jira_id
++    echo l:command
++    silent exec l:command
++  else
++    echo &quot;No Jira ticket found under cursor.&quot;
++  endif
++endfunction
++nnoremap gj :call OpenJira()&lt;cr&gt;
++```
++
++Some interesting points:
++
++- `ID2/SRE/CSI` are the prefixes that I know of. No idea if there are any
++  other. Would be trivial to add later anyway.
++- Because the pattern of l:jira_id is very simple, I don&#39;t even need to
++  shellescape() this one.
++- I didn&#39;t even bother to refactor common stuff between the OpenURL() and
++  OpenJira().
++
++On a more big-picture note, I can afford to make seemingly sloppy decisions
++precisely because this serves only myself, and my specific use cases are
++usually narrow. It&#39;s not very general, but it works, and works precisely the
++way I want it. This is one of the reasons I&#39;ve always prefered simple tooling
++that I can build upon, rather than following the prescribed workflows of more
++full-fledged IDEs.
++
++I&#39;m not bashing IDEs, and I&#39;m in no way promoting vim or [rolling your own
++emacs](https://github.com/DigitalMars/med). I&#39;m firmly in the &quot;use whatever
++you&#39;re comfortable with&quot; camp. I think the whole idea of editor/IDE wars is
++juvenile, dumb and counterproductive (all software sucks in some way anyway,
++fight me). Showing nifty tricks you can do with your tools, inspiring others to
++either check them out or implement those on their own tools, just like how Mr.
++Bright has done with his little comment, is a much better use of everyone&#39;s
++time. I think.
++
+ [1]: https://github.com/tpope/vim-fugitive/blob/2dc08dfe354ed5400f5cdb3d5009dcd4024aac8a/doc/fugitive.txt#L213
+ [2]: https://learnvimscriptthehardway.stevelosh.com/chapters/32.html#escaping-shell-command-arguments
+ [3]: https://stackoverflow.com/questions/9458294/open-url-under-cursor-in-vim-with-browser
+</pre></body></html>

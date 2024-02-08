@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[cd981f4d29] show source site name on title page | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / cd981f4d29</strong><hr><pre>commit cd981f4d29fcb4fd14f31cd2f1c20d978d01008e
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 9 22:37:32 2020 +0700
+
+    show source site name on title page
+
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index b5a7b2c..fb71962 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -37,7 +37,7 @@ &lt;h1&gt;{{ name }}&lt;/h1&gt;
+       {{ ibutton(left_icon=&#39;bookmark&#39;, text=ftext, color=fcolor, title=ftitle) }}
+     &lt;/form&gt;
+   {% endif %}
+-  {{ ibutton(href=source_url, right_icon=&#39;arrow-up-right&#39;, text=&#39;Source site&#39;, color=&#39;blue&#39;, title=&#39;Go to source site&#39;) }}
++  {{ ibutton(href=source_url, right_icon=&#39;arrow-up-right&#39;, text=site|capitalize, color=&#39;blue&#39;, title=&#39;Go to source site&#39;) }}
+ &lt;/div&gt;
+ 
+ &lt;img class=&quot;cover&quot; src=&quot;{{ cover }}&quot; alt=&quot;cover&quot; /&gt;
+</pre></body></html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[042ca8a9e3] rename feeding to feed to be consistent | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 042ca8a9e3</strong><hr><pre>commit 042ca8a9e3eca41f693df638c9bb8ced97bf480a
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 17 16:21:49 2023 +0700
+
+    rename feeding to feed to be consistent
+
+diff --git a/main.go b/main.go
+index e90c8a0..6b57778 100644
+--- a/main.go
++++ b/main.go
+@@ -29,8 +29,8 @@
+ //go:embed sprites/hungry/*
+ var HungrySprites embed.FS
+ 
+-//go:embed sprites/feeding/*
+-var FeedingSprites embed.FS
++//go:embed sprites/feed/*
++var FeedSprites embed.FS
+ 
+ //go:embed sprites/walk-left/*
+ var WalkLeftSprites embed.FS
+@@ -85,14 +85,14 @@ func NewAnim(sprites embed.FS, subdir string) *Anim {
+ 	return &amp;Anim{frames}
+ }
+ 
+-var Idle, RightClick, Drag, Hungry, Feeding, WalkLeft, WalkRight *Anim
++var Idle, RightClick, Drag, Hungry, Feed, WalkLeft, WalkRight *Anim
+ 
+ func init() {
+ 	Idle = NewAnim(IdleSprites, &quot;idle&quot;)
+ 	Drag = NewAnim(DragSprites, &quot;drag&quot;)
+ 	RightClick = NewAnim(RightClickSprites, &quot;right-click&quot;)
+ 	Hungry = NewAnim(HungrySprites, &quot;hungry&quot;)
+-	Feeding = NewAnim(FeedingSprites, &quot;feeding&quot;)
++	Feed = NewAnim(FeedSprites, &quot;feed&quot;)
+ 	WalkLeft = NewAnim(WalkLeftSprites, &quot;walk-left&quot;)
+ 	WalkRight = NewAnim(WalkRightSprites, &quot;walk-right&quot;)
+ }
+diff --git a/sprites/feeding/00.png b/sprites/feed/00.png
+similarity index 100%
+rename from sprites/feeding/00.png
+rename to sprites/feed/00.png
+diff --git a/sprites/feeding/01.png b/sprites/feed/01.png
+similarity index 100%
+rename from sprites/feeding/01.png
+rename to sprites/feed/01.png
+diff --git a/sprites/feeding/02.png b/sprites/feed/02.png
+similarity index 100%
+rename from sprites/feeding/02.png
+rename to sprites/feed/02.png
+diff --git a/sprites/feeding/03.png b/sprites/feed/03.png
+similarity index 100%
+rename from sprites/feeding/03.png
+rename to sprites/feed/03.png
+diff --git a/sprites/feeding/04.png b/sprites/feed/04.png
+similarity index 100%
+rename from sprites/feeding/04.png
+rename to sprites/feed/04.png
+diff --git a/sprites/feeding/05.png b/sprites/feed/05.png
+similarity index 100%
+rename from sprites/feeding/05.png
+rename to sprites/feed/05.png
+diff --git a/sprites/feeding/06.png b/sprites/feed/06.png
+similarity index 100%
+rename from sprites/feeding/06.png
+rename to sprites/feed/06.png
+diff --git a/sprites/feeding/07.png b/sprites/feed/07.png
+similarity index 100%
+rename from sprites/feeding/07.png
+rename to sprites/feed/07.png
+diff --git a/sprites/feeding/08.png b/sprites/feed/08.png
+similarity index 100%
+rename from sprites/feeding/08.png
+rename to sprites/feed/08.png
+diff --git a/sprites/feeding/09.png b/sprites/feed/09.png
+similarity index 100%
+rename from sprites/feeding/09.png
+rename to sprites/feed/09.png
+diff --git a/sprites/feeding/10.png b/sprites/feed/10.png
+similarity index 100%
+rename from sprites/feeding/10.png
+rename to sprites/feed/10.png
+diff --git a/sprites/feeding/11.png b/sprites/feed/11.png
+similarity index 100%
+rename from sprites/feeding/11.png
+rename to sprites/feed/11.png
+diff --git a/sprites/feeding/12.png b/sprites/feed/12.png
+similarity index 100%
+rename from sprites/feeding/12.png
+rename to sprites/feed/12.png
+diff --git a/sprites/feeding/13.png b/sprites/feed/13.png
+similarity index 100%
+rename from sprites/feeding/13.png
+rename to sprites/feed/13.png
+diff --git a/sprites/feeding/14.png b/sprites/feed/14.png
+similarity index 100%
+rename from sprites/feeding/14.png
+rename to sprites/feed/14.png
+diff --git a/sprites/feeding/15.png b/sprites/feed/15.png
+similarity index 100%
+rename from sprites/feeding/15.png
+rename to sprites/feed/15.png
+diff --git a/sprites/feeding/16.png b/sprites/feed/16.png
+similarity index 100%
+rename from sprites/feeding/16.png
+rename to sprites/feed/16.png
+diff --git a/sprites/feeding/17.png b/sprites/feed/17.png
+similarity index 100%
+rename from sprites/feeding/17.png
+rename to sprites/feed/17.png
+diff --git a/sprites/feeding/18.png b/sprites/feed/18.png
+similarity index 100%
+rename from sprites/feeding/18.png
+rename to sprites/feed/18.png
+diff --git a/sprites/feeding/19.png b/sprites/feed/19.png
+similarity index 100%
+rename from sprites/feeding/19.png
+rename to sprites/feed/19.png
+diff --git a/sprites/feeding/20.png b/sprites/feed/20.png
+similarity index 100%
+rename from sprites/feeding/20.png
+rename to sprites/feed/20.png
+diff --git a/sprites/feeding/21.png b/sprites/feed/21.png
+similarity index 100%
+rename from sprites/feeding/21.png
+rename to sprites/feed/21.png
+diff --git a/sprites/feeding/22.png b/sprites/feed/22.png
+similarity index 100%
+rename from sprites/feeding/22.png
+rename to sprites/feed/22.png
+diff --git a/sprites/feeding/23.png b/sprites/feed/23.png
+similarity index 100%
+rename from sprites/feeding/23.png
+rename to sprites/feed/23.png
+diff --git a/sprites/feeding/24.png b/sprites/feed/24.png
+similarity index 100%
+rename from sprites/feeding/24.png
+rename to sprites/feed/24.png
+diff --git a/sprites/feeding/25.png b/sprites/feed/25.png
+similarity index 100%
+rename from sprites/feeding/25.png
+rename to sprites/feed/25.png
+diff --git a/sprites/feeding/26.png b/sprites/feed/26.png
+similarity index 100%
+rename from sprites/feeding/26.png
+rename to sprites/feed/26.png
+diff --git a/sprites/feeding/27.png b/sprites/feed/27.png
+similarity index 100%
+rename from sprites/feeding/27.png
+rename to sprites/feed/27.png
+diff --git a/states.go b/states.go
+index cffc86f..74ce188 100644
+--- a/states.go
++++ b/states.go
+@@ -162,7 +162,7 @@ func (s *StateHungry) EndAnimHook(sm *StateMachine) {}
+ 
+ type StateFeed struct{}
+ 
+-func (s *StateFeed) Enter(sm *StateMachine)  { sm.SetAnim(Feeding) }
++func (s *StateFeed) Enter(sm *StateMachine)  { sm.SetAnim(Feed) }
+ func (s *StateFeed) Update(sm *StateMachine) {}
+ func (s *StateFeed) EndAnimHook(sm *StateMachine) {
+ 	sm.SetState(&amp;StateIdle{})
+</pre></body></html>

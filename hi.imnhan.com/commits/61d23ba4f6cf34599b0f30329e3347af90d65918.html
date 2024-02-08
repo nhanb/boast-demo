@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[61d23ba4f6] always show vertical scrollbar | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 61d23ba4f6</strong><hr><pre>commit 61d23ba4f6cf34599b0f30329e3347af90d65918
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 23 21:48:05 2023 +0700
+
+    always show vertical scrollbar
+
+diff --git a/_s4g/theme/base.css b/_s4g/theme/base.css
+index 53a5d64..c10cd1f 100644
+--- a/_s4g/theme/base.css
++++ b/_s4g/theme/base.css
+@@ -3,6 +3,9 @@ html {
+   font-size: 1em;
+   max-width: 50rem;
+   margin: auto;
++  /* Always show scrollbar, to prevent content shifting when navigating
++   * between long and short pages: */
++  overflow-y: scroll;
+ }
+ 
+ p,
+</pre></body></html>

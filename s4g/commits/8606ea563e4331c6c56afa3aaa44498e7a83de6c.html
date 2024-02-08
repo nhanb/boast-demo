@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[8606ea563e] implement livereload | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 8606ea563e</strong><hr><pre>commit 8606ea563e4331c6c56afa3aaa44498e7a83de6c
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jul 8 17:16:23 2023 +0700
+
+    implement livereload
+    
+    Not ideal right now: if multiple tabs are open, only 1 will be reloaded.
+
+diff --git a/Makefile b/Makefile
+index 83c5cf1..920c8df 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@ build:
+ 	go build -o dist/
+ 
+ watch:
+-	find . -name &#39;*.go&#39; -or -name &#39;*.js&#39; \
++	find . -name &#39;*.go&#39; -or -name &#39;*.js&#39; -or -name &#39;livereload.html&#39; \
+ 	| entr -rc go run .
+ 
+ # Cheating a little because the djot.js repo on github does not provide builds
+diff --git a/livereload/livereload.go b/livereload/livereload.go
+new file mode 100644
+index 0000000..d440790
+--- /dev/null
++++ b/livereload/livereload.go
+@@ -0,0 +1,90 @@
++package livereload
++
++import (
++	&quot;bytes&quot;
++	_ &quot;embed&quot;
++	&quot;io/fs&quot;
++	&quot;net/http&quot;
++	&quot;strings&quot;
++	&quot;sync&quot;
++
++	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
++)
++
++const endpoint = &quot;/_livereload&quot;
++
++//go:embed livereload.html
++var lrScript []byte
++
++var pleaseReload = []byte(&quot;1&quot;)
++var dontReload = []byte(&quot;0&quot;)
++
++var state struct {
++	shouldReload bool
++	mut          sync.RWMutex
++}
++
++func init() {
++	lrScript = bytes.ReplaceAll(lrScript, []byte(&quot;{{LR_ENDPOINT}}&quot;), []byte(endpoint))
++	lrScript = bytes.ReplaceAll(lrScript, []byte(&quot;{{SHOULD_RELOAD}}&quot;), pleaseReload)
++}
++
++// For html pages, insert a script tag to enable livereload
++func Middleware(fsys writablefs.FS, f http.Handler) http.Handler {
++	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++		path := r.URL.Path
++
++		// Handle AJAX endpoint
++		if path == endpoint {
++			state.mut.RLock()
++			shouldReload := state.shouldReload
++			state.mut.RUnlock()
++
++			if shouldReload {
++				w.Write(pleaseReload)
++				state.mut.Lock()
++				state.shouldReload = false
++				state.mut.Unlock()
++			} else {
++				w.Write(dontReload)
++			}
++			return
++		}
++
++		// For non-html requests, fall through to default FileServer handler
++		if !strings.HasSuffix(path, &quot;.html&quot;) &amp;&amp; !strings.HasSuffix(path, &quot;/&quot;) {
++			f.ServeHTTP(w, r)
++			return
++		}
++
++		if strings.HasSuffix(path, &quot;/&quot;) {
++			path += &quot;index.html&quot;
++		}
++
++		// Filesystem access doesn&#39;t expect leading slash &quot;/&quot;
++		path = strings.TrimPrefix(path, &quot;/&quot;)
++
++		originalContent, err := fs.ReadFile(fsys, path)
++		if err != nil {
++			http.NotFound(w, r)
++			return
++		}
++
++		w.Write(withLiveReload(originalContent))
++	})
++}
++
++func Trigger() {
++	state.mut.Lock()
++	state.shouldReload = true
++	state.mut.Unlock()
++}
++
++func withLiveReload(original []byte) []byte {
++	bodyEndPos := bytes.LastIndex(original, []byte(&quot;&lt;/body&gt;&quot;))
++	result := make([]byte, len(original)+len(lrScript))
++	copy(result, original[:bodyEndPos])
++	copy(result[bodyEndPos:], lrScript)
++	copy(result[bodyEndPos+len(lrScript):], original[bodyEndPos:])
++	return result
++}
+diff --git a/livereload/livereload.html b/livereload/livereload.html
+new file mode 100644
+index 0000000..8f35245
+--- /dev/null
++++ b/livereload/livereload.html
+@@ -0,0 +1,11 @@
++&lt;script&gt;
++  setInterval(() =&gt; {
++    fetch(&quot;{{LR_ENDPOINT}}&quot;)
++      .then((resp) =&gt; resp.text())
++      .then((text) =&gt; {
++        if (text === &quot;{{SHOULD_RELOAD}}&quot;) {
++          location.reload();
++        }
++      });
++  }, 500);
++&lt;/script&gt;
+diff --git a/main.go b/main.go
+index d5d1826..abaadff 100644
+--- a/main.go
++++ b/main.go
+@@ -14,6 +14,8 @@
+ 
+ 	&quot;github.com/BurntSushi/toml&quot;
+ 	&quot;go.imnhan.com/webmaker2000/djot&quot;
++	&quot;go.imnhan.com/webmaker2000/livereload&quot;
++	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
+ )
+ 
+ const DJOT_EXT = &quot;.dj&quot;
+@@ -32,7 +34,7 @@ func main() {
+ 		panic(err)
+ 	}
+ 
+-	fsys := WriteDirFS(absolutePath)
++	fsys := writablefs.WriteDirFS(absolutePath)
+ 
+ 	regenerate(fsys)
+ 
+@@ -45,18 +47,19 @@ func main() {
+ 	closeWatcher := WatchLocalFS(fsys, func() {
+ 		fmt.Println(&quot;Change detected. Regenerating...&quot;)
+ 		regenerate(fsys)
++		livereload.Trigger()
+ 	})
+ 	defer closeWatcher()
+ 
+ 	println(&quot;Serving local website at http://localhost:&quot; + port)
+-	http.Handle(&quot;/&quot;, http.FileServer(http.FS(fsys)))
++	http.Handle(&quot;/&quot;, livereload.Middleware(fsys, http.FileServer(http.FS(fsys))))
+ 	err = http.ListenAndServe(&quot;127.0.0.1:&quot;+port, nil)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ }
+ 
+-func regenerate(fsys WritableFS) {
++func regenerate(fsys writablefs.FS) {
+ 	defer timer(&quot;Took %s&quot;)()
+ 	site := readSiteMetadata(fsys)
+ 	articles := findArticles(fsys)
+@@ -117,7 +120,7 @@ type SiteMetadata struct {
+ 	}
+ }
+ 
+-func readSiteMetadata(fsys WritableFS) SiteMetadata {
++func readSiteMetadata(fsys writablefs.FS) SiteMetadata {
+ 	sm := SiteMetadata{
+ 		HomePath:     &quot;/&quot;,
+ 		ShowFooter:   true,
+@@ -131,7 +134,7 @@ func readSiteMetadata(fsys WritableFS) SiteMetadata {
+ }
+ 
+ type Article struct {
+-	Fs       WritableFS
++	Fs       writablefs.FS
+ 	Path     string
+ 	WebPath  string
+ 	DjotBody string
+@@ -192,7 +195,7 @@ func (a *Article) WriteHtmlFile(
+ }
+ 
+ func WriteHomePage(
+-	fsys WritableFS,
++	fsys writablefs.FS,
+ 	site SiteMetadata,
+ 	articlesInFeed, articlesInNav []Article,
+ 	startYear int,
+@@ -229,7 +232,7 @@ func WriteHomePage(
+ 	fsys.WriteFile(&quot;index.html&quot;, buf.Bytes())
+ }
+ 
+-func findArticles(fsys WritableFS) (result []Article) {
++func findArticles(fsys writablefs.FS) (result []Article) {
+ 
+ 	fs.WalkDir(fsys, &quot;.&quot;, func(path string, d fs.DirEntry, err error) error {
+ 		if d.IsDir() || !strings.HasSuffix(d.Name(), DJOT_EXT) {
+diff --git a/watcher.go b/watcher.go
+index 36d9dc9..2430b32 100644
+--- a/watcher.go
++++ b/watcher.go
+@@ -8,6 +8,7 @@
+ 	&quot;time&quot;
+ 
+ 	&quot;github.com/fsnotify/fsnotify&quot;
++	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
+ )
+ 
+ var WATCHED_EXTS = []string{DJOT_EXT, SITE_EXT, &quot;.tmpl&quot;}
+@@ -17,7 +18,7 @@
+ // Watches for relevant changes in FS, debounces by debounceInterval,
+ // then executes callback.
+ // Returns cleanup function.
+-func WatchLocalFS(fsys WritableFS, callback func()) (Close func() error) {
++func WatchLocalFS(fsys writablefs.FS, callback func()) (Close func() error) {
+ 	watcher, err := fsnotify.NewWatcher()
+ 	if err != nil {
+ 		panic(err)
+diff --git a/writablefs.go b/writablefs/writablefs.go
+similarity index 86%
+rename from writablefs.go
+rename to writablefs/writablefs.go
+index 3930b1b..2451f8a 100644
+--- a/writablefs.go
++++ b/writablefs/writablefs.go
+@@ -1,4 +1,4 @@
+-package main
++package writablefs
+ 
+ import (
+ 	&quot;io/fs&quot;
+@@ -6,14 +6,14 @@
+ 	&quot;path/filepath&quot;
+ )
+ 
+-type WritableFS interface {
++type FS interface {
+ 	fs.FS
+ 	WriteFile(path string, content []byte) error
+ 	Path() string
+ }
+ 
+ // Like os.DirFS but is writable
+-func WriteDirFS(path string) WritableFS {
++func WriteDirFS(path string) FS {
+ 	return writeDirFS(path)
+ }
+ 
+</pre></body></html>

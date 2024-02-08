@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a994e516b4] upgrade to Go 1.19 | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / a994e516b4</strong><hr><pre>commit a994e516b4140ad6464e3523a3e8bcdd05e32659
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 8 20:27:35 2022 +0700
+
+    upgrade to Go 1.19
+
+diff --git a/.builds/debian.yml b/.builds/debian.yml
+index b81aa09..612220f 100644
+--- a/.builds/debian.yml
++++ b/.builds/debian.yml
+@@ -1,7 +1,7 @@
+ image: debian/bullseye
+ 
+ packages:
+-  - golang-1.18
++  - golang-1.19
+   # The following copied as-is from https://ebiten.org/documents/install.html
+   - libc6-dev
+   - libglu1-mesa-dev
+@@ -20,7 +20,7 @@ repositories:
+ tasks:
+   - build: |
+       cd shark
+-      export PATH=&quot;$PATH:/usr/lib/go-1.18/bin&quot;
++      export PATH=&quot;$PATH:/usr/lib/go-1.19/bin&quot;
+       go version
+       make linux
+       make windows
+diff --git a/.github/workflows/main.yml b/.github/workflows/main.yml
+index c8a5ab2..b073071 100644
+--- a/.github/workflows/main.yml
++++ b/.github/workflows/main.yml
+@@ -12,7 +12,7 @@ jobs:
+     - uses: actions/checkout@v3
+     - uses: actions/setup-go@v3
+       with:
+-        go-version: 1.18
++        go-version: 1.19
+ 
+     - name: Install ebiten linux deps
+       run: make deps-debian
+@@ -62,7 +62,7 @@ jobs:
+     - uses: actions/checkout@v3
+     - uses: actions/setup-go@v3
+       with:
+-        go-version: 1.18
++        go-version: 1.19
+ 
+     - name: Install ebiten linux deps
+       run: make deps-debian
+@@ -105,7 +105,7 @@ jobs:
+     - uses: actions/checkout@v3
+     - uses: actions/setup-go@v3
+       with:
+-        go-version: 1.18
++        go-version: 1.19
+ 
+     - name: Build for macOS
+       env:
+diff --git a/go.mod b/go.mod
+index 4354d8d..8f426ef 100644
+--- a/go.mod
++++ b/go.mod
+@@ -1,11 +1,11 @@
+ module go.imnhan.com/shark
+ 
+-go 1.18
++go 1.19
+ 
+ require github.com/hajimehoshi/ebiten/v2 v2.3.7
+ 
+ require (
+-	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20220712193148-63cf1f4ef61f // indirect
++	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20220806181222-55e207c401ad // indirect
+ 	github.com/gofrs/flock v0.8.1 // indirect
+ 	github.com/jezek/xgb v1.0.1 // indirect
+ 	golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56 // indirect
+@@ -13,5 +13,5 @@ require (
+ 	golang.org/x/image v0.0.0-20220722155232-062f8c9fd539 // indirect
+ 	golang.org/x/mobile v0.0.0-20220722155234-aaac322e2105 // indirect
+ 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
+-	golang.org/x/sys v0.0.0-20220730100132-1609e554cd39 // indirect
++	golang.org/x/sys v0.0.0-20220804214406-8e32c043e418 // indirect
+ )
+diff --git a/go.sum b/go.sum
+index aed8d16..5030965 100644
+--- a/go.sum
++++ b/go.sum
+@@ -2,6 +2,8 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
+ github.com/go-gl/glfw/v3.3/glfw v0.0.0-20220320163800-277f93cfa958/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
+ github.com/go-gl/glfw/v3.3/glfw v0.0.0-20220712193148-63cf1f4ef61f h1:w3h343WgVLKLITcSpwecCDcq0FO8pAv6A/UG86hhFtY=
+ github.com/go-gl/glfw/v3.3/glfw v0.0.0-20220712193148-63cf1f4ef61f/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
++github.com/go-gl/glfw/v3.3/glfw v0.0.0-20220806181222-55e207c401ad h1:kX51IjbsJPCvzV9jUoVQG9GEUqIq5hjfYzXTqQ52Rh8=
++github.com/go-gl/glfw/v3.3/glfw v0.0.0-20220806181222-55e207c401ad/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
+ github.com/gofrs/flock v0.8.1 h1:+gYjHKf32LDeiEEFhQaotPbLuUXjY5ZqxKgXy7n59aw=
+ github.com/gofrs/flock v0.8.1/go.mod h1:F1TvTiK9OcQqauNUHlbJvyl9Qa1QvF/gOUDKA14jxHU=
+ github.com/hajimehoshi/bitmapfont/v2 v2.2.0/go.mod h1:Llj2wTYXMuCTJEw2ATNIO6HbFPOoBYPs08qLdFAxOsQ=
+@@ -68,6 +70,8 @@ golang.org/x/sys v0.0.0-20211019181941-9d821ace8654/go.mod h1:oPkhp1MJrh7nUepCBc
+ golang.org/x/sys v0.0.0-20220408201424-a24fb2fb8a0f/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+ golang.org/x/sys v0.0.0-20220730100132-1609e554cd39 h1:aNCnH+Fiqs7ZDTFH6oEFjIfbX2HvgQXJ6uQuUbTobjk=
+ golang.org/x/sys v0.0.0-20220730100132-1609e554cd39/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
++golang.org/x/sys v0.0.0-20220804214406-8e32c043e418 h1:9vYwv7OjYaky/tlAeD7C4oC9EsPTlaFl1H2jS++V+ME=
++golang.org/x/sys v0.0.0-20220804214406-8e32c043e418/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+ golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
+ golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
+ golang.org/x/text v0.3.3/go.mod h1:5Zoc/QRtKVWzQhOtBMvqHzDpF6irO9z98xDceosuGiQ=
+</pre></body></html>

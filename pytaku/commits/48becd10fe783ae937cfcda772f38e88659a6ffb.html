@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[48becd10fe] remove old stuff before SPA | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 48becd10fe</strong><hr><pre>commit 48becd10fe783ae937cfcda772f38e88659a6ffb
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Aug 25 21:15:15 2020 +0700
+
+    remove old stuff before SPA
+
+diff --git a/src/pytaku/decorators.py b/src/pytaku/decorators.py
+index 599dd36..22015e7 100644
+--- a/src/pytaku/decorators.py
++++ b/src/pytaku/decorators.py
+@@ -1,18 +1,8 @@
+ from functools import wraps
+ 
+-from flask import jsonify, redirect, request, session, url_for
++from flask import jsonify, request
+ 
+-from .persistence import read, unread, verify_token
+-
+-
+-def require_login(f):
+-    @wraps(f)
+-    def decorated_function(*args, **kwargs):
+-        if session.get(&quot;user&quot;) is None:
+-            return redirect(url_for(&quot;auth_view&quot;, next=request.url))
+-        return f(*args, **kwargs)
+-
+-    return decorated_function
++from .persistence import verify_token
+ 
+ 
+ def process_token(required=True):
+@@ -48,39 +38,3 @@ def decorated_function(*args, **kwargs):
+         return decorated_function
+ 
+     return decorator
+-
+-
+-def toggle_has_read(f):
+-    &quot;&quot;&quot;
+-    Augments a view with the ability to toggle a chapter&#39;s read status if there&#39;s a
+-    `?has_read=&lt;chapter_id&gt;` url param.
+-    &quot;&quot;&quot;
+-
+-    @wraps(f)
+-    def decorated_function(*args, **kwargs):
+-        assert &quot;site&quot; in kwargs
+-        assert &quot;title_id&quot; in kwargs
+-        has_read_chapter_id = request.args.get(&quot;has_read&quot;)
+-        unread_chapter_id = request.args.get(&quot;unread&quot;)
+-        assert not (has_read_chapter_id and unread_chapter_id)  # can&#39;t do both
+-
+-        if session.get(&quot;user&quot;):
+-            if has_read_chapter_id:
+-                read(
+-                    session[&quot;user&quot;][&quot;id&quot;],
+-                    kwargs[&quot;site&quot;],
+-                    kwargs[&quot;title_id&quot;],
+-                    has_read_chapter_id,
+-                )
+-                return redirect(request.url[: request.url.rfind(&quot;?&quot;)])
+-            elif unread_chapter_id:
+-                unread(
+-                    session[&quot;user&quot;][&quot;id&quot;],
+-                    kwargs[&quot;site&quot;],
+-                    kwargs[&quot;title_id&quot;],
+-                    unread_chapter_id,
+-                )
+-                return redirect(request.url[: request.url.rfind(&quot;?&quot;)])
+-        return f(*args, **kwargs)
+-
+-    return decorated_function
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 747f23e..09970cf 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -6,20 +6,10 @@
+ from typing import List, Tuple
+ 
+ import requests
+-from flask import (
+-    Flask,
+-    flash,
+-    jsonify,
+-    make_response,
+-    redirect,
+-    render_template,
+-    request,
+-    session,
+-    url_for,
+-)
++from flask import Flask, jsonify, make_response, render_template, request, url_for
+ 
+ from .conf import config
+-from .decorators import process_token, require_login
++from .decorators import process_token
+ from .persistence import (
+     create_token,
+     delete_token,
+@@ -71,136 +61,6 @@ def _chapter_name(chapter: dict):
+     return result
+ 
+ 
+-@app.route(&quot;/following&quot;, methods=[&quot;GET&quot;])
+-@require_login
+-def follows_view():
+-    titles = get_followed_titles(session[&quot;user&quot;][&quot;id&quot;])
+-    for title in titles:
+-        thumbnail = title_thumbnail(title[&quot;site&quot;], title[&quot;id&quot;])
+-        if title[&quot;site&quot;] == &quot;mangadex&quot;:
+-            thumbnail = url_for(&quot;proxy_view&quot;, b64_url=_encode_proxy_url(thumbnail))
+-        title[&quot;thumbnail&quot;] = thumbnail
+-    return render_template(&quot;old/follows.html&quot;, titles=titles)
+-
+-
+-@app.route(&quot;/follow/&lt;site&gt;/&lt;title_id&gt;&quot;, methods=[&quot;POST&quot;])
+-@require_login
+-def follow_view(site, title_id):
+-    follow(session[&quot;user&quot;][&quot;id&quot;], site, title_id)
+-    return redirect(url_for(&quot;spa_title_view&quot;, site=site, title_id=title_id))
+-
+-
+-@app.route(&quot;/unfollow/&lt;site&gt;/&lt;title_id&gt;&quot;, methods=[&quot;POST&quot;])
+-@require_login
+-def unfollow_view(site, title_id):
+-    unfollow(session[&quot;user&quot;][&quot;id&quot;], site, title_id)
+-    return redirect(url_for(&quot;spa_title_view&quot;, site=site, title_id=title_id))
+-
+-
+-@app.route(&quot;/logout&quot;, methods=[&quot;POST&quot;])
+-def logout_view():
+-    session.pop(&quot;user&quot;)
+-    return redirect(&quot;/&quot;)
+-
+-
+-@app.route(&quot;/auth&quot;, methods=[&quot;GET&quot;, &quot;POST&quot;])
+-def auth_view():
+-    if session.get(&quot;user&quot;):
+-        return redirect(url_for(&quot;home_view&quot;))
+-
+-    if request.method == &quot;POST&quot;:
+-
+-        if request.form[&quot;action&quot;] == &quot;register&quot;:
+-            username = request.form[&quot;username&quot;].strip()
+-            password = request.form[&quot;password&quot;]
+-            confirm_password = request.form[&quot;confirm-password&quot;]
+-            message = None
+-            if password != confirm_password:
+-                message = &quot;Password confirmation didn&#39;t match.&quot;
+-                status_code = 400
+-            elif not (username and password and confirm_password):
+-                message = &quot;Empty field(s) spotted. Protip: spaces don&#39;t count.&quot;
+-                status_code = 400
+-            elif (
+-                len(username) &lt; 2
+-                or len(username) &gt; 15
+-                or len(password) &lt; 5
+-                or len(password) &gt; 50
+-            ):
+-                message = &quot;Invalid username/password length. Username length should be 2~15, password 5~50.&quot;
+-                status_code = 400
+-            else:  # success!
+-                err = register_user(username, password)
+-                if err:
+-                    message = err
+-                    status_code = 400
+-                else:
+-                    username = &quot;&quot;
+-                    password = &quot;&quot;
+-                    confirm_password = &quot;&quot;
+-                    message = &quot;Registration successful! You can login now.&quot;
+-                    status_code = 200
+-            return (
+-                render_template(
+-                    &quot;old/auth.html&quot;,
+-                    register_username=username,
+-                    register_password=password,
+-                    register_confirm_password=confirm_password,
+-                    register_message=message,
+-                    register_has_error=status_code != 200,
+-                ),
+-                status_code,
+-            )
+-
+-        else:  # action == &#39;login&#39;
+-            username = request.form[&quot;username&quot;].strip()
+-            password = request.form[&quot;password&quot;]
+-            remember = request.form.get(&quot;remember&quot;) == &quot;on&quot;
+-            if not (username and password):
+-                message = &quot;Empty field(s) spotted. Protip: spaces don&#39;t count.&quot;
+-                status_code = 400
+-            else:
+-                user_id = verify_username_password(username, password)
+-                if user_id is None:
+-                    message = &quot;Wrong username/password combination.&quot;
+-                    status_code = 400
+-                else:  # success!
+-                    resp = redirect(request.args.get(&quot;next&quot;, url_for(&quot;home_view&quot;)))
+-                    session.permanent = remember
+-                    session[&quot;user&quot;] = {&quot;username&quot;: username, &quot;id&quot;: user_id}
+-                    return resp
+-
+-            return (
+-                render_template(
+-                    &quot;old/auth.html&quot;,
+-                    login_username=username,
+-                    login_password=password,
+-                    login_remember=remember,
+-                    login_message=message,
+-                    login_has_error=status_code != 200,
+-                ),
+-                status_code,
+-            )
+-
+-    # Just a plain ol&#39; GET request:
+-    return render_template(&quot;old/auth.html&quot;)
+-
+-
+-@app.route(&quot;/search&quot;)
+-def search_view():
+-    query = request.args.get(&quot;q&quot;, &quot;&quot;).strip()
+-    results = {}
+-    if query:
+-        results = search_title_all_sites(query)
+-
+-    if &quot;mangadex&quot; in results:
+-        for title in results[&quot;mangadex&quot;]:
+-            title[&quot;thumbnail&quot;] = url_for(
+-                &quot;proxy_view&quot;, b64_url=_encode_proxy_url(title[&quot;thumbnail&quot;])
+-            )
+-    return render_template(&quot;old/search.html&quot;, results=results, query=query)
+-
+-
+ @app.route(&quot;/proxy/&lt;b64_url&gt;&quot;)
+ def proxy_view(b64_url):
+     &quot;&quot;&quot;Fine I&#39;ll do it&quot;&quot;&quot;
+@@ -231,41 +91,6 @@ def _is_manga_img_url(
+     return pattern.match(url)
+ 
+ 
+-@app.route(&quot;/import&quot;, methods=[&quot;GET&quot;, &quot;POST&quot;])
+-@require_login
+-def import_view():
+-    if request.method == &quot;POST&quot;:
+-
+-        # check if the post request has the file part
+-        if &quot;tachiyomi&quot; not in request.files:
+-            flash(&quot;No file part&quot;)
+-            return redirect(request.url)
+-        file = request.files[&quot;tachiyomi&quot;]
+-
+-        # if user does not select file, browser also
+-        # submits an empty part without filename
+-        if file.filename == &quot;&quot;:
+-            flash(&quot;No selected file&quot;)
+-            return redirect(request.url)
+-
+-        if file:
+-            text = file.read()
+-            site_title_pairs = read_tachiyomi_follows(text)
+-            if site_title_pairs is None:
+-                flash(&quot;Malformed input file.&quot;)
+-                return redirect(request.url)
+-
+-            # First fetch &amp; save titles if they&#39;re not already in db
+-            ensure_titles(site_title_pairs)
+-
+-            # Then follow them all
+-            import_follows(session[&quot;user&quot;][&quot;id&quot;], site_title_pairs)
+-
+-            flash(f&quot;Added {len(site_title_pairs)} follows.&quot;)
+-
+-    return render_template(&quot;old/import.html&quot;)
+-
+-
+ def read_tachiyomi_follows(text: str) -&gt; List[Tuple[str, str]]:
+     try:
+         data = json.loads(text)
+@@ -331,11 +156,6 @@ def ensure_titles(site_title_pairs: List[Tuple[str, str]]):
+     return title_dicts
+ 
+ 
+-&quot;&quot;&quot;
+-New Mithril-based SPA views follow
+-&quot;&quot;&quot;
+-
+-
+ @app.route(&quot;/&quot;)
+ @app.route(&quot;/h&quot;)
+ @app.route(&quot;/a&quot;)
+diff --git a/src/pytaku/static/base.css b/src/pytaku/static/base.css
+deleted file mode 100644
+index babcfd1..0000000
+--- a/src/pytaku/static/base.css
++++ /dev/null
+@@ -1,214 +0,0 @@
+-/* Look &amp; feel */
+-:root {
+-  --btn-red: #ef4f39;
+-  --btn-red-bottom: #b94434;
+-  --btn-green: #3ba60a;
+-  --btn-green-bottom: #338a0d;
+-  --btn-blue: #009ee8;
+-  --btn-blue-bottom: #26789f;
+-  --btn-gray: #444;
+-  --btn-gray-bottom: #555;
+-  --bg-black: #231f20;
+-  --border-radius: 3px;
+-  --body-padding: 0.5rem;
+-
+-  font-size: 100%;
+-  font-family: sans-serif;
+-  overflow-y: scroll;
+-}
+-
+-html {
+-  touch-action: manipulation;
+-}
+-
+-h1 {
+-  margin-top: 1rem;
+-  margin-bottom: 0.5rem;
+-  font-size: 2rem;
+-  font-weight: bold;
+-}
+-
+-table {
+-  border-collapse: collapse;
+-}
+-td,
+-th {
+-  border: 1px solid black;
+-  padding: 0.5em;
+-}
+-tr:nth-child(even) {
+-  background-color: #eee;
+-}
+-th {
+-  background-color: #777;
+-  color: white;
+-}
+-
+-input {
+-  padding: 0.3rem;
+-}
+-
+-p {
+-  line-height: 1.5rem;
+-}
+-
+-.button {
+-  display: inline-block;
+-  user-select: none;
+-  margin: 0;
+-  display: inline-flex;
+-  align-items: center;
+-  justify-content: center;
+-  vertical-align: bottom;
+-
+-  cursor: pointer;
+-  border: 0;
+-  padding: 0.5rem 1rem 0.3rem 1rem;
+-  border-radius: var(--border-radius);
+-  color: white;
+-  text-decoration: none;
+-}
+-.button &gt; * {
+-  margin-right: 0.3rem;
+-}
+-.button &gt; *:last-child {
+-  margin-right: 0;
+-}
+-.button:hover {
+-  filter: brightness(110%);
+-}
+-.button:active {
+-  filter: brightness(90%);
+-}
+-.button:focus {
+-  box-shadow: 0 0 2px black;
+-}
+-.button.red {
+-  background-color: var(--btn-red);
+-  border-bottom: 4px solid var(--btn-red-bottom);
+-}
+-.button.green {
+-  background-color: var(--btn-green);
+-  border-bottom: 4px solid var(--btn-green-bottom);
+-}
+-.button.blue {
+-  background-color: var(--btn-blue);
+-  border-bottom: 4px solid var(--btn-blue-bottom);
+-}
+-.button.gray {
+-  background-color: var(--btn-gray);
+-  border-bottom: 4px solid var(--btn-gray-bottom);
+-}
+-.button.disabled,
+-.button.disabled:hover,
+-.button.disabled:active {
+-  background-color: #aaa;
+-  border-bottom: 4px solid #aaa;
+-  filter: none;
+-  cursor: default;
+-  opacity: 0.5;
+-}
+-.button &gt; img {
+-  height: 1rem;
+-}
+-
+-/* Grid layout */
+-
+-nav {
+-  display: flex;
+-  flex-wrap: wrap;
+-  padding: var(--body-padding);
+-}
+-nav &gt; * {
+-  margin-right: 1rem;
+-  margin-top: 0.2rem;
+-  margin-bottom: 0.2rem;
+-}
+-nav &gt; *:last-child {
+-  margin-right: 0;
+-}
+-
+-.logo {
+-  width: 150px;
+-}
+-.logo img {
+-  max-width: 100%;
+-  display: block;
+-}
+-
+-.search {
+-  display: flex;
+-}
+-
+-.links {
+-  margin-left: auto; /* to pull to the right */
+-  display: inline-flex;
+-  justify-content: center;
+-  align-items: center;
+-  color: white;
+-}
+-.links &gt; * {
+-  margin-right: 1rem;
+-}
+-.links &gt; *:last-child {
+-  margin-right: 0;
+-}
+-.links a * {
+-  vertical-align: middle;
+-}
+-
+-/* Component-specific styling */
+-
+-nav {
+-  background-color: var(--bg-black);
+-}
+-
+-.search input {
+-  border: 0;
+-  border-radius: var(--border-radius) 0 0 var(--border-radius);
+-}
+-.search button {
+-  border-radius: 0 var(--border-radius) var(--border-radius) 0;
+-}
+-
+-.links a {
+-  color: white;
+-  text-decoration: none;
+-}
+-.links a:hover {
+-  text-decoration: underline;
+-}
+-
+-.content {
+-  padding: var(--body-padding);
+-}
+-.content &gt; * {
+-  display: block;
+-  margin-top: 0.5rem;
+-  margin-bottom: 0.5rem;
+-}
+-
+-footer {
+-  padding: 1rem var(--body-padding) var(--body-padding) var(--body-padding);
+-  line-height: 1.5em;
+-  opacity: 0.7;
+-}
+-footer a {
+-  color: inherit;
+-}
+-
+-/* sticky footer */
+-html,
+-body {
+-  height: 100%;
+-}
+-body {
+-  display: flex;
+-  flex-direction: column;
+-}
+-.content {
+-  flex: 1 0 auto;
+-}
+-footer {
+-  flex-shrink: 0;
+-}
+diff --git a/src/pytaku/static/icons/LICENSE b/src/pytaku/static/icons/LICENSE
+deleted file mode 100644
+index 29e925b..0000000
+--- a/src/pytaku/static/icons/LICENSE
++++ /dev/null
+@@ -1,24 +0,0 @@
+-Feather icon set by Cole Bemis:
+-https://github.com/feathericons/feather
+-
+-The MIT License (MIT)
+-
+-Copyright (c) 2013-2017 Cole Bemis
+-
+-Permission is hereby granted, free of charge, to any person obtaining a copy
+-of this software and associated documentation files (the &quot;Software&quot;), to deal
+-in the Software without restriction, including without limitation the rights
+-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+-copies of the Software, and to permit persons to whom the Software is
+-furnished to do so, subject to the following conditions:
+-
+-The above copyright notice and this permission notice shall be included in all
+-copies or substantial portions of the Software.
+-
+-THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+-SOFTWARE.
+diff --git a/src/pytaku/static/icons/arrow-up-right.svg b/src/pytaku/static/icons/arrow-up-right.svg
+deleted file mode 100644
+index b61b220..0000000
+--- a/src/pytaku/static/icons/arrow-up-right.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; class=&quot;feather feather-arrow-up-right&quot;&gt;&lt;line x1=&quot;7&quot; y1=&quot;17&quot; x2=&quot;17&quot; y2=&quot;7&quot;&gt;&lt;/line&gt;&lt;polyline points=&quot;7 7 17 7 17 17&quot;&gt;&lt;/polyline&gt;&lt;/svg&gt;
+\ No newline at end of file
+diff --git a/src/pytaku/static/icons/bookmark.svg b/src/pytaku/static/icons/bookmark.svg
+deleted file mode 100644
+index ce23590..0000000
+--- a/src/pytaku/static/icons/bookmark.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; class=&quot;feather feather-bookmark&quot;&gt;&lt;path d=&quot;M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;
+\ No newline at end of file
+diff --git a/src/pytaku/static/icons/chevrons-left.svg b/src/pytaku/static/icons/chevrons-left.svg
+deleted file mode 100644
+index 3b96532..0000000
+--- a/src/pytaku/static/icons/chevrons-left.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; class=&quot;feather feather-chevrons-left&quot;&gt;&lt;polyline points=&quot;11 17 6 12 11 7&quot;&gt;&lt;/polyline&gt;&lt;polyline points=&quot;18 17 13 12 18 7&quot;&gt;&lt;/polyline&gt;&lt;/svg&gt;
+\ No newline at end of file
+diff --git a/src/pytaku/static/icons/chevrons-right.svg b/src/pytaku/static/icons/chevrons-right.svg
+deleted file mode 100644
+index 7071dfc..0000000
+--- a/src/pytaku/static/icons/chevrons-right.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; class=&quot;feather feather-chevrons-right&quot;&gt;&lt;polyline points=&quot;13 17 18 12 13 7&quot;&gt;&lt;/polyline&gt;&lt;polyline points=&quot;6 17 11 12 6 7&quot;&gt;&lt;/polyline&gt;&lt;/svg&gt;
+\ No newline at end of file
+diff --git a/src/pytaku/static/icons/eye.svg b/src/pytaku/static/icons/eye.svg
+deleted file mode 100644
+index 1835ad0..0000000
+--- a/src/pytaku/static/icons/eye.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; class=&quot;feather feather-eye&quot;&gt;&lt;path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;&gt;&lt;/path&gt;&lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;&gt;&lt;/circle&gt;&lt;/svg&gt;
+\ No newline at end of file
+diff --git a/src/pytaku/static/icons/list.svg b/src/pytaku/static/icons/list.svg
+deleted file mode 100644
+index 1c2ecba..0000000
+--- a/src/pytaku/static/icons/list.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; class=&quot;feather feather-list&quot;&gt;&lt;line x1=&quot;8&quot; y1=&quot;6&quot; x2=&quot;21&quot; y2=&quot;6&quot;&gt;&lt;/line&gt;&lt;line x1=&quot;8&quot; y1=&quot;12&quot; x2=&quot;21&quot; y2=&quot;12&quot;&gt;&lt;/line&gt;&lt;line x1=&quot;8&quot; y1=&quot;18&quot; x2=&quot;21&quot; y2=&quot;18&quot;&gt;&lt;/line&gt;&lt;line x1=&quot;3&quot; y1=&quot;6&quot; x2=&quot;3.01&quot; y2=&quot;6&quot;&gt;&lt;/line&gt;&lt;line x1=&quot;3&quot; y1=&quot;12&quot; x2=&quot;3.01&quot; y2=&quot;12&quot;&gt;&lt;/line&gt;&lt;line x1=&quot;3&quot; y1=&quot;18&quot; x2=&quot;3.01&quot; y2=&quot;18&quot;&gt;&lt;/line&gt;&lt;/svg&gt;
+\ No newline at end of file
+diff --git a/src/pytaku/static/icons/log-in.svg b/src/pytaku/static/icons/log-in.svg
+deleted file mode 100644
+index 7bfc566..0000000
+--- a/src/pytaku/static/icons/log-in.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; class=&quot;feather feather-log-in&quot;&gt;&lt;path d=&quot;M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4&quot;&gt;&lt;/path&gt;&lt;polyline points=&quot;10 17 15 12 10 7&quot;&gt;&lt;/polyline&gt;&lt;line x1=&quot;15&quot; y1=&quot;12&quot; x2=&quot;3&quot; y2=&quot;12&quot;&gt;&lt;/line&gt;&lt;/svg&gt;
+\ No newline at end of file
+diff --git a/src/pytaku/static/icons/log-out.svg b/src/pytaku/static/icons/log-out.svg
+deleted file mode 100644
+index 628a96d..0000000
+--- a/src/pytaku/static/icons/log-out.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; class=&quot;feather feather-log-out&quot;&gt;&lt;path d=&quot;M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4&quot;&gt;&lt;/path&gt;&lt;polyline points=&quot;16 17 21 12 16 7&quot;&gt;&lt;/polyline&gt;&lt;line x1=&quot;21&quot; y1=&quot;12&quot; x2=&quot;9&quot; y2=&quot;12&quot;&gt;&lt;/line&gt;&lt;/svg&gt;
+\ No newline at end of file
+diff --git a/src/pytaku/static/icons/search.svg b/src/pytaku/static/icons/search.svg
+deleted file mode 100644
+index c478d69..0000000
+--- a/src/pytaku/static/icons/search.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; class=&quot;feather feather-search&quot;&gt;&lt;circle cx=&quot;11&quot; cy=&quot;11&quot; r=&quot;8&quot;&gt;&lt;/circle&gt;&lt;line x1=&quot;21&quot; y1=&quot;21&quot; x2=&quot;16.65&quot; y2=&quot;16.65&quot;&gt;&lt;/line&gt;&lt;/svg&gt;
+\ No newline at end of file
+diff --git a/src/pytaku/static/icons/user.svg b/src/pytaku/static/icons/user.svg
+deleted file mode 100644
+index 40cd42f..0000000
+--- a/src/pytaku/static/icons/user.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; class=&quot;feather feather-user&quot;&gt;&lt;path d=&quot;M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2&quot;&gt;&lt;/path&gt;&lt;circle cx=&quot;12&quot; cy=&quot;7&quot; r=&quot;4&quot;&gt;&lt;/circle&gt;&lt;/svg&gt;
+\ No newline at end of file
+diff --git a/src/pytaku/templates/base.html b/src/pytaku/templates/base.html
+deleted file mode 100644
+index d671d3c..0000000
+--- a/src/pytaku/templates/base.html
++++ /dev/null
+@@ -1,83 +0,0 @@
+-{# vim: ft=htmldjango
+-#}
+-
+-{% macro ibutton(href=&#39;&#39;, left_icon=&#39;&#39;, right_icon=&#39;&#39;, text=&#39;&#39;, color=&#39;red&#39;, title=&#39;&#39;, disabled=False) -%}
+-{% set element = &#39;a&#39; if href else &#39;button&#39; %}
+-&lt;{{ element }} class=&quot;{{ color }} button {% if disabled %}disabled{% endif %}&quot; title=&quot;{{title}}&quot;
+-        {% if href %}href=&quot;{{ href }}&quot;{% endif %}
+-        {% if disabled %}disabled{% endif %} &gt;
+-  {% if left_icon %}
+-  &lt;img src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;icons/&#39; + left_icon + &#39;.svg&#39;)}}&quot; alt=&quot;{{ text }} icon&quot; /&gt;
+-  {% endif %}
+-
+-  {% if text %}
+-  &lt;span&gt;{{ text }}&lt;/span&gt;
+-  {% endif %}
+-
+-  {% if right_icon %}
+-  &lt;img src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;icons/&#39; + right_icon + &#39;.svg&#39;)}}&quot; alt=&quot;{{ text }} icon&quot; /&gt;
+-  {% endif %}
+-&lt;/{{ element }}&gt;
+-{%- endmacro %}
+-
+-&lt;!DOCTYPE html&gt;
+-&lt;html lang=&quot;en&quot;&gt;
+-  &lt;head&gt;
+-    &lt;meta charset=&quot;UTF-8&quot; /&gt;
+-    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; /&gt;
+-    &lt;title&gt;
+-      {% block title %}
+-      {% endblock %}
+-      - Pytaku
+-    &lt;/title&gt;
+-    &lt;link rel=&quot;icon&quot; type=&quot;image/svg+xml&quot; href=&quot;/static/favicon.svg&quot;&gt;
+-    &lt;link rel=&quot;alternate icon&quot; type=&quot;image/png&quot; href=&quot;/static/favicon.png&quot; /&gt;
+-    &lt;link rel=&quot;stylesheet&quot; href=&quot;{{ url_for(&#39;static&#39;, filename=&#39;minireset.css&#39;) }}&quot; /&gt;
+-    &lt;link rel=&quot;stylesheet&quot; href=&quot;{{ url_for(&#39;static&#39;, filename=&#39;base.css&#39;) }}&quot; /&gt;
+-
+-    {% block head %}
+-    {% endblock %}
+-  &lt;/head&gt;
+-
+-  &lt;body&gt;
+-    &lt;nav&gt;
+-      &lt;a class=&quot;logo&quot; href=&quot;/&quot;&gt;&lt;img src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;pytaku.svg&#39;)}}&quot; alt=&quot;home&quot; /&gt;&lt;/a&gt;
+-      &lt;form class=&quot;search&quot; action=&quot;{{ url_for(&#39;search_view&#39;) }}&quot; method=&quot;GET&quot;&gt;
+-        &lt;input type=&quot;text&quot; placeholder=&quot;search manga&quot; name=&quot;q&quot; value=&quot;{{ query }}&quot; /&gt;&lt;button class=&quot;red button&quot;&gt;
+-          &lt;img src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;icons/search.svg&#39;)}}&quot; alt=&quot;search&quot;&gt;
+-        &lt;/button&gt;
+-      &lt;/form&gt;
+-      &lt;span class=&quot;links&quot;&gt;
+-        {% if session.get(&#39;user&#39;) %}
+-        &lt;span&gt;Hi there &lt;strong&gt;{{ session.user[&#39;username&#39;] }}&lt;/strong&gt;!&lt;/span&gt;
+-        &lt;form method=&quot;POST&quot; action=&quot;{{ url_for(&#39;logout_view&#39;) }}&quot;&gt;
+-          {{ ibutton(left_icon=&#39;log-out&#39;, text=&#39;Logout&#39;, color=&#39;gray&#39;) }}
+-        &lt;/form&gt;
+-        {% else %}
+-        &lt;a href=&quot;/auth&quot;&gt;
+-          &lt;img src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;icons/log-in.svg&#39;)}}&quot; alt=&quot;login/register&quot; /&gt;
+-          &lt;span&gt;Login/Register&lt;/span&gt;
+-        &lt;/a&gt;
+-        {% endif %}
+-      &lt;/span&gt;
+-      &lt;/ul&gt;
+-    &lt;/nav&gt;
+-
+-    &lt;div class=&quot;content&quot;&gt;
+-    {% block content %}
+-    {% endblock %}
+-    &lt;/div&gt;
+-
+-    &lt;footer&gt;
+-      &lt;p&gt;Pytaku is &lt;a href=&quot;https://git.sr.ht/~nhanb/pytaku&quot;&gt;free and open source software&lt;/a&gt;.&lt;/p&gt;
+-      &lt;p&gt;
+-        &lt;strong&gt;This is a test instance.&lt;/strong&gt;
+-        Database may be wiped. Bugs may be present.&lt;br&gt;
+-        Your favorite mangaka may never recover from his
+-        &lt;a href=&quot;https://junk.imnhan.com/hunter_x_idol.jpg&quot;&gt;idol addiction&lt;/a&gt;
+-        and your favorite series may never finish.
+-      &lt;/p&gt;
+-    &lt;/footer&gt;
+-  &lt;/body&gt;
+-
+-&lt;/html&gt;
+diff --git a/src/pytaku/templates/old/auth.html b/src/pytaku/templates/old/auth.html
+deleted file mode 100644
+index 96b042a..0000000
+--- a/src/pytaku/templates/old/auth.html
++++ /dev/null
+@@ -1,67 +0,0 @@
+-{% extends &#39;base.html&#39; %}
+-
+-{% block title %}
+-Login / Register
+-{% endblock %}
+-
+-{% block head %}
+-&lt;style&gt;
+-.content {
+-  display: flex;
+-  flex-direction: row;
+-  flex-wrap: wrap;
+-  margin: auto;
+-  max-width: 900px;
+-  padding: 0;
+-}
+-
+-.content &gt; form {
+-  display: flex;
+-  flex-direction: column;
+-  flex: 1;
+-  margin: 0 1rem;
+-}
+-
+-.content input,
+-.content button {
+-  margin: .5rem 0;
+-}
+-
+-.success {
+-  color: inherit;
+-}
+-.error {
+-  color: red;
+-}
+-
+-&lt;/style&gt;
+-{% endblock %}
+-
+-{% block content %}
+-&lt;form method=&quot;POST&quot;&gt;
+-  &lt;h1&gt;Login&lt;/h1&gt;
+-  &lt;input type=&quot;hidden&quot; name=&quot;action&quot; value=&quot;login&quot;&gt;
+-  &lt;input name=&quot;username&quot; placeholder=&quot;Username&quot; required value=&quot;{{ login_username }}&quot;&gt;
+-  &lt;input name=&quot;password&quot; type=&quot;password&quot; placeholder=&quot;Password&quot; required value=&quot;{{ login_password }}&quot;&gt;
+-  &lt;label for=&quot;remember&quot;&gt;
+-    &lt;input name=&quot;remember&quot; id=&quot;remember&quot; type=&quot;checkbox&quot; {% if login_remember %}checked{% endif %}&gt;
+-    Remember me
+-  &lt;/label&gt;
+-  &lt;button class=&quot;green button&quot; type=&quot;submit&quot;&gt;Login&lt;/button&gt;
+-  &lt;p class=&quot;{{ &#39;error&#39; if login_has_error else &#39;success&#39;}}&quot;&gt;
+-  {{ login_message }}
+-  &lt;/p&gt;
+-&lt;/form&gt;
+-
+-&lt;form method=&quot;POST&quot;&gt;
+-  &lt;h1&gt;Register&lt;/h1&gt;
+-  &lt;input type=&quot;hidden&quot; name=&quot;action&quot; value=&quot;register&quot;&gt;
+-  &lt;input name=&quot;username&quot; placeholder=&quot;Username (2~15 chars)&quot; required value=&quot;{{ register_username }}&quot;&gt;
+-  &lt;input name=&quot;password&quot; type=&quot;password&quot; placeholder=&quot;Password (5~50 chars)&quot; required value=&quot;{{ register_password }}&quot;&gt;
+-  &lt;input name=&quot;confirm-password&quot; type=&quot;password&quot; placeholder=&quot;Confirm password&quot; required value=&quot;{{ register_confirm_password }}&quot;&gt;
+-  &lt;button class=&quot;blue button&quot; type=&quot;submit&quot;&gt;Register&lt;/button&gt;
+-  &lt;p class=&quot;{{ &#39;error&#39; if register_has_error else &#39;success&#39;}}&quot;&gt;
+-  {{ register_message }}
+-  &lt;/p&gt;
+-&lt;/form&gt;
+-{% endblock %}
+diff --git a/src/pytaku/templates/old/chapter.html b/src/pytaku/templates/old/chapter.html
+deleted file mode 100644
+index 0ba18f8..0000000
+--- a/src/pytaku/templates/old/chapter.html
++++ /dev/null
+@@ -1,100 +0,0 @@
+-{% extends &#39;base.html&#39; %}
+-
+-{% block title %}
+-Chapter {{ num_major }}{% if num_minor %}.{{ num_minor }}{% endif %}{% if name %} - {{ name }}{% endif %}
+-{% endblock %}
+-
+-{% block head %}
+-&lt;meta property=&quot;og:title&quot; content=&quot;{{ title[&#39;name&#39;] }} {{ self.title() }}&quot; /&gt;
+-&lt;meta property=&quot;og:image&quot; content=&quot;{{ title[&#39;cover&#39;] }}&quot; /&gt;
+-&lt;meta property=&quot;og:description&quot; content=&quot;{{ title[&#39;descriptions&#39;] | join(&#39;\n&#39;) or &#39;(no description)&#39; }}&quot; /&gt;
+-
+-{% if next_chapter %}
+-&lt;link rel=&quot;prefetch&quot; href=&quot;{{ url_for(&#39;chapter_view&#39;, site=site, title_id=title_id, chapter_id=next_chapter[&#39;id&#39;])}}&quot;&gt;
+-{% endif %}
+-
+-&lt;style&gt;
+-  html {
+-    background-color: #444;
+-    color: white;
+-  }
+-
+-  .content {
+-    padding: var(--body-padding) 0;
+-    text-align: center;
+-  }
+-
+-  .cover {
+-    width: 400px;
+-    border: 1px solid black;
+-  }
+-
+-  .pages img {
+-    display: block;
+-    margin: 0 auto .7rem auto;
+-  }
+-  .pages.webtoon img {
+-    margin: 0 auto;
+-  }
+-
+-  .buttons {
+-    display: flex;
+-    flex-direction: row;
+-    justify-content: center;
+-    flex-wrap: wrap;
+-  }
+-  .buttons &gt; * {
+-    margin-right: .5rem;
+-    margin-top: .2rem;
+-    margin-bottom: .2rem;
+-  }
+-  .buttons &gt; *:last-child {
+-    margin-right: 0;
+-  }
+-&lt;/style&gt;
+-
+-{% endblock %}
+-
+-{% block content %}
+-
+-&lt;h1&gt;{{ self.title() }}&lt;/h1&gt;
+-
+-{# Put buttons in block to reuse later in this same template #}
+-{% block buttons %}
+-&lt;div class=&quot;buttons&quot;&gt;
+-  {% if prev_chapter %}
+-  {{ ibutton(href=url_for(&#39;chapter_view&#39;, site=site, title_id=title_id, chapter_id=prev_chapter[&#39;id&#39;]), left_icon=&#39;chevrons-left&#39;, text=&#39;Prev&#39;) }}
+-  {% else %}
+-  {{ ibutton(left_icon=&#39;chevrons-left&#39;, text=&#39;Prev&#39;, disabled=True) }}
+-  {% endif %}
+-
+-  {{ ibutton(href=url_for(&#39;title_view&#39;, title_id=title_id, site=site), left_icon=&#39;list&#39;, text=&#39;Chapter list&#39;, color=&#39;blue&#39;) }}
+-
+-  {% if next_chapter %}
+-
+-    {% set next_url = url_for(&#39;chapter_view&#39;, site=site, title_id=title_id, chapter_id=next_chapter[&#39;id&#39;]) %}
+-    {% if session[&#39;user&#39;] %}
+-      {% set next_url = next_url + &#39;?has_read=&#39; + id %}
+-    {% endif %}
+-    {{ ibutton(href=next_url, right_icon=&#39;chevrons-right&#39;, text=&#39;Next&#39;) }}
+-
+-  {% else %}
+-    {% if session[&#39;user&#39;] %}
+-    {{ ibutton(href=url_for(&#39;title_view&#39;, site=site, title_id=title_id) + &#39;?has_read=&#39; + id, text=&#39;✓ Finish reading&#39;, color=&#39;green&#39;) }}
+-    {% else %}
+-    {{ ibutton(right_icon=&#39;chevrons-right&#39;, text=&#39;Next&#39;, disabled=True) }}
+-    {% endif %}
+-  {% endif %}
+-
+-&lt;/div&gt;
+-{% endblock %}
+-
+-&lt;div class=&quot;pages {% if is_webtoon %}webtoon{% endif %}&quot;&gt;
+-  {% for page in pages %}
+-  &lt;img src=&quot;{{ page }}&quot; crossorigin=&quot;anonymous&quot; referrerpolicy=&quot;no-referrer&quot;/&gt;
+-  {% endfor %}
+-&lt;/div&gt;
+-
+-{{ self.buttons() }}
+-
+-{% endblock %}
+diff --git a/src/pytaku/templates/old/follows.html b/src/pytaku/templates/old/follows.html
+deleted file mode 100644
+index 957bb24..0000000
+--- a/src/pytaku/templates/old/follows.html
++++ /dev/null
+@@ -1,104 +0,0 @@
+-{% extends &#39;base.html&#39; %}
+-
+-{% block title %}
+-Stuff I follow
+-{% endblock %}
+-
+-{% block head %}
+-&lt;style&gt;
+-.title {
+-  display: flex;
+-  flex-direction: row;
+-  flex-wrap: wrap;
+-  margin-bottom: var(--body-padding);
+-  background-color: #efefef;
+-}
+-.title.empty {
+-  display: inline-flex;
+-}
+-.title.empty .chapters {
+-  display: none;
+-}
+-
+-.cover {
+-  border: 1px solid #777;
+-  margin-right: .5rem;
+-  max-width: 150px;
+-}
+-.cover:hover {
+-  box-shadow: 0 0 3px black;
+-}
+-
+-.chapters {
+-  padding: .5rem .5rem .5rem 0;
+-}
+-
+-.chapter {
+-  display: block;
+-  margin-bottom: .5rem;
+-  background-color: white;
+-  border: 1px solid #999;
+-  padding: 6px;
+-  border-radius: 5px;
+-  text-decoration: none;
+-  color: black;
+-}
+-.chapter:hover {
+-  background-color: #eee;
+-}
+-.chapter:last-child::after {
+-  content: &#39;← resume here&#39;;
+-  background-color: cornsilk;
+-  white-space: nowrap;
+-}
+-
+-.group {
+-  font-size: .9em;
+-  background-color: #ddd;
+-  border-radius: 3px;
+-  white-space: nowrap;
+-  padding: 2px 5px;
+-}
+-
+-.more {
+-  display: inline-block;
+-  font-style: italic;
+-}
+-&lt;/style&gt;
+-{% endblock %}
+-
+-{% block content %}
+-
+-{% for title in titles %}
+-{% set title_url = url_for(&#39;title_view&#39;, site=title[&#39;site&#39;], title_id=title[&#39;id&#39;]) %}
+-&lt;div class=&quot;title {% if title[&#39;chapters&#39;]|length == 0 %}empty{% endif %}&quot;&gt;
+-  &lt;div&gt;
+-    &lt;a href=&quot;{{ title_url }}&quot;&gt;
+-      &lt;img class=&quot;cover&quot;
+-           src=&quot;{{ title[&#39;thumbnail&#39;] }}&quot;
+-           alt=&quot;{{ title[&#39;name&#39;] }}&quot; /&gt;
+-    &lt;/a&gt;
+-  &lt;/div&gt;
+-  &lt;div class=&quot;chapters&quot;&gt;
+-    {% if title[&#39;chapters&#39;]|length &gt; 4 %}
+-    &lt;a class=&quot;more chapter&quot; href=&quot;{{ title_url }}&quot;&gt;and {{ title[&#39;chapters&#39;]|length - 4 }} more...&lt;/a&gt;
+-    {% endif %}
+-    {% for ch in title[&#39;chapters&#39;][-4:] %}
+-    &lt;a class=&quot;chapter&quot; href=&quot;{{ url_for(&#39;chapter_view&#39;, site=title[&#39;site&#39;], title_id=title[&#39;id&#39;], chapter_id=ch[&#39;id&#39;]) }}&quot;&gt;
+-      Chapter {{ ch[&#39;num_major&#39;] }}{% if ch[&#39;num_minor&#39;] %}.{{ ch[&#39;num_minor&#39;] }}{% endif %}
+-              {% if ch[&#39;volume&#39;] %}Volume {{ ch[&#39;volume&#39;] }} {% endif %}
+-              {% if ch[&#39;name&#39;] %} - {{ ch[&#39;name&#39;] }}{% endif %}
+-        {% for group in ch[&#39;groups&#39;] %}
+-        &lt;span class=&quot;group&quot;&gt;{{ group | truncate(20) }}&lt;/span&gt;
+-        {% endfor %}
+-    &lt;/a&gt;
+-    {% endfor %}
+-  &lt;/div&gt;
+-&lt;/div&gt;
+-{% endfor %}
+-
+-{% if not titles %}
+-&lt;p&gt;You&#39;re not following any title yet. Try searching for some.&lt;/p&gt;
+-{% endif %}
+-
+-{% endblock %}
+diff --git a/src/pytaku/templates/old/home.html b/src/pytaku/templates/old/home.html
+deleted file mode 100644
+index 92c7871..0000000
+--- a/src/pytaku/templates/old/home.html
++++ /dev/null
+@@ -1,10 +0,0 @@
+-{% extends &#39;base.html&#39; %}
+-
+-{% block title %}
+-Home
+-{% endblock %}
+-
+-{% block content %}
+-&lt;p&gt;Try searching for some manga title using the box above.&lt;/p&gt;
+-&lt;p&gt;Logging in allows you to follow manga titles.&lt;/p&gt;
+-{% endblock %}
+diff --git a/src/pytaku/templates/old/import.html b/src/pytaku/templates/old/import.html
+deleted file mode 100644
+index 8734d98..0000000
+--- a/src/pytaku/templates/old/import.html
++++ /dev/null
+@@ -1,36 +0,0 @@
+-{% extends &#39;base.html&#39; %}
+-
+-{% block title %}
+-Import followed titles
+-{% endblock %}
+-
+-{% block head %}
+-&lt;style&gt;
+-input[type=file] {
+-  border: 2px solid black;
+-  border-radius: var(--border-radius);
+-  margin: 1rem 0;
+-}
+-
+-.message {
+-  color: red;
+-}
+-&lt;/style&gt;
+-{% endblock %}
+-
+-{% block content %}
+-&lt;h1&gt;Importing from Tachiyomi&lt;/h1&gt;
+-
+-&lt;form method=&quot;POST&quot; enctype=&quot;multipart/form-data&quot; class=&quot;upload-form&quot;&gt;
+-  &lt;p&gt;Go to &lt;b&gt;Settings &gt; Backup &gt; Create backup&lt;/b&gt;, then upload the generated json file here:&lt;/p&gt;
+-  &lt;input type=&quot;file&quot; name=&quot;tachiyomi&quot;&gt;&lt;br&gt;
+-  {{ ibutton(text=&#39;Submit&#39;) }}
+-&lt;/form&gt;
+-
+-{% with messages = get_flashed_messages() %}
+-  {% for message in messages %}
+-  &lt;p class=&quot;message&quot;&gt;{{ message }}&lt;/p&gt;
+-  {% endfor %}
+-{% endwith %}
+-
+-{% endblock %}
+diff --git a/src/pytaku/templates/old/search.html b/src/pytaku/templates/old/search.html
+deleted file mode 100644
+index 1e9b23a..0000000
+--- a/src/pytaku/templates/old/search.html
++++ /dev/null
+@@ -1,73 +0,0 @@
+-{% extends &#39;base.html&#39; %}
+-
+-{% block title %}
+-  {% if query %}
+-    &quot;{{ query }}&quot; search results
+-  {% else %}
+-    Search
+-  {% endif %}
+-{% endblock %}
+-
+-{% block head %}
+-&lt;style&gt;
+-  .site-heading {
+-    text-transform: capitalize;
+-  }
+-  .results {
+-    display: flex;
+-    flex-direction: row;
+-    flex-wrap: wrap;
+-  }
+-  .result {
+-    display: inline-flex;
+-    flex-direction: column;
+-    border: 1px solid var(--bg-black);
+-    margin: 0 1rem 1rem 0;
+-    background-color: var(--bg-black);
+-    color: white;
+-    text-decoration: none;
+-    max-width: 150px;
+-  }
+-  .result span {
+-    padding: .5rem;
+-    width: 0;
+-    min-width: 100%;
+-  }
+-
+-  .result-text {
+-    margin-bottom: 1rem;
+-  }
+-&lt;/style&gt;
+-{% endblock %}
+-
+-{% block content %}
+-
+-{% if not query %}
+-  &lt;h1&gt;Please enter a search query above.&lt;/h1&gt;
+-
+-{% else %}
+-{% for site, titles in results.items() %}
+-&lt;div&gt;
+-  &lt;h1 class=&quot;site-heading&quot;&gt;{{ site }}&lt;/h1&gt;
+-
+-  {% if titles %}
+-  &lt;h2 class=&quot;result-text&quot;&gt;Showing &lt;strong&gt;{{ titles | length }}&lt;/strong&gt; result(s) for &quot;{{ query }}&quot;:&lt;/h2&gt;
+-  {% else %}
+-  &lt;h2 class=&quot;result-text&quot;&gt;No results for &quot;{{ query }}&quot;.&lt;/h2&gt;
+-  {% endif %}
+-
+-  &lt;div class=&quot;results&quot;&gt;
+-  {% for title in titles %}
+-    &lt;a class=&quot;result&quot; href=&quot;{{ url_for(&#39;title_view&#39;, title_id=title[&#39;id&#39;], site=title[&#39;site&#39;]) }}&quot;
+-       title=&quot;{{ title[&#39;name&#39;] }}&quot;&gt;
+-      &lt;img src=&quot;{{ title[&#39;thumbnail&#39;] }}&quot; alt=&quot;{{ title[&#39;name&#39;] }}&quot;&gt;
+-      &lt;span&gt;{{ title[&#39;name&#39;] | truncate(50) }}&lt;/span&gt;
+-    &lt;/a&gt;
+-  {% endfor %}
+-  &lt;/div&gt;
+-&lt;/div&gt;
+-{% endfor %}
+-{% endif %}
+-
+-
+-{% endblock %}
+diff --git a/src/pytaku/templates/old/title.html b/src/pytaku/templates/old/title.html
+deleted file mode 100644
+index d751de7..0000000
+--- a/src/pytaku/templates/old/title.html
++++ /dev/null
+@@ -1,83 +0,0 @@
+-{% extends &#39;base.html&#39; %}
+-
+-{% block head %}
+-&lt;meta property=&quot;og:title&quot; content=&quot;{{ name }}&quot; /&gt;
+-&lt;meta property=&quot;og:image&quot; content=&quot;{{ cover }}&quot; /&gt;
+-&lt;meta property=&quot;og:description&quot; content=&quot;{{ descriptions | join(&#39;\n&#39;) or &#39;(no description)&#39; }}&quot; /&gt;
+-
+-&lt;style&gt;
+-  .cover {
+-    width: 400px;
+-    border: 1px solid black;
+-  }
+-
+-  .details &gt; form {
+-    display: inline-block;
+-  }
+-&lt;/style&gt;
+-{% endblock %}
+-
+-{% block title %}
+-{{ name }}
+-{% endblock %}
+-
+-{% block content %}
+-
+-&lt;div class=&quot;details&quot;&gt;
+-  &lt;h1&gt;{{ name }}&lt;/h1&gt;
+-  {% if session[&#39;user&#39;] %}
+-    {% if is_following %}
+-      {% set fview = &#39;unfollow_view&#39; %}
+-      {% set ftext = &#39;Following&#39; %}
+-      {% set fcolor = &#39;red&#39; %}
+-      {% set ftitle = &#39;Click to unfollow&#39; %}
+-    {% else %}
+-      {% set fview = &#39;follow_view&#39; %}
+-      {% set ftext = &#39;Follow&#39; %}
+-      {% set fcolor = &#39;green&#39; %}
+-      {% set ftitle = &#39;Click to follow&#39; %}
+-    {% endif %}
+-    &lt;form action=&quot;{{ url_for(fview, site=site, title_id=id) }}&quot; method=&quot;POST&quot;&gt;
+-      {{ ibutton(left_icon=&#39;bookmark&#39;, text=ftext, color=fcolor, title=ftitle) }}
+-    &lt;/form&gt;
+-  {% endif %}
+-  {{ ibutton(href=source_url, right_icon=&#39;arrow-up-right&#39;, text=site|capitalize, color=&#39;blue&#39;, title=&#39;Go to source site&#39;) }}
+-&lt;/div&gt;
+-
+-&lt;img class=&quot;cover&quot; src=&quot;{{ cover }}&quot; alt=&quot;cover&quot; /&gt;
+-{% for desc in descriptions %}
+-&lt;p class=&quot;description&quot;&gt;{{ desc }}&lt;/p&gt;
+-{% endfor %}
+-
+-{% if chapters %}
+-&lt;table&gt;
+-  &lt;tr&gt;
+-    {% if session[&#39;user&#39;] %}&lt;th&gt;Done&lt;/th&gt;{% endif %}
+-    &lt;th&gt;Name&lt;/th&gt;
+-    &lt;th&gt;Group&lt;/th&gt;
+-  &lt;/tr&gt;
+-  {% for chapter in chapters %}
+-  &lt;tr&gt;
+-    {% if session[&#39;user&#39;] %}
+-    &lt;td&gt;
+-      {% if chapter[&#39;is_read&#39;] %}
+-      {{ ibutton(href=&#39;?unread=&#39; + chapter[&#39;id&#39;], text=&#39;✓&#39;, color=&#39;green&#39;, title=&#39;Click to unread&#39;) }}
+-      {% endif %}
+-    &lt;/td&gt;
+-    {% endif %}
+-    &lt;td&gt;
+-      &lt;a href=&quot;{{ url_for(&#39;chapter_view&#39;, chapter_id=chapter[&#39;id&#39;], title_id=id, site=site) }}&quot;&gt;
+-        Chapter {{ chapter[&#39;number&#39;] }}
+-        {% if chapter[&#39;volume&#39;] %}Volume {{ chapter[&#39;volume&#39;] }} {% endif %}
+-        {% if chapter[&#39;name&#39;] %}- {{ chapter[&#39;name&#39;] }} {% endif %}
+-      &lt;/a&gt;
+-    &lt;/td&gt;
+-    &lt;td&gt;{{ &#39;, &#39;.join(chapter[&#39;groups&#39;]) }}&lt;/td&gt;
+-  &lt;/tr&gt;
+-  {% endfor %}
+-&lt;/table&gt;
+-{% else %}
+-&lt;p&gt;This one has no chapters.&lt;/p&gt;
+-{% endif %}
+-
+-{% endblock %}
+</pre></body></html>

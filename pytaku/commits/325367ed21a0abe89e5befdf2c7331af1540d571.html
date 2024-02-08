@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[325367ed21] chapter route: load 3 pages at once | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 325367ed21</strong><hr><pre>commit 325367ed21a0abe89e5befdf2c7331af1540d571
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 24 18:57:57 2020 +0700
+
+    chapter route: load 3 pages at once
+
+diff --git a/src/pytaku/static/js/routes/chapter.js b/src/pytaku/static/js/routes/chapter.js
+index 16dad27..d98e36a 100644
+--- a/src/pytaku/static/js/routes/chapter.js
++++ b/src/pytaku/static/js/routes/chapter.js
+@@ -66,6 +66,9 @@ function Chapter(initialVNode) {
+           document.title = fullChapterName(chapter);
+           chapter = resp;
+           pendingPages = chapter.pages;
++          // start loading pages, 3 at a time:
++          loadNextPage();
++          loadNextPage();
+           loadNextPage();
+         })
+         .finally(() =&gt; {
+</pre></body></html>

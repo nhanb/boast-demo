@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e72e7e10a5] add italic post deprecation warning | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / e72e7e10a5</strong><hr><pre>commit e72e7e10a561cba9e47f115bf5b437536d552fe3
+Author: nhanb &lt;nhan@nerdyweekly.com&gt;
+Date:   Tue Dec 16 21:32:45 2014 +0700
+
+    add italic post deprecation warning
+
+diff --git a/content/italic-text-in-vim-tmux-gnome-terminal.md b/content/italic-text-in-vim-tmux-gnome-terminal.md
+index 861f0cd..18afd38 100644
+--- a/content/italic-text-in-vim-tmux-gnome-terminal.md
++++ b/content/italic-text-in-vim-tmux-gnome-terminal.md
+@@ -4,6 +4,12 @@
+ Tags: linux, vim
+ Slug: enable-italic-text-vim-tmux-gnome-terminal
+ 
++**Update**: As `egmont` pointed out in the comments: setting `TERM=xterm` inside tmux is
++discouraged and will cause wrong behavior in some programs. Changing all instances of
++`xterm-256color` to `screen-256color` in this tutorial should work, but I&#39;m no longer using
++gnome-terminal so I can&#39;t test that. I&#39;m now a KDE convert by the way; italic text Just
++Works&lt;sup&gt;tm&lt;/sup&gt; with Konsole. Neat, eh?
++
+ It has bothered me for a while what I can&#39;t get terminal vim to display *italic* text. It might
+ seem trivial but it makes a world of difference when I&#39;m editing Markdown or HTML. Here&#39;s what gvim
+ looks like:
+</pre></body></html>

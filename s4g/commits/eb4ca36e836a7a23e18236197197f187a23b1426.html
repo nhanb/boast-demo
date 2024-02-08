@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[eb4ca36e83] simplify styling | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / eb4ca36e83</strong><hr><pre>commit eb4ca36e836a7a23e18236197197f187a23b1426
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jul 3 20:51:30 2023 +0700
+
+    simplify styling
+
+diff --git a/Makefile b/Makefile
+index 2e4ac8e..19126c2 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,8 @@ build:
+ 	go build -o dist/
+ 
+ watch:
+-	find . -name &#39;*.go&#39; -or -name &#39;*.js&#39; -or -name &#39;*.tmpl&#39; | entr -rc go run .
++	find . -name &#39;*.go&#39; -or -name &#39;*.js&#39; -or -name &#39;*.tmpl&#39; -or -name &#39;*.dj&#39; \
++	| entr -rc go run .
+ 
+ # Cheating a little because the djot.js repo on github does not provide builds
+ update-djot:
+diff --git a/main.go b/main.go
+index 694f7e3..e2b39dd 100644
+--- a/main.go
++++ b/main.go
+@@ -8,6 +8,7 @@
+ 	&quot;io/fs&quot;
+ 	&quot;net/http&quot;
+ 	&quot;path/filepath&quot;
++	&quot;sort&quot;
+ 	&quot;strings&quot;
+ 	&quot;time&quot;
+ 
+@@ -25,19 +26,28 @@ func main() {
+ 	if err != nil {
+ 		panic(err)
+ 	}
+-	fsys := WriteDirFS(absolutePath)
+ 
++	fsys := WriteDirFS(absolutePath)
+ 	site := readSiteMetadata(fsys)
+-	fmt.Println(&quot;Found site:&quot;, site)
+ 
+-	articles := findArticles(fsys)
+-	fmt.Printf(&quot;Found %d articles:\n&quot;, len(articles))
+-	for _, a := range articles {
++	posts, pages := findArticles(fsys)
++
++	// Sort posts, newest first
++	sort.Slice(posts, func(i int, j int) bool {
++		return posts[i].Meta.PostedAt.Compare(posts[j].Meta.PostedAt) &gt; 0
++	})
++
++	fmt.Printf(&quot;Found %d posts, %d pages:\n&quot;, len(posts), len(pages))
++	for _, a := range posts {
++		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Meta.Title)
++		a.WriteHtmlFile(&amp;site, pages)
++	}
++	for _, a := range pages {
+ 		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Meta.Title)
+-		a.WriteHtmlFile(&amp;site)
++		a.WriteHtmlFile(&amp;site, pages)
+ 	}
+ 
+-	WriteHomePage(fsys, site, articles)
++	WriteHomePage(fsys, site, posts, pages)
+ 
+ 	println(&quot;Serving local website at http://localhost:&quot; + port)
+ 	http.Handle(&quot;/&quot;, http.FileServer(http.FS(fsys)))
+@@ -72,13 +82,13 @@ type Article struct {
+ }
+ 
+ type ArticleMetadata struct {
+-	Title     string
+-	IsPage    bool
+-	IsDraft   bool
+-	CreatedAt time.Time
++	Title    string
++	IsPage   bool
++	IsDraft  bool
++	PostedAt time.Time
+ }
+ 
+-func (a *Article) WriteHtmlFile(site *SiteMetadata) {
++func (a *Article) WriteHtmlFile(site *SiteMetadata, pages []Article) {
+ 	// First generate the main content in html
+ 	contentHtml := djot.ToHtml(a.DjotBody)
+ 
+@@ -96,11 +106,13 @@ func (a *Article) WriteHtmlFile(site *SiteMetadata) {
+ 		Content template.HTML
+ 		Title   string
+ 		Post    *Article
++		Pages   []Article
+ 	}{
+ 		Site:    site,
+ 		Content: template.HTML(contentHtml),
+-		Title:   a.Meta.Title,
++		Title:   fmt.Sprintf(&quot;%s | %s&quot;, a.Meta.Title, site.Name),
+ 		Post:    a,
++		Pages:   pages,
+ 	})
+ 	if err != nil {
+ 		fmt.Println(&quot;Error in WriteHtmlFile:&quot;, err)
+@@ -115,7 +127,7 @@ func (a *Article) WriteHtmlFile(site *SiteMetadata) {
+ 	}
+ }
+ 
+-func WriteHomePage(fsys WritableFS, site SiteMetadata, articles []Article) {
++func WriteHomePage(fsys WritableFS, site SiteMetadata, posts, pages []Article) {
+ 	var buf bytes.Buffer
+ 	tmpl := template.Must(
+ 		template.ParseFS(
+@@ -128,10 +140,12 @@ func WriteHomePage(fsys WritableFS, site SiteMetadata, articles []Article) {
+ 		Site  *SiteMetadata
+ 		Title string
+ 		Posts []Article
++		Pages []Article
+ 	}{
+ 		Site:  &amp;site,
+ 		Title: fmt.Sprintf(&quot;%s - %s&quot;, site.Name, site.Tagline),
+-		Posts: articles,
++		Posts: posts,
++		Pages: pages,
+ 	})
+ 	if err != nil {
+ 		fmt.Println(&quot;Error in WriteHtmlFile:&quot;, err)
+@@ -140,7 +154,7 @@ func WriteHomePage(fsys WritableFS, site SiteMetadata, articles []Article) {
+ 	fsys.WriteFile(&quot;index.html&quot;, buf.String())
+ }
+ 
+-func findArticles(fsys WritableFS) (articles []Article) {
++func findArticles(fsys WritableFS) (posts, pages []Article) {
+ 
+ 	fs.WalkDir(fsys, &quot;.&quot;, func(path string, d fs.DirEntry, err error) error {
+ 		if d.IsDir() || !strings.HasSuffix(d.Name(), DJOT_EXT) {
+@@ -174,8 +188,12 @@ func findArticles(fsys WritableFS) (articles []Article) {
+ 			DjotBody: bodyText,
+ 			Meta:     meta,
+ 		}
+-		articles = append(articles, article)
++		if article.Meta.IsPage {
++			pages = append(pages, article)
++		} else {
++			posts = append(posts, article)
++		}
+ 		return nil
+ 	})
+-	return articles
++	return
+ }
+diff --git a/www/_theme/base.tmpl b/www/_theme/base.tmpl
+index 352eca0..d614b60 100644
+--- a/www/_theme/base.tmpl
++++ b/www/_theme/base.tmpl
+@@ -1,79 +1,21 @@
+ &lt;!DOCTYPE html&gt;
+ &lt;html lang=&quot;en&quot;&gt;
+-  &lt;head&gt;
+-    &lt;meta charset=&quot;utf-8&quot; /&gt;
+-    &lt;title&gt;{{if .Title}}{{.Title}} - {{.Site.Name}}{{else}}{{.Site.Name}}{{end}}&lt;/title&gt;
+-    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+ 
+-    &lt;style&gt;
+-      /* Global look and feel */
+-      * {
+-        box-sizing: border-box;
+-      }
+-      input,
+-      textarea {
+-        font-family: inherit;
+-        font-size: inherit;
+-        padding: 0.3rem;
+-      }
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;{{.Title}}&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;style&gt;
++    html {
++      font-family: serif;
++      max-width: 50rem;
++      margin: auto;
++    }
++  &lt;/style&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++{{template &quot;body&quot; .}}
++&lt;/body&gt;
+ 
+-      html {
+-        font-size: 100%;
+-        font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto,
+-          Oxygen-Sans, Cantarell, &quot;Helvetica Neue&quot;, sans-serif;
+-        max-width: 800px;
+-        margin: 1rem auto;
+-      }
+-
+-      blockquote {
+-        border-left: 6px solid darkgrey;
+-        background-color: #eaeaea;
+-        margin: 1rem 0 1rem 5rem;
+-        padding: 0.7rem 1rem;
+-      }
+-      blockquote p {
+-        margin: 0;
+-      }
+-      blockquote p + p {
+-        margin-top: 1rem;
+-      }
+-
+-      pre {
+-        border: 1px solid;
+-        border-radius: 4px;
+-        padding: 1rem;
+-        overflow-x: scroll;
+-      }
+-
+-      content &gt; p {
+-        margin: 1.7rem 0;
+-      }
+-
+-      header h1 {
+-        margin: 0;
+-      }
+-      header .tagline {
+-        margin-top: 0;
+-      }
+-      header {
+-        border-bottom: 2px solid black;
+-      }
+-      header a {
+-        text-decoration: none;
+-      }
+-    &lt;/style&gt;
+-  &lt;/head&gt;
+-
+-  &lt;body&gt;
+-
+-  &lt;header&gt;
+-    &lt;h1&gt;&lt;a href=&quot;{{.Site.HomePath}}&quot;&gt;{{.Site.Name}}&lt;/a&gt;&lt;/h1&gt;
+-    &lt;p class=&quot;tagline&quot;&gt;{{.Site.Tagline}}&lt;/p&gt;
+-  &lt;/header&gt;
+-
+-  &lt;main&gt;
+-  {{template &quot;body&quot; .}}
+-  &lt;/main&gt;
+-
+-  &lt;/body&gt;
+ &lt;/html&gt;
+diff --git a/www/_theme/home.tmpl b/www/_theme/home.tmpl
+index 20749ec..287e62a 100644
+--- a/www/_theme/home.tmpl
++++ b/www/_theme/home.tmpl
+@@ -1,11 +1,29 @@
+ {{define &quot;body&quot;}}
++&lt;header&gt;
++  &lt;h1 class=&quot;site-title&quot;&gt;{{.Site.Name}}&lt;/h1&gt;
++  &lt;p class=&quot;tagline&quot;&gt;{{.Site.Tagline}}&lt;/p&gt;
++&lt;/header&gt;
++
++&lt;hr&gt;
++
++{{if .Pages}}
++  &lt;div class=&quot;pages&quot;&gt;
++    &lt;a href=&quot;{{$.Site.HomePath}}&quot;&gt;Home&lt;/a&gt;
++    {{range .Pages}}
++    &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Meta.Title}}&lt;/a&gt;
++    {{end}}
++  &lt;/div&gt;
++
++  &lt;hr&gt;
++{{end}}
++
+ &lt;p&gt;All posts, newest first:&lt;/p&gt;
+ 
+ &lt;ul&gt;
+     {{range .Posts}}
+     {{if not .Meta.IsDraft}}
+     &lt;li&gt;
+-      {{.Meta.CreatedAt.Local.Format &quot;2006-01-02&quot;}}
++      {{.Meta.PostedAt.Local.Format &quot;2006-01-02&quot;}}
+       — &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Meta.Title}}&lt;/a&gt;
+     &lt;/li&gt;
+     {{end}}
+@@ -13,14 +31,21 @@
+ &lt;/ul&gt;
+ 
+ &lt;style&gt;
+-    ul a {
+-        text-decoration: none;
+-    }
+-
+-    ul {
+-        padding: 0;
+-        list-style-type: none;
+-        font-size: 1.1rem;
+-    }
++.site-title {
++  margin-bottom: 0;
++}
++.tagline {
++  margin-top: 0;
++}
++
++.pages a {
++  margin-right: 0.5rem;
++}
++
++ul {
++  padding: 0;
++  list-style-type: none;
++  /*font-size: 1.1rem;*/
++}
+ &lt;/style&gt;
+ {{end}}
+diff --git a/www/_theme/post.tmpl b/www/_theme/post.tmpl
+index 1013b00..e8b6de0 100644
+--- a/www/_theme/post.tmpl
++++ b/www/_theme/post.tmpl
+@@ -1,26 +1,32 @@
+ {{define &quot;body&quot;}}
++&lt;nav&gt;
++  &lt;a href=&quot;{{.Site.HomePath}}&quot;&gt;Home&lt;/a&gt;
++  {{range .Pages}}&lt;a href=&quot;{{$.Site.HomePath}}{{.WebPath}}&quot;&gt;{{.Meta.Title}}&lt;/a&gt;{{end}}
++{{if not .Post.Meta.PostedAt.IsZero}}
++  &lt;span class=&quot;posted-on&quot;&gt;
++    Posted on
++    &lt;time datetime=&quot;{{.Post.Meta.PostedAt.Local.Format &quot;2006-01-02&quot;}}&quot;&gt;
++        {{.Post.Meta.PostedAt.Local.Format &quot;Monday, 02 Jan 2006&quot;}}
++    &lt;/time&gt;
++  &lt;/span&gt;
++{{end}}
++&lt;/nav&gt;
++
++&lt;hr&gt;
++
+ &lt;h1 class=&quot;post-title&quot;&gt;{{.Post.Meta.Title}}&lt;/h1&gt;
+-&lt;time class=&quot;post-time&quot; datetime=&quot;{{.Post.Meta.CreatedAt.Local.Format &quot;2006-01-02&quot;}}&quot;&gt;
+-    {{.Post.Meta.CreatedAt.Local.Format &quot;Monday, 02 Jan 2006&quot;}}
+-&lt;/time&gt;
+ &lt;content&gt;
+ {{.Content}}
+ &lt;/content&gt;
+ 
+ &lt;style&gt;
+-.post-title {
+-    text-align: center;
+-    font-size: 2rem;
+-    margin-bottom: 0;
++nav &gt; a {
++  margin-right: 0.5rem;
+ }
+-.post-time {
+-    display: block;
+-    text-align: center;
+-}
+-
+-content img,
+-content video {
+-    max-width: 100%;
++.posted-on {
++  float: right;
++  font-style: italic;
+ }
+ &lt;/style&gt;
++
+ {{end}}
+diff --git a/www/about/index.dj b/www/about/index.dj
+index e3f9cfe..ddca31c 100644
+--- a/www/about/index.dj
++++ b/www/about/index.dj
+@@ -1,5 +1,6 @@
+ +++
+ Title = &quot;About&quot;
++IsPage = true
+ +++
+ 
+ ## About this site
+diff --git a/www/about/index.html b/www/about/index.html
+index 07dc9af..9d6175a 100644
+--- a/www/about/index.html
++++ b/www/about/index.html
+@@ -1,82 +1,30 @@
+ &lt;!DOCTYPE html&gt;
+ &lt;html lang=&quot;en&quot;&gt;
+-  &lt;head&gt;
+-    &lt;meta charset=&quot;utf-8&quot; /&gt;
+-    &lt;title&gt;About - My Site&lt;/title&gt;
+-    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+ 
+-    &lt;style&gt;
+-       
+-      * {
+-        box-sizing: border-box;
+-      }
+-      input,
+-      textarea {
+-        font-family: inherit;
+-        font-size: inherit;
+-        padding: 0.3rem;
+-      }
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;About | CoolZone&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;style&gt;
++    html {
++      font-family: serif;
++      max-width: 50rem;
++      margin: auto;
++    }
++  &lt;/style&gt;
++&lt;/head&gt;
+ 
+-      html {
+-        font-size: 100%;
+-        font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto,
+-          Oxygen-Sans, Cantarell, &quot;Helvetica Neue&quot;, sans-serif;
+-        max-width: 800px;
+-        margin: 1rem auto;
+-      }
++&lt;body&gt;
+ 
+-      blockquote {
+-        border-left: 6px solid darkgrey;
+-        background-color: #eaeaea;
+-        margin: 1rem 0 1rem 5rem;
+-        padding: 0.7rem 1rem;
+-      }
+-      blockquote p {
+-        margin: 0;
+-      }
+-      blockquote p + p {
+-        margin-top: 1rem;
+-      }
++&lt;nav&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/index.html&quot;&gt;About&lt;/a&gt;
+ 
+-      pre {
+-        border: 1px solid;
+-        border-radius: 4px;
+-        padding: 1rem;
+-        overflow-x: scroll;
+-      }
++&lt;/nav&gt;
+ 
+-      content &gt; p {
+-        margin: 1.7rem 0;
+-      }
++&lt;hr&gt;
+ 
+-      header h1 {
+-        margin: 0;
+-      }
+-      header .tagline {
+-        margin-top: 0;
+-      }
+-      header {
+-        border-bottom: 2px solid black;
+-      }
+-      header a {
+-        text-decoration: none;
+-      }
+-    &lt;/style&gt;
+-  &lt;/head&gt;
+-
+-  &lt;body&gt;
+-
+-  &lt;header&gt;
+-    &lt;h1&gt;&lt;a href=&quot;/&quot;&gt;My Site&lt;/a&gt;&lt;/h1&gt;
+-    &lt;p class=&quot;tagline&quot;&gt;And it&amp;#39;s fine.&lt;/p&gt;
+-  &lt;/header&gt;
+-
+-  &lt;main&gt;
+-  
+ &lt;h1 class=&quot;post-title&quot;&gt;About&lt;/h1&gt;
+-&lt;time class=&quot;post-time&quot; datetime=&quot;0001-01-01&quot;&gt;
+-    Monday, 01 Jan 0001
+-&lt;/time&gt;
+ &lt;content&gt;
+ &lt;section id=&quot;About-this-site&quot;&gt;
+ &lt;h2&gt;About this site&lt;/h2&gt;
+@@ -91,23 +39,16 @@ &lt;h2&gt;No really&lt;/h2&gt;
+ &lt;/content&gt;
+ 
+ &lt;style&gt;
+-.post-title {
+-    text-align: center;
+-    font-size: 2rem;
+-    margin-bottom: 0;
++nav &gt; a {
++  margin-right: 0.5rem;
+ }
+-.post-time {
+-    display: block;
+-    text-align: center;
+-}
+-
+-content img,
+-content video {
+-    max-width: 100%;
++.posted-on {
++  float: right;
++  font-style: italic;
+ }
+ &lt;/style&gt;
+ 
+-  &lt;/main&gt;
+ 
+-  &lt;/body&gt;
++&lt;/body&gt;
++
+ &lt;/html&gt;
+diff --git a/www/hello/index.dj b/www/hello/index.dj
+index ff29966..b5a2185 100644
+--- a/www/hello/index.dj
++++ b/www/hello/index.dj
+@@ -1,6 +1,6 @@
+ +++
+ Title = &quot;Hello&quot;
+-IsPage = false
++PostedAt = 2022-01-02
+ +++
+ 
+ Hello world.
+diff --git a/www/hello/index.html b/www/hello/index.html
+index 363ec7d..41ae45d 100644
+--- a/www/hello/index.html
++++ b/www/hello/index.html
+@@ -1,105 +1,53 @@
+ &lt;!DOCTYPE html&gt;
+ &lt;html lang=&quot;en&quot;&gt;
+-  &lt;head&gt;
+-    &lt;meta charset=&quot;utf-8&quot; /&gt;
+-    &lt;title&gt;Hello - My Site&lt;/title&gt;
+-    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+ 
+-    &lt;style&gt;
+-       
+-      * {
+-        box-sizing: border-box;
+-      }
+-      input,
+-      textarea {
+-        font-family: inherit;
+-        font-size: inherit;
+-        padding: 0.3rem;
+-      }
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;Hello | CoolZone&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;style&gt;
++    html {
++      font-family: serif;
++      max-width: 50rem;
++      margin: auto;
++    }
++  &lt;/style&gt;
++&lt;/head&gt;
+ 
+-      html {
+-        font-size: 100%;
+-        font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto,
+-          Oxygen-Sans, Cantarell, &quot;Helvetica Neue&quot;, sans-serif;
+-        max-width: 800px;
+-        margin: 1rem auto;
+-      }
++&lt;body&gt;
+ 
+-      blockquote {
+-        border-left: 6px solid darkgrey;
+-        background-color: #eaeaea;
+-        margin: 1rem 0 1rem 5rem;
+-        padding: 0.7rem 1rem;
+-      }
+-      blockquote p {
+-        margin: 0;
+-      }
+-      blockquote p + p {
+-        margin-top: 1rem;
+-      }
++&lt;nav&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/index.html&quot;&gt;About&lt;/a&gt;
+ 
+-      pre {
+-        border: 1px solid;
+-        border-radius: 4px;
+-        padding: 1rem;
+-        overflow-x: scroll;
+-      }
++  &lt;span class=&quot;posted-on&quot;&gt;
++    Posted on
++    &lt;time datetime=&quot;2022-01-02&quot;&gt;
++        Sunday, 02 Jan 2022
++    &lt;/time&gt;
++  &lt;/span&gt;
+ 
+-      content &gt; p {
+-        margin: 1.7rem 0;
+-      }
++&lt;/nav&gt;
+ 
+-      header h1 {
+-        margin: 0;
+-      }
+-      header .tagline {
+-        margin-top: 0;
+-      }
+-      header {
+-        border-bottom: 2px solid black;
+-      }
+-      header a {
+-        text-decoration: none;
+-      }
+-    &lt;/style&gt;
+-  &lt;/head&gt;
++&lt;hr&gt;
+ 
+-  &lt;body&gt;
+-
+-  &lt;header&gt;
+-    &lt;h1&gt;&lt;a href=&quot;/&quot;&gt;My Site&lt;/a&gt;&lt;/h1&gt;
+-    &lt;p class=&quot;tagline&quot;&gt;And it&amp;#39;s fine.&lt;/p&gt;
+-  &lt;/header&gt;
+-
+-  &lt;main&gt;
+-  
+ &lt;h1 class=&quot;post-title&quot;&gt;Hello&lt;/h1&gt;
+-&lt;time class=&quot;post-time&quot; datetime=&quot;0001-01-01&quot;&gt;
+-    Monday, 01 Jan 0001
+-&lt;/time&gt;
+ &lt;content&gt;
+ &lt;p&gt;Hello world.&lt;/p&gt;
+ 
+ &lt;/content&gt;
+ 
+ &lt;style&gt;
+-.post-title {
+-    text-align: center;
+-    font-size: 2rem;
+-    margin-bottom: 0;
++nav &gt; a {
++  margin-right: 0.5rem;
+ }
+-.post-time {
+-    display: block;
+-    text-align: center;
+-}
+-
+-content img,
+-content video {
+-    max-width: 100%;
++.posted-on {
++  float: right;
++  font-style: italic;
+ }
+ &lt;/style&gt;
+ 
+-  &lt;/main&gt;
+ 
+-  &lt;/body&gt;
++&lt;/body&gt;
++
+ &lt;/html&gt;
+diff --git a/www/index.html b/www/index.html
+index 8a62061..c722bdf 100644
+--- a/www/index.html
++++ b/www/index.html
+@@ -1,92 +1,53 @@
+ &lt;!DOCTYPE html&gt;
+ &lt;html lang=&quot;en&quot;&gt;
+-  &lt;head&gt;
+-    &lt;meta charset=&quot;utf-8&quot; /&gt;
+-    &lt;title&gt;My Site - And it&amp;#39;s fine. - My Site&lt;/title&gt;
+-    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+ 
+-    &lt;style&gt;
+-       
+-      * {
+-        box-sizing: border-box;
+-      }
+-      input,
+-      textarea {
+-        font-family: inherit;
+-        font-size: inherit;
+-        padding: 0.3rem;
+-      }
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;CoolZone - Cool people only.&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;style&gt;
++    html {
++      font-family: serif;
++      max-width: 50rem;
++      margin: auto;
++    }
++  &lt;/style&gt;
++&lt;/head&gt;
+ 
+-      html {
+-        font-size: 100%;
+-        font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto,
+-          Oxygen-Sans, Cantarell, &quot;Helvetica Neue&quot;, sans-serif;
+-        max-width: 800px;
+-        margin: 1rem auto;
+-      }
++&lt;body&gt;
+ 
+-      blockquote {
+-        border-left: 6px solid darkgrey;
+-        background-color: #eaeaea;
+-        margin: 1rem 0 1rem 5rem;
+-        padding: 0.7rem 1rem;
+-      }
+-      blockquote p {
+-        margin: 0;
+-      }
+-      blockquote p + p {
+-        margin-top: 1rem;
+-      }
++&lt;header&gt;
++  &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
++  &lt;p class=&quot;tagline&quot;&gt;Cool people only.&lt;/p&gt;
++&lt;/header&gt;
+ 
+-      pre {
+-        border: 1px solid;
+-        border-radius: 4px;
+-        padding: 1rem;
+-        overflow-x: scroll;
+-      }
++&lt;hr&gt;
+ 
+-      content &gt; p {
+-        margin: 1.7rem 0;
+-      }
+ 
+-      header h1 {
+-        margin: 0;
+-      }
+-      header .tagline {
+-        margin-top: 0;
+-      }
+-      header {
+-        border-bottom: 2px solid black;
+-      }
+-      header a {
+-        text-decoration: none;
+-      }
+-    &lt;/style&gt;
+-  &lt;/head&gt;
++  &lt;div class=&quot;pages&quot;&gt;
++    &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++    
++    &lt;a href=&quot;about/index.html&quot;&gt;About&lt;/a&gt;
++    
++  &lt;/div&gt;
+ 
+-  &lt;body&gt;
++  &lt;hr&gt;
+ 
+-  &lt;header&gt;
+-    &lt;h1&gt;&lt;a href=&quot;/&quot;&gt;My Site&lt;/a&gt;&lt;/h1&gt;
+-    &lt;p class=&quot;tagline&quot;&gt;And it&amp;#39;s fine.&lt;/p&gt;
+-  &lt;/header&gt;
+ 
+-  &lt;main&gt;
+-  
+ &lt;p&gt;All posts, newest first:&lt;/p&gt;
+ 
+ &lt;ul&gt;
+     
+     
+     &lt;li&gt;
+-      0001-01-01
+-      — &lt;a href=&quot;about/index.html&quot;&gt;About&lt;/a&gt;
++      2023-04-05
++      — &lt;a href=&quot;mfws.html&quot;&gt;This is a motherfucking website.&lt;/a&gt;
+     &lt;/li&gt;
+     
+     
+     
+     &lt;li&gt;
+-      0001-01-01
++      2022-01-02
+       — &lt;a href=&quot;hello/index.html&quot;&gt;Hello&lt;/a&gt;
+     &lt;/li&gt;
+     
+@@ -94,18 +55,24 @@ &lt;h1&gt;&lt;a href=&quot;/&quot;&gt;My Site&lt;/a&gt;&lt;/h1&gt;
+ &lt;/ul&gt;
+ 
+ &lt;style&gt;
+-    ul a {
+-        text-decoration: none;
+-    }
++.site-title {
++  margin-bottom: 0;
++}
++.tagline {
++  margin-top: 0;
++}
+ 
+-    ul {
+-        padding: 0;
+-        list-style-type: none;
+-        font-size: 1.1rem;
+-    }
++.pages a {
++  margin-right: 0.5rem;
++}
++
++ul {
++  padding: 0;
++  list-style-type: none;
++   
++}
+ &lt;/style&gt;
+ 
+-  &lt;/main&gt;
++&lt;/body&gt;
+ 
+-  &lt;/body&gt;
+ &lt;/html&gt;
+diff --git a/www/mfws.dj b/www/mfws.dj
+new file mode 100644
+index 0000000..953384d
+--- /dev/null
++++ b/www/mfws.dj
+@@ -0,0 +1,92 @@
+++++
++Title = &quot;This is a motherfucking website.&quot;
++PostedAt = 2023-04-05
+++++
++
++And it&#39;s fucking perfect.
++
++## Seriously, what the fuck else do you want?
++
++You probably build websites and think your shit is special. You think your 13
++megabyte parallax-ative home page is going to get you some fucking Awwward
++banner you can glue to the top corner of your site. You think your 40-pound
++jQuery file and 83 polyfills give IE7 a boner because it finally has
++box-shadow. Wrong, motherfucker. Let me describe your perfect-ass website:
++
++- Shit&#39;s lightweight and loads fast
++- Fits on all your shitty screens
++- Looks the same in all your shitty browsers
++- The motherfucker&#39;s accessible to every asshole that visits your site
++- Shit&#39;s legible and gets your fucking point across (if you had one instead of
++just 5mb pics of hipsters drinking coffee)
++
++### Well guess what, motherfucker:
++
++You. Are. Over-designing. Look at this shit. It&#39;s a motherfucking website. Why
++the fuck do you need to animate a fucking trendy-ass banner flag when I hover
++over that useless piece of shit? You spent hours on it and added 80 kilobytes
++to your fucking site, and some motherfucker jabbing at it on their iPad with
++fat sausage fingers will never see that shit. Not to mention blind people will
++never see that shit, but they don&#39;t see any of your shitty shit.
++
++You never knew it, but this is your perfect website. Here&#39;s why.
++
++## It&#39;s fucking lightweight
++
++This entire page weighs less than the gradient-meshed facebook logo on your
++fucking Wordpress site. Did you seriously load 100kb of jQuery UI just so you
++could animate the fucking background color of a div? You loaded all 7 fontfaces
++of a shitty webfont just so you could say &quot;Hi.&quot; at 100px height at the
++beginning of your site? You piece of shit.
++
++## It&#39;s responsive
++
++You dumbass. You thought you needed media queries to be responsive, but no.
++Responsive means that it responds to whatever motherfucking screensize it&#39;s
++viewed on. This site doesn&#39;t care if you&#39;re on an iMac or a motherfucking
++Tamagotchi.
++
++## It fucking works
++
++Look at this shit. You can read it ... that is, if you can read, motherfucker.
++It makes sense. It has motherfucking hierarchy. It&#39;s using HTML5 tags so you
++and your bitch-ass browser know what the fuck&#39;s in this fucking site. That&#39;s
++semantics, motherfucker.
++
++It has content on the fucking screen. Your site has three bylines and link to
++your dribbble account, but you spread it over 7 full screens and make me click
++some bobbing button to show me how cool the jQuery ScrollTo plugin is.
++
++Cross-browser compatibility? Load this motherfucker in IE6. I fucking dare you.
++
++## This is a website. Look at it. You&#39;ve never seen one before.
++
++Like the man who&#39;s never grown out his beard has no idea what his true natural
++state is, you have no fucking idea what a website is. All you have ever seen
++are shitty skeuomorphic bastardizations of what should be text communicating a
++fucking message. This is a real, naked website. Look at it. It&#39;s fucking
++beautiful.
++
++### Yes, this is fucking satire, you fuck
++
++I&#39;m not actually saying your shitty site should look like this. What I&#39;m saying
++is that all the problems we have with websites are *ones we create ourselves*.
++Websites aren&#39;t broken by default, they are functional, high-performing, and
++accessible. You break them. You son-of-a-bitch.
++
++{cite=&quot;https://www.vitsoe.com/us/about/good-design&quot;}
++&gt; &quot;Good design is as little design as possible.&quot;\
++&gt; - some German motherfucker
++
++****
++
++## Epilogue
++
++From the philosophies expressed (poorly) above, [txti](http://txti.es/) was
++created. You should try it today to make your own motherfucking websites.
++
++****
++
++Lifted from &lt;https://motherfuckingwebsite.com&gt;.
++
++
+diff --git a/www/mfws.html b/www/mfws.html
+new file mode 100644
+index 0000000..362bd1d
+--- /dev/null
++++ b/www/mfws.html
+@@ -0,0 +1,142 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;This is a motherfucking website. | CoolZone&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;style&gt;
++    html {
++      font-family: serif;
++      max-width: 50rem;
++      margin: auto;
++    }
++  &lt;/style&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++
++&lt;nav&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/index.html&quot;&gt;About&lt;/a&gt;
++
++  &lt;span class=&quot;posted-on&quot;&gt;
++    Posted on
++    &lt;time datetime=&quot;2023-04-05&quot;&gt;
++        Wednesday, 05 Apr 2023
++    &lt;/time&gt;
++  &lt;/span&gt;
++
++&lt;/nav&gt;
++
++&lt;hr&gt;
++
++&lt;h1 class=&quot;post-title&quot;&gt;This is a motherfucking website.&lt;/h1&gt;
++&lt;content&gt;
++&lt;p&gt;And it’s fucking perfect.&lt;/p&gt;
++&lt;section id=&quot;Seriously-what-the-fuck-else-do-you-want&quot;&gt;
++&lt;h2&gt;Seriously, what the fuck else do you want?&lt;/h2&gt;
++&lt;p&gt;You probably build websites and think your shit is special. You think your 13
++megabyte parallax-ative home page is going to get you some fucking Awwward
++banner you can glue to the top corner of your site. You think your 40-pound
++jQuery file and 83 polyfills give IE7 a boner because it finally has
++box-shadow. Wrong, motherfucker. Let me describe your perfect-ass website:&lt;/p&gt;
++&lt;ul&gt;
++&lt;li&gt;
++Shit’s lightweight and loads fast
++&lt;/li&gt;
++&lt;li&gt;
++Fits on all your shitty screens
++&lt;/li&gt;
++&lt;li&gt;
++Looks the same in all your shitty browsers
++&lt;/li&gt;
++&lt;li&gt;
++The motherfucker’s accessible to every asshole that visits your site
++&lt;/li&gt;
++&lt;li&gt;
++Shit’s legible and gets your fucking point across (if you had one instead of
++just 5mb pics of hipsters drinking coffee)
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;section id=&quot;Well-guess-what-motherfucker&quot;&gt;
++&lt;h3&gt;Well guess what, motherfucker:&lt;/h3&gt;
++&lt;p&gt;You. Are. Over-designing. Look at this shit. It’s a motherfucking website. Why
++the fuck do you need to animate a fucking trendy-ass banner flag when I hover
++over that useless piece of shit? You spent hours on it and added 80 kilobytes
++to your fucking site, and some motherfucker jabbing at it on their iPad with
++fat sausage fingers will never see that shit. Not to mention blind people will
++never see that shit, but they don’t see any of your shitty shit.&lt;/p&gt;
++&lt;p&gt;You never knew it, but this is your perfect website. Here’s why.&lt;/p&gt;
++&lt;/section&gt;
++&lt;/section&gt;
++&lt;section id=&quot;It-s-fucking-lightweight&quot;&gt;
++&lt;h2&gt;It’s fucking lightweight&lt;/h2&gt;
++&lt;p&gt;This entire page weighs less than the gradient-meshed facebook logo on your
++fucking Wordpress site. Did you seriously load 100kb of jQuery UI just so you
++could animate the fucking background color of a div? You loaded all 7 fontfaces
++of a shitty webfont just so you could say “Hi.” at 100px height at the
++beginning of your site? You piece of shit.&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;It-s-responsive&quot;&gt;
++&lt;h2&gt;It’s responsive&lt;/h2&gt;
++&lt;p&gt;You dumbass. You thought you needed media queries to be responsive, but no.
++Responsive means that it responds to whatever motherfucking screensize it’s
++viewed on. This site doesn’t care if you’re on an iMac or a motherfucking
++Tamagotchi.&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;It-fucking-works&quot;&gt;
++&lt;h2&gt;It fucking works&lt;/h2&gt;
++&lt;p&gt;Look at this shit. You can read it … that is, if you can read, motherfucker.
++It makes sense. It has motherfucking hierarchy. It’s using HTML5 tags so you
++and your bitch-ass browser know what the fuck’s in this fucking site. That’s
++semantics, motherfucker.&lt;/p&gt;
++&lt;p&gt;It has content on the fucking screen. Your site has three bylines and link to
++your dribbble account, but you spread it over 7 full screens and make me click
++some bobbing button to show me how cool the jQuery ScrollTo plugin is.&lt;/p&gt;
++&lt;p&gt;Cross-browser compatibility? Load this motherfucker in IE6. I fucking dare you.&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;This-is-a-website-Look-at-it-You-ve-never-seen-one-before&quot;&gt;
++&lt;h2&gt;This is a website. Look at it. You’ve never seen one before.&lt;/h2&gt;
++&lt;p&gt;Like the man who’s never grown out his beard has no idea what his true natural
++state is, you have no fucking idea what a website is. All you have ever seen
++are shitty skeuomorphic bastardizations of what should be text communicating a
++fucking message. This is a real, naked website. Look at it. It’s fucking
++beautiful.&lt;/p&gt;
++&lt;section id=&quot;Yes-this-is-fucking-satire-you-fuck&quot;&gt;
++&lt;h3&gt;Yes, this is fucking satire, you fuck&lt;/h3&gt;
++&lt;p&gt;I’m not actually saying your shitty site should look like this. What I’m saying
++is that all the problems we have with websites are &lt;strong&gt;ones we create ourselves&lt;/strong&gt;.
++Websites aren’t broken by default, they are functional, high-performing, and
++accessible. You break them. You son-of-a-bitch.&lt;/p&gt;
++&lt;blockquote cite=&quot;https://www.vitsoe.com/us/about/good-design&quot;&gt;
++&lt;p&gt;“Good design is as little design as possible.”&lt;br&gt;
++- some German motherfucker&lt;/p&gt;
++&lt;/blockquote&gt;
++&lt;hr&gt;
++&lt;/section&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Epilogue&quot;&gt;
++&lt;h2&gt;Epilogue&lt;/h2&gt;
++&lt;p&gt;From the philosophies expressed (poorly) above, &lt;a href=&quot;http://txti.es/&quot;&gt;txti&lt;/a&gt; was
++created. You should try it today to make your own motherfucking websites.&lt;/p&gt;
++&lt;hr&gt;
++&lt;p&gt;Lifted from &lt;a href=&quot;https://motherfuckingwebsite.com&quot;&gt;https://motherfuckingwebsite.com&lt;/a&gt;.&lt;/p&gt;
++&lt;/section&gt;
++
++&lt;/content&gt;
++
++&lt;style&gt;
++nav &gt; a {
++  margin-right: 0.5rem;
++}
++.posted-on {
++  float: right;
++  font-style: italic;
++}
++&lt;/style&gt;
++
++
++&lt;/body&gt;
++
++&lt;/html&gt;
+diff --git a/www/website.toml b/www/website.toml
+index 22d4218..8722c90 100644
+--- a/www/website.toml
++++ b/www/website.toml
+@@ -1,3 +1,3 @@
+-Name = &quot;My Site&quot;
+-Tagline = &quot;And it&#39;s fine.&quot;
++Name = &quot;CoolZone&quot;
++Tagline = &quot;Cool people only.&quot;
+ HomePath = &quot;/&quot;
+</pre></body></html>

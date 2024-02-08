@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[661b8e2717] preload 2 pages at a time | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 661b8e2717</strong><hr><pre>commit 661b8e271740c328854c0590e12927fdebdabd3f
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 30 16:10:51 2020 +0700
+
+    preload 2 pages at a time
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 152be7e..1f37d3d 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.14&quot;
++version = &quot;0.3.15&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/static/js/routes/chapter.js b/src/pytaku/static/js/routes/chapter.js
+index 34ef7f8..f2489d8 100644
+--- a/src/pytaku/static/js/routes/chapter.js
++++ b/src/pytaku/static/js/routes/chapter.js
+@@ -54,7 +54,7 @@ function Chapter(initialVNode) {
+       });
+     } else if (chapter.next_chapter &amp;&amp; nextChapterPromise === null) {
+       /* Once all pages of this chapter have been loaded,
+-       * preload the next chapter one page at a time
++       * preload the next chapter
+        */
+       nextChapterPromise = ChapterModel.get({
+         site,
+@@ -63,6 +63,8 @@ function Chapter(initialVNode) {
+       }).then((nextChapter) =&gt; {
+         console.log(&quot;Preloading next chapter:&quot;, fullChapterName(nextChapter));
+         nextChapterPendingPages = nextChapter.pages.slice();
++        // Apparently preloading one at a time was too slow so let&#39;s go with 2.
++        preloadNextChapterPage();
+         preloadNextChapterPage();
+       });
+     }
+@@ -72,8 +74,6 @@ function Chapter(initialVNode) {
+     if (nextChapterPendingPages !== null) {
+       if (nextChapterPendingPages.length &gt; 0) {
+         nextChapterLoadedPages.push(nextChapterPendingPages.splice(0, 1)[0]);
+-      } else {
+-        console.log(&quot;Completely preloaded next chapter.&quot;);
+       }
+     }
+   }
+</pre></body></html>

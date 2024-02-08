@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[0ae9b92536] netstrings PoC: works for text, but now binary is mangled | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 0ae9b92536</strong><hr><pre>commit 0ae9b9253676d7ce53a43132e46e8b2d65112d22
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Jun 23 17:23:43 2023 +0700
+
+    netstrings PoC: works for text, but now binary is mangled
+    
+    Might not be worth the hassle dealing with Tcl&#39;s encoding shenanigans.
+
+diff --git a/players/players.go b/players/players.go
+index 25cde1c..5de320f 100644
+--- a/players/players.go
++++ b/players/players.go
+@@ -70,5 +70,6 @@ func Write(filepath string, ps []Player) error {
+ 	for _, p := range ps {
+ 		writer.Write([]string{p.Name, p.Country, p.Team})
+ 	}
++	writer.Flush()
+ 	return nil
+ }
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index cab8226..dc52e5c 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -194,11 +194,12 @@ proc initialize {} {
+ # using netstrings as wire format.
+ proc ipc_write {method args} {
+     set payload [concat $method $args]
+-    puts -nonewline [netstrings $payload]
++    puts -nonewline [encoding convertto &quot;utf-8&quot; [netstrings $payload]]
+     flush stdout
+ }
+ proc ipc_read {} {
+-    return [decodenetstrings [readnetstring stdin]]
++    set binarystrings [decodenetstrings [readnetstring stdin]]
++    return [lmap x $binarystrings {encoding convertfrom &quot;utf-8&quot; $x}]
+ }
+ proc ipc {method args} {
+     ipc_write [concat $method $args]
+diff --git a/tcl/netstring.tcl b/tcl/netstring.tcl
+index bfb9bb3..b8f1a50 100644
+--- a/tcl/netstring.tcl
++++ b/tcl/netstring.tcl
+@@ -1,5 +1,5 @@
+ proc netstring {s} {
+-    set len [string length $s]
++    set len [string bytelength $s]
+     return &quot;$len:$s,&quot;
+ }
+ 
+@@ -11,6 +11,11 @@ proc netstrings {strings} {
+     return [netstring $result]
+ }
+ 
++#fconfigure stdout -translation binary
++#set val [netstrings {&quot;オダモン&quot; &quot;Bờm&quot;}]
++#puts [encoding convertto &quot;utf-8&quot; $val]
++#flush stdout
++
+ proc readnetstring {chan} {
+     set data &quot;&quot;
+     set char &quot;&quot;
+</pre></body></html>

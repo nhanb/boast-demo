@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b26c4f1a14] bring back Windows support | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / b26c4f1a14</strong><hr><pre>commit b26c4f1a14ae45daad956c64f42fb6dd47ff8886
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Nov 30 19:08:21 2020 +0700
+
+    bring back Windows support
+    
+    Necessary evil I guess.
+
+diff --git a/README.md b/README.md
+index acc59a5..b2d4599 100644
+--- a/README.md
++++ b/README.md
+@@ -1,7 +1,7 @@
+ McRoss is a minimal and usable [gemini://](https://gemini.circumlunar.space/)
+-browser written in python and tkinter. I use it on Linux but it should work on
+-other Unix-likes without trouble. Windows isn&#39;t supported until I can find an
+-alternative to tkinter&#39;s [createfilehandler()][7].
++browser written in python and tkinter, meaning it Just Works (tm) on any
++self-respecting desktop OS. I use and test it on Linux &amp; Windows, but it should
++also run fine on macOS or any of the BSDs.
+ 
+ It currently looks like this:
+ 
+@@ -168,9 +168,9 @@ # License
+ 
+ # Forks
+ 
+-McRoss development is... conservative and slow. If that bothers you, check out
+-[picross][6] which is a nice fork with more features (TOFU, tabs, among other
+-things).
++McRoss development is... conservative and sporadic.
++If that bothers you, check out [picross][6] which is a nice fork with more
++features (TOFU, tabs, among other things).
+ 
+ [1]: https://hi.imnhan.com/posts/introducing-mcross-a-minimal-gemini-browser/
+ [2]: https://todo.sr.ht/~nhanb/mcross/3
+diff --git a/pyproject.toml b/pyproject.toml
+index e03a1f2..7a48c30 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;mcross&quot;
+-version = &quot;0.5.18&quot;
++version = &quot;0.5.19&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/mcross/gui/controller.py b/src/mcross/gui/controller.py
+index 6397404..9e80fc7 100644
+--- a/src/mcross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -7,13 +7,9 @@
+ 
+ import curio
+ 
+-from ..transport import (
+-    MAX_REQUEST_SECONDS,
+-    GeminiUrl,
+-    NonAbsoluteUrlWithoutContextError,
+-    UnsupportedProtocolError,
+-    get,
+-)
++from ..transport import (MAX_REQUEST_SECONDS, GeminiUrl,
++                         NonAbsoluteUrlWithoutContextError,
++                         UnsupportedProtocolError, get)
+ from .model import Model
+ from .view import WAITING_CURSOR, View
+ 
+@@ -32,9 +28,6 @@ def __init__(self):
+         self.gui_ops = curio.UniversalQueue(withfd=True)
+         self.coro_ops = curio.UniversalQueue()
+ 
+-        # Set up event handler for queued GUI updates
+-        self.root.createfilehandler(self.gui_ops, READABLE, self.process_gui_ops)
+-
+         # When in the middle of an action, this flag is set to False to prevent user
+         # from clicking other random stuff:
+         self.allow_user_interaction = True
+@@ -46,6 +39,20 @@ def inner(*args):
+ 
+             return inner
+ 
++        # Make sure queued GUI operations are executed as soon as they become available
++        if hasattr(self.root, &quot;createfilehandler&quot;):
++            self.root.createfilehandler(self.gui_ops, READABLE, self.process_gui_ops)
++        else:
++            print(&quot;Running poll-based workaround for Windows.&quot;)
++            # This is way more inefficient (5% CPU usage on a Surface Go at idle) but
++            # hey it&#39;s better than not working at all!
++
++            def after_cb():
++                self.process_gui_ops()
++                self.root.after(10, after_cb)
++
++            self.root.after(10, after_cb)
++
+         self.view.go_callback = put_coro_op(self.go_callback)
+         self.view.link_click_callback = put_coro_op(self.link_click_callback)
+         self.view.back_callback = put_coro_op(self.back_callback)
+@@ -63,7 +70,7 @@ def run(self):
+     async def put_gui_op(self, func, *args, **kwargs):
+         await self.gui_ops.put((func, args, kwargs))
+ 
+-    def process_gui_ops(self, file, mask):
++    def process_gui_ops(self, *args):
+         while not self.gui_ops.empty():
+             func, args, kwargs = self.gui_ops.get()
+             func(*args, **kwargs)
+@@ -126,7 +133,8 @@ async def visit_link(self, url: GeminiUrl):
+ 
+         except curio.errors.TaskTimeout:
+             await self.put_gui_op(
+-                statusbar_logger.info, f&quot;Request timed out: {MAX_REQUEST_SECONDS}s&quot;,
++                statusbar_logger.info,
++                f&quot;Request timed out: {MAX_REQUEST_SECONDS}s&quot;,
+             )
+             await self.put_gui_op(
+                 messagebox.showwarning,
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index 1a8ae95..116c605 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -11,7 +11,7 @@
+ # OS-specific values
+ if sys.platform == &quot;win32&quot;:
+     TTK_THEME = &quot;vista&quot;
+-    POINTER_CURSOR = &quot;center_ptr&quot;
++    POINTER_CURSOR = &quot;hand2&quot;
+     WAITING_CURSOR = &quot;wait&quot;
+ elif sys.platform == &quot;darwin&quot;:
+     TTK_THEME = &quot;aqua&quot;
+</pre></body></html>

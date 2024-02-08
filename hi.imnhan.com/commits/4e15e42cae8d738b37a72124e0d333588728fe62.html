@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[4e15e42cae] Automation post | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 4e15e42cae</strong><hr><pre>commit 4e15e42cae8d738b37a72124e0d333588728fe62
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Fri Jun 7 13:46:39 2013 +0700
+
+    Automation post
+
+diff --git a/content/modern-vim-plugin-management-pathogen-vs-vundle.md b/content/modern-vim-plugin-management-pathogen-vs-vundle.md
+index 6906389..605623a 100644
+--- a/content/modern-vim-plugin-management-pathogen-vs-vundle.md
++++ b/content/modern-vim-plugin-management-pathogen-vs-vundle.md
+@@ -2,7 +2,7 @@
+ title: Modern vim plugin management - Pathogen vs Vundle
+ slug: modern-vim-plugin-management-pathogen-vs-vundle
+ lang: en
+-category: Tutorials
++category: tutorials
+ tags: vim
+ summary: Pimp your vim with little effort
+ 
+diff --git a/content/why-i-use-linux-automation.md b/content/why-i-use-linux-automation.md
+new file mode 100644
+index 0000000..091e35e
+--- /dev/null
++++ b/content/why-i-use-linux-automation.md
+@@ -0,0 +1,118 @@
++Title: Why I use Linux - Automation
++Date: 2013-06-07 08:02
++Category: tutorials
++Tags: python, linux
++Slug: why-i-use-linux-automation
++Summary: Repeating is boring
++
++(In this post, when I say Linux, I mean any popular GNU/Linux distribution. Hope this clarification
++will keep the nitpickers away.)
++
++First let&#39;s discuss *why* automation rocks.
++
++# Repetition is evil (and boring)
++
++As a (would-be) software engineer, the *repetition is evil* notion has been planted in my head for
++far more times than anything else, and for good reasons.
++
++People are far more prone to error than computers, and doing repetitive tasks creates just too
++much room for that. Computers, on the other hand, do everything exactly how you tell them to do,
++with extreme speed and accuracy.
++
++Moreover, let&#39;s face it: We developers are all (or at least mostly) lazy. Not the &quot;I&#39;m don&#39;t
++wanna do anything&quot; kind of lazy, but more of the &quot;This crap is boring and not challenging at all,
++why the hell am I wasting time for it?&quot; type. We&#39;ve all got better things to do with our lives,
++like re-watching the last episode of BBC&#39;s *Sherlock* to look for clues to how he faked his death,
++or trying to figure out what that &quot;Han shot first&quot; meme means (sorry, I&#39;m from the later
++generation).
++
++# Automation needs command line tools
++
++Because, of course, GUI programs are (nearly) impossible to interact with in our scripts. Sure
++you can try mouse click emulation tools and stuff like that, but is it really worth the effort?
++And I&#39;d bet anything that those tools are far from reliable (GUI latency, anyone?).
++
++And this is where Windows falls short. Most (if not all) Windows tools are designed for GUI, and
++the whole Windows ecosystem is built around GUI use.
++
++It&#39;s a whole different matter in Linux: from the good old awk, sed, grep, wget to the new shiny
++aria2... Almost anything you can think of is available as a command line tool.
++
++# Putting them all together
++
++Just like any UNIX-like system, Linux tools utilize the One True Phylosophy: Do only 1 thing, and
++do it well. (okay, I&#39;m paraphrasing a bit, but you get the idea)
++
++The true power of command line tools is when they are used together. Let&#39;s take a look at a
++[python script](https://gist.github.com/nhanb/5726342) I wrote last night to download the whole
++beginner course from [justinguitar](http://www.justinguitar.com).
++
++The real flow starts from line 48:
++
++    :::python
++    # Fetch index pages which has links to all beginner lessons
++    r = requests.get(&#39;http://www.justinguitar.com/en/BC-000-BeginnersCourse.php&#39;)
++    start_page = r.text
++
++    # Search for all links to lessons
++    pat = re.compile(&#39;&lt;a href=&quot;(BC-[0-9]{3}-.+?)&quot;&#39;)
++    pages = pat.findall(start_page)
++
++    # Fetch html for each lesson
++    pages_html = fetch_html(pages)
++
++    # Crawl each lesson page, pull out lesson names and youtube link code
++    youtube_codes = []
++    for html in pages_html:
++        code = parse_info(html)
++        print code
++        if code not in youtube_codes:
++            youtube_codes.append(code)
++
++To summarize, this snippet goes to justinguitar&#39;s beginner course index page, grab all links to
++each lesson, then grab the lesson title as well as the youtube video code to its video. The
++result is the list name `youtube_codes`; each element is a tuple with the format
++`(title, youtube_code)`.
++
++Then I use a command line tool called `youtube-dl` to fetch the direct link to each video. The
++tool itself can download the video too, but it doesn&#39;t support multiple connections to
++accelerate the download. This is where `aria2c` jumps in: it takes the direct link from
++`youtube-dl` then download the whole thing:
++
++    :::python
++    # Leech the hell out of them
++    for lesson in youtube_codes:
++
++        # Ignore if lesson has no video
++        if lesson[1] == None:
++            call([&#39;touch&#39;, lesson[0]])
++            continue
++
++        # Use youtube-dl to get fresh download link and file extension
++        command = &#39;youtube-dl &#39; + lesson[1] +\
++                &#39; --skip-download --get-url --get-filename -f 35/34/82/44/43/100&#39;
++
++        shell_output = str(check_output(command.split()))
++        direct_link, fname = shell_output.splitlines()
++        file_ext = fname[fname.rfind(&#39;.&#39;):]
++        file_name = lesson[0] + file_ext
++
++        # Then aria2 for serious multi-part download acceleration
++        print &#39;Downloading &#39; + file_name + &#39;...&#39;
++        command = [&#39;aria2c&#39;, &quot;-o&quot;, file_name, &#39;-x2&#39;,
++                &quot;%s&quot; % direct_link]
++        shell_output = check_output(command)
++        print shell_output
++
++That&#39;s it! I just needed to launch this script, turn off the laptop screen and go to bed. This
++morning I woke up seeing the whole course with almost 200 lessons downloaded. Imagine having to
++manually download all that by clicking each link... You don&#39;t wanna go there, do you?
++
++So that&#39;s just a very simple example of what automation helps your every day life. Of course its
++true power is unleashed when used in development; this is how one-click test and deployment
++works. Windows can do this too, but your choice of tool will be limited. And don&#39;t get me started
++on its lack of a decent package manager!
++
++To make a long story short, do yourself a favor and install a Linux distro.
++
++... or buy a Mac.
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 9d30f5d..8d3c839 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -6,6 +6,8 @@
+ SITENAME = u&#39;Nhanb&#39;
+ SITEURL = &#39;&#39;
+ 
++THEME=u&#39;/home/nhanb/dev/pelican-octopress-theme&#39;
++
+ TIMEZONE = &#39;Asia/Ho_Chi_Minh&#39;
+ 
+ DEFAULT_LANG = u&#39;en&#39;
+@@ -43,7 +45,7 @@
+ 
+ DEFAULT_PAGINATION = 10
+ 
+-THEME = &quot;~/dev/pelican-otopress-theme/&quot;
++#THEME = &quot;/home/nhanb/Dropbox/dev/pelican-simplicity-theme&quot;
+ 
+ GITHUB_USERNAME = &quot;nhanb&quot;
+ FACEBOOK_USERNAME = &quot;thanhnhanb&quot;
+</pre></body></html>

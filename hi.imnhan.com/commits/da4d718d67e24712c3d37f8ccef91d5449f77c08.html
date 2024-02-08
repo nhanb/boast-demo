@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[da4d718d67] konami code easter egg | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / da4d718d67</strong><hr><pre>commit da4d718d67e24712c3d37f8ccef91d5449f77c08
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Dec 7 11:47:29 2020 +0700
+
+    konami code easter egg
+
+diff --git a/.rgignore b/.rgignore
+new file mode 100644
+index 0000000..1f57b97
+--- /dev/null
++++ b/.rgignore
+@@ -0,0 +1 @@
++/output
+diff --git a/nhanb-theme/static/konami.js b/nhanb-theme/static/konami.js
+new file mode 100644
+index 0000000..d472e79
+--- /dev/null
++++ b/nhanb-theme/static/konami.js
+@@ -0,0 +1,50 @@
++(function () {
++  function konamiCode(callback) {
++    // The famous Konami sequence in keycodes
++    // up up down down left right left right b a
++    var sequence = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
++    var ko = Array.from(sequence);
++
++    // Get the rest of this function&#39;s arguments (if any).
++    // These will be used as the callback&#39;s arguments.
++    var args = [];
++    for (var i = 1; i &lt; arguments.length; i++) {
++      args.push(arguments[i]);
++    }
++
++    document.addEventListener(&quot;keydown&quot;, function (e) {
++      if (e.keyCode === ko[0]) {
++        ko.splice(0, 1);
++        if (ko.length === 0) {
++          callback.apply(null, args);
++        }
++      } else {
++        ko = Array.from(sequence);
++      }
++    });
++  }
++
++  function showClip() {
++    var video = document.createElement(&quot;video&quot;);
++    video.setAttribute(&quot;controls&quot;, &quot;&quot;);
++    video.setAttribute(&quot;autoplay&quot;, &quot;autoplay&quot;);
++    video.style.position = &quot;fixed&quot;;
++    video.style.right = &quot;0&quot;;
++    video.style.bottom = &quot;0&quot;;
++    video.style.width = &quot;100%&quot;;
++    video.style.height = &quot;100%&quot;;
++    video.style[&quot;object-fit&quot;] = &quot;cover&quot;;
++    video.style.opacity = &quot;0.6&quot;;
++
++    var src = document.createElement(&quot;source&quot;);
++    src.setAttribute(&quot;src&quot;, &quot;https://junk.imnhan.com/rain-480-cropped.mp4&quot;);
++    src.setAttribute(&quot;type&quot;, &quot;video/mp4&quot;);
++    video.appendChild(src);
++
++    document.body.appendChild(video);
++  }
++
++  window.addEventListener(&quot;DOMContentLoaded&quot;, function () {
++    konamiCode(showClip);
++  });
++})();
+diff --git a/nhanb-theme/templates/base.html b/nhanb-theme/templates/base.html
+index 5068677..b299e80 100644
+--- a/nhanb-theme/templates/base.html
++++ b/nhanb-theme/templates/base.html
+@@ -49,5 +49,8 @@ &lt;h1 id=&quot;site-name&quot;&gt;&lt;a href=&quot;/&quot;&gt;{{ SITENAME }}&lt;/a&gt;&lt;/h1&gt;
+       {{ FOOTER_TEXT }}
+     &lt;/footer&gt;
+   &lt;/div&gt;
++
++  &lt;script src=&quot;/theme/konami.js&quot;&gt;&lt;/script&gt;
++
+ &lt;/body&gt;
+ &lt;/html&gt;
+</pre></body></html>

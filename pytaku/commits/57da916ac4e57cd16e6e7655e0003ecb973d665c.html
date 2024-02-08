@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[57da916ac4] update server fingerprint | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 57da916ac4</strong><hr><pre>commit 57da916ac4e57cd16e6e7655e0003ecb973d665c
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 3 01:38:56 2023 +0700
+
+    update server fingerprint
+
+diff --git a/.builds/debian.yml b/.builds/debian.yml
+index c9b1736..41e1930 100644
+--- a/.builds/debian.yml
++++ b/.builds/debian.yml
+@@ -55,7 +55,7 @@ tasks:
+ 
+   - deploy-dev: |
+       cd pytaku
+-      echo &quot;pytaku.imnhan.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBBpDNzSaWLPXnb2XaGNgvlNnEcVbdrUUWHfBcuzJ1DyDU2fa+f1ojSFddfNMBrSRpU0GAPfpDoky6en866WH4gw=&quot; &gt;&gt; ~/.ssh/known_hosts
++      echo &quot;pytaku.imnhan.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEoJxAQAJiP9qq134LAWn0aGKRkZT1gEUfQY5+JJdM3/&quot; &gt;&gt; ~/.ssh/known_hosts
+ 
+       # Clean up old stuff just in case
+       ssh -i ~/.ssh/2d6e3246-5adc-41c2-bebe-01dacda9d0c8 pytaku@pytaku.imnhan.com &#39;rm -f /home/pytaku/pytaku*.whl&#39;
+</pre></body></html>

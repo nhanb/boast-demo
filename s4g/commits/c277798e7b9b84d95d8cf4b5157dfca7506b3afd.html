@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[c277798e7b] init | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / c277798e7b</strong><hr><pre>commit c277798e7b9b84d95d8cf4b5157dfca7506b3afd
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jun 28 19:18:15 2023 +0700
+
+    init
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..9b1c8b1
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1 @@
++/dist
+diff --git a/Makefile b/Makefile
+new file mode 100644
+index 0000000..aa6e5fe
+--- /dev/null
++++ b/Makefile
+@@ -0,0 +1,2 @@
++watch:
++	find . -name &#39;*.go&#39; | entr -rc go run .
+diff --git a/README.md b/README.md
+new file mode 100644
+index 0000000..85e6ff1
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1 @@
++# WIP
+diff --git a/go.mod b/go.mod
+new file mode 100644
+index 0000000..93bf149
+--- /dev/null
++++ b/go.mod
+@@ -0,0 +1,3 @@
++module go.imnhan.com/webmaker2000
++
++go 1.20
+diff --git a/main.go b/main.go
+new file mode 100644
+index 0000000..60d6517
+--- /dev/null
++++ b/main.go
+@@ -0,0 +1,28 @@
++package main
++
++import (
++	&quot;flag&quot;
++	&quot;log&quot;
++	&quot;net/http&quot;
++	&quot;os&quot;
++)
++
++func main() {
++	var port, folder string
++	flag.StringVar(&amp;port, &quot;port&quot;, &quot;3338&quot;, &quot;Web port&quot;)
++	flag.StringVar(&amp;folder, &quot;folder&quot;, &quot;www&quot;, &quot;Web port&quot;)
++	flag.Parse()
++
++	err := os.Chdir(folder)
++	if err != nil {
++		log.Fatal(err)
++	}
++
++	println(&quot;Serving local website at http://localhost:&quot; + port)
++	fs := http.FileServer(http.Dir(&quot;.&quot;))
++	http.Handle(&quot;/&quot;, fs)
++	err = http.ListenAndServe(&quot;127.0.0.1:&quot;+port, nil)
++	if err != nil {
++		log.Fatal(err)
++	}
++}
+diff --git a/www/index.html b/www/index.html
+new file mode 100644
+index 0000000..391a8cb
+--- /dev/null
++++ b/www/index.html
+@@ -0,0 +1 @@
++yello
+</pre></body></html>

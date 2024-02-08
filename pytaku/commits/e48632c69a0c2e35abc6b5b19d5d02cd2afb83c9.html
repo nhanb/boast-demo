@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e48632c69a] bugfix: don&#39;t throw up on dupe follow | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / e48632c69a</strong><hr><pre>commit e48632c69a0c2e35abc6b5b19d5d02cd2afb83c9
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 15 11:36:55 2020 +0700
+
+    bugfix: don&#39;t throw up on dupe follow
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 2945695..dce411b 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.2.19&quot;
++version = &quot;0.2.20&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index b651f75..7fba2d5 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -330,7 +330,8 @@ def set(key: str, value: str):
+ def import_follows(user_id: int, site_title_pairs: List[Tuple[str, str]]):
+     run_sql_many(
+         &quot;&quot;&quot;
+-        INSERT INTO follow (user_id, site, title_id) VALUES (?, ?, ?);
++        INSERT INTO follow (user_id, site, title_id) VALUES (?, ?, ?)
++        ON CONFLICT DO NOTHING;
+         &quot;&quot;&quot;,
+         ((user_id, site, title_id) for site, title_id in site_title_pairs),
+     )
+</pre></body></html>

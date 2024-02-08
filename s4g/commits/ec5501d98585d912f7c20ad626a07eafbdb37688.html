@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ec5501d985] pull base template&#39;s out to css file | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / ec5501d985</strong><hr><pre>commit ec5501d98585d912f7c20ad626a07eafbdb37688
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jul 5 00:00:04 2023 +0700
+
+    pull base template&#39;s out to css file
+    
+    Also added 1.3rem line height. Seems more natural this way.
+
+diff --git a/www/_theme/base.css b/www/_theme/base.css
+new file mode 100644
+index 0000000..f1b6d99
+--- /dev/null
++++ b/www/_theme/base.css
+@@ -0,0 +1,17 @@
++html {
++  font-family: serif;
++  max-width: 50rem;
++  margin: auto;
++}
++
++p,
++ul,
++ol {
++  line-height: 1.3rem;
++}
++
++footer {
++  margin-top: 2rem;
++  text-align: right;
++  font-size: 0.8rem;
++}
+diff --git a/www/_theme/base.tmpl b/www/_theme/base.tmpl
+index 0cc1439..8ed98a4 100644
+--- a/www/_theme/base.tmpl
++++ b/www/_theme/base.tmpl
+@@ -6,13 +6,7 @@
+   &lt;title&gt;{{.Title}}&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;{{.Feed}}&quot;&gt;
+-  &lt;style&gt;
+-    html {
+-      font-family: serif;
+-      max-width: 50rem;
+-      margin: auto;
+-    }
+-  &lt;/style&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.Site.HomePath}}_theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+@@ -23,13 +17,6 @@
+ © {{if eq .StartYear .Now.Year}}{{.StartYear}}{{else}}{{.StartYear}}–{{.Now.Year}}{{end}} {{.Site.Author.Name}}&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
+-&lt;style&gt;
+-footer {
+-  margin-top: 2rem;
+-  text-align: right;
+-  font-size: 0.8rem;
+-}
+-&lt;/style&gt;
+ {{end}}
+ 
+ &lt;/body&gt;
+diff --git a/www/about/index.html b/www/about/index.html
+index 8ae1104..435ff2a 100644
+--- a/www/about/index.html
++++ b/www/about/index.html
+@@ -6,13 +6,7 @@
+   &lt;title&gt;About | CoolZone&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;style&gt;
+-    html {
+-      font-family: serif;
+-      max-width: 50rem;
+-      margin: auto;
+-    }
+-  &lt;/style&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+@@ -56,13 +50,6 @@ &lt;h2&gt;No really&lt;/h2&gt;
+ © 2022–2023 Coolio McCool&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
+-&lt;style&gt;
+-footer {
+-  margin-top: 2rem;
+-  text-align: right;
+-  font-size: 0.8rem;
+-}
+-&lt;/style&gt;
+ 
+ 
+ &lt;/body&gt;
+diff --git a/www/hello/index.html b/www/hello/index.html
+index e64369e..c47619d 100644
+--- a/www/hello/index.html
++++ b/www/hello/index.html
+@@ -6,13 +6,7 @@
+   &lt;title&gt;Hello | CoolZone&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;style&gt;
+-    html {
+-      font-family: serif;
+-      max-width: 50rem;
+-      margin: auto;
+-    }
+-  &lt;/style&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+@@ -55,13 +49,6 @@ &lt;h1 class=&quot;post-title&quot;&gt;Hello&lt;/h1&gt;
+ © 2022–2023 Coolio McCool&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
+-&lt;style&gt;
+-footer {
+-  margin-top: 2rem;
+-  text-align: right;
+-  font-size: 0.8rem;
+-}
+-&lt;/style&gt;
+ 
+ 
+ &lt;/body&gt;
+diff --git a/www/index.html b/www/index.html
+index 61c0688..938a3bb 100644
+--- a/www/index.html
++++ b/www/index.html
+@@ -6,13 +6,7 @@
+   &lt;title&gt;CoolZone - Cool people only.&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;style&gt;
+-    html {
+-      font-family: serif;
+-      max-width: 50rem;
+-      margin: auto;
+-    }
+-  &lt;/style&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+@@ -91,13 +85,6 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ © 2022–2023 Coolio McCool&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
+-&lt;style&gt;
+-footer {
+-  margin-top: 2rem;
+-  text-align: right;
+-  font-size: 0.8rem;
+-}
+-&lt;/style&gt;
+ 
+ 
+ &lt;/body&gt;
+diff --git a/www/mfws.html b/www/mfws.html
+index 1bfcdf6..08e28ca 100644
+--- a/www/mfws.html
++++ b/www/mfws.html
+@@ -6,13 +6,7 @@
+   &lt;title&gt;This is a motherfucking website. | CoolZone&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;style&gt;
+-    html {
+-      font-family: serif;
+-      max-width: 50rem;
+-      margin: auto;
+-    }
+-  &lt;/style&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+@@ -144,13 +138,6 @@ &lt;h2&gt;Epilogue&lt;/h2&gt;
+ © 2022–2023 Coolio McCool&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
+-&lt;style&gt;
+-footer {
+-  margin-top: 2rem;
+-  text-align: right;
+-  font-size: 0.8rem;
+-}
+-&lt;/style&gt;
+ 
+ 
+ &lt;/body&gt;
+</pre></body></html>

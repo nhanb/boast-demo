@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[4cd0bd8255] less noise I guess | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 4cd0bd8255</strong><hr><pre>commit 4cd0bd82551b6e7d08c4a01cd2b2585d7685330e
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Nov 1 23:37:49 2021 +0700
+
+    less noise I guess
+
+diff --git a/content/posts/open-http-link-under-cursor-in-vim.md b/content/posts/open-http-link-under-cursor-in-vim.md
+index 3eb7092..8f3424e 100644
+--- a/content/posts/open-http-link-under-cursor-in-vim.md
++++ b/content/posts/open-http-link-under-cursor-in-vim.md
+@@ -1,9 +1,9 @@
+ Title: Opening http link under the cursor in vim
+ Date: 2021-08-07 11:37
+ 
+-Internet&#39;s wise old chatty uncle [Walter Bright](https://www.walterbright.com/)
+-recently [commented](https://news.ycombinator.com/item?id=28090272) on Hacker
+-News:
++Mr. [Walter Bright](https://www.walterbright.com/), creator of the D
++programming language, recently
++[commented](https://news.ycombinator.com/item?id=28090272) on Hacker News:
+ 
+ &gt; [...]
+ &gt;
+@@ -23,8 +23,8 @@
+ I&#39;ve never had any issue with opening links from vim: I have `&lt;leader&gt;y` set up
+ in Visual mode to yank stuff into the system-wide clipboard which I can then
+ paste into the browser. However, ever since I mapped `&lt;leader&gt;gh` to trigger
+-[`:GBrowse`][1] that opens a browser tab instantly, the old &quot;select &gt; copy &gt;
+-switch to browser &gt; Ctrl+T &gt; Ctrl+V&quot; flow started to feel... prehistoric. Mr.
++[`:GBrowse`][1] that opens a browser tab instantly, the old &quot;select, copy,
++alt-tab to browser, ctrl+t, ctrl+v&quot; flow started to feel... prehistoric. Mr.
+ Bright&#39;s comment gave me the final nudge to actually go ahead and set it up.
+ 
+ The good folks from the [developer encyclopedia][3] suggested `gx` but for some
+@@ -95,6 +95,8 @@ ## But why stop there?
+ nnoremap gj :call OpenJira()&lt;cr&gt;
+ ```
+ 
++Voila! Now I can press `gj` to open any atlassian ticket from just its ID.
++
+ Some interesting points:
+ 
+ - `ID2/SRE/CSI` are the prefixes that I know of. No idea if there are any
+diff --git a/nhanb-theme/static/css/main.css b/nhanb-theme/static/css/main.css
+index faed134..95aa4a1 100644
+--- a/nhanb-theme/static/css/main.css
++++ b/nhanb-theme/static/css/main.css
+@@ -122,7 +122,6 @@ code {
+ 
+ p code,
+ li code {
+-  border: 1px solid #aaa;
+   padding: 0 3px;
+ }
+ a:hover code {
+</pre></body></html>

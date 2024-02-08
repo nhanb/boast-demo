@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[29d943bd1f] fix mangasee tests | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 29d943bd1f</strong><hr><pre>commit 29d943bd1f3f602dbfe4766e1a7db2ba6475ef01
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Sep 3 09:55:56 2021 +0700
+
+    fix mangasee tests
+
+diff --git a/tests/mangoapi/test_mangasee.py b/tests/mangoapi/test_mangasee.py
+index fb943ec..914a2b6 100644
+--- a/tests/mangoapi/test_mangasee.py
++++ b/tests/mangoapi/test_mangasee.py
+@@ -13,11 +13,14 @@ def test_get_title():
+         &quot;descriptions&quot;: [
+             &quot;Yusuke Urameshi was a tough teen delinquent until one selfless act changed his life... by ending it. When he died saving a little kid from a speeding car, the afterlife didn&#39;t know what to do with him, so it gave him a second chance at life. Now, Yusuke is a ghost with a mission, performing good deeds at the behest of Botan, the ferrywoman of the River Styx, and Koenma, the pacifier-sucking judge of the dead.&quot;
+         ],
++        &quot;descriptions_format&quot;: &quot;text&quot;,
++        &quot;is_webtoon&quot;: False,
+     }
+     assert len(chapters) == 176
+     assert chapters[112] == {
+         &quot;groups&quot;: [],
+-        &quot;id&quot;: &quot;63.5&quot;,
++        &quot;id&quot;: &quot;100635&quot;,
++        &quot;raw_id&quot;: &quot;100635&quot;,
+         &quot;name&quot;: &quot;&quot;,
+         &quot;num_major&quot;: 63,
+         &quot;num_minor&quot;: 5,
+@@ -27,13 +30,13 @@ def test_get_title():
+ 
+ 
+ def test_get_chapter():
+-    chapter = Mangasee().get_chapter(&quot;Yu-Yu-Hakusho&quot;, &quot;63.5&quot;)
++    chapter = Mangasee().get_chapter(&quot;Yu-Yu-Hakusho&quot;, &quot;100635&quot;)
+     pages = chapter.pop(&quot;pages&quot;)
+     pages_alt = chapter.pop(&quot;pages_alt&quot;)
+     assert chapter == {
+         &quot;groups&quot;: [],
+-        &quot;id&quot;: &quot;63.5&quot;,
+-        &quot;is_webtoon&quot;: False,
++        &quot;id&quot;: &quot;100635&quot;,
++        &quot;raw_id&quot;: &quot;100635&quot;,
+         &quot;name&quot;: &quot;&quot;,
+         &quot;num_major&quot;: 63,
+         &quot;num_minor&quot;: 5,
+@@ -41,8 +44,8 @@ def test_get_chapter():
+         &quot;site&quot;: &quot;mangasee&quot;,
+         &quot;title_id&quot;: &quot;Yu-Yu-Hakusho&quot;,
+     }
+-    assert pages[0] == &quot;https://s1.mangabeast01.com/manga/Yu-Yu-Hakusho/0063.5-001.png&quot;
+-    assert pages[-1] == &quot;https://s1.mangabeast01.com/manga/Yu-Yu-Hakusho/0063.5-031.png&quot;
++    assert pages[0].endswith(&quot;/manga/Yu-Yu-Hakusho/0063.5-001.png&quot;)
++    assert pages[-1].endswith(&quot;/manga/Yu-Yu-Hakusho/0063.5-031.png&quot;)
+     assert pages_alt == []
+ 
+ 
+@@ -60,7 +63,7 @@ def set(self, key, val):
+     assert results == [
+         {
+             &quot;id&quot;: &quot;Sayonara-Football&quot;,
+-            &quot;name&quot;: &quot;Sayonara Football&quot;,
++            &quot;name&quot;: &quot;Sayonara, Football&quot;,
+             &quot;site&quot;: &quot;mangasee&quot;,
+             &quot;thumbnail&quot;: &quot;https://cover.nep.li/cover/Sayonara-Football.jpg&quot;,
+         }
+</pre></body></html>

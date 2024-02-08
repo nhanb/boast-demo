@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1227933a8e] clearer point, typography fluff | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 1227933a8e</strong><hr><pre>commit 1227933a8e47ded5615565a99b9a08e02b9fea09
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Oct 3 13:29:38 2021 +0700
+
+    clearer point, typography fluff
+
+diff --git a/content/posts/i-made-my-python-webapp-pip-installable.md b/content/posts/i-made-my-python-webapp-pip-installable.md
+index 6e061be..675d5d7 100644
+--- a/content/posts/i-made-my-python-webapp-pip-installable.md
++++ b/content/posts/i-made-my-python-webapp-pip-installable.md
+@@ -101,15 +101,20 @@ ## But why bother?
+ another layer of firewall that locks down every port by default that you can
+ setup on their totally usable web console or infrastructure-as-code it in your
+ cloudformations or your terraformses or, actually, do you have a moment to talk
+-about our lord and savior Cthulhubernetes-
++about our lord and savior Cthulhubernetes--
+ 
+ But I digress.
+ 
+ I guess what I was trying to say is, throwing abstractions over complex
+ procedures is simply shifting the costs elsewhere. Shipping your software in a
+-Dockerfile is file, but making your distribution so simple that people can
++Dockerfile is fine, but making your distribution so simple that people can
+ easily write a couple of lines of Dockerfile for it by themselves is more
+-valuable.
++valuable. Simple distribution is simple to deploy regardless of whether you&#39;re
++using docker, packer, ansible, pyinfra, podman, nomad, k8s, k3s, an
++impenetrable shell script some dude wrote 2 years ago who just left the company
++last month... or any combination of the above. The point is **you shouldn&#39;t be
++forced to use more heavyweight solutions just because the software is a pain in
++the butt to setup manually**.
+ 
+ And other people _have_ been trying to make python application distribution
+ simpler:
+</pre></body></html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[dd3e8baa9b] hide chapters table when there&#39;s no chapter | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / dd3e8baa9b</strong><hr><pre>commit dd3e8baa9b941183371bd13e4677f57b5f438c04
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 8 20:23:58 2020 +0700
+
+    hide chapters table when there&#39;s no chapter
+
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index ce2f380..c18cae2 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -42,6 +42,7 @@ &lt;h1&gt;{{ name }}&lt;/h1&gt;
+ 
+ &lt;img class=&quot;cover&quot; src=&quot;https://mangadex.org/images/manga/{{ id }}.{{ cover_ext }}&quot; alt=&quot;cover&quot; /&gt;
+ 
++{% if chapters %}
+ &lt;table&gt;
+   &lt;tr&gt;
+     {% if session[&#39;user&#39;] %}&lt;th&gt;Done&lt;/th&gt;{% endif %}
+@@ -68,4 +69,8 @@ &lt;h1&gt;{{ name }}&lt;/h1&gt;
+   &lt;/tr&gt;
+   {% endfor %}
+ &lt;/table&gt;
++{% else %}
++&lt;p&gt;This one has no chapters.&lt;/p&gt;
++{% endif %}
++
+ {% endblock %}
+</pre></body></html>

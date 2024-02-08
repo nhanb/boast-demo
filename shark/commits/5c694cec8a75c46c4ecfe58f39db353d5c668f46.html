@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[5c694cec8a] implement hungry + feed state | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 5c694cec8a</strong><hr><pre>commit 5c694cec8a75c46c4ecfe58f39db353d5c668f46
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 17 13:47:15 2023 +0700
+
+    implement hungry + feed state
+
+diff --git a/main.go b/main.go
+index aefab9e..024d63f 100644
+--- a/main.go
++++ b/main.go
+@@ -48,23 +48,24 @@ type Anim struct {
+ 
+ type Position struct{ x, y int }
+ 
++var DurationTillHungry time.Duration
++
+ type Game struct {
+-	CurrentAnim            *Anim
+-	CurrentFrame           int
+-	Ticks                  int
+-	IsDragging             bool
+-	PreviousMousePos       Vector
+-	WinStartPos            Vector
+-	MouseStartPos          Vector
+-	Size                   int
+-	LastFed                time.Time
+-	NanosecondsUntilHungry time.Duration
+-	WalkChance             int
+-	StopChance             int
+-	X                      int
+-	Y                      int
+-	MaxX                   int
+-	MaxY                   int
++	CurrentAnim      *Anim
++	CurrentFrame     int
++	Ticks            int
++	IsDragging       bool
++	PreviousMousePos Vector
++	WinStartPos      Vector
++	MouseStartPos    Vector
++	Size             int
++	LastFed          time.Time
++	WalkChance       int
++	StopChance       int
++	X                int
++	Y                int
++	MaxX             int
++	MaxY             int
+ }
+ 
+ type Vector struct{ x, y int }
+@@ -101,7 +102,7 @@ func (g *Game) Update() error {
+ 
+ 	isHungry := false
+ 
+-	if time.Now().Sub(g.LastFed) &gt;= g.NanosecondsUntilHungry {
++	if time.Now().Sub(g.LastFed) &gt;= DurationTillHungry {
+ 		// The only allowed interaction when hungry is right-click to feed.
+ 		isHungry = true
+ 		g.IsDragging = false
+@@ -265,7 +266,7 @@ func main() {
+ 	var game Game
+ 	game.CurrentAnim = Idle
+ 	game.LastFed = time.Now()
+-	game.NanosecondsUntilHungry = time.Duration(secondsUntilHungryFlag) * 1_000_000_000
++	DurationTillHungry = time.Duration(secondsUntilHungryFlag) * 1_000_000_000
+ 	game.Size = sizeFlag
+ 	game.WalkChance = walkChanceFlag
+ 	game.StopChance = stopChanceFlag
+diff --git a/states.go b/states.go
+index fa690e8..36e6bce 100644
+--- a/states.go
++++ b/states.go
+@@ -1,6 +1,8 @@
+ package main
+ 
+ import (
++	&quot;time&quot;
++
+ 	&quot;github.com/hajimehoshi/ebiten/v2&quot;
+ 	&quot;github.com/hajimehoshi/ebiten/v2/inpututil&quot;
+ )
+@@ -11,11 +13,14 @@ type StateMachine struct {
+ 	animFrameCount int // number of frames in current anim
+ 	frameIdx       int // frame index in current animation
+ 	ticks          int // ticks since last animation frame change
++
++	lastFed time.Time
+ }
+ 
+ func NewStateMachine() *StateMachine {
+ 	sm := StateMachine{}
+ 	sm.SetState(&amp;StateIdle{})
++	sm.lastFed = time.Now()
+ 	return &amp;sm
+ }
+ 
+@@ -33,7 +38,14 @@ func (sm *StateMachine) SetState(s State) {
+ 	sm.state.Enter(sm)
+ }
+ func (sm *StateMachine) Update() error {
+-	sm.state.Update(sm)
++	now := time.Now()
++
++	if now.Sub(sm.lastFed) &gt;= DurationTillHungry {
++		sm.SetState(&amp;StateHungry{})
++		sm.lastFed = now
++	} else {
++		sm.state.Update(sm)
++	}
+ 
+ 	// Advance to next animation frame
+ 	sm.ticks += 1
+@@ -66,8 +78,6 @@ type State interface {
+ 	EndAnimHook(sm *StateMachine)
+ }
+ 
+-type StateHungry struct{}
+-type StateFeed struct{}
+ type StateWalkL struct{}
+ type StateWalkR struct{}
+ 
+@@ -121,3 +131,22 @@ func (s *StateRClick) Update(sm *StateMachine) {}
+ func (s *StateRClick) EndAnimHook(sm *StateMachine) {
+ 	sm.SetState(&amp;StateIdle{})
+ }
++
++type StateHungry struct{}
++
++func (s *StateHungry) Enter(sm *StateMachine) { sm.SetAnim(Hungry) }
++func (s *StateHungry) Update(sm *StateMachine) {
++	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
++		sm.SetState(&amp;StateFeed{})
++		return
++	}
++}
++func (s *StateHungry) EndAnimHook(sm *StateMachine) {}
++
++type StateFeed struct{}
++
++func (s *StateFeed) Enter(sm *StateMachine)  { sm.SetAnim(Feeding) }
++func (s *StateFeed) Update(sm *StateMachine) {}
++func (s *StateFeed) EndAnimHook(sm *StateMachine) {
++	sm.SetState(&amp;StateIdle{})
++}
+</pre></body></html>

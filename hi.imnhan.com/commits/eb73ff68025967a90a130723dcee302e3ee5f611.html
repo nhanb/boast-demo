@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[eb73ff6802] moved to new domain and some housecleaning | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / eb73ff6802</strong><hr><pre>commit eb73ff68025967a90a130723dcee302e3ee5f611
+Author: nhanb &lt;nhan@nerdyweekly.com&gt;
+Date:   Thu Jul 25 22:27:37 2019 +0700
+
+    moved to new domain and some housecleaning
+    
+    Using pyenv-virtualenv + poetry now.
+
+diff --git a/Makefile b/Makefile
+index 6e96153..f55c243 100644
+--- a/Makefile
++++ b/Makefile
+@@ -105,6 +105,6 @@ cf_upload: publish
+ 
+ github: publish
+ 	ghp-import $(OUTPUTDIR)
+-	git push git@github.com:nhanb/nhanb.github.io.git gh-pages:master -f
++	git push origin gh-pages:gh-pages -f
+ 
+ .PHONY: html help clean regenerate serve devserver publish ssh_upload rsync_upload dropbox_upload ftp_upload s3_upload cf_upload github
+diff --git a/README.md b/README.md
+index e8b5e91..5248403 100644
+--- a/README.md
++++ b/README.md
+@@ -1,28 +1,29 @@
+ # My blog
+ 
+-This is the source code for http://www.nerdyweekly.com using
++This is the source code for https://hi.imnhan.com using
+ [Pelican](http://github.com/getpelican/pelican)
+ 
+ # Dev environment
+ 
+-This repo targets Pelican 3.7 on python3. Initial setup on Ubuntu with virtualenvwrapper looks
+-something like this:
++This repo targets Pelican 3.7 on python3. Initial setup on Arch Linux with
++`pyenv-virtualenv` and `poetry` looks something like this:
+ 
+-```bash
+-mkvirtualenv -p `which python3` pelican
+-pip install --upgrade pip
+-pip install -r requirements.txt
++```sh
++pyenv install 3.7.4
++pyenv virtualenv 3.7.4 imnhan.com
++pyenv activate imnhan.com
++poetry install
+ ```
+ 
+ Then use:
+ 
+ - `make devserver` / `make stopserver` for local dev at port 8000
+-- `make github` to publish to www.nerdyweekly.com
++- `make github` to publish to hi.imnhan.com
+ 
+ Alternatively, if you find the `make dev/stopserver` workflow clumsy, manually run `pelican -r` and
+ simple python http server to keep everything in the foreground:
+ 
+-```bash
++```sh
+ pelican -r content  # in 1 terminal
+ cd output &amp;&amp; python3 -m http.server 8000  # in another terminal
+ ```
+@@ -35,7 +36,7 @@ # License
+ ```
+ The MIT License (MIT)
+ 
+-Copyright (c) 2013-2015 Bui Thanh Nhan
++Copyright (c) 2013-2019 Bui Thanh Nhan
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the &quot;Software&quot;), to deal
+diff --git a/content/extra/CNAME b/content/extra/CNAME
+index e3bde0e..0b261f1 100644
+--- a/content/extra/CNAME
++++ b/content/extra/CNAME
+@@ -1 +1 @@
+-www.nerdyweekly.com
++hi.imnhan.com
+diff --git a/content/extra/README.markdown b/content/extra/README.markdown
+deleted file mode 100644
+index 4e719ff..0000000
+--- a/content/extra/README.markdown
++++ /dev/null
+@@ -1,3 +0,0 @@
+-# Static content for blog.nerdyweekly.com
+-
+-This repo contains generated HTML only. For markdown sources visit https://github.com/nhanb/blog
+diff --git a/content/pages/about.md b/content/pages/about.md
+index ab3ec84..d3388a4 100644
+--- a/content/pages/about.md
++++ b/content/pages/about.md
+@@ -13,7 +13,7 @@ ## About me
+ 
+ ## About this blog
+ 
+-My mind is a sad mess that cannot hold much important/interesting information after a couple of
++My mind is a sad mess that cannot hold much information after a couple of
+ months or so. This blog is where I write down interesting things I discover. On occasional bad days
+ I might throw all my ramblings here too, but hopefully those will be rare.
+ 
+@@ -24,22 +24,9 @@ ## About this blog
+ I always appreciate feedback and further discussion on my posts, so feel free to point out if you
+ think I said something stupid. :)
+ 
+-### What&#39;s with the domain name?
+-
+-I watched [Triumph of the Nerds][8] at a very impressionable age and _thought_ the word was cool.
+-Now... you know what they say about unfortunate v1 naming decisions--they stick.
+-
+-## Want to hire me?
+-
+-I try to keep [my résumé][4] as concise and up-to-date (and pretty) as possible, but if you&#39;re into
+-full-blown CVs, [here it is][6].
+-
+ 
+ [1]: http://getpelican.com
+ [2]: https://github.com/nhanb/motherfucking-pelican-theme
+-[3]: https://github.com/nhanb/blog
+-[4]: http://resume.nerdyweekly.com
++[3]: https://github.com/nhanb/imnhan.com
+ [5]: http://www.stepmania.com/
+-[6]: http://nerdyweekly.com/cv
+ [7]: http://www.sirlin.net/ptw
+-[8]: https://en.wikipedia.org/wiki/Triumph_of_the_Nerds
+diff --git a/motherfucking-pelican-theme b/motherfucking-pelican-theme
+index 9e27407..77b73ea 160000
+--- a/motherfucking-pelican-theme
++++ b/motherfucking-pelican-theme
+@@ -1 +1 @@
+-Subproject commit 9e274072dd32f6aef3f908f8076945360f87bb96
++Subproject commit 77b73ea810f2f8a1a82830096b0d0a1810e5f464
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 317704c..a83093e 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -1,17 +1,15 @@
+ #!/usr/bin/env python
+-# -*- coding: utf-8 -*- #
+-from __future__ import unicode_literals
+ 
+-AUTHOR = u&#39;Bùi Thành Nhân&#39;
+-SITENAME = u&#39;Nerdy Weekly&#39;
+-SITESUBTITLE = u&#39;Musings on the joy of computing... or lack thereof&#39;
+-SITEURL = &#39;&#39;
++AUTHOR = &quot;Bùi Thành Nhân&quot;
++SITENAME = &quot;Hi, I&#39;m Nhân&quot;
++SITESUBTITLE = &quot;and this is my humble corner on the interwebs.&quot;
++SITEURL = &quot;&quot;
+ 
+-THEME = u&#39;./motherfucking-pelican-theme&#39;
++THEME = &quot;./motherfucking-pelican-theme&quot;
+ 
+-TIMEZONE = &#39;Asia/Ho_Chi_Minh&#39;
++TIMEZONE = &quot;Asia/Ho_Chi_Minh&quot;
+ 
+-DEFAULT_LANG = u&#39;en&#39;
++DEFAULT_LANG = &quot;en&quot;
+ TYPOGRIFY = True
+ 
+ # Feed generation is usually not desired when developing
+@@ -19,67 +17,63 @@
+ CATEGORY_FEED_ATOM = None
+ TRANSLATION_FEED_ATOM = None
+ 
+-STATIC_PATHS = [&#39;images&#39;, &#39;extra&#39;]
++STATIC_PATHS = [&quot;images&quot;, &quot;extra&quot;]
+ 
+ EXTRA_PATH_METADATA = {
+-    &#39;extra/CNAME&#39;: {&#39;path&#39;: &#39;CNAME&#39;},
+-    &#39;extra/README.markdown&#39;: {&#39;path&#39;: &#39;README.markdown&#39;},
+-    &#39;extra/favicon.ico&#39;: {&#39;path&#39;: &#39;favicon.ico&#39;},
+-    &#39;extra/favicon.png&#39;: {&#39;path&#39;: &#39;favicon.png&#39;},
+-    &#39;extra/404.html&#39;: {&#39;path&#39;: &#39;404.html&#39;},
+-    &#39;extra/google3f40dbd543a603fa.html&#39;:
+-    {&#39;path&#39;: &#39;google3f40dbd543a603fa.html&#39;}
++    &quot;extra/CNAME&quot;: {&quot;path&quot;: &quot;CNAME&quot;},
++    &quot;extra/favicon.ico&quot;: {&quot;path&quot;: &quot;favicon.ico&quot;},
++    &quot;extra/favicon.png&quot;: {&quot;path&quot;: &quot;favicon.png&quot;},
++    &quot;extra/404.html&quot;: {&quot;path&quot;: &quot;404.html&quot;},
++    &quot;extra/google3f40dbd543a603fa.html&quot;: {&quot;path&quot;: &quot;google3f40dbd543a603fa.html&quot;},
+ }
+ 
+-ARTICLE_PATHS = [&#39;posts&#39;]
+-ARTICLE_URL = &#39;posts/{slug}/&#39;
+-ARTICLE_SAVE_AS = &#39;posts/{slug}/index.html&#39;
+-ARTICLE_LANG_URL = &#39;posts/{slug}-{lang}/&#39;
+-ARTICLE_LANG_SAVE_AS = &#39;posts/{slug}-{lang}/index.html&#39;
++ARTICLE_PATHS = [&quot;posts&quot;]
++ARTICLE_URL = &quot;posts/{slug}/&quot;
++ARTICLE_SAVE_AS = &quot;posts/{slug}/index.html&quot;
++ARTICLE_LANG_URL = &quot;posts/{slug}-{lang}/&quot;
++ARTICLE_LANG_SAVE_AS = &quot;posts/{slug}-{lang}/index.html&quot;
+ 
+-PAGE_PATHS = [&#39;pages&#39;]
+-PAGE_URL = (&#39;pages/{slug}/&#39;)
+-PAGE_SAVE_AS = (&#39;pages/{slug}/index.html&#39;)
+-PAGE_LANG_URL = (&#39;pages/{slug}-{lang}/&#39;)
+-PAGE_LANG_SAVE_AS = (&#39;pages/{slug}-{lang}/index.html&#39;)
++PAGE_PATHS = [&quot;pages&quot;]
++PAGE_URL = &quot;pages/{slug}/&quot;
++PAGE_SAVE_AS = &quot;pages/{slug}/index.html&quot;
++PAGE_LANG_URL = &quot;pages/{slug}-{lang}/&quot;
++PAGE_LANG_SAVE_AS = &quot;pages/{slug}-{lang}/index.html&quot;
+ 
+-AUTHOR_URL = (&#39;author/{slug}/&#39;)
+-AUTHOR_SAVE_AS = (&#39;author/{slug}/index.html&#39;)
++AUTHOR_URL = &quot;author/{slug}/&quot;
++AUTHOR_SAVE_AS = &quot;author/{slug}/index.html&quot;
+ 
+-CATEGORY_URL = (&#39;category/{slug}/&#39;)
+-CATEGORY_SAVE_AS = (&#39;category/{slug}/index.html&#39;)
++CATEGORY_URL = &quot;category/{slug}/&quot;
++CATEGORY_SAVE_AS = &quot;category/{slug}/index.html&quot;
+ 
+-TAG_URL = (&#39;tag/{slug}/&#39;)
+-TAG_SAVE_AS = (&#39;tag/{slug}/index.html&#39;)
++TAG_URL = &quot;tag/{slug}/&quot;
++TAG_SAVE_AS = &quot;tag/{slug}/index.html&quot;
+ 
+ DEFAULT_PAGINATION = False
+ 
+-AUTHOR_NAME = u&#39;Bùi Thành Nhân&#39;
++AUTHOR_NAME = &quot;Bùi Thành Nhân&quot;
+ AUTHOR_SLUG = &quot;nhanb&quot;
+ 
+-THEME_STATIC_PATHS = [&#39;static&#39;]
++THEME_STATIC_PATHS = [&quot;static&quot;]
+ 
+-MENUITEMS = (
+-    (&#39;Blog&#39;, &#39;/&#39;),
+-)
++MENUITEMS = ((&quot;Blog&quot;, &quot;/&quot;),)
+ 
+-PLUGINS = [&#39;minify&#39;]
++PLUGINS = [&quot;minify&quot;]
+ 
+ MINIFY = {
+-    &#39;remove_comments&#39;: False,
+-    &#39;remove_all_empty_space&#39;: False,
+-    &#39;remove_optional_attribute_quotes&#39;: False
++    &quot;remove_comments&quot;: False,
++    &quot;remove_all_empty_space&quot;: False,
++    &quot;remove_optional_attribute_quotes&quot;: False,
+ }
+ 
+ FEED_DOMAIN = SITEURL
+-FEED_ALL_ATOM = &#39;feeds/all.atom.xml&#39;
+-FEED_ATOM = &#39;feeds/atom.xml&#39;
+-CATEGORY_FEED_ATOM = &#39;feeds/%s.atom.xml&#39;
++FEED_ALL_ATOM = &quot;feeds/all.atom.xml&quot;
++FEED_ATOM = &quot;feeds/atom.xml&quot;
++CATEGORY_FEED_ATOM = &quot;feeds/%s.atom.xml&quot;
+ 
+ # ========= Theme-specific settings follow =============
+ 
+-MOTHERFUCKING_DEFAULT_THUMB = &#39;images/nhan.jpg&#39;
+-MOTHERFUCKING_GREETINGS = &#39;&#39;&#39;
++MOTHERFUCKING_DEFAULT_THUMB = &quot;images/nhan.jpg&quot;
++MOTHERFUCKING_GREETINGS = &quot;&quot;&quot;
+ Why hello there, source viewer. Here&#39;s a dragon for no particular reason:
+ 
+        ^                       ^
+@@ -108,4 +102,4 @@
+   VVV  V        VVV  V
+ 
+ (ripped off from http://www.retrojunkie.com/asciiart/myth/dragons.htm)
+-&#39;&#39;&#39;
++&quot;&quot;&quot;
+diff --git a/poetry.lock b/poetry.lock
+new file mode 100644
+index 0000000..d78627b
+--- /dev/null
++++ b/poetry.lock
+@@ -0,0 +1,340 @@
++[[package]]
++category = &quot;main&quot;
++description = &quot;Fast, simple object-to-object and broadcast signaling&quot;
++name = &quot;blinker&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;1.4&quot;
++
++[[package]]
++category = &quot;main&quot;
++description = &quot;Docutils -- Python Documentation Utilities&quot;
++name = &quot;docutils&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.15&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Discover and load entry points from installed packages.&quot;
++name = &quot;entrypoints&quot;
++optional = false
++python-versions = &quot;&gt;=2.7&quot;
++version = &quot;0.3&quot;
++
++[[package]]
++category = &quot;main&quot;
++description = &quot;Standalone version of django.utils.feedgenerator&quot;
++name = &quot;feedgenerator&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;1.9&quot;
++
++[package.dependencies]
++pytz = &quot;&gt;=0a&quot;
++six = &quot;*&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;the modular source code checker: pep8, pyflakes and co&quot;
++name = &quot;flake8&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++version = &quot;3.7.8&quot;
++
++[package.dependencies]
++entrypoints = &quot;&gt;=0.3.0,&lt;0.4.0&quot;
++mccabe = &quot;&gt;=0.6.0,&lt;0.7.0&quot;
++pycodestyle = &quot;&gt;=2.5.0,&lt;2.6.0&quot;
++pyflakes = &quot;&gt;=2.1.0,&lt;2.2.0&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Clean single-source support for Python 3 and 2&quot;
++name = &quot;future&quot;
++optional = false
++python-versions = &quot;&gt;=2.6, !=3.0.*, !=3.1.*, !=3.2.*&quot;
++version = &quot;0.17.1&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Copy your docs directly to the gh-pages branch.&quot;
++name = &quot;ghp-import&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.5.5&quot;
++
++[[package]]
++category = &quot;main&quot;
++description = &quot;An HTML Minifier&quot;
++name = &quot;htmlmin&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.1.12&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Read metadata from Python packages&quot;
++name = &quot;importlib-metadata&quot;
++optional = false
++python-versions = &quot;&gt;=2.7,!=3.0,!=3.1,!=3.2,!=3.3&quot;
++version = &quot;0.18&quot;
++
++[package.dependencies]
++zipp = &quot;&gt;=0.5&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;An autocompletion tool for Python that can be used for text editors.&quot;
++name = &quot;jedi&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++version = &quot;0.14.1&quot;
++
++[package.dependencies]
++parso = &quot;&gt;=0.5.0&quot;
++
++[[package]]
++category = &quot;main&quot;
++description = &quot;A small but fast and easy to use stand-alone template engine written in pure python.&quot;
++name = &quot;jinja2&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;2.10.1&quot;
++
++[package.dependencies]
++MarkupSafe = &quot;&gt;=0.23&quot;
++
++[[package]]
++category = &quot;main&quot;
++description = &quot;Lightweight pipelining: using Python functions as pipeline jobs.&quot;
++name = &quot;joblib&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.13.2&quot;
++
++[[package]]
++category = &quot;main&quot;
++description = &quot;Python implementation of Markdown.&quot;
++name = &quot;markdown&quot;
++optional = false
++python-versions = &quot;&gt;=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*&quot;
++version = &quot;3.1.1&quot;
++
++[package.dependencies]
++setuptools = &quot;&gt;=36&quot;
++
++[[package]]
++category = &quot;main&quot;
++description = &quot;Safely add untrusted strings to HTML/XML markup.&quot;
++name = &quot;markupsafe&quot;
++optional = false
++python-versions = &quot;&gt;=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*&quot;
++version = &quot;1.1.1&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;McCabe checker, plugin for flake8&quot;
++name = &quot;mccabe&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.6.1&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;A Python Parser&quot;
++name = &quot;parso&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.5.1&quot;
++
++[[package]]
++category = &quot;main&quot;
++description = &quot;Static site generator supporting reStructuredText and Markdown source content.&quot;
++name = &quot;pelican&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;4.1.0&quot;
++
++[package.dependencies]
++blinker = &quot;*&quot;
++docutils = &quot;*&quot;
++feedgenerator = &quot;&gt;=1.9&quot;
++jinja2 = &quot;&gt;=2.7&quot;
++pygments = &quot;*&quot;
++python-dateutil = &quot;*&quot;
++pytz = &quot;&gt;=0a&quot;
++six = &quot;&gt;=1.4&quot;
++unidecode = &quot;*&quot;
++
++[[package]]
++category = &quot;main&quot;
++description = &quot;An HTML minification plugin for Pelican, the static site generator.&quot;
++name = &quot;pelican-minify&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.9&quot;
++
++[package.dependencies]
++htmlmin = &quot;&gt;=0.1.5&quot;
++joblib = &quot;&gt;=0.9&quot;
++pelican = &quot;&gt;=3.1.1&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;plugin and hook calling mechanisms for python&quot;
++name = &quot;pluggy&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++version = &quot;0.12.0&quot;
++
++[package.dependencies]
++importlib-metadata = &quot;&gt;=0.12&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Python style guide checker&quot;
++name = &quot;pycodestyle&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++version = &quot;2.5.0&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;passive checker of Python programs&quot;
++name = &quot;pyflakes&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++version = &quot;2.1.1&quot;
++
++[[package]]
++category = &quot;main&quot;
++description = &quot;Pygments is a syntax highlighting package written in Python.&quot;
++name = &quot;pygments&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
++version = &quot;2.4.2&quot;
++
++[[package]]
++category = &quot;main&quot;
++description = &quot;Extensions to the standard Python datetime module&quot;
++name = &quot;python-dateutil&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*&quot;
++version = &quot;2.8.0&quot;
++
++[package.dependencies]
++six = &quot;&gt;=1.5&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;JSON RPC 2.0 server library&quot;
++name = &quot;python-jsonrpc-server&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.2.0&quot;
++
++[package.dependencies]
++future = &quot;&gt;=0.14.0&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Python Language Server for the Language Server Protocol&quot;
++name = &quot;python-language-server&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.28.0&quot;
++
++[package.dependencies]
++future = &quot;&gt;=0.14.0&quot;
++jedi = &quot;&gt;=0.13.2,&lt;0.14.0 || &gt;0.14.0,&lt;0.15&quot;
++pluggy = &quot;*&quot;
++python-jsonrpc-server = &quot;&gt;=0.1.0&quot;
++
++[[package]]
++category = &quot;main&quot;
++description = &quot;World timezone definitions, modern and historical&quot;
++name = &quot;pytz&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;2019.1&quot;
++
++[[package]]
++category = &quot;main&quot;
++description = &quot;Python 2 and 3 compatibility utilities&quot;
++name = &quot;six&quot;
++optional = false
++python-versions = &quot;&gt;=2.6, !=3.0.*, !=3.1.*&quot;
++version = &quot;1.12.0&quot;
++
++[[package]]
++category = &quot;main&quot;
++description = &quot;Python with the SmartyPants&quot;
++name = &quot;smartypants&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;2.0.1&quot;
++
++[[package]]
++category = &quot;main&quot;
++description = &quot;Filters to enhance web typography, including support for Django &amp; Jinja templates&quot;
++name = &quot;typogrify&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;2.0.7&quot;
++
++[package.dependencies]
++smartypants = &quot;&gt;=1.8.3&quot;
++
++[[package]]
++category = &quot;main&quot;
++description = &quot;ASCII transliterations of Unicode text&quot;
++name = &quot;unidecode&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++version = &quot;1.1.1&quot;
++
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Backport of pathlib-compatible object wrapper for zip files&quot;
++name = &quot;zipp&quot;
++optional = false
++python-versions = &quot;&gt;=2.7&quot;
++version = &quot;0.5.2&quot;
++
++[metadata]
++content-hash = &quot;6bd1286fee9e5bf28284fd5d107a8238514ba464c754ea5d7a3e08e20ff875bd&quot;
++python-versions = &quot;^3.7&quot;
++
++[metadata.hashes]
++blinker = [&quot;471aee25f3992bd325afa3772f1063dbdbbca947a041b8b89466dc00d606f8b6&quot;]
++docutils = [&quot;54a349c622ff31c91cbec43b0b512f113b5b24daf00e2ea530bb1bd9aac14849&quot;, &quot;ba4584f9107571ced0d2c7f56a5499c696215ba90797849c92d395979da68521&quot;, &quot;d2ddba74835cb090a1b627d3de4e7835c628d07ee461f7b4480f51af2fe4d448&quot;]
++entrypoints = [&quot;589f874b313739ad35be6e0cd7efde2a4e9b6fea91edcc34e58ecbb8dbe56d19&quot;, &quot;c70dd71abe5a8c85e55e12c19bd91ccfeec11a6e99044204511f9ed547d48451&quot;]
++feedgenerator = [&quot;5ae05daa9cfa47fa406ee4744d0b7fa1c8a05a7a47ee0ad328ddf55327cfb106&quot;]
++flake8 = [&quot;19241c1cbc971b9962473e4438a2ca19749a7dd002dd1a946eaba171b4114548&quot;, &quot;8e9dfa3cecb2400b3738a42c54c3043e821682b9c840b0448c0503f781130696&quot;]
++future = [&quot;67045236dcfd6816dc439556d009594abf643e5eb48992e36beac09c2ca659b8&quot;]
++ghp-import = [&quot;3e924ea720e4e1f82d56753db2154bfb86067472c5830732159c3a4c4fbc75d7&quot;]
++htmlmin = [&quot;50c1ef4630374a5d723900096a961cff426dff46b48f34d194a81bbe14eca178&quot;]
++importlib-metadata = [&quot;6dfd58dfe281e8d240937776065dd3624ad5469c835248219bd16cf2e12dbeb7&quot;, &quot;cb6ee23b46173539939964df59d3d72c3e0c1b5d54b84f1d8a7e912fe43612db&quot;]
++jedi = [&quot;53c850f1a7d3cfcd306cc513e2450a54bdf5cacd7604b74e42dd1f0758eaaf36&quot;, &quot;e07457174ef7cb2342ff94fa56484fe41cec7ef69b0059f01d3f812379cb6f7c&quot;]
++jinja2 = [&quot;065c4f02ebe7f7cf559e49ee5a95fb800a9e4528727aec6f24402a5374c65013&quot;, &quot;14dd6caf1527abb21f08f86c784eac40853ba93edb79552aa1e4b8aef1b61c7b&quot;]
++joblib = [&quot;21e0c34a69ad7fde4f2b1f3402290e9ec46f545f15f1541c582edfe05d87b63a&quot;, &quot;315d6b19643ec4afd4c41c671f9f2d65ea9d787da093487a81ead7b0bac94524&quot;]
++markdown = [&quot;2e50876bcdd74517e7b71f3e7a76102050edec255b3983403f1a63e7c8a41e7a&quot;, &quot;56a46ac655704b91e5b7e6326ce43d5ef72411376588afa1dd90e881b83c7e8c&quot;]
++markupsafe = [&quot;00bc623926325b26bb9605ae9eae8a215691f33cae5df11ca5424f06f2d1f473&quot;, &quot;09027a7803a62ca78792ad89403b1b7a73a01c8cb65909cd876f7fcebd79b161&quot;, &quot;09c4b7f37d6c648cb13f9230d847adf22f8171b1ccc4d5682398e77f40309235&quot;, &quot;1027c282dad077d0bae18be6794e6b6b8c91d58ed8a8d89a89d59693b9131db5&quot;, &quot;24982cc2533820871eba85ba648cd53d8623687ff11cbb805be4ff7b4c971aff&quot;, &quot;29872e92839765e546828bb7754a68c418d927cd064fd4708fab9fe9c8bb116b&quot;, &quot;43a55c2930bbc139570ac2452adf3d70cdbb3cfe5912c71cdce1c2c6bbd9c5d1&quot;, &quot;46c99d2de99945ec5cb54f23c8cd5689f6d7177305ebff350a58ce5f8de1669e&quot;, &quot;500d4957e52ddc3351cabf489e79c91c17f6e0899158447047588650b5e69183&quot;, &quot;535f6fc4d397c1563d08b88e485c3496cf5784e927af890fb3c3aac7f933ec66&quot;, &quot;62fe6c95e3ec8a7fad637b7f3d372c15ec1caa01ab47926cfdf7a75b40e0eac1&quot;, &quot;6dd73240d2af64df90aa7c4e7481e23825ea70af4b4922f8ede5b9e35f78a3b1&quot;, &quot;717ba8fe3ae9cc0006d7c451f0bb265ee07739daf76355d06366154ee68d221e&quot;, &quot;79855e1c5b8da654cf486b830bd42c06e8780cea587384cf6545b7d9ac013a0b&quot;, &quot;7c1699dfe0cf8ff607dbdcc1e9b9af1755371f92a68f706051cc8c37d447c905&quot;, &quot;88e5fcfb52ee7b911e8bb6d6aa2fd21fbecc674eadd44118a9cc3863f938e735&quot;, &quot;8defac2f2ccd6805ebf65f5eeb132adcf2ab57aa11fdf4c0dd5169a004710e7d&quot;, &quot;98c7086708b163d425c67c7a91bad6e466bb99d797aa64f965e9d25c12111a5e&quot;, &quot;9add70b36c5666a2ed02b43b335fe19002ee5235efd4b8a89bfcf9005bebac0d&quot;, &quot;9bf40443012702a1d2070043cb6291650a0841ece432556f784f004937f0f32c&quot;, &quot;ade5e387d2ad0d7ebf59146cc00c8044acbd863725f887353a10df825fc8ae21&quot;, &quot;b00c1de48212e4cc9603895652c5c410df699856a2853135b3967591e4beebc2&quot;, &quot;b1282f8c00509d99fef04d8ba936b156d419be841854fe901d8ae224c59f0be5&quot;, &quot;b2051432115498d3562c084a49bba65d97cf251f5a331c64a12ee7e04dacc51b&quot;, &quot;ba59edeaa2fc6114428f1637ffff42da1e311e29382d81b339c1817d37ec93c6&quot;, &quot;c8716a48d94b06bb3b2524c2b77e055fb313aeb4ea620c8dd03a105574ba704f&quot;, &quot;cd5df75523866410809ca100dc9681e301e3c27567cf498077e8551b6d20e42f&quot;, &quot;e249096428b3ae81b08327a63a485ad0878de3fb939049038579ac0ef61e17e7&quot;]
++mccabe = [&quot;ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42&quot;, &quot;dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f&quot;]
++parso = [&quot;63854233e1fadb5da97f2744b6b24346d2750b85965e7e399bec1620232797dc&quot;, &quot;666b0ee4a7a1220f65d367617f2cd3ffddff3e205f3f16a0284df30e774c2a9c&quot;]
++pelican = [&quot;8049fb2411d902659ddc15c142a13f2c342e05f7f4a205f210a27e2ae8b8a81e&quot;, &quot;d2bff36b9dd1bd3b70874b9ac06fafcd2620b16c0a21adb5051c48055a2b6f80&quot;]
++pelican-minify = [&quot;a0ffa9b1f15089bc4aec4692c5feba87356d427a7946ffd8b6222ac4c7758773&quot;, &quot;fcefce477d4a24c8972ec8871738100f144e329201ab2b45aab8b5d3b7ba8e65&quot;]
++pluggy = [&quot;0825a152ac059776623854c1543d65a4ad408eb3d33ee114dff91e57ec6ae6fc&quot;, &quot;b9817417e95936bf75d85d3f8767f7df6cdde751fc40aed3bb3074cbcb77757c&quot;]
++pycodestyle = [&quot;95a2219d12372f05704562a14ec30bc76b05a5b297b21a5dfe3f6fac3491ae56&quot;, &quot;e40a936c9a450ad81df37f549d676d127b1b66000a6c500caa2b085bc0ca976c&quot;]
++pyflakes = [&quot;17dbeb2e3f4d772725c777fabc446d5634d1038f234e77343108ce445ea69ce0&quot;, &quot;d976835886f8c5b31d47970ed689944a0262b5f3afa00a5a7b4dc81e5449f8a2&quot;]
++pygments = [&quot;71e430bc85c88a430f000ac1d9b331d2407f681d6f6aec95e8bcfbc3df5b0127&quot;, &quot;881c4c157e45f30af185c1ffe8d549d48ac9127433f2c380c24b84572ad66297&quot;]
++python-dateutil = [&quot;7e6584c74aeed623791615e26efd690f29817a27c73085b78e4bad02493df2fb&quot;, &quot;c89805f6f4d64db21ed966fda138f8a5ed7a4fdbc1a8ee329ce1b74e3c74da9e&quot;]
++python-jsonrpc-server = [&quot;59ce9c9523c14c493a327b3a27ee37464a36dc2b9d8ab485ecbcedd38840380a&quot;]
++python-language-server = [&quot;3a5b2a980ea124361ab65bbbe963039d3bad4cbf4713eccfbc0cdb5cb5335609&quot;]
++pytz = [&quot;303879e36b721603cc54604edcac9d20401bdbe31e1e4fdee5b9f98d5d31dfda&quot;, &quot;d747dd3d23d77ef44c6a3526e274af6efeb0a6f1afd5a69ba4d5be4098c8e141&quot;]
++six = [&quot;3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c&quot;, &quot;d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73&quot;]
++smartypants = [&quot;8db97f7cbdf08d15b158a86037cd9e116b4cf37703d24e0419a0d64ca5808f0d&quot;]
++typogrify = [&quot;8be4668cda434163ce229d87ca273a11922cb1614cb359970b7dc96eed13cb38&quot;]
++unidecode = [&quot;1d7a042116536098d05d599ef2b8616759f02985c85b4fef50c78a5aaf10822a&quot;, &quot;2b6aab710c2a1647e928e36d69c21e76b453cd455f4e2621000e54b2a9b8cce8&quot;]
++zipp = [&quot;4970c3758f4e89a7857a973b1e2a5d75bcdc47794442f2e2dd4fe8e0466e809a&quot;, &quot;8a5712cfd3bb4248015eb3b0b3c54a5f6ee3f2425963ef2a0125b8bc40aafaec&quot;]
+diff --git a/publishconf.py b/publishconf.py
+index 43c3f00..0de997f 100644
+--- a/publishconf.py
++++ b/publishconf.py
+@@ -1,16 +1,16 @@
+ #!/usr/bin/env python
+ # -*- coding: utf-8 -*- #
+-from __future__ import unicode_literals
+-
+-# This file is only used if you use `make publish` or
+-# explicitly specify it as your config file.
+-
+ import os
+ import sys
+ sys.path.append(os.curdir)
+-from pelicanconf import *
+ 
+-SITEURL = &#39;http://www.nerdyweekly.com&#39;
++from pelicanconf import *  # noqa
++
++
++# This file is only used if you use `make publish` or
++# explicitly specify it as your config file.
++
++SITEURL = &quot;https://hi.imnhan.com&quot;
+ RELATIVE_URLS = False
+ 
+ DELETE_OUTPUT_DIRECTORY = True
+diff --git a/pyproject.toml b/pyproject.toml
+new file mode 100644
+index 0000000..09a8dbb
+--- /dev/null
++++ b/pyproject.toml
+@@ -0,0 +1,25 @@
++[tool.poetry]
++name = &quot;imnhan.com&quot;
++version = &quot;0.1.0&quot;
++description = &quot;&quot;
++authors = [&quot;nhanb &lt;nhan@nerdyweekly.com&gt;&quot;]
++
++[tool.poetry.dependencies]
++python = &quot;^3.7&quot;
++pelican = &quot;^4.1&quot;
++markdown = &quot;^3.1&quot;
++typogrify = &quot;^2.0&quot;
++pelican-minify = &quot;^0.9.0&quot;
++
++# temporary workaround for
++# https://github.com/sdispater/poetry/issues/1194#issuecomment-514974670
++docutils = &quot;=0.15&quot;
++
++[tool.poetry.dev-dependencies]
++flake8 = &quot;^3.7&quot;
++ghp-import = &quot;^0.5.5&quot;
++python-language-server = &quot;^0.28.0&quot;
++
++[build-system]
++requires = [&quot;poetry&gt;=0.12&quot;]
++build-backend = &quot;poetry.masonry.api&quot;
+diff --git a/requirements-src.txt b/requirements-src.txt
+deleted file mode 100644
+index 2ea13b1..0000000
+--- a/requirements-src.txt
++++ /dev/null
+@@ -1,7 +0,0 @@
+-pelican
+-pelican-minify
+-markdown
+-typogrify
+-
+-flake8
+-ghp-import
+diff --git a/requirements.txt b/requirements.txt
+deleted file mode 100644
+index 2ff72f9..0000000
+--- a/requirements.txt
++++ /dev/null
+@@ -1,22 +0,0 @@
+-blinker==1.4
+-docutils==0.13.1
+-feedgenerator==1.9
+-flake8==3.3.0
+-ghp-import==0.5.5
+-htmlmin==0.1.10
+-Jinja2==2.9.6
+-joblib==0.11
+-Markdown==2.6.8
+-MarkupSafe==1.0
+-mccabe==0.6.1
+-pelican==3.7.1
+-pelican-minify==0.9
+-pycodestyle==2.3.1
+-pyflakes==1.5.0
+-Pygments==2.2.0
+-python-dateutil==2.6.0
+-pytz==2017.2
+-six==1.10.0
+-smartypants==2.0.0
+-typogrify==2.0.7
+-Unidecode==0.4.20
+</pre></body></html>

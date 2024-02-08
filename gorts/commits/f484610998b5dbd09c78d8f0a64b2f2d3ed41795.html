@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[f484610998] readme: add download instructions | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / f484610998</strong><hr><pre>commit f484610998b5dbd09c78d8f0a64b2f2d3ed41795
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jun 18 15:36:16 2023 +0700
+
+    readme: add download instructions
+
+diff --git a/.builds/alpine.yml b/.builds/alpine.yml
+index db7f9b0..8278a5c 100644
+--- a/.builds/alpine.yml
++++ b/.builds/alpine.yml
+@@ -1,6 +1,8 @@
+ # Among builds.sr.ht images, alpine/arch/debian-unstable have the necessary packages.
+ # I&#39;ve tried them all: speedwise, alpine &gt; debian &gt; arch.
+ image: alpine/edge
++
++# hut needs these 3 scopes to upload artifact:
+ oauth: git.sr.ht/OBJECTS:RW git.sr.ht/REPOSITORIES:RO git.sr.ht/PROFILE:RO
+ 
+ packages:
+diff --git a/README.md b/README.md
+index c53061b..3971a82 100644
+--- a/README.md
++++ b/README.md
+@@ -8,14 +8,19 @@ # GORTS
+ passing messages through good ole pipes, the way Bell Labs intended.
+ 
+ **GORTS is a work in progress.**
+-Nothing is guaranteed to work yet. If you need to use something _now_, see
++Nothing is guaranteed to work yet. If you need something to use _now_, see
+ [ORTS][1].
+ 
+-# Windows
++# Download
++
++Go to &lt;https://git.sr.ht/~nhanb/gorts/refs&gt;, click on the latest version
++(vX.X.X), download either `GORTS-Linux.zip` or `GORTS-Windows.zip`.
++
++## Windows
+ 
+ Just download the release, unzip and run gorts.exe.
+ 
+-# Linux
++## Linux
+ 
+ Needs tcl/tk installed on your OS.
+ Assumes `tclsh` command is available in $PATH.
+</pre></body></html>

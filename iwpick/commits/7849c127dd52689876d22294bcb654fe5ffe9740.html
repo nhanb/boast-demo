@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[7849c127dd] filter list items by text input | iwpick | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">iwpick</a> / 7849c127dd</strong><hr><pre>commit 7849c127dd52689876d22294bcb654fe5ffe9740
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 29 00:38:00 2022 +0700
+
+    filter list items by text input
+
+diff --git a/main.go b/main.go
+index 7fb7f67..3c71e47 100644
+--- a/main.go
++++ b/main.go
+@@ -78,19 +78,34 @@ func GetNetworks() (networks []Network) {
+ 	return networks
+ }
+ 
++func drawListItems(networks []Network, list *tview.List, query string) {
++	list.Clear()
++	query = strings.ToLower(query)
++
++	for _, nw := range networks {
++		if query != &quot;&quot; &amp;&amp; !strings.Contains(strings.ToLower(nw.SSID), query) {
++			continue
++		}
++		currentStr := &quot;&quot;
++		if nw.IsCurrent {
++			currentStr = &quot; (*)&quot;
++		}
++		itemName := fmt.Sprintf(
++			&quot;[%d]%s %s (%s)&quot;, nw.Strength, currentStr, nw.SSID, nw.Security,
++		)
++		list.AddItem(itemName, &quot;&quot;, 0, nil)
++	}
++}
++
+ func main() {
+ 	networks := GetNetworks()
+ 	fmt.Println(networks)
+ 
+-	app := tview.NewApplication()
++	app := tview.NewApplication().EnableMouse(false)
+ 
+ 	input := tview.NewInputField().SetLabel(&quot;Filter: &quot;)
+ 	list := tview.NewList().ShowSecondaryText(false)
+-	for _, nw := range networks {
+-		list.AddItem(
+-			fmt.Sprintf(&quot;[%d] %s (%s)&quot;, nw.Strength, nw.SSID, nw.Security),
+-			&quot;&quot;, 0, nil)
+-	}
++	drawListItems(networks, list, &quot;&quot;)
+ 
+ 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
+ 	flex.AddItem(input, 2, 1, true)
+@@ -105,10 +120,16 @@ func main() {
+ 			}
+ 		case tcell.KeyDown:
+ 			list.SetCurrentItem(list.GetCurrentItem() + 1)
++		case tcell.KeyEsc:
++			app.Stop()
+ 		}
+ 		return event
+ 	})
+ 
++	input.SetChangedFunc(func(query string) {
++		drawListItems(networks, list, query)
++	})
++
+ 	if err := app.SetRoot(flex, true).SetFocus(input).Run(); err != nil {
+ 		panic(err)
+ 	}
+</pre></body></html>

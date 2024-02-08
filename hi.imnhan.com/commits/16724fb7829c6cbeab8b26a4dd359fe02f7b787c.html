@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[16724fb782] update proper ARTICLE_PATHS, remove cruft | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 16724fb782</strong><hr><pre>commit 16724fb7829c6cbeab8b26a4dd359fe02f7b787c
+Author: nhanb &lt;nhan@nerdyweekly.com&gt;
+Date:   Sat Apr 23 10:27:43 2016 +0700
+
+    update proper ARTICLE_PATHS, remove cruft
+    
+    Limit article parsing to `posts/` only, effectively prevents pelican
+    from parsing static stuff from `extras/` (it previously tried to do so
+    which eventually failed to copy the *.html static files altogether)
+    
+    Also remove unnecessary PLUGIN_PATH and cal.html.
+
+diff --git a/content/extra/cal.html b/content/extra/cal.html
+deleted file mode 100644
+index 9eacd24..0000000
+--- a/content/extra/cal.html
++++ /dev/null
+@@ -1,10 +0,0 @@
+-&lt;style type=&quot;text/css&quot;&gt;
+-
+-iframe {
+-    width: 100%;
+-    height: 95%;
+-}
+-
+-&lt;/style&gt;
+-
+-&lt;iframe src=&quot;https://www.google.com/calendar/embed?title=Nhan&#39;s%20Calendar&amp;amp;mode=WEEK&amp;amp;height=600&amp;amp;wkst=2&amp;amp;bgcolor=%23FFFFFF&amp;amp;src=6sa929h4a1h7o000g28f5eaq4c%40group.calendar.google.com&amp;amp;color=%23875509&amp;amp;src=thanhnhan483%40gmail.com&amp;amp;color=%232952A3&amp;amp;src=hei267e0fnqprtcla140cdu46o%40group.calendar.google.com&amp;amp;color=%2328754E&amp;amp;src=8eo4ra1qfujf31niqa3bdnoaro%40group.calendar.google.com&amp;amp;color=%23711616&amp;amp;ctz=Asia%2FSaigon&quot; style=&quot; border-width:0 &quot; width=&quot;800&quot; height=&quot;600&quot; frameborder=&quot;0&quot; scrolling=&quot;no&quot;&gt;&lt;/iframe&gt;
+diff --git a/content/bypass-rmit-domain-blocker-to-watch-hdviet.md b/content/posts/bypass-rmit-domain-blocker-to-watch-hdviet.md
+similarity index 100%
+rename from content/bypass-rmit-domain-blocker-to-watch-hdviet.md
+rename to content/posts/bypass-rmit-domain-blocker-to-watch-hdviet.md
+diff --git a/content/fix-rmit-wifi-issue-with-ubuntu-13-04.md b/content/posts/fix-rmit-wifi-issue-with-ubuntu-13-04.md
+similarity index 100%
+rename from content/fix-rmit-wifi-issue-with-ubuntu-13-04.md
+rename to content/posts/fix-rmit-wifi-issue-with-ubuntu-13-04.md
+diff --git a/content/have-you-built-anything-cool-.md b/content/posts/have-you-built-anything-cool-.md
+similarity index 100%
+rename from content/have-you-built-anything-cool-.md
+rename to content/posts/have-you-built-anything-cool-.md
+diff --git a/content/how-to-install-pyqt5-on-virtualenv-on-ubuntu-14.04.md b/content/posts/how-to-install-pyqt5-on-virtualenv-on-ubuntu-14.04.md
+similarity index 100%
+rename from content/how-to-install-pyqt5-on-virtualenv-on-ubuntu-14.04.md
+rename to content/posts/how-to-install-pyqt5-on-virtualenv-on-ubuntu-14.04.md
+diff --git a/content/i-did-not-sign-that-stupid-petition.md b/content/posts/i-did-not-sign-that-stupid-petition.md
+similarity index 100%
+rename from content/i-did-not-sign-that-stupid-petition.md
+rename to content/posts/i-did-not-sign-that-stupid-petition.md
+diff --git a/content/ibus-is-dead-to-me-use-fcitx-instead.md b/content/posts/ibus-is-dead-to-me-use-fcitx-instead.md
+similarity index 100%
+rename from content/ibus-is-dead-to-me-use-fcitx-instead.md
+rename to content/posts/ibus-is-dead-to-me-use-fcitx-instead.md
+diff --git a/content/installing-programs-in-ubuntu.md b/content/posts/installing-programs-in-ubuntu.md
+similarity index 100%
+rename from content/installing-programs-in-ubuntu.md
+rename to content/posts/installing-programs-in-ubuntu.md
+diff --git a/content/introducing-pytaku.md b/content/posts/introducing-pytaku.md
+similarity index 100%
+rename from content/introducing-pytaku.md
+rename to content/posts/introducing-pytaku.md
+diff --git a/content/italic-text-in-vim-tmux-gnome-terminal.md b/content/posts/italic-text-in-vim-tmux-gnome-terminal.md
+similarity index 100%
+rename from content/italic-text-in-vim-tmux-gnome-terminal.md
+rename to content/posts/italic-text-in-vim-tmux-gnome-terminal.md
+diff --git a/content/look-ma-no-stock-theme.md b/content/posts/look-ma-no-stock-theme.md
+similarity index 100%
+rename from content/look-ma-no-stock-theme.md
+rename to content/posts/look-ma-no-stock-theme.md
+diff --git a/content/modern-vim-plugin-management-pathogen-vs-vundle.md b/content/posts/modern-vim-plugin-management-pathogen-vs-vundle.md
+similarity index 100%
+rename from content/modern-vim-plugin-management-pathogen-vs-vundle.md
+rename to content/posts/modern-vim-plugin-management-pathogen-vs-vundle.md
+diff --git a/content/modern-vim-plugin-management-pathogen-vs-vundle_vi.md b/content/posts/modern-vim-plugin-management-pathogen-vs-vundle_vi.md
+similarity index 100%
+rename from content/modern-vim-plugin-management-pathogen-vs-vundle_vi.md
+rename to content/posts/modern-vim-plugin-management-pathogen-vs-vundle_vi.md
+diff --git a/content/my-first-diy-fightstick-2.md b/content/posts/my-first-diy-fightstick-2.md
+similarity index 100%
+rename from content/my-first-diy-fightstick-2.md
+rename to content/posts/my-first-diy-fightstick-2.md
+diff --git a/content/my-first-diy-fightstick.md b/content/posts/my-first-diy-fightstick.md
+similarity index 100%
+rename from content/my-first-diy-fightstick.md
+rename to content/posts/my-first-diy-fightstick.md
+diff --git a/content/set-up-node-webkit-development-environment.md b/content/posts/set-up-node-webkit-development-environment.md
+similarity index 100%
+rename from content/set-up-node-webkit-development-environment.md
+rename to content/posts/set-up-node-webkit-development-environment.md
+diff --git a/content/virtualenvwrapper-with-python2-python3.md b/content/posts/virtualenvwrapper-with-python2-python3.md
+similarity index 100%
+rename from content/virtualenvwrapper-with-python2-python3.md
+rename to content/posts/virtualenvwrapper-with-python2-python3.md
+diff --git a/content/what-i-did-after-installing-manjaro.md b/content/posts/what-i-did-after-installing-manjaro.md
+similarity index 100%
+rename from content/what-i-did-after-installing-manjaro.md
+rename to content/posts/what-i-did-after-installing-manjaro.md
+diff --git a/content/why-i-use-linux-automation.md b/content/posts/why-i-use-linux-automation.md
+similarity index 100%
+rename from content/why-i-use-linux-automation.md
+rename to content/posts/why-i-use-linux-automation.md
+diff --git a/pelicanconf.py b/pelicanconf.py
+index a063325..ed7ad91 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -26,17 +26,18 @@
+     &#39;extra/README.markdown&#39;: {&#39;path&#39;: &#39;README.markdown&#39;},
+     &#39;extra/favicon.ico&#39;: {&#39;path&#39;: &#39;favicon.ico&#39;},
+     &#39;extra/favicon.png&#39;: {&#39;path&#39;: &#39;favicon.png&#39;},
+-    &#39;extra/cal.html&#39;: {&#39;path&#39;: &#39;calendar/index.html&#39;},
+     &#39;extra/404.html&#39;: {&#39;path&#39;: &#39;404.html&#39;},
+     &#39;extra/google3f40dbd543a603fa.html&#39;:
+     {&#39;path&#39;: &#39;google3f40dbd543a603fa.html&#39;}
+ }
+ 
++ARTICLE_PATHS = [&#39;posts&#39;]
+ ARTICLE_URL = &#39;posts/{slug}/&#39;
+ ARTICLE_SAVE_AS = &#39;posts/{slug}/index.html&#39;
+ ARTICLE_LANG_URL = &#39;posts/{slug}-{lang}/&#39;
+ ARTICLE_LANG_SAVE_AS = &#39;posts/{slug}-{lang}/index.html&#39;
+ 
++PAGE_PATHS = [&#39;pages&#39;]
+ PAGE_URL = (&#39;pages/{slug}/&#39;)
+ PAGE_SAVE_AS = (&#39;pages/{slug}/index.html&#39;)
+ PAGE_LANG_URL = (&#39;pages/{slug}-{lang}/&#39;)
+@@ -62,7 +63,6 @@
+     (&#39;Blog&#39;, &#39;/&#39;),
+ )
+ 
+-PLUGIN_PATH = &#39;/home/nhanb/open-source/pelican-plugins&#39;
+ PLUGINS = [&#39;minify&#39;]
+ 
+ MINIFY = {
+</pre></body></html>

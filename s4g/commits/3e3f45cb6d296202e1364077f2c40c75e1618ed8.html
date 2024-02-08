@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[3e3f45cb6d] implement standard PageTypes | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 3e3f45cb6d</strong><hr><pre>commit 3e3f45cb6d296202e1364077f2c40c75e1618ed8
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 23 17:18:06 2023 +0700
+
+    implement standard PageTypes
+    
+    TODO: write actual series-index template
+
+diff --git a/Makefile b/Makefile
+index 1f406a3..d9bbd9c 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,8 @@ build:
+ 	go build -o dist/
+ 
+ watch:
+-	fd -E docs -E theme | entr -rc go run . serve -f docs -p 8000
++	fd -E docs -E theme | entr -rc -s \
++		&#39;go build -o dist/ &amp;&amp; ./dist/s4g serve -f docs -p 8000&#39;
+ 
+ watch-theme:
+ 	find theme/* | entr -c rsync -av theme/ docs/_s4g/theme/
+diff --git a/docs/index.dj b/docs/index.dj
+index d75a6e5..ea36263 100644
+--- a/docs/index.dj
++++ b/docs/index.dj
+@@ -1,4 +1,4 @@
+ Title: Home
+ ShowInFeed: false
+-Templates: $base.tmpl, $includes.tmpl, $home.tmpl
++PageType: home
+ ---
+diff --git a/docs/scale/index.dj b/docs/scale/index.dj
+index 1aa7db7..73a7ad2 100644
+--- a/docs/scale/index.dj
++++ b/docs/scale/index.dj
+@@ -1,5 +1,6 @@
+ Title: I&#39;m Going To Scale My Foot Up Your Ass
+ PostedAt: 2008-04-24
++PageType: custom
+ Templates: $base.tmpl, $includes.tmpl, scale.tmpl
+ ---
+ 
+diff --git a/main.go b/main.go
+index 17c4b12..56a35a1 100644
+--- a/main.go
++++ b/main.go
+@@ -267,15 +267,16 @@ type Article struct {
+ }
+ 
+ func (a *Article) ComputeDerivedFields(addr, root string) {
+-	a.WebPath = computeWebPath(root, a.OutputPath)
+-	a.TemplatePaths = computeTemplatePaths(a.Path, a.Templates)
++	a.computeWebPath(root)
++	a.computeTemplatePaths()
++
+ 	if a.Thumb != &quot;&quot; {
+ 		a.OpenGraphImage = addr + root + filepath.Dir(a.Path) + &quot;/&quot; + a.Thumb
+ 	}
+ }
+ 
+-func computeWebPath(root string, outputPath string) string {
+-	webPath := root + outputPath
++func (a *Article) computeWebPath(root string) {
++	webPath := root + a.OutputPath
+ 	if strings.HasSuffix(webPath, &quot;/index.html&quot;) {
+ 		webPath = strings.TrimSuffix(webPath, &quot;index.html&quot;)
+ 	}
+@@ -286,20 +287,47 @@ func computeWebPath(root string, outputPath string) string {
+ 		escaped[i] = url.PathEscape(parts[i])
+ 	}
+ 
+-	return strings.Join(escaped, &quot;/&quot;)
++	a.WebPath = strings.Join(escaped, &quot;/&quot;)
+ }
+ 
+-func computeTemplatePaths(articlePath string, templates []string) []string {
++func (a *Article) computeTemplatePaths() {
++	var templates []string
++	switch a.PageType {
++	case PTPost:
++		templates = []string{
++			&quot;$base.tmpl&quot;,
++			&quot;$includes.tmpl&quot;,
++			&quot;$post.tmpl&quot;,
++		}
++	case PTHome:
++		templates = []string{
++			&quot;$base.tmpl&quot;,
++			&quot;$includes.tmpl&quot;,
++			&quot;$home.tmpl&quot;,
++		}
++	case PTSeriesIndex:
++		templates = []string{
++			&quot;$base.tmpl&quot;,
++			&quot;$includes.tmpl&quot;,
++			&quot;$series-index.tmpl&quot;,
++		}
++	case PTCustom:
++		templates = a.Templates
++	default:
++		panic(fmt.Sprintf(&quot;Invalid PageType: %v&quot;, a.PageType))
++	}
++
+ 	paths := make([]string, len(templates))
+ 	for i := 0; i &lt; len(paths); i++ {
+ 		p := templates[i]
+ 		if strings.HasPrefix(p, &quot;$&quot;) {
+ 			paths[i] = ThemePath + &quot;/&quot; + strings.TrimPrefix(p, &quot;$&quot;)
+ 		} else {
+-			paths[i] = filepath.Join(filepath.Dir(articlePath), p)
++			paths[i] = filepath.Join(filepath.Dir(a.Path), p)
+ 		}
+ 	}
+-	return paths
++
++	a.TemplatePaths = paths
+ }
+ 
+ func (a *Article) WriteHtmlFile(
+@@ -314,7 +342,7 @@ func (a *Article) WriteHtmlFile(
+ 	// TODO: should probably reuse the template object for common cases
+ 	if err != nil {
+ 		return fmt.Errorf(
+-			&quot;Failed to parse templates (%v): %w&quot;, a.Templates, err,
++			&quot;Failed to parse templates (%v): %w&quot;, a.TemplatePaths, err,
+ 		)
+ 	}
+ 
+@@ -343,7 +371,7 @@ func (a *Article) WriteHtmlFile(
+ 		ThemePath:      site.Root + ThemePath,
+ 	})
+ 	if err != nil {
+-		return fmt.Errorf(&quot;Failed to execute templates (%v): %w&quot;, a.Templates, err)
++		return fmt.Errorf(&quot;Failed to execute templates (%v): %w&quot;, a.TemplatePaths, err)
+ 	}
+ 	fullHtml := buf.Bytes()
+ 
+@@ -377,11 +405,7 @@ func findArticles(fsys writablefs.FS, site *SiteMetadata) (map[string]Article, e
+ 		}
+ 
+ 		meta := ArticleMetadata{
+-			Templates: []string{
+-				&quot;$base.tmpl&quot;,
+-				&quot;$includes.tmpl&quot;,
+-				&quot;$post.tmpl&quot;,
+-			},
++			PageType:   PTPost,
+ 			ShowInFeed: true,
+ 		}
+ 		userErr := UnmarshalMetadata(metaText, &amp;meta)
+@@ -390,6 +414,22 @@ func findArticles(fsys writablefs.FS, site *SiteMetadata) (map[string]Article, e
+ 			return fmt.Errorf(&quot;findArticles failed to unmarshall metadata: %w&quot;, userErr)
+ 		}
+ 
++		if meta.PageType != PTCustom &amp;&amp; len(meta.Templates) &gt; 0 {
++			return &amp;errs.UserErr{
++				File:  path,
++				Field: &quot;PageType&quot;,
++				Msg:   `you must set &quot;PageType: custom&quot; in order to use custom Templates`,
++			}
++		}
++
++		if meta.PageType == PTCustom &amp;&amp; len(meta.Templates) == 0 {
++			return &amp;errs.UserErr{
++				File:  path,
++				Field: &quot;Templates&quot;,
++				Msg:   `custom PageType requires a non-empty Templates list`,
++			}
++		}
++
+ 		article := Article{
+ 			Fs:              fsys,
+ 			Path:            path,
+diff --git a/makesite.go b/makesite.go
+index 11f0725..259491d 100644
+--- a/makesite.go
++++ b/makesite.go
+@@ -32,7 +32,7 @@ func makeSite(path string, meta SiteMetadata) error {
+ 	// Write default index page
+ 	indexData := []byte(`Title: Home
+ ShowInFeed: false
+-Templates: $base.tmpl, $includes.tmpl, $home.tmpl
++PageType: home
+ ---
+ `)
+ 	err = os.WriteFile(filepath.Join(path, &quot;index.dj&quot;), indexData, 0664)
+diff --git a/metadata.go b/metadata.go
+index bf9e52e..98981dc 100644
+--- a/metadata.go
++++ b/metadata.go
+@@ -29,11 +29,51 @@ type SiteMetadata struct {
+ 	AuthorTwitter string
+ }
+ 
++type PageType int
++
++const (
++	PTPost PageType = iota
++	PTHome
++	PTSeriesIndex
++	PTCustom
++)
++
++func (t PageType) String() string {
++	switch t {
++	case PTPost:
++		return &quot;post&quot;
++	case PTHome:
++		return &quot;home&quot;
++	case PTSeriesIndex:
++		return &quot;series-index&quot;
++	case PTCustom:
++		return &quot;custom&quot;
++	default:
++		panic(fmt.Sprintf(&quot;unexpected value: %d&quot;, t))
++	}
++}
++
++func ParsePageType(name string) (PageType, error) {
++	switch name {
++	case &quot;post&quot;:
++		return PTPost, nil
++	case &quot;home&quot;:
++		return PTHome, nil
++	case &quot;series-index&quot;:
++		return PTSeriesIndex, nil
++	case &quot;custom&quot;:
++		return PTCustom, nil
++	default:
++		return -1, fmt.Errorf(`&quot;%s&quot; is not a valid PageType`, name)
++	}
++}
++
+ type ArticleMetadata struct {
+ 	Title       string
+ 	Description string
+ 	IsDraft     bool
+ 	PostedAt    time.Time
++	PageType    PageType
+ 	Templates   []string
+ 	ShowInFeed  bool
+ 	Thumb       string
+@@ -149,6 +189,16 @@ func UnmarshalMetadata(data []byte, dest any) *errs.UserErr {
+ 				}
+ 				s.Field(i).Set(reflect.ValueOf(trimmed))
+ 
++			case &quot;main.PageType&quot;:
++				pt, err := ParsePageType(val)
++				if err != nil {
++					return &amp;errs.UserErr{
++						Field: fieldName,
++						Msg:   err.Error(),
++					}
++				}
++				s.Field(i).Set(reflect.ValueOf(pt))
++
+ 			default:
+ 				panic(fmt.Sprintf(
+ 					`unsupported metadata field type: &quot;%s&quot;`,
+</pre></body></html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[9131f4ffee] embed animation frames | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 9131f4ffee</strong><hr><pre>commit 9131f4ffeeeac6b339f4b90c19077883c6230185
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jun 28 23:44:16 2022 +0700
+
+    embed animation frames
+
+diff --git a/main.go b/main.go
+index 679fa64..0ca85df 100644
+--- a/main.go
++++ b/main.go
+@@ -1,18 +1,34 @@
+ package main
+ 
+ import (
++	&quot;bytes&quot;
++	&quot;embed&quot;
+ 	&quot;fmt&quot;
+ 	_ &quot;image/png&quot;
+ 	&quot;log&quot;
++	&quot;path/filepath&quot;
+ 
+ 	&quot;github.com/hajimehoshi/ebiten/v2&quot;
+ 	&quot;github.com/hajimehoshi/ebiten/v2/ebitenutil&quot;
+ )
+ 
++//go:embed sprites/idle/*
++var IdleSprites embed.FS
++
++//go:embed sprites/right-click/*
++var RightClickSprites embed.FS
++
++//go:embed sprites/drag/*
++var DragSprites embed.FS
++
++type Anim struct {
++	Frames []*ebiten.Image
++}
++
+ type Game struct {
++	CurrentAnim  *Anim
+ 	CurrentFrame int
+ 	Ticks        int
+-	Sprites      []*ebiten.Image
+ }
+ 
+ func (g *Game) Update() error {
+@@ -20,7 +36,7 @@ func (g *Game) Update() error {
+ 	if g.Ticks &gt;= 10 {
+ 		g.Ticks = 0
+ 		g.CurrentFrame++
+-		if g.CurrentFrame &gt; 3 {
++		if g.CurrentFrame &gt;= len(g.CurrentAnim.Frames) {
+ 			g.CurrentFrame = 0
+ 		}
+ 	}
+@@ -36,28 +52,39 @@ func (g *Game) Draw(screen *ebiten.Image) {
+ 			g.Ticks, g.CurrentFrame, x, y,
+ 		),
+ 	)
+-	screen.DrawImage(g.Sprites[g.CurrentFrame], nil)
++	screen.DrawImage(g.CurrentAnim.Frames[g.CurrentFrame], nil)
+ }
+ 
+ func (g *Game) Layout(outsideWidth, outsideHeight int) (w, h int) {
+ 	return outsideWidth / 2, outsideHeight / 2
+ }
+ 
+-func PanicIfErr(err error) {
+-	if err != nil {
+-		log.Fatal(err)
++func NewAnim(sprites embed.FS, subdir string) *Anim {
++	files, err := sprites.ReadDir(filepath.Join(&quot;sprites&quot;, subdir))
++	PanicIfErr(err)
++	var frames []*ebiten.Image
++	for _, direntry := range files {
++		fname := direntry.Name()
++		frame, err := sprites.ReadFile(filepath.Join(&quot;sprites&quot;, subdir, fname))
++		PanicIfErr(err)
++		img, _, err := ebitenutil.NewImageFromReader(bytes.NewReader(frame))
++		PanicIfErr(err)
++		frames = append(frames, img)
+ 	}
++	return &amp;Anim{frames}
++}
++
++var Idle, RightClick, Drag *Anim
++
++func init() {
++	Idle = NewAnim(IdleSprites, &quot;idle&quot;)
++	Drag = NewAnim(DragSprites, &quot;drag&quot;)
++	RightClick = NewAnim(RightClickSprites, &quot;right-click&quot;)
+ }
+ 
+ func main() {
+ 	var game Game
+-
+-	// Should probably use go:embed somehow here
+-	for i := 0; i &lt;= 3; i++ {
+-		img, _, err := ebitenutil.NewImageFromFile(fmt.Sprintf(&quot;sprites/idle-%d.png&quot;, i))
+-		PanicIfErr(err)
+-		game.Sprites = append(game.Sprites, img)
+-	}
++	game.CurrentAnim = Idle
+ 
+ 	ebiten.SetWindowSize(360, 360)
+ 	ebiten.SetWindowTitle(&quot;Shark!&quot;)
+@@ -68,3 +95,9 @@ func main() {
+ 		log.Fatal(err)
+ 	}
+ }
++
++func PanicIfErr(err error) {
++	if err != nil {
++		log.Fatal(err)
++	}
++}
+diff --git a/sprites/drag/00.png b/sprites/drag/00.png
+new file mode 100644
+index 0000000..3650dce
+Binary files /dev/null and b/sprites/drag/00.png differ
+diff --git a/sprites/drag/01.png b/sprites/drag/01.png
+new file mode 100644
+index 0000000..edf53cf
+Binary files /dev/null and b/sprites/drag/01.png differ
+diff --git a/sprites/drag/02.png b/sprites/drag/02.png
+new file mode 100644
+index 0000000..f41e29b
+Binary files /dev/null and b/sprites/drag/02.png differ
+diff --git a/sprites/drag/03.png b/sprites/drag/03.png
+new file mode 100644
+index 0000000..9fbf55b
+Binary files /dev/null and b/sprites/drag/03.png differ
+diff --git a/sprites/idle-0.png b/sprites/idle/00.png
+similarity index 100%
+rename from sprites/idle-0.png
+rename to sprites/idle/00.png
+diff --git a/sprites/idle-1.png b/sprites/idle/01.png
+similarity index 100%
+rename from sprites/idle-1.png
+rename to sprites/idle/01.png
+diff --git a/sprites/idle-2.png b/sprites/idle/02.png
+similarity index 100%
+rename from sprites/idle-2.png
+rename to sprites/idle/02.png
+diff --git a/sprites/idle-3.png b/sprites/idle/03.png
+similarity index 100%
+rename from sprites/idle-3.png
+rename to sprites/idle/03.png
+diff --git a/sprites/right-click/00.png b/sprites/right-click/00.png
+new file mode 100644
+index 0000000..638db16
+Binary files /dev/null and b/sprites/right-click/00.png differ
+diff --git a/sprites/right-click/01.png b/sprites/right-click/01.png
+new file mode 100644
+index 0000000..13b56ef
+Binary files /dev/null and b/sprites/right-click/01.png differ
+diff --git a/sprites/right-click/02.png b/sprites/right-click/02.png
+new file mode 100644
+index 0000000..ee73776
+Binary files /dev/null and b/sprites/right-click/02.png differ
+diff --git a/sprites/right-click/03.png b/sprites/right-click/03.png
+new file mode 100644
+index 0000000..16c287b
+Binary files /dev/null and b/sprites/right-click/03.png differ
+diff --git a/sprites/right-click/04.png b/sprites/right-click/04.png
+new file mode 100644
+index 0000000..e64f959
+Binary files /dev/null and b/sprites/right-click/04.png differ
+diff --git a/sprites/right-click/05.png b/sprites/right-click/05.png
+new file mode 100644
+index 0000000..fea1fb9
+Binary files /dev/null and b/sprites/right-click/05.png differ
+diff --git a/sprites/right-click/06.png b/sprites/right-click/06.png
+new file mode 100644
+index 0000000..e64f959
+Binary files /dev/null and b/sprites/right-click/06.png differ
+diff --git a/sprites/right-click/07.png b/sprites/right-click/07.png
+new file mode 100644
+index 0000000..16c287b
+Binary files /dev/null and b/sprites/right-click/07.png differ
+diff --git a/sprites/right-click/08.png b/sprites/right-click/08.png
+new file mode 100644
+index 0000000..cdb0a53
+Binary files /dev/null and b/sprites/right-click/08.png differ
+diff --git a/sprites/right-click/09.png b/sprites/right-click/09.png
+new file mode 100644
+index 0000000..bc59569
+Binary files /dev/null and b/sprites/right-click/09.png differ
+diff --git a/sprites/right-click/10.png b/sprites/right-click/10.png
+new file mode 100644
+index 0000000..cdb0a53
+Binary files /dev/null and b/sprites/right-click/10.png differ
+diff --git a/sprites/right-click/11.png b/sprites/right-click/11.png
+new file mode 100644
+index 0000000..eafe734
+Binary files /dev/null and b/sprites/right-click/11.png differ
+diff --git a/sprites/right-click/12.png b/sprites/right-click/12.png
+new file mode 100644
+index 0000000..eafe734
+Binary files /dev/null and b/sprites/right-click/12.png differ
+diff --git a/sprites/right-click/13.png b/sprites/right-click/13.png
+new file mode 100644
+index 0000000..ef0a068
+Binary files /dev/null and b/sprites/right-click/13.png differ
+diff --git a/sprites/right-click/14.png b/sprites/right-click/14.png
+new file mode 100644
+index 0000000..c6abda5
+Binary files /dev/null and b/sprites/right-click/14.png differ
+diff --git a/sprites/right-click/15.png b/sprites/right-click/15.png
+new file mode 100644
+index 0000000..ee73776
+Binary files /dev/null and b/sprites/right-click/15.png differ
+</pre></body></html>

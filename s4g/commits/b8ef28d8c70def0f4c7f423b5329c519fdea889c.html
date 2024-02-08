@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b8ef28d8c7] link to atom feed | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / b8ef28d8c7</strong><hr><pre>commit b8ef28d8c70def0f4c7f423b5329c519fdea889c
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jul 4 00:41:44 2023 +0700
+
+    link to atom feed
+
+diff --git a/www/_theme/base.tmpl b/www/_theme/base.tmpl
+index 7e44d28..243c903 100644
+--- a/www/_theme/base.tmpl
++++ b/www/_theme/base.tmpl
+@@ -5,6 +5,7 @@
+   &lt;meta charset=&quot;utf-8&quot; /&gt;
+   &lt;title&gt;{{.Title}}&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;{{.Feed}}&quot;&gt;
+   &lt;style&gt;
+     html {
+       font-family: serif;
+@@ -12,9 +13,6 @@
+       margin: auto;
+     }
+   &lt;/style&gt;
+-{{if .Feed}}
+-  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;{{.Feed}}&quot;&gt;
+-{{end}}
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+diff --git a/www/_theme/feed.svg b/www/_theme/feed.svg
+new file mode 100644
+index 0000000..1a44b51
+--- /dev/null
++++ b/www/_theme/feed.svg
+@@ -0,0 +1,16 @@
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
++&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; id=&quot;RSSicon&quot; viewBox=&quot;0 0 8 8&quot; width=&quot;256&quot; height=&quot;256&quot;&gt;
++
++  &lt;title&gt;RSS feed icon&lt;/title&gt;
++
++  &lt;style type=&quot;text/css&quot;&gt;
++    .button {stroke: none; fill: orange;}
++    .symbol {stroke: none; fill: white;}
++  &lt;/style&gt;
++
++  &lt;rect class=&quot;button&quot; width=&quot;8&quot; height=&quot;8&quot; rx=&quot;1.5&quot;/&gt;
++  &lt;circle class=&quot;symbol&quot; cx=&quot;2&quot; cy=&quot;6&quot; r=&quot;1&quot;/&gt;
++  &lt;path class=&quot;symbol&quot; d=&quot;m 1,4 a 3,3 0 0 1 3,3 h 1 a 4,4 0 0 0 -4,-4 z&quot;/&gt;
++  &lt;path class=&quot;symbol&quot; d=&quot;m 1,2 a 5,5 0 0 1 5,5 h 1 a 6,6 0 0 0 -6,-6 z&quot;/&gt;
++
++&lt;/svg&gt;
+diff --git a/www/_theme/home.tmpl b/www/_theme/home.tmpl
+index 287e62a..09a71d4 100644
+--- a/www/_theme/home.tmpl
++++ b/www/_theme/home.tmpl
+@@ -6,16 +6,17 @@
+ 
+ &lt;hr&gt;
+ 
+-{{if .Pages}}
+-  &lt;div class=&quot;pages&quot;&gt;
+-    &lt;a href=&quot;{{$.Site.HomePath}}&quot;&gt;Home&lt;/a&gt;
+-    {{range .Pages}}
+-    &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Meta.Title}}&lt;/a&gt;
+-    {{end}}
+-  &lt;/div&gt;
+-
+-  &lt;hr&gt;
++&lt;div class=&quot;pages&quot;&gt;
++  &lt;a href=&quot;{{.Site.HomePath}}&quot;&gt;Home&lt;/a&gt;
++{{range .Pages}}
++  &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Meta.Title}}&lt;/a&gt;
+ {{end}}
++  &lt;a class=&quot;feed-link&quot; href=&quot;{{.Feed}}&quot;&gt;
++    &lt;img src=&quot;{{.Site.HomePath}}_theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
++  &lt;/a&gt;
++&lt;/div&gt;
++
++&lt;hr&gt;
+ 
+ &lt;p&gt;All posts, newest first:&lt;/p&gt;
+ 
+@@ -38,6 +39,16 @@
+   margin-top: 0;
+ }
+ 
++.feed-link img {
++  height: 1rem;
++}
++.feed-link {
++  float: right;
++}
++hr {
++  clear: both;
++}
++
+ .pages a {
+   margin-right: 0.5rem;
+ }
+diff --git a/www/about/index.html b/www/about/index.html
+index cb89f40..1bd0517 100644
+--- a/www/about/index.html
++++ b/www/about/index.html
+@@ -5,6 +5,7 @@
+   &lt;meta charset=&quot;utf-8&quot; /&gt;
+   &lt;title&gt;About | CoolZone&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+   &lt;style&gt;
+     html {
+       font-family: serif;
+@@ -12,9 +13,6 @@
+       margin: auto;
+     }
+   &lt;/style&gt;
+-
+-  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+diff --git a/www/hello/index.html b/www/hello/index.html
+index 514635d..121a1e2 100644
+--- a/www/hello/index.html
++++ b/www/hello/index.html
+@@ -5,6 +5,7 @@
+   &lt;meta charset=&quot;utf-8&quot; /&gt;
+   &lt;title&gt;Hello | CoolZone&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+   &lt;style&gt;
+     html {
+       font-family: serif;
+@@ -12,9 +13,6 @@
+       margin: auto;
+     }
+   &lt;/style&gt;
+-
+-  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+diff --git a/www/index.html b/www/index.html
+index d9bf2af..e85d410 100644
+--- a/www/index.html
++++ b/www/index.html
+@@ -5,6 +5,7 @@
+   &lt;meta charset=&quot;utf-8&quot; /&gt;
+   &lt;title&gt;CoolZone - Cool people only.&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+   &lt;style&gt;
+     html {
+       font-family: serif;
+@@ -12,9 +13,6 @@
+       margin: auto;
+     }
+   &lt;/style&gt;
+-
+-  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+@@ -26,16 +24,17 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ 
+ &lt;hr&gt;
+ 
++&lt;div class=&quot;pages&quot;&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+ 
+-  &lt;div class=&quot;pages&quot;&gt;
+-    &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+-    
+-    &lt;a href=&quot;about/index.html&quot;&gt;About&lt;/a&gt;
+-    
+-  &lt;/div&gt;
++  &lt;a href=&quot;about/index.html&quot;&gt;About&lt;/a&gt;
+ 
+-  &lt;hr&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;
++    &lt;img src=&quot;/_theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
++  &lt;/a&gt;
++&lt;/div&gt;
+ 
++&lt;hr&gt;
+ 
+ &lt;p&gt;All posts, newest first:&lt;/p&gt;
+ 
+@@ -65,6 +64,16 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+   margin-top: 0;
+ }
+ 
++.feed-link img {
++  height: 1rem;
++}
++.feed-link {
++  float: right;
++}
++hr {
++  clear: both;
++}
++
+ .pages a {
+   margin-right: 0.5rem;
+ }
+diff --git a/www/mfws.html b/www/mfws.html
+index 5840971..fa54235 100644
+--- a/www/mfws.html
++++ b/www/mfws.html
+@@ -5,6 +5,7 @@
+   &lt;meta charset=&quot;utf-8&quot; /&gt;
+   &lt;title&gt;This is a motherfucking website. | CoolZone&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+   &lt;style&gt;
+     html {
+       font-family: serif;
+@@ -12,9 +13,6 @@
+       margin: auto;
+     }
+   &lt;/style&gt;
+-
+-  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+</pre></body></html>

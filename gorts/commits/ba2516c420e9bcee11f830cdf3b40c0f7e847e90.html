@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ba2516c420] try to see which one&#39;s faster | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / ba2516c420</strong><hr><pre>commit ba2516c420e9bcee11f830cdf3b40c0f7e847e90
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jun 18 14:42:57 2023 +0700
+
+    try to see which one&#39;s faster
+
+diff --git a/.builds/alpine.yml b/.builds/alpine.yml
+new file mode 100644
+index 0000000..9359c99
+--- /dev/null
++++ b/.builds/alpine.yml
+@@ -0,0 +1,36 @@
++image: alpine/latest
++oauth: git.sr.ht/OBJECTS:RW
++
++packages:
++  - curl
++  - zip
++  - hut
++  - go
++
++tasks:
++  - make-linux: |
++      cd gorts
++      make dist-linux
++      cd dist/linux
++      zip -r ../GORTS-Linux.zip .
++
++  - make-windows: |
++      cd gorts
++      make dist-windows
++      cd dist/windows
++      curl -L &#39;https://tclkits.rkeene.org/fossil/raw/tclkit-8.6.3-win32-x86_64.exe?name=403c507437d0b10035c7839f22f5bb806ec1f491&#39; &gt; tclkit.exe
++      zip -r ../GORTS-Windows.zip .
++
++  - check-tag: |
++      # Stop if HEAD is not a tagged commit.
++      cd gorts
++      git describe --exact-match HEAD || complete-build
++
++  - release: |
++      cd gorts
++      hut git artifact upload dist/GORTS-Linux.zip
++      hut git artifact upload dist/GORTS-Windows.zip
++
++artifacts:
++  - gorts/dist/GORTS-Linux.zip
++  - gorts/dist/GORTS-Windows.zip
+diff --git a/.build.yml b/.builds/archlinux.yml
+similarity index 79%
+rename from .build.yml
+rename to .builds/archlinux.yml
+index 349eed4..bf4909e 100644
+--- a/.build.yml
++++ b/.builds/archlinux.yml
+@@ -9,16 +9,14 @@ packages:
+ 
+ tasks:
+   - make-linux: |
+-      #curl -L &#39;https://go.dev/dl/go1.20.5.linux-amd64.tar.gz&#39; &gt; go.tar.gz
+-      #tar -xf go.tar.gz &amp;&amp; rm go.tar.gz
+       cd gorts
+-      PATH=$PATH:~/go/bin make dist-linux
++      make dist-linux
+       cd dist/linux
+       zip -r ../GORTS-Linux.zip .
+ 
+   - make-windows: |
+       cd gorts
+-      PATH=$PATH:~/go/bin make dist-windows
++      make dist-windows
+       cd dist/windows
+       curl -L &#39;https://tclkits.rkeene.org/fossil/raw/tclkit-8.6.3-win32-x86_64.exe?name=403c507437d0b10035c7839f22f5bb806ec1f491&#39; &gt; tclkit.exe
+       zip -r ../GORTS-Windows.zip .
+diff --git a/.builds/debian.yml b/.builds/debian.yml
+new file mode 100644
+index 0000000..03626df
+--- /dev/null
++++ b/.builds/debian.yml
+@@ -0,0 +1,36 @@
++image: debian/unstable
++oauth: git.sr.ht/OBJECTS:RW
++
++packages:
++  - curl
++  - zip
++  - hut
++  - golang
++
++tasks:
++  - make-linux: |
++      cd gorts
++      make dist-linux
++      cd dist/linux
++      zip -r ../GORTS-Linux.zip .
++
++  - make-windows: |
++      cd gorts
++      make dist-windows
++      cd dist/windows
++      curl -L &#39;https://tclkits.rkeene.org/fossil/raw/tclkit-8.6.3-win32-x86_64.exe?name=403c507437d0b10035c7839f22f5bb806ec1f491&#39; &gt; tclkit.exe
++      zip -r ../GORTS-Windows.zip .
++
++  - check-tag: |
++      # Stop if HEAD is not a tagged commit.
++      cd gorts
++      git describe --exact-match HEAD || complete-build
++
++  - release: |
++      cd gorts
++      hut git artifact upload dist/GORTS-Linux.zip
++      hut git artifact upload dist/GORTS-Windows.zip
++
++artifacts:
++  - gorts/dist/GORTS-Linux.zip
++  - gorts/dist/GORTS-Windows.zip
+</pre></body></html>

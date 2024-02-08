@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ba26f9a28a] try opengraph tags | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / ba26f9a28a</strong><hr><pre>commit ba26f9a28a9e49afae463749d93134fea874b1ec
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Aug 11 20:17:51 2020 +0700
+
+    try opengraph tags
+
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index 542a80e..fc0a246 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -1,3 +1,4 @@
++import html
+ import re
+ 
+ import requests
+@@ -22,7 +23,9 @@ def get_title(self, title_id):
+             &quot;site&quot;: &quot;mangadex&quot;,
+             &quot;cover_ext&quot;: cover_ext,
+             &quot;alt_names&quot;: md_json[&quot;manga&quot;][&quot;alt_names&quot;],
+-            &quot;descriptions&quot;: md_json[&quot;manga&quot;][&quot;description&quot;].split(&quot;\r\n\r\n&quot;),
++            &quot;descriptions&quot;: html.unescape(md_json[&quot;manga&quot;][&quot;description&quot;]).split(
++                &quot;\r\n\r\n&quot;
++            ),
+             &quot;chapters&quot;: [
+                 {
+                     &quot;id&quot;: str(chap_id),
+diff --git a/src/pytaku/static/base.css b/src/pytaku/static/base.css
+index 530babd..63032dc 100644
+--- a/src/pytaku/static/base.css
++++ b/src/pytaku/static/base.css
+@@ -48,6 +48,10 @@ input {
+   padding: 0.3rem;
+ }
+ 
++p {
++  line-height: 1.5rem;
++}
++
+ .button {
+   display: inline-block;
+   user-select: none;
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index fb71962..559d939 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -1,6 +1,10 @@
+ {% extends &#39;base.html&#39; %}
+ 
+ {% block head %}
++&lt;meta property=&quot;og:title&quot; content=&quot;{{ name }} - Pytaku&quot; /&gt;
++&lt;meta property=&quot;og:image&quot; content=&quot;{{ cover }}&quot; /&gt;
++&lt;meta property=&quot;og:description&quot; content=&quot;{{ descriptions | join(&#39;\n&#39;) }}&quot; /&gt;
++
+ &lt;style&gt;
+   .cover {
+     width: 400px;
+@@ -41,6 +45,7 @@ &lt;h1&gt;{{ name }}&lt;/h1&gt;
+ &lt;/div&gt;
+ 
+ &lt;img class=&quot;cover&quot; src=&quot;{{ cover }}&quot; alt=&quot;cover&quot; /&gt;
++&lt;p class=&quot;description&quot;&gt;{{ descriptions | join(&#39;\n&#39;) }}&lt;/p&gt;
+ 
+ {% if chapters %}
+ &lt;table&gt;
+</pre></body></html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ddf58a70d1] add Makefile &amp; builds.sr.ht setup | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / ddf58a70d1</strong><hr><pre>commit ddf58a70d12992a81f011228687edd1450051de0
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jun 17 17:10:12 2023 +0700
+
+    add Makefile &amp; builds.sr.ht setup
+
+diff --git a/.build.yml b/.build.yml
+new file mode 100644
+index 0000000..92762d5
+--- /dev/null
++++ b/.build.yml
+@@ -0,0 +1,24 @@
++image: debian/stable
++
++packages:
++  - curl
++  - zip
++
++tasks:
++  - make-linux: |
++      curl -L &#39;https://go.dev/dl/go1.20.5.linux-amd64.tar.gz&#39; &gt; go.tar.gz
++      tar -xf go.tar.gz &amp;&amp; rm go.tar.gz
++      cd gorts
++      PATH=$PATH:~/go/bin make dist-linux
++      cd dist
++      zip -r gorts-linux.zip linux
++
++  - make-windows: |
++      cd gorts
++      PATH=$PATH:~/go/bin make dist-windows
++      cd dist
++      zip -r gorts-windows.zip windows
++
++artifacts:
++  - gorts/dist/gorts-linux.zip
++  - gorts/dist/gorts-windows.zip
+diff --git a/Makefile b/Makefile
+new file mode 100644
+index 0000000..581ba51
+--- /dev/null
++++ b/Makefile
+@@ -0,0 +1,13 @@
++all: dist-linux dist-windows
++
++dist-linux:
++	CGO_ENABLED=0 GOOS=linux go build -o dist/linux/gorts
++	cp -r web dist/linux/web
++
++dist-windows:
++	CGO_ENABLED=0 GOOS=windows \
++		go build -o dist/windows/gorts.exe -ldflags -H=windowsgui
++	cp -r web dist/windows/web
++
++clean:
++	rm -rf dist/*
+diff --git a/README.md b/README.md
+index 1c61707..4100fc5 100644
+--- a/README.md
++++ b/README.md
+@@ -1,4 +1,6 @@
+ # GORTS
+ 
+-... is [orts](https://github.com/nhanb/orts) but in pure Go and pure Tcl/Tk
++[![builds.sr.ht status](https://builds.sr.ht/~nhanb/gorts/commits/master.svg)](https://builds.sr.ht/~nhanb/gorts/commits/master?)
++
++... is [ORTS](https://github.com/nhanb/orts) but in pure Go and pure Tcl/Tk
+ passing messages through good ole pipes, the way Bell Labs intended.
+</pre></body></html>

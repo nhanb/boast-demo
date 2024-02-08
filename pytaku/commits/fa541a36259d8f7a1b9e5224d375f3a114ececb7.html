@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[fa541a3625] somewhat ok navbar | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / fa541a3625</strong><hr><pre>commit fa541a36259d8f7a1b9e5224d375f3a114ececb7
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 30 19:49:02 2020 +0700
+
+    somewhat ok navbar
+    
+    Doesn&#39;t cope well with long usernames though.
+
+diff --git a/src/pytaku/static/js/layout.js b/src/pytaku/static/js/layout.js
+index 7a566e5..aeca911 100644
+--- a/src/pytaku/static/js/layout.js
++++ b/src/pytaku/static/js/layout.js
+@@ -9,11 +9,12 @@ function Navbar(initialVNode) {
+       let userLink;
+       if (Auth.isLoggedIn()) {
+         userLink = m(&quot;span.nav--greeting&quot;, [
+-          m(&quot;span&quot;, [&quot;Welcome, &quot;, m(&quot;b&quot;, Auth.username)]),
++          m(&quot;span&quot;, [&quot;Hi &quot;, m(&quot;b&quot;, Auth.username)]),
+           m(Button, {
+             text: isLoggingOut ? &quot; logging out&quot; : &quot; logout&quot;,
+             icon: &quot;log-out&quot;,
+             color: &quot;red&quot;,
++            title: &quot;Log out&quot;,
+             onclick: (ev) =&gt; {
+               isLoggingOut = true;
+               m.redraw();
+@@ -40,6 +41,10 @@ function Navbar(initialVNode) {
+           m.route.Link,
+           { class: &quot;nav--logo&quot;, href: Auth.isLoggedIn() ? &quot;/f&quot; : &quot;/&quot; },
+           [
++            m(&quot;img.nav--logo--favicon&quot;, {
++              src: &quot;/static/favicon.svg&quot;,
++              alt: &quot;home&quot;,
++            }),
+             m(&quot;img.nav--logo--img&quot;, {
+               src: &quot;/static/pytaku.svg&quot;,
+               alt: &quot;home&quot;,
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index 9e65918..0b81337 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -41,19 +41,22 @@ nav {
+   background-color: var(--bg-black);
+   padding: 0 var(--body-padding);
+   display: flex;
+-  flex-wrap: wrap;
+ }
+ nav &gt; * {
+   margin: var(--body-padding) 0;
+ }
+ .nav--logo {
+-  width: 150px;
+   margin-right: var(--body-padding);
++  flex: 0 0 150px;
+ }
+-.nav--logo--img {
++.nav--logo--img,
++.nav--logo--favicon {
+   max-width: 100%;
+   display: block;
+ }
++.nav--logo--favicon {
++  display: none;
++}
+ .nav--search-form {
+   display: inline-flex;
+   align-items: stretch;
+@@ -73,6 +76,7 @@ .nav--greeting {
+   margin-bottom: auto;
+   display: flex;
+   padding: 0.5rem 0 0.5rem 0.5rem;
++  text-align: right;
+ }
+ .nav--greeting &gt; button {
+   margin-left: 0.5rem;
+@@ -97,6 +101,43 @@ .nav--link i {
+   margin-right: 0.3rem;
+ }
+ 
++@media (max-width: 679px) {
++  .nav--search-form &gt; input {
++    width: 10rem;
++  }
++}
++
++@media (max-width: 539px) {
++  .nav--greeting &gt; button &gt; i {
++    margin: 0;
++  }
++  .nav--greeting &gt; button &gt; span {
++    display: none;
++  }
++  .nav--logo--img {
++    display: none;
++  }
++  .nav--logo--favicon {
++    display: inline;
++  }
++  .nav--logo {
++    flex: 0 0 43px;
++    margin-top: auto;
++    margin-bottom: auto;
++  }
++  .nav--search-form {
++    flex-basis: 100%;
++  }
++  .nav--search-form &gt; input {
++    width: 5rem;
++    flex-grow: 1;
++    flex-shrink: 1;
++  }
++  .nav--link:last-child {
++    margin-left: 0.5rem;
++  }
++}
++
+ /* Route content common styling */
+ #spa-root {
+   display: flex;
+</pre></body></html>

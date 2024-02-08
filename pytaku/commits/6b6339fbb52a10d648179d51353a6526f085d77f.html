@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[6b6339fbb5] add &quot;mark read up to this chapter&quot; button | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 6b6339fbb5</strong><hr><pre>commit 6b6339fbb52a10d648179d51353a6526f085d77f
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Sep 4 11:26:04 2021 +0700
+
+    add &quot;mark read up to this chapter&quot; button
+    
+    After the great mangadex migration, we&#39;ve lost our read progress. To at
+    least ease the process of manually setting our read progresses up again,
+    here&#39;s a new bulk read option.
+
+diff --git a/src/pytaku/js-src/routes/title.js b/src/pytaku/js-src/routes/title.js
+index 62710ab..bf5485c 100644
+--- a/src/pytaku/js-src/routes/title.js
++++ b/src/pytaku/js-src/routes/title.js
+@@ -6,6 +6,7 @@ function Title(initialVNode) {
+   let isTogglingFollow = false;
+   let isMarkingAllAsRead = false;
+   let isMarkingAllAsUnread = false;
++  let isMarkingPreviousAsRead = false;
+   let title = {};
+   let allAreRead;
+   let allAreUnread;
+@@ -202,8 +203,63 @@ function Title(initialVNode) {
+                 ),
+               ]),
+               title.chapters
+-                ? title.chapters.map((chapter) =&gt;
+-                    m(Chapter, { site: title.site, titleId: title.id, chapter })
++                ? title.chapters.map((chapter, index) =&gt;
++                    m(&quot;.title--chapter-row&quot;, [
++                      m(Button, {
++                        icon: isMarkingPreviousAsRead
++                          ? &quot;loader&quot;
++                          : &quot;chevrons-down&quot;,
++                        color: &quot;grey&quot;,
++                        title: &quot;Mark all read up to this chapter&quot;,
++                        disabled: isMarkingPreviousAsRead ? &quot;disabled&quot; : null,
++                        onclick: (ev) =&gt; {
++                          const confirmed = window.confirm(
++                            &quot;Do you surely want to mark all chapters up to this point as read?&quot;
++                          );
++                          if (!confirmed) return;
++
++                          isMarkingPreviousAsRead = true;
++                          m.redraw();
++
++                          const chaptersToMark = title.chapters
++                            .slice(index)
++                            .filter((ch) =&gt; !ch.is_read);
++
++                          if (chaptersToMark.length == 0) {
++                            isMarkingPreviousAsRead = false;
++                            m.redraw();
++                            return;
++                          }
++
++                          Auth.request({
++                            method: &quot;POST&quot;,
++                            url: &quot;/api/read&quot;,
++                            body: {
++                              read: chaptersToMark.map((ch) =&gt; {
++                                return {
++                                  site: title.site,
++                                  title_id: title.id,
++                                  chapter_id: ch.id,
++                                };
++                              }),
++                            },
++                          })
++                            .then((resp) =&gt; {
++                              chaptersToMark.forEach((chap) =&gt; {
++                                chap.is_read = true;
++                              });
++                            })
++                            .finally(() =&gt; {
++                              isMarkingPreviousAsRead = false;
++                            });
++                        },
++                      }),
++                      m(Chapter, {
++                        site: title.site,
++                        titleId: title.id,
++                        chapter,
++                      }),
++                    ])
+                   )
+                 : m(&quot;p&quot;, &quot;This one has no chapters.&quot;),
+             ]
+diff --git a/src/pytaku/static/lookandfeel.css b/src/pytaku/static/lookandfeel.css
+index bb5e4ae..5435d9f 100644
+--- a/src/pytaku/static/lookandfeel.css
++++ b/src/pytaku/static/lookandfeel.css
+@@ -108,6 +108,10 @@ button.green {
+   background-color: var(--btn-green);
+   border-bottom: 4px solid var(--btn-green-bottom);
+ }
++button.grey {
++  background-color: #6f6f6f;
++  border-bottom: 4px solid #444;
++}
+ button.blue {
+   background-color: var(--btn-blue);
+   border-bottom: 4px solid var(--btn-blue-bottom);
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index 794b92e..a726a7b 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -370,6 +370,15 @@ .title--descriptions details + br {
+    */
+ }
+ 
++.title--chapter-row {
++  display: flex;
++  flex-direction: vertical;
++}
++.title--chapter-row &gt; button {
++  margin-bottom: 0.5rem;
++  margin-right: 0.2rem;
++}
++
+ @media (max-width: 399px) {
+   .title--details {
+     flex-direction: column;
+</pre></body></html>

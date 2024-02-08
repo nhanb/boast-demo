@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[d626d2f627] make tcl path configurable | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / d626d2f627</strong><hr><pre>commit d626d2f627aa71605039b1975eb74abbd32458bf
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jun 22 17:47:25 2023 +0700
+
+    make tcl path configurable
+
+diff --git a/main.go b/main.go
+index 8b9992f..e4f9420 100644
+--- a/main.go
++++ b/main.go
+@@ -4,6 +4,7 @@
+ 	&quot;bufio&quot;
+ 	_ &quot;embed&quot;
+ 	&quot;encoding/json&quot;
++	&quot;flag&quot;
+ 	&quot;fmt&quot;
+ 	&quot;io&quot;
+ 	&quot;io/ioutil&quot;
+@@ -11,7 +12,6 @@
+ 	&quot;net/http&quot;
+ 	&quot;os&quot;
+ 	&quot;os/exec&quot;
+-	&quot;runtime&quot;
+ 	&quot;strconv&quot;
+ 	&quot;strings&quot;
+ 	&quot;time&quot;
+@@ -43,15 +43,13 @@ func main() {
+ 		}
+ 	}()
+ 
+-	startGUI()
+-}
++	tclPathPtr := flag.String(&quot;tcl&quot;, DefaultTclPath, &quot;Path to tclsh executable&quot;)
++	flag.Parse()
+ 
+-func startGUI() {
+-	tclPath := &quot;tclsh&quot;
+-	if runtime.GOOS == &quot;windows&quot; {
+-		tclPath = &quot;./tclkit.exe&quot;
+-	}
++	startGUI(*tclPathPtr)
++}
+ 
++func startGUI(tclPath string) {
+ 	cmd := exec.Command(tclPath, &quot;-encoding&quot;, &quot;utf-8&quot;)
+ 	stdout, err := cmd.StdoutPipe()
+ 	if err != nil {
+diff --git a/hacks_linux.go b/main_linux.go
+similarity index 72%
+rename from hacks_linux.go
+rename to main_linux.go
+index e3d4782..cbdd98f 100644
+--- a/hacks_linux.go
++++ b/main_linux.go
+@@ -2,4 +2,6 @@
+ 
+ package main
+ 
++const DefaultTclPath = &quot;tclsh&quot;
++
+ func forceFocus(handle string) error { return nil }
+diff --git a/hacks_windows.go b/main_windows.go
+similarity index 90%
+rename from hacks_windows.go
+rename to main_windows.go
+index 0adaf6f..b6154bf 100644
+--- a/hacks_windows.go
++++ b/main_windows.go
+@@ -9,6 +9,8 @@
+ 	&quot;github.com/lxn/win&quot;
+ )
+ 
++const DefaultTclPath = &quot;./tclkit.exe&quot;
++
+ func forceFocus(handle string) error {
+ 	hex := handle[2:] // trim the &quot;0x&quot; prefix
+ 	uintHandle, err := strconv.ParseUint(hex, 16, 64)
+</pre></body></html>

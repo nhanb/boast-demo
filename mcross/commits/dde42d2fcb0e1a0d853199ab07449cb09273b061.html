@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[dde42d2fcb] more lenient address input | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / dde42d2fcb</strong><hr><pre>commit dde42d2fcb0e1a0d853199ab07449cb09273b061
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu May 28 18:13:30 2020 +0700
+
+    more lenient address input
+
+diff --git a/src/mcross/gui/controller.py b/src/mcross/gui/controller.py
+index fea0ab5..598d315 100644
+--- a/src/mcross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -114,7 +114,7 @@ async def visit_link(self, url: GeminiUrl):
+             self.model.history.visit(resp.url)
+             await self.put_gui_op(self.view.render_page)
+ 
+-        except ConnectionError as e:
++        except (ConnectionError, OSError) as e:
+             await self.put_gui_op(statusbar_logger.info, str(e))
+             raise
+ 
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index 17bf065..98ed551 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -174,8 +174,21 @@ def __init__(self, root: Tk, model: Model):
+         style.theme_use(TTK_THEME)
+ 
+     def _on_go(self, ev=None):
++        orig_url = self.address_bar.get()
++        url = orig_url.strip()
++
++        if url.startswith(&quot;gemini://&quot;):
++            url = url[9:]
++
++        if not url:
++            return
++
++        if url != orig_url:
++            self.address_bar.delete(0, &quot;end&quot;)
++            self.address_bar.insert(0, url)
++
+         if self.go_callback is not None:
+-            self.go_callback(&quot;gemini://&quot; + self.address_bar.get())
++            self.go_callback(&quot;gemini://&quot; + url)
+ 
+     def _on_link_enter(self, ev):
+         if self.allow_changing_cursor:
+</pre></body></html>

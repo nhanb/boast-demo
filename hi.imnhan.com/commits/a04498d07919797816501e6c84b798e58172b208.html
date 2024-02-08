@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a04498d079] the novelty of the font size hack wore off | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / a04498d079</strong><hr><pre>commit a04498d07919797816501e6c84b798e58172b208
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Apr 16 15:13:23 2023 +0700
+
+    the novelty of the font size hack wore off
+
+diff --git a/nhanb-theme/static/css/main.css b/nhanb-theme/static/css/main.css
+index d5be590..394cad8 100644
+--- a/nhanb-theme/static/css/main.css
++++ b/nhanb-theme/static/css/main.css
+@@ -12,19 +12,8 @@ html {
+   overflow-y: scroll;
+ 
+   font-family: &quot;Source Sans Pro&quot;, sans-serif;
+-  font-size: 18px; /* fallback for less capable browsers */
+-  /* Smart trick stolen from exoticsilicon.com:
+-   * https://research.exoticsilicon.com/articles/replying_to_comments
+-   * &gt; uses the browser default font size, smoothly scaled up to 130% on
+-   * &gt; higher-resolution displays
+-   *
+-   * I&#39;ve seen people use vw on font sizes before but max()-ing it against the
+-   * default font size then capping it with a fixed em size is new to me.
+-   * How elegant!
+-   *
+-   * Bump min size a bit (1.125em) because Source Sans Pro is a small font.
+-   */
+-  font-size: min(max(1.125em, 1.3vw), 1.3em);
++  /* Source Sans Pro looks smaller than most fonts, so let&#39;s compensate: */
++  font-size: 1.125em;
+ }
+ code,
+ pre {
+@@ -188,7 +177,7 @@ .highlight .err {
+ /* site-specific stuff follows */
+ 
+ #main {
+-  max-width: 36rem;
++  max-width: 40rem;
+   margin: 0 auto;
+   padding: 0 0.6rem;
+ }
+</pre></body></html>

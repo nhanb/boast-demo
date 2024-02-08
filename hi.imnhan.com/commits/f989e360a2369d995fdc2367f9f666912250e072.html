@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[f989e360a2] add about page | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / f989e360a2</strong><hr><pre>commit f989e360a2369d995fdc2367f9f666912250e072
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Sat Sep 7 19:26:48 2013 +0700
+
+    add about page
+
+diff --git a/content/images/nhan.jpg b/content/images/nhan.jpg
+new file mode 100644
+index 0000000..b473852
+Binary files /dev/null and b/content/images/nhan.jpg differ
+diff --git a/content/pages/about.md b/content/pages/about.md
+new file mode 100644
+index 0000000..0e842d6
+--- /dev/null
++++ b/content/pages/about.md
+@@ -0,0 +1,28 @@
++Title: About
++
++## About me
++
++![My face](/static/images/nhan.jpg)
++
++My name is **Bùi Thành Nhân**. I&#39;m an undergraduate at RMIT Vietnam, focusing myself on web
++delvelopment, mostly backend but I&#39;m also taking huge interests in frontend frameworks too (twitter
++bootstrap, angularjs, etc.).
++
++I have a working knowledge of Java desktop programming, experience on web programming with PHP and
++setting up simple LAMP stacks. My current interests are python as a web backend language (django
++anyone?) and tinkering with frontend frameworks.
++
++I usually go with the handle **nhanb** on most social networks, you can find links to my profiles
++on the sidebar. In my free time I enjoy tinkering with shell scripts (sometimes pythons scripts
++too) to try out ways to improve productivity. When I&#39;m not being a nerd, you can find me hitting
++the gym (always going for the lighter dumbbells) or swimming.
++
++## About this blog
++
++My mind is a sad mess which cannot hold much important/interesting information after a couple of
++months or so. This blog is where I write down interesting things I discover, or practice expressing
++myself by writing technical tutorials. On occasional bad days I might throw all my ramblings here
++too, but hopefully those will be rare.
++
++I always appreciate feedback or further discussions on my posts, so feel free to point out if you
++think I said something stupid. That&#39;s it. Enjoy reading!
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 633134c..4f392e9 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -12,6 +12,7 @@
+ TIMEZONE = &#39;Asia/Ho_Chi_Minh&#39;
+ 
+ DEFAULT_LANG = u&#39;en&#39;
++TYPOGRYFY = True
+ 
+ # Feed generation is usually not desired when developing
+ FEED_ALL_ATOM = None
+@@ -52,9 +53,7 @@
+ 
+ DEFAULT_PAGINATION = 10
+ 
+-#THEME = &quot;/home/nhanb/Dropbox/dev/pelican-simplicity-theme&quot;
+-
+-AUTHOR_NAME = &quot;Bùi Thành Nhân&quot;
++AUTHOR_NAME = u&#39;Bùi Thành Nhân&#39;
+ AUTHOR_SLUG = &quot;nhanb&quot;
+ 
+ # Social widget
+@@ -71,3 +70,7 @@
+          #)
+ 
+ THEME_STATIC_PATHS = [&#39;static&#39;]
++
++MENUITEMS = (
++    (&#39;Blog&#39;, &#39;/&#39;),
++)
+</pre></body></html>

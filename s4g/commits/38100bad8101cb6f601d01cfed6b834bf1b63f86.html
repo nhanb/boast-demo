@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[38100bad81] less verbose output | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 38100bad81</strong><hr><pre>commit 38100bad8101cb6f601d01cfed6b834bf1b63f86
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 20 23:36:09 2023 +0700
+
+    less verbose output
+
+diff --git a/main.go b/main.go
+index 82713a2..5ab092b 100644
+--- a/main.go
++++ b/main.go
+@@ -219,7 +219,6 @@ func regenerate(fsys writablefs.FS) (site *SiteMetadata, err error) {
+ 	})
+ 
+ 	for _, a := range articles {
+-		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Title)
+ 		err := a.WriteHtmlFile(site, articlesInNav, articlesInFeed, startYear)
+ 		if err != nil {
+ 			return nil, fmt.Errorf(&quot;Article %s: %w&quot;, a.Path, err)
+@@ -243,8 +242,8 @@ func regenerate(fsys writablefs.FS) (site *SiteMetadata, err error) {
+ 	}
+ 	for _, p := range redirects {
+ 		generatedFiles[p] = true
+-		fmt.Println(&quot;Generated&quot;, p)
+ 	}
++	fmt.Printf(&quot;Generated %d redirects\n&quot;, len(redirects))
+ 
+ 	DeleteOldGeneratedFiles(fsys, generatedFiles)
+ 	WriteManifest(fsys, generatedFiles)
+diff --git a/redirects.go b/redirects.go
+index 603a3bb..3c006c4 100644
+--- a/redirects.go
++++ b/redirects.go
+@@ -95,7 +95,6 @@ func generateRedirects(
+ 			panic(err)
+ 		}
+ 
+-		fmt.Printf(&quot;Redirect: %s -&gt; %s\n&quot;, src, dests[i])
+ 		generated = append(generated, src)
+ 	}
+ 
+</pre></body></html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[93fd364727] fix player MatchesName logic | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 93fd364727</strong><hr><pre>commit 93fd3647276ee88ac9fd5ab53c10ae3c90dd14c0
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jun 20 15:24:47 2023 +0700
+
+    fix player MatchesName logic
+    
+    idk wtf I was thinking
+
+diff --git a/players/players.go b/players/players.go
+index e68be90..18b7895 100644
+--- a/players/players.go
++++ b/players/players.go
+@@ -55,5 +55,5 @@ func normalize(in string) (out string) {
+ }
+ 
+ func (p *Player) MatchesName(query string) bool {
+-	return normalize(query) == normalize(p.Name)
++	return strings.Contains(normalize(p.Name), normalize(query))
+ }
+</pre></body></html>

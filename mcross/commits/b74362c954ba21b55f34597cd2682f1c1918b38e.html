@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b74362c954] unified conf file / cli args | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / b74362c954</strong><hr><pre>commit b74362c954ba21b55f34597cd2682f1c1918b38e
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jun 18 16:39:50 2020 +0700
+
+    unified conf file / cli args
+    
+    Config by priority: default &gt; conf file &gt; cli arg
+    
+    It supports long form and short form but quite limited:
+    
+    - Key-val style only, no on/off switch style e.g. `mcross --dark`
+    - Isn&#39;t POSIX-compliant i.e. `-d1` doesn&#39;t work
+    
+    The Click library might help but I&#39;m not sure if strict POSIX compliance
+    is really worth complicating the dep tree...
+
+diff --git a/README.md b/README.md
+index c91d21e..c6b6474 100644
+--- a/README.md
++++ b/README.md
+@@ -31,7 +31,22 @@ # Installation
+ 
+ # Usage
+ 
+-CLI arguments: `--textfont`, `--monofont`
++Run `mcross -h` to get a full list of CLI arguments. The same arguments can
++also be defined in a TOML config file: run `mcross-info` to know where this
++file should be for your OS. For example, running mcross like this:
++
++```sh
++mcross --background-color pink -t &quot;Ubuntu&quot;
++```
++
++is the same as putting this in `$HOME/.config/mcross/mcross.toml` for linux:
++
++```toml
++background-color = &quot;pink&quot;
++text-font = &quot;Ubuntu&quot;
++```
++
++The priority is CLI arg &gt; config file &gt; default.
+ 
+ Keyboard shortcuts:
+ 
+@@ -75,8 +90,9 @@ # Feature checklist
+ - [x] non-blocking I/O using curio
+ - [x] more visual indicators: waiting cursor, status bar
+ - [x] parse gemini&#39;s advanced line types
+-- [ ] properly handle mime types (gemini/plaintext/binary)
+-- [ ] configurable document styling
++- [x] render `text/*` mime types with correct charset
++- [ ] handle `binary/*` mime types
++- [x] configurable document styling
+ - [ ] human-friendly distribution
+ - [ ] TOFU TLS (right now it always accepts self-signed certs)
+ 
+diff --git a/poetry.lock b/poetry.lock
+index 4262ef3..43ef576 100644
+--- a/poetry.lock
++++ b/poetry.lock
+@@ -1,3 +1,11 @@
++[[package]]
++category = &quot;main&quot;
++description = &quot;A small Python module for determining appropriate platform-specific dirs, e.g. a \&quot;user data dir\&quot;.&quot;
++name = &quot;appdirs&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;1.4.4&quot;
++
+ [[package]]
+ category = &quot;dev&quot;
+ description = &quot;Disable App Nap on OS X 10.9&quot;
+@@ -260,6 +268,14 @@ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*&quot;
+ version = &quot;1.14.0&quot;
+ 
++[[package]]
++category = &quot;main&quot;
++description = &quot;Python Library for Tom&#39;s Obvious, Minimal Language&quot;
++name = &quot;toml&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;0.10.1&quot;
++
+ [[package]]
+ category = &quot;dev&quot;
+ description = &quot;Traitlets Python config system&quot;
+@@ -309,10 +325,14 @@ docs = [&quot;sphinx&quot;, &quot;jaraco.packaging (&gt;=3.2)&quot;, &quot;rst.linker (&gt;=1.9)&quot;]
+ testing = [&quot;jaraco.itertools&quot;, &quot;func-timeout&quot;]
+ 
+ [metadata]
+-content-hash = &quot;6aa72780c0ec9d3ed80370f35c09d1b1915c49675ab97732c49e2af47c5aa08f&quot;
++content-hash = &quot;4804febcb012c5490a8635fcf2e94dfb8e3db1e586c2a4534ee6bf806f74dc42&quot;
+ python-versions = &quot;^3.7&quot;
+ 
+ [metadata.files]
++appdirs = [
++    {file = &quot;appdirs-1.4.4-py2.py3-none-any.whl&quot;, hash = &quot;sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128&quot;},
++    {file = &quot;appdirs-1.4.4.tar.gz&quot;, hash = &quot;sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41&quot;},
++]
+ appnope = [
+     {file = &quot;appnope-0.1.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:5b26757dc6f79a3b7dc9fab95359328d5747fcb2409d331ea66d0272b90ab2a0&quot;},
+     {file = &quot;appnope-0.1.0.tar.gz&quot;, hash = &quot;sha256:8b995ffe925347a2138d7ac0fe77155e4311a0ea6d6da4f5128fe4b3cbe5ed71&quot;},
+@@ -391,6 +411,10 @@ six = [
+     {file = &quot;six-1.14.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c&quot;},
+     {file = &quot;six-1.14.0.tar.gz&quot;, hash = &quot;sha256:236bdbdce46e6e6a3d61a337c0f8b763ca1e8717c03b369e87a7ec7ce1319c0a&quot;},
+ ]
++toml = [
++    {file = &quot;toml-0.10.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:bda89d5935c2eac546d648028b9901107a595863cb36bae0c73ac804a9b4ce88&quot;},
++    {file = &quot;toml-0.10.1.tar.gz&quot;, hash = &quot;sha256:926b612be1e5ce0634a2ca03470f95169cf16f939018233a670519cb4ac58b0f&quot;},
++]
+ traitlets = [
+     {file = &quot;traitlets-4.3.3-py2.py3-none-any.whl&quot;, hash = &quot;sha256:70b4c6a1d9019d7b4f6846832288f86998aa3b9207c6821f3578a6a6a467fe44&quot;},
+     {file = &quot;traitlets-4.3.3.tar.gz&quot;, hash = &quot;sha256:d023ee369ddd2763310e4c3eae1ff649689440d4ae59d7485eb4cfbbe3e359f7&quot;},
+diff --git a/pyproject.toml b/pyproject.toml
+index b5f935a..1a3544d 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;mcross&quot;
+-version = &quot;0.5.16&quot;
++version = &quot;0.5.17&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+@@ -13,10 +13,13 @@ repository = &quot;https://git.sr.ht/~nhanb/mcross&quot;
+ 
+ [tool.poetry.scripts]
+ mcross = &quot;mcross:run&quot;
++mcross-info = &quot;mcross:info&quot;
+ 
+ [tool.poetry.dependencies]
+ python = &quot;^3.7&quot;
+ curio = &quot;^1.2&quot;
++appdirs = &quot;^1.4.4&quot;
++toml = &quot;^0.10.1&quot;
+ 
+ [tool.poetry.dev-dependencies]
+ python-language-server = &quot;^0.31.10&quot;
+diff --git a/src/mcross/__init__.py b/src/mcross/__init__.py
+index eb8be0e..c99ebbe 100644
+--- a/src/mcross/__init__.py
++++ b/src/mcross/__init__.py
+@@ -1,17 +1,20 @@
+-import argparse
+-
+-from .gui.controller import Controller
+-
+-
+ def run():
++    from . import conf
++    from .gui.controller import Controller
+ 
+-    # Parse CLI arguments
+-    argparser = argparse.ArgumentParser()
+-    argparser.add_argument(&quot;--textfont&quot;)
+-    argparser.add_argument(&quot;--monofont&quot;)
+-    argparser.add_argument(&quot;--dark&quot;, action=&quot;store_true&quot;)
+-    args = argparser.parse_args()
++    conf.init()
+ 
+     # Actually start the program
+-    c = Controller(args)
++    c = Controller()
+     c.run()
++
++
++def info():
++    from . import conf
++    from pprint import pprint
++
++    conf.init()
++
++    print(&quot;Config file:&quot;, conf.CONFIG_FILE)
++    print(&quot;Config:&quot;)
++    pprint(conf._conf)
+diff --git a/src/mcross/conf.py b/src/mcross/conf.py
+new file mode 100644
+index 0000000..f37c43a
+--- /dev/null
++++ b/src/mcross/conf.py
+@@ -0,0 +1,78 @@
++import argparse
++import os
++from collections import namedtuple
++from pathlib import Path
++
++import toml
++from appdirs import user_config_dir
++
++CONFIG_DIR = Path(user_config_dir(&quot;mcross&quot;, False))
++CONFIG_FILE = CONFIG_DIR / &quot;mcross.toml&quot;
++
++_conf = None
++
++ConfDef = namedtuple(&quot;ConfDef&quot;, [&quot;name&quot;, &quot;short_name&quot;, &quot;type&quot;, &quot;default&quot;])
++# argparse&#39;s add_argument() will ensure name/short_name uniqueness for free
++conf_definitions = [
++    ConfDef(&quot;text-font&quot;, &quot;f&quot;, str, &quot;Source Serif Pro&quot;),
++    ConfDef(&quot;mono-font&quot;, &quot;m&quot;, str, &quot;Ubuntu Mono&quot;),
++    ConfDef(&quot;background-color&quot;, &quot;b&quot;, str, &quot;#fff8dc&quot;),
++    ConfDef(&quot;text-color&quot;, &quot;t&quot;, str, &quot;black&quot;),
++    ConfDef(&quot;link-color&quot;, &quot;l&quot;, str, &quot;brown&quot;),
++    ConfDef(&quot;list-item-color&quot;, &quot;i&quot;, str, &quot;#044604&quot;),
++]
++
++
++def init():
++    default_conf = load_default_conf()
++    file_conf = load_conf_file()
++    cli_conf = parse_conf_args()
++
++    global _conf
++    _conf = {**default_conf, **file_conf, **cli_conf}
++    return _conf
++
++
++def load_default_conf():
++    return {confdef.name: confdef.default for confdef in conf_definitions}
++
++
++def load_conf_file():
++    if not CONFIG_DIR.is_dir():
++        os.mkdir(CONFIG_DIR)
++
++    if not CONFIG_FILE.is_file():
++        return {}
++
++    try:
++        data = toml.load(CONFIG_FILE)
++        return {
++            confdef.name: data[confdef.name]
++            for confdef in conf_definitions
++            if confdef.name in data
++        }
++    except Exception as e:
++        print(&quot;Unexpected error reading config file:&quot;, str(e))
++        return {}
++
++
++def parse_conf_args():
++    argparser = argparse.ArgumentParser()
++    for confdef in conf_definitions:
++        argparser.add_argument(
++            f&quot;-{confdef.short_name}&quot;, f&quot;--{confdef.name}&quot;, type=confdef.type,
++        )
++    args = argparser.parse_args()
++    return {key.replace(&quot;_&quot;, &quot;-&quot;): val for key, val in vars(args).items() if val}
++
++
++def get(key):
++    return _conf[key]
++
++
++if __name__ == &quot;__main__&quot;:
++    init()
++    import pprint
++
++    print(&quot;Final conf:&quot;)
++    pprint.pprint(_conf)
+diff --git a/src/mcross/gui/controller.py b/src/mcross/gui/controller.py
+index de350c2..6397404 100644
+--- a/src/mcross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -21,13 +21,11 @@
+ 
+ 
+ class Controller:
+-    def __init__(self, args):
++    def __init__(self):
+         self.root = Tk()
+         self.root.alt_shortcuts = set()
+         self.model = Model()
+-        self.view = View(
+-            self.root, self.model, fonts=(args.textfont, args.monofont), dark=args.dark
+-        )
++        self.view = View(self.root, self.model)
+         self.root.title(&quot;McRoss Browser&quot;)
+         self.root.geometry(&quot;800x600&quot;)
+ 
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index 06fdd1f..bd0fa34 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -2,6 +2,7 @@
+ import sys
+ from tkinter import Text, Tk, font, ttk
+ 
++from .. import conf
+ from ..document import (
+     GeminiNode,
+     H1Node,
+@@ -71,7 +72,7 @@ class View:
+     back_callback = None
+     forward_callback = None
+ 
+-    def __init__(self, root: Tk, model: Model, fonts=(None, None), dark=False):
++    def __init__(self, root: Tk, model: Model):
+         self.model = model
+ 
+         # first row - address bar + buttons
+@@ -142,31 +143,28 @@ def on_ctrl_l(ev):
+         text = ReadOnlyText(row2, wrap=&quot;word&quot;)
+         self.text = text
+         self.render_page()
+-        if fonts[0] is None:
+-            text_font = pick_font(
+-                [
+-                    &quot;Charis SIL&quot;,
+-                    &quot;Source Serif Pro&quot;,
+-                    &quot;Cambria&quot;,
+-                    &quot;Georgia&quot;,
+-                    &quot;DejaVu Serif&quot;,
+-                    &quot;Times New Roman&quot;,
+-                    &quot;Times&quot;,
+-                    &quot;TkTextFont&quot;,
+-                ]
+-            )
+-        else:
+-            text_font = fonts[0]
++        text_font = pick_font(
++            [
++                conf.get(&quot;text-font&quot;),
++                &quot;Charis SIL&quot;,
++                &quot;Source Serif Pro&quot;,
++                &quot;Cambria&quot;,
++                &quot;Georgia&quot;,
++                &quot;DejaVu Serif&quot;,
++                &quot;Times New Roman&quot;,
++                &quot;Times&quot;,
++                &quot;TkTextFont&quot;,
++            ]
++        )
+ 
+-        if fonts[1] is None:
+-            mono_font = pick_font([&quot;Ubuntu Mono&quot;, &quot;Consolas&quot;, &quot;Courier&quot;, &quot;TkFixedFont&quot;])
+-        else:
+-            mono_font = fonts[1]
++        mono_font = pick_font(
++            [conf.get(&quot;mono-font&quot;), &quot;Ubuntu Mono&quot;, &quot;Consolas&quot;, &quot;Courier&quot;, &quot;TkFixedFont&quot;]
++        )
+ 
+         text.config(
+             font=(text_font, 13),
+-            bg=&quot;#212121&quot; if dark else &quot;#fff8dc&quot;,
+-            fg=&quot;#eee&quot; if dark else &quot;black&quot;,
++            bg=conf.get(&quot;background-color&quot;),
++            fg=conf.get(&quot;text-color&quot;),
+             padx=5,
+             pady=5,
+             # hide blinking insertion cursor:
+@@ -176,13 +174,13 @@ def on_ctrl_l(ev):
+             height=1,
+         )
+         text.pack(side=&quot;left&quot;, fill=&quot;both&quot;, expand=True)
+-        text.tag_config(&quot;link&quot;, foreground=&quot;#ff8a65&quot; if dark else &quot;brown&quot;)
++        text.tag_config(&quot;link&quot;, foreground=conf.get(&quot;link-color&quot;))
+         text.tag_bind(&quot;link&quot;, &quot;&lt;Enter&gt;&quot;, self._on_link_enter)
+         text.tag_bind(&quot;link&quot;, &quot;&lt;Leave&gt;&quot;, self._on_link_leave)
+         text.tag_bind(&quot;link&quot;, &quot;&lt;Button-1&gt;&quot;, self._on_link_click)
+         text.tag_config(&quot;pre&quot;, font=(mono_font, 13))
+         text.tag_config(&quot;plaintext&quot;, font=(mono_font, 13))
+-        text.tag_config(&quot;listitem&quot;, foreground=&quot;#64c664&quot; if dark else &quot;#044604&quot;)
++        text.tag_config(&quot;listitem&quot;, foreground=conf.get(&quot;list-item-color&quot;))
+ 
+         base_heading_font = font.Font(font=text[&quot;font&quot;])
+         base_heading_font.config(weight=&quot;bold&quot;)
+</pre></body></html>

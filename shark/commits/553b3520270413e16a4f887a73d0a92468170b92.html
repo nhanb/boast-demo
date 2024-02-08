@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[553b352027] make size configurable via cli arg | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 553b352027</strong><hr><pre>commit 553b3520270413e16a4f887a73d0a92468170b92
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jul 2 13:38:32 2022 +0700
+
+    make size configurable via cli arg
+
+diff --git a/README.md b/README.md
+index 93c4287..1e4d662 100644
+--- a/README.md
++++ b/README.md
+@@ -23,6 +23,16 @@ # Download
+ 
+ Sourcehut doesn&#39;t have macOS builds though.
+ 
++# Usage
++
++Simply run the provided binary for your OS. Mac &amp; Linux users may need to first
++make the file executable with `chmod +x &lt;file-name&gt;`.
++
++If run from a terminal, use the `-h` argument to see available options.
++Currently there&#39;s only a `-size` argument which changes how big your shark will
++be rendered. Windows users can create a shortcut which lets you specify your
++desired arguments.
++
+ # Compile from source
+ 
+ - Follow [ebitengine&#39;s install guide][6]
+diff --git a/main.go b/main.go
+index 12192f0..cc66e0a 100644
+--- a/main.go
++++ b/main.go
+@@ -3,6 +3,7 @@
+ import (
+ 	&quot;bytes&quot;
+ 	&quot;embed&quot;
++	&quot;flag&quot;
+ 	_ &quot;image/png&quot;
+ 	&quot;log&quot;
+ 
+@@ -160,18 +161,24 @@ func init() {
+ }
+ 
+ func main() {
++	var sizeFlag int
++	flag.IntVar(
++		&amp;sizeFlag, &quot;size&quot;, 2, &quot;Size multiplier: make Gura as big as you want.&quot;,
++	)
++	flag.Parse()
++
+ 	var game Game
+ 	game.CurrentAnim = Idle
+ 
+-	ebiten.SetWindowSize(SPRITE_X*2, SPRITE_Y*2)
++	ebiten.SetWindowSize(SPRITE_X*sizeFlag, SPRITE_Y*sizeFlag)
+ 	ebiten.SetWindowTitle(&quot;Shark!&quot;)
+ 	ebiten.SetWindowDecorated(false)
+ 	ebiten.SetScreenTransparent(true)
+ 	ebiten.SetWindowPosition(9999, 9999)
+ 	ebiten.SetWindowFloating(true)
+-	if err := ebiten.RunGame(&amp;game); err != nil {
+-		log.Fatal(err)
+-	}
++
++	err := ebiten.RunGame(&amp;game)
++	PanicIfErr(err)
+ }
+ 
+ func PanicIfErr(err error) {
+</pre></body></html>

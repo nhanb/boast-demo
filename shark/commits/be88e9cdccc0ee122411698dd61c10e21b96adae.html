@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[be88e9cdcc] implement walk states | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / be88e9cdcc</strong><hr><pre>commit be88e9cdccc0ee122411698dd61c10e21b96adae
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 17 14:11:20 2023 +0700
+
+    implement walk states
+
+diff --git a/main.go b/main.go
+index 024d63f..ba19b37 100644
+--- a/main.go
++++ b/main.go
+@@ -49,6 +49,7 @@ type Anim struct {
+ type Position struct{ x, y int }
+ 
+ var DurationTillHungry time.Duration
++var WalkChance, StopChance int
+ 
+ type Game struct {
+ 	CurrentAnim      *Anim
+@@ -60,8 +61,6 @@ type Game struct {
+ 	MouseStartPos    Vector
+ 	Size             int
+ 	LastFed          time.Time
+-	WalkChance       int
+-	StopChance       int
+ 	X                int
+ 	Y                int
+ 	MaxX             int
+@@ -145,7 +144,7 @@ func (g *Game) Update() error {
+ 		}
+ 
+ 		if g.CurrentAnim == Idle {
+-			if randBool(g.WalkChance) {
++			if randBool(WalkChance) {
+ 				if randBool(50) {
+ 					g.CurrentAnim = WalkLeft
+ 				} else {
+@@ -153,7 +152,7 @@ func (g *Game) Update() error {
+ 				}
+ 			}
+ 		} else if g.CurrentAnim == WalkLeft || g.CurrentAnim == WalkRight {
+-			if randBool(g.StopChance) {
++			if randBool(StopChance) {
+ 				g.CurrentAnim = Idle
+ 			}
+ 		}
+@@ -268,8 +267,8 @@ func main() {
+ 	game.LastFed = time.Now()
+ 	DurationTillHungry = time.Duration(secondsUntilHungryFlag) * 1_000_000_000
+ 	game.Size = sizeFlag
+-	game.WalkChance = walkChanceFlag
+-	game.StopChance = stopChanceFlag
++	WalkChance = walkChanceFlag
++	StopChance = stopChanceFlag
+ 	game.X = xFlag
+ 	game.Y = yFlag
+ 
+diff --git a/states.go b/states.go
+index 36e6bce..d886778 100644
+--- a/states.go
++++ b/states.go
+@@ -40,6 +40,8 @@ func (sm *StateMachine) SetState(s State) {
+ func (sm *StateMachine) Update() error {
+ 	now := time.Now()
+ 
++	// If enough time has passed, force enter hungry state,
++	// otherwise process state-specific logic as usual.
+ 	if now.Sub(sm.lastFed) &gt;= DurationTillHungry {
+ 		sm.SetState(&amp;StateHungry{})
+ 		sm.lastFed = now
+@@ -78,9 +80,6 @@ type State interface {
+ 	EndAnimHook(sm *StateMachine)
+ }
+ 
+-type StateWalkL struct{}
+-type StateWalkR struct{}
+-
+ type StateIdle struct{}
+ 
+ func (s *StateIdle) Enter(sm *StateMachine) { sm.SetAnim(Idle) }
+@@ -94,7 +93,16 @@ func (s *StateIdle) Update(sm *StateMachine) {
+ 		return
+ 	}
+ }
+-func (s *StateIdle) EndAnimHook(sm *StateMachine) {}
++func (s *StateIdle) EndAnimHook(sm *StateMachine) {
++	if randBool(WalkChance) {
++		if randBool(50) {
++			sm.SetState(&amp;StateWalkL{})
++		} else {
++			sm.SetState(&amp;StateWalkR{})
++		}
++		return
++	}
++}
+ 
+ type StateDrag struct {
+ 	PreviousMousePos Vector
+@@ -150,3 +158,23 @@ func (s *StateFeed) Update(sm *StateMachine) {}
+ func (s *StateFeed) EndAnimHook(sm *StateMachine) {
+ 	sm.SetState(&amp;StateIdle{})
+ }
++
++type StateWalkL struct{}
++
++func (s *StateWalkL) Enter(sm *StateMachine)  { sm.SetAnim(WalkLeft) }
++func (s *StateWalkL) Update(sm *StateMachine) {}
++func (s *StateWalkL) EndAnimHook(sm *StateMachine) {
++	if randBool(StopChance) {
++		sm.SetState(&amp;StateIdle{})
++	}
++}
++
++type StateWalkR struct{}
++
++func (s *StateWalkR) Enter(sm *StateMachine)  { sm.SetAnim(WalkRight) }
++func (s *StateWalkR) Update(sm *StateMachine) {}
++func (s *StateWalkR) EndAnimHook(sm *StateMachine) {
++	if randBool(StopChance) {
++		sm.SetState(&amp;StateIdle{})
++	}
++}
+</pre></body></html>

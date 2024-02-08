@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[fd921abdc8] finished article &quot;built anything cool&quot; | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / fd921abdc8</strong><hr><pre>commit fd921abdc88913bd1b7f9d71e54cf49b056f47e0
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Fri Jan 24 14:40:10 2014 +0700
+
+    finished article &quot;built anything cool&quot;
+
+diff --git a/content/have-you-built-anything-cool-.md b/content/have-you-built-anything-cool-.md
+index f5ce173..625e192 100644
+--- a/content/have-you-built-anything-cool-.md
++++ b/content/have-you-built-anything-cool-.md
+@@ -14,7 +14,7 @@
+ &gt; \- What do you mean by &quot;more or less&quot;? [...] Have you built anything at all?  
+ 
+ Then I went on trying to explain what my recent side project - 
+-[pytaku](https://pytaku.appspot.com) - does and why it is awesome for me. He seemed to be
++[pytaku](https://pytaku-legacy.appspot.com) - does and why it is awesome for me. He seemed to be
+ disinterested halfway through so I decided to shut up anyway.
+ 
+ Sure, I have done stuff every now and then, be it assignment work or something I decided to create
+@@ -77,3 +77,77 @@ ## First year - Welcome to the web, and the GUI programming disillusionment
+ to wrote my own method that extended the thing to detect more DEs, but soon after that I thought
+ &quot;What the hell, why do I even have to do this?&quot; and decided that Swing was dead to me (or any
+ desktop Linux user for that matter).
++
++## Second and third year: enough of this &lt;del&gt;bull&lt;/del&gt; school crap. I&#39;m making stuff for myself!
++
++To be fair, the next 2 years have offered a number of new stuff: C/C++ programming, a taste of the
++M$ .NET C# stack (still impressed by Visual Studio&#39;s vi mode plugin), more Java,
++[Android app programming](http://truongtx.me/2013/05/02/agent-069-game/), and some neat security
++tricks. However, none of those intrigued me much, so I decided to start making things for my own:
++
++### Shell scripts
++
++If you have taken a look at my [dotfiles](https://github.com/nhanb/dotfiles), you&#39;ll notice that I
++do write a bunch of shell scripts to automate stuff I do often. The one I&#39;m currently proudest of
++is [rmiproxy_silent](https://github.com/nhanb/dotfiles/blob/master/scripts/rmitproxy_silent), a
++script that automatically dectects whether I am using RMIT&#39;s network and set/clear the appropriate
++proxy settings. Another one that I can&#39;t live without is
++[install.sh](https://github.com/nhanb/dotfiles/blob/master/install.sh), a script that helps install
++all my dotfiles, sets up zsh and various things. It saved me *a lot* of time whenever I reinstall
++my system.
++
++Obligatory mention of [oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh/), greatest invention
++since sliced bread!
++
++### AJMG, then Pytaku, then... who knows?
++
++The original idea was actually creating a Java Swing program that helps download manga. It was born
++out of spite of [DomDomSoft](http://blog.domdomsoft.com/), a manga downloader that requires
++&quot;donation&quot; to unlock full functionalities. &quot;I could do that, and I&#39;ll open source the crap out of
++it, because open source is awesome&quot;, I thought. Spent some time and got the minimal program
++working program:
++
++![](/images/ajmg.png)
++
++This program did help me get a firm knowledge of java&#39;s thread manipulation and using http proxy
++(so I could exploit RMIT&#39;s awesome network bandwidth). I also succeeded in achieving separation of
++concern to a certain level this time, allowing contributors (if any) to easily add support for
++other manga reader sites. But then again, Swing&#39;s quirks put me off, so my bad habit of losing
++interest quickly kicked in and the project stopped there.
++
++Then came [Pytaku](https://pytaku-legacy.appspot.com), ajmg&#39;s spiritual successor. At this point I
++knew enough of python and wanted to try out Google App Engine, so I decided to make a web version
++of AJMG, with the difference that instead of downloading directly, it forwards it to the user&#39;s
++Dropbox folder. Why not Google Drive you ask? Because they haven&#39;t even bothered to release an
++official Linux client for it. Shame on you, Google!
++
++Loads of exciting things were learned along the way: how URL handling works in
++webapp2 and in other web frameworks in general, proper templating (can&#39;t believe I ever wrote
++`&lt;?php echo $title; ?&gt;`... not cool!), OAuth2 (more than a few &quot;Aha!&quot; moments working with this
++little guy...), Google&#39;s Datastore and NoSQL ingeneral, and of course, Twitter Bootstrap - saving
++clueless non-designer developers since its inception.
++
++And now, I&#39;m rewriting it from scratch, this time trying out TDD, making use of
++[travis-ci](https://travis-ci.org/nhanb/pytaku), which will be especially helpful to periodically
++test if a manga site has changed its page layout and screwed up Pytaku&#39;s scraping code. Have
++encountered a number of quirks when trying to set up the correct testing boilerplate for a Google
++App Engine project, but it seems everything will be smooth from now on. This holiday season I plan
++to at least roll out an alpha version for testing. Stay tuned if you&#39;re interested!
++
++## To sum it up...
++
++I don&#39;t believe in developing products I myself don&#39;t want to use. I want to make things that make
++my life easier, and if that helps others too then it&#39;s a huge bonus. This is why Github is my
++favorite company right now, and
++[How GitHub uses GitHub to build GitHub](https://www.youtube.com/watch?v=qyz3jkOBbQY) remains the
++best developer speech I have ever seen.
++
++Right now I haven&#39;t made a full-blown program that I can confidently distribute to end users, but I
++certainly have made quite a few nifty tools to improve my day-to-day computing tasks and learned a
++lot along the way. Right now I cannot confidently answer this big question by pointing them to a
++polished website detailing every nook and cranny of my shiny widely-used, battle-tested program,
++but I&#39;m confident I have the right knowledge to get there. If there is such a thing as &quot;Lunar New
++Year Resolution&quot;, I guess mine is that one year from now, I will have a satisfying answer to this
++question. Watch out world, I&#39;m coming!
++
++So, have *you* built anything cool recently?
+diff --git a/content/images/ajmg.png b/content/images/ajmg.png
+new file mode 100644
+index 0000000..fb96b53
+Binary files /dev/null and b/content/images/ajmg.png differ
+</pre></body></html>

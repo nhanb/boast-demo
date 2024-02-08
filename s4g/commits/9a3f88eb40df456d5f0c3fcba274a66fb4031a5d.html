@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[9a3f88eb40] don&#39;t trim whitespace in djot body | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 9a3f88eb40</strong><hr><pre>commit 9a3f88eb40df456d5f0c3fcba274a66fb4031a5d
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 19 17:48:06 2023 +0700
+
+    don&#39;t trim whitespace in djot body
+
+diff --git a/metadata.go b/metadata.go
+index ea68c76..c1ef2e6 100644
+--- a/metadata.go
++++ b/metadata.go
+@@ -183,13 +183,17 @@ func SeparateMetadata(r io.Reader) (metadata []byte, body []byte) {
+ 	readingFrontMatter := true
+ 	var buffer []byte
+ 	for s.Scan() {
+-		line := bytes.TrimSpace(s.Bytes())
++		line := s.Bytes()
+ 
+-		if readingFrontMatter &amp;&amp; bytes.Equal(line, frontMatterSep) {
+-			metadata = buffer
+-			buffer = body
+-			readingFrontMatter = false
+-			continue
++		if readingFrontMatter {
++			line = bytes.TrimSpace(s.Bytes())
++
++			if bytes.Equal(line, frontMatterSep) {
++				metadata = buffer
++				buffer = body
++				readingFrontMatter = false
++				continue
++			}
+ 		}
+ 
+ 		buffer = append(buffer, line...)
+</pre></body></html>

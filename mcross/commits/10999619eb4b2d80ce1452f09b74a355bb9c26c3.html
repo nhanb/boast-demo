@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[10999619eb] correctly read response header | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 10999619eb</strong><hr><pre>commit 10999619eb4b2d80ce1452f09b74a355bb9c26c3
+Author: plugd &lt;&gt;
+Date:   Sun May 31 09:56:26 2020 +0700
+
+    correctly read response header
+    
+    https://todo.sr.ht/~nhanb/mcross/5
+
+diff --git a/src/mcross/transport.py b/src/mcross/transport.py
+index afa0a5f..3ac904f 100644
+--- a/src/mcross/transport.py
++++ b/src/mcross/transport.py
+@@ -112,12 +112,22 @@ async def raw_get(url: GeminiUrl):
+ 
+     async with sock:
+         await sock.sendall(f&quot;gemini://{url.host}{url.path}\r\n&quot;.encode())
+-        header = (await sock.recv(MAX_RESP_HEADER_BYTES)).decode()
++        header = b&quot;&quot;
++        remainder = b&quot;&quot;
++        while True:
++            header += await sock.recv(4096)
++            if b&quot;\r\n&quot; in header:
++                idx = header.find(b&quot;\r\n&quot;)
++                remainder = header[(idx + 2) :]
++                header = header[: (idx + 2)].decode()
++                break
++
++        # header = (await sock.recv(MAX_RESP_HEADER_BYTES)).decode()
+         status, meta = _parse_resp_header(header)
+         resp = Response(status=status, meta=meta, url=url)
+ 
+         if status.startswith(&quot;2&quot;):
+-            body = b&quot;&quot;
++            body = remainder
+             msg = await sock.recv(4096)
+             body += msg
+             while msg and len(body) &lt;= MAX_RESP_BODY_BYTES:
+</pre></body></html>

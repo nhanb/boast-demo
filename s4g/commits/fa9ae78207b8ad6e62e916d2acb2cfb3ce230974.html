@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[fa9ae78207] remove debug message | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / fa9ae78207</strong><hr><pre>commit fa9ae78207b8ad6e62e916d2acb2cfb3ce230974
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 23 23:38:28 2023 +0700
+
+    remove debug message
+
+diff --git a/main.go b/main.go
+index 36e707d..52702ca 100644
+--- a/main.go
++++ b/main.go
+@@ -420,7 +420,6 @@ func findArticles(fsys writablefs.FS, site *SiteMetadata) (map[string]*Article,
+ 	var seriesPaths []string
+ 
+ 	err := fs.WalkDir(fsys, &quot;.&quot;, func(path string, d fs.DirEntry, err error) error {
+-		fmt.Println(&quot;DIR:&quot;, path)
+ 		if d.IsDir() || !strings.HasSuffix(d.Name(), DjotExt) {
+ 			return nil
+ 		}
+</pre></body></html>

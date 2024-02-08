@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1b2f61ee9c] update deps | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 1b2f61ee9c</strong><hr><pre>commit 1b2f61ee9c14bffbc5e9f4aaa2960d1428943fc1
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Oct 1 21:07:08 2022 +0700
+
+    update deps
+    
+    because dependabot complained about joblib being unsecure or something.
+
+diff --git a/poetry.lock b/poetry.lock
+index f5e6f2f..3a0081f 100644
+--- a/poetry.lock
++++ b/poetry.lock
+@@ -1,10 +1,10 @@
+ [[package]]
+ name = &quot;blinker&quot;
+-version = &quot;1.4&quot;
++version = &quot;1.5&quot;
+ description = &quot;Fast, simple object-to-object and broadcast signaling&quot;
+ category = &quot;main&quot;
+ optional = false
+-python-versions = &quot;*&quot;
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
+ 
+ [[package]]
+ name = &quot;commonmark&quot;
+@@ -53,7 +53,7 @@ optional = false
+ python-versions = &quot;*&quot;
+ 
+ [[package]]
+-name = &quot;jinja2&quot;
++name = &quot;Jinja2&quot;
+ version = &quot;3.1.2&quot;
+ description = &quot;A very fast and expressive template engine.&quot;
+ category = &quot;main&quot;
+@@ -68,14 +68,14 @@ i18n = [&quot;Babel (&gt;=2.7)&quot;]
+ 
+ [[package]]
+ name = &quot;joblib&quot;
+-version = &quot;1.1.0&quot;
++version = &quot;1.2.0&quot;
+ description = &quot;Lightweight pipelining with Python functions&quot;
+ category = &quot;main&quot;
+ optional = false
+-python-versions = &quot;&gt;=3.6&quot;
++python-versions = &quot;&gt;=3.7&quot;
+ 
+ [[package]]
+-name = &quot;markdown&quot;
++name = &quot;Markdown&quot;
+ version = &quot;3.4.1&quot;
+ description = &quot;Python implementation of Markdown.&quot;
+ category = &quot;main&quot;
+@@ -86,7 +86,7 @@ python-versions = &quot;&gt;=3.7&quot;
+ testing = [&quot;coverage&quot;, &quot;pyyaml&quot;]
+ 
+ [[package]]
+-name = &quot;markupsafe&quot;
++name = &quot;MarkupSafe&quot;
+ version = &quot;2.1.1&quot;
+ description = &quot;Safely add untrusted strings to HTML/XML markup.&quot;
+ category = &quot;main&quot;
+@@ -130,13 +130,16 @@ joblib = &quot;&gt;=0.9&quot;
+ pelican = &quot;&gt;=3.1.1&quot;
+ 
+ [[package]]
+-name = &quot;pygments&quot;
+-version = &quot;2.12.0&quot;
++name = &quot;Pygments&quot;
++version = &quot;2.13.0&quot;
+ description = &quot;Pygments is a syntax highlighting package written in Python.&quot;
+ category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=3.6&quot;
+ 
++[package.extras]
++plugins = [&quot;importlib-metadata&quot;]
++
+ [[package]]
+ name = &quot;python-dateutil&quot;
+ version = &quot;2.8.2&quot;
+@@ -150,7 +153,7 @@ six = &quot;&gt;=1.5&quot;
+ 
+ [[package]]
+ name = &quot;pytz&quot;
+-version = &quot;2022.1&quot;
++version = &quot;2022.2.1&quot;
+ description = &quot;World timezone definitions, modern and historical&quot;
+ category = &quot;main&quot;
+ optional = false
+@@ -199,8 +202,8 @@ python-versions = &quot;*&quot;
+ smartypants = &quot;&gt;=1.8.3&quot;
+ 
+ [[package]]
+-name = &quot;unidecode&quot;
+-version = &quot;1.3.4&quot;
++name = &quot;Unidecode&quot;
++version = &quot;1.3.6&quot;
+ description = &quot;ASCII transliterations of Unicode text&quot;
+ category = &quot;main&quot;
+ optional = false
+@@ -209,11 +212,12 @@ python-versions = &quot;&gt;=3.5&quot;
+ [metadata]
+ lock-version = &quot;1.1&quot;
+ python-versions = &quot;^3.10&quot;
+-content-hash = &quot;4f22a37c08a5e7ffcbde0aeae259ef800fa2032303f8571b8b6afb99af4637b7&quot;
++content-hash = &quot;ddedd6f9d94db8a55cde57c4e3ad6c212dd5370b10fd3ff392558c4850c3cb60&quot;
+ 
+ [metadata.files]
+ blinker = [
+-    {file = &quot;blinker-1.4.tar.gz&quot;, hash = &quot;sha256:471aee25f3992bd325afa3772f1063dbdbbca947a041b8b89466dc00d606f8b6&quot;},
++    {file = &quot;blinker-1.5-py2.py3-none-any.whl&quot;, hash = &quot;sha256:1eb563df6fdbc39eeddc177d953203f99f097e9bf0e2b8f9f3cf18b6ca425e36&quot;},
++    {file = &quot;blinker-1.5.tar.gz&quot;, hash = &quot;sha256:923e5e2f69c155f2cc42dafbbd70e16e3fde24d2d4aa2ab72fbe386238892462&quot;},
+ ]
+ commonmark = [
+     {file = &quot;commonmark-0.9.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:da2f38c92590f83de410ba1a3cbceafbc74fee9def35f9251ba9a971d6d66fd9&quot;},
+@@ -233,19 +237,19 @@ ghp-import = [
+ htmlmin = [
+     {file = &quot;htmlmin-0.1.12.tar.gz&quot;, hash = &quot;sha256:50c1ef4630374a5d723900096a961cff426dff46b48f34d194a81bbe14eca178&quot;},
+ ]
+-jinja2 = [
++Jinja2 = [
+     {file = &quot;Jinja2-3.1.2-py3-none-any.whl&quot;, hash = &quot;sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61&quot;},
+     {file = &quot;Jinja2-3.1.2.tar.gz&quot;, hash = &quot;sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852&quot;},
+ ]
+ joblib = [
+-    {file = &quot;joblib-1.1.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:f21f109b3c7ff9d95f8387f752d0d9c34a02aa2f7060c2135f465da0e5160ff6&quot;},
+-    {file = &quot;joblib-1.1.0.tar.gz&quot;, hash = &quot;sha256:4158fcecd13733f8be669be0683b96ebdbbd38d23559f54dca7205aea1bf1e35&quot;},
++    {file = &quot;joblib-1.2.0-py3-none-any.whl&quot;, hash = &quot;sha256:091138ed78f800342968c523bdde947e7a305b8594b910a0fea2ab83c3c6d385&quot;},
++    {file = &quot;joblib-1.2.0.tar.gz&quot;, hash = &quot;sha256:e1cee4a79e4af22881164f218d4311f60074197fb707e082e803b61f6d137018&quot;},
+ ]
+-markdown = [
++Markdown = [
+     {file = &quot;Markdown-3.4.1-py3-none-any.whl&quot;, hash = &quot;sha256:08fb8465cffd03d10b9dd34a5c3fea908e20391a2a90b88d66362cb05beed186&quot;},
+     {file = &quot;Markdown-3.4.1.tar.gz&quot;, hash = &quot;sha256:3b809086bb6efad416156e00a0da66fe47618a5d6918dd688f53f40c8e4cfeff&quot;},
+ ]
+-markupsafe = [
++MarkupSafe = [
+     {file = &quot;MarkupSafe-2.1.1-cp310-cp310-macosx_10_9_universal2.whl&quot;, hash = &quot;sha256:86b1f75c4e7c2ac2ccdaec2b9022845dbb81880ca318bb7a0a01fbf7813e3812&quot;},
+     {file = &quot;MarkupSafe-2.1.1-cp310-cp310-macosx_10_9_x86_64.whl&quot;, hash = &quot;sha256:f121a1420d4e173a5d96e47e9a0c0dcff965afdf1626d28de1460815f7c4ee7a&quot;},
+     {file = &quot;MarkupSafe-2.1.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl&quot;, hash = &quot;sha256:a49907dd8420c5685cfa064a1335b6754b74541bbb3706c259c02ed65b644b3e&quot;},
+@@ -295,17 +299,17 @@ pelican-minify = [
+     {file = &quot;pelican-minify-0.9.tar.gz&quot;, hash = &quot;sha256:a0ffa9b1f15089bc4aec4692c5feba87356d427a7946ffd8b6222ac4c7758773&quot;},
+     {file = &quot;pelican_minify-0.9-py2.py3-none-any.whl&quot;, hash = &quot;sha256:fcefce477d4a24c8972ec8871738100f144e329201ab2b45aab8b5d3b7ba8e65&quot;},
+ ]
+-pygments = [
+-    {file = &quot;Pygments-2.12.0-py3-none-any.whl&quot;, hash = &quot;sha256:dc9c10fb40944260f6ed4c688ece0cd2048414940f1cea51b8b226318411c519&quot;},
+-    {file = &quot;Pygments-2.12.0.tar.gz&quot;, hash = &quot;sha256:5eb116118f9612ff1ee89ac96437bb6b49e8f04d8a13b514ba26f620208e26eb&quot;},
++Pygments = [
++    {file = &quot;Pygments-2.13.0-py3-none-any.whl&quot;, hash = &quot;sha256:f643f331ab57ba3c9d89212ee4a2dabc6e94f117cf4eefde99a0574720d14c42&quot;},
++    {file = &quot;Pygments-2.13.0.tar.gz&quot;, hash = &quot;sha256:56a8508ae95f98e2b9bdf93a6be5ae3f7d8af858b43e02c5a2ff083726be40c1&quot;},
+ ]
+ python-dateutil = [
+     {file = &quot;python-dateutil-2.8.2.tar.gz&quot;, hash = &quot;sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86&quot;},
+     {file = &quot;python_dateutil-2.8.2-py2.py3-none-any.whl&quot;, hash = &quot;sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9&quot;},
+ ]
+ pytz = [
+-    {file = &quot;pytz-2022.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:e68985985296d9a66a881eb3193b0906246245294a881e7c8afe623866ac6a5c&quot;},
+-    {file = &quot;pytz-2022.1.tar.gz&quot;, hash = &quot;sha256:1e760e2fe6a8163bc0b3d9a19c4f84342afa0a2affebfaa84b01b978a02ecaa7&quot;},
++    {file = &quot;pytz-2022.2.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:220f481bdafa09c3955dfbdddb7b57780e9a94f5127e35456a48589b9e0c0197&quot;},
++    {file = &quot;pytz-2022.2.1.tar.gz&quot;, hash = &quot;sha256:cea221417204f2d1a2aa03ddae3e867921971d0d76f14d87abb4414415bbdcf5&quot;},
+ ]
+ rich = [
+     {file = &quot;rich-12.5.1-py3-none-any.whl&quot;, hash = &quot;sha256:2eb4e6894cde1e017976d2975ac210ef515d7548bc595ba20e195fb9628acdeb&quot;},
+@@ -321,7 +325,7 @@ smartypants = [
+ typogrify = [
+     {file = &quot;typogrify-2.0.7.tar.gz&quot;, hash = &quot;sha256:8be4668cda434163ce229d87ca273a11922cb1614cb359970b7dc96eed13cb38&quot;},
+ ]
+-unidecode = [
+-    {file = &quot;Unidecode-1.3.4-py3-none-any.whl&quot;, hash = &quot;sha256:afa04efcdd818a93237574791be9b2817d7077c25a068b00f8cff7baa4e59257&quot;},
+-    {file = &quot;Unidecode-1.3.4.tar.gz&quot;, hash = &quot;sha256:8e4352fb93d5a735c788110d2e7ac8e8031eb06ccbfe8d324ab71735015f9342&quot;},
++Unidecode = [
++    {file = &quot;Unidecode-1.3.6-py3-none-any.whl&quot;, hash = &quot;sha256:547d7c479e4f377b430dd91ac1275d593308dce0fc464fb2ab7d41f82ec653be&quot;},
++    {file = &quot;Unidecode-1.3.6.tar.gz&quot;, hash = &quot;sha256:fed09cf0be8cf415b391642c2a5addfc72194407caee4f98719e40ec2a72b830&quot;},
+ ]
+diff --git a/pyproject.toml b/pyproject.toml
+index dbc73d5..ee88336 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -6,9 +6,9 @@ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ 
+ [tool.poetry.dependencies]
+ python = &quot;^3.10&quot;
++typogrify = &quot;^2.0&quot;
++pelican-minify = &quot;^0.9.0&quot;
+ pelican = {extras = [&quot;markdown&quot;], version = &quot;^4.8.0&quot;}
+-typogrify = &quot;^2.0.7&quot;
+-pelican-minify = &quot;^0.9&quot;
+ 
+ [tool.poetry.dev-dependencies]
+ ghp-import = &quot;^0.5.5&quot;
+</pre></body></html>

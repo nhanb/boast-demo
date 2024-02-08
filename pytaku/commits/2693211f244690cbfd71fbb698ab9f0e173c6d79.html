@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[2693211f24] better outgoing proxy signature | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 2693211f24</strong><hr><pre>commit 2693211f244690cbfd71fbb698ab9f0e173c6d79
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jun 22 20:58:57 2021 +0700
+
+    better outgoing proxy signature
+
+diff --git a/src/mangoapi/base_site.py b/src/mangoapi/base_site.py
+index 9189367..e308cea 100644
+--- a/src/mangoapi/base_site.py
++++ b/src/mangoapi/base_site.py
+@@ -65,12 +65,12 @@ def _http_request(self, method, url, *args, **kwargs):
+         # Proxy shit
+         parsed_url = urlparse(url)
+         url = parsed_url._replace(
+-            netloc=config.FAASPROXY_NETLOC,
++            netloc=config.OUTGOING_PROXY_NETLOC,
+             scheme=&quot;https&quot;,
+-            path=config.FAASPROXY_PATH + parsed_url.path,
+         ).geturl()
+-        headers[&quot;Faasproxy-Target-Host&quot;] = parsed_url.netloc
+-        headers[&quot;Faasproxy-Key&quot;] = config.FAASPROXY_KEY
++        headers[&quot;X-Proxy-Target-Host&quot;] = parsed_url.netloc
++        headers[&quot;X-Proxy-Key&quot;] = config.OUTGOING_PROXY_KEY
++        headers[&quot;X-Proxy-Scheme&quot;] = parsed_url.scheme
+         kwargs[&quot;headers&quot;] = headers
+ 
+         request_func = getattr(self._session, method)
+diff --git a/src/pytaku/conf.py b/src/pytaku/conf.py
+index ff1a9cc..aa53ca4 100644
+--- a/src/pytaku/conf.py
++++ b/src/pytaku/conf.py
+@@ -14,9 +14,8 @@ class Config(GoodConf):
+     PROXY_CACHE_MAX_SIZE = Value(default=1024 * 1024 * 1024 * 5)  # 5GiB in bytes
+     PROXY_CACHE_MAX_AGE = Value(default=3600 * 24 * 2)  # 2 days in seconds
+ 
+-    FAASPROXY_NETLOC = Value()
+-    FAASPROXY_PATH = Value()
+-    FAASPROXY_KEY = Value()
++    OUTGOING_PROXY_NETLOC = Value()
++    OUTGOING_PROXY_KEY = Value()
+ 
+ 
+ config = Config(default_files=[&quot;pytaku.conf.json&quot;])
+</pre></body></html>

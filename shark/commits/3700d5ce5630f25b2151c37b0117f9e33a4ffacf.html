@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[3700d5ce56] change animation on right click | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 3700d5ce56</strong><hr><pre>commit 3700d5ce5630f25b2151c37b0117f9e33a4ffacf
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jun 28 23:58:39 2022 +0700
+
+    change animation on right click
+
+diff --git a/main.go b/main.go
+index 0ca85df..6bd8f79 100644
+--- a/main.go
++++ b/main.go
+@@ -10,6 +10,7 @@
+ 
+ 	&quot;github.com/hajimehoshi/ebiten/v2&quot;
+ 	&quot;github.com/hajimehoshi/ebiten/v2/ebitenutil&quot;
++	&quot;github.com/hajimehoshi/ebiten/v2/inpututil&quot;
+ )
+ 
+ //go:embed sprites/idle/*
+@@ -26,18 +27,33 @@ type Anim struct {
+ }
+ 
+ type Game struct {
+-	CurrentAnim  *Anim
+-	CurrentFrame int
+-	Ticks        int
++	CurrentAnim       *Anim
++	CurrentFrame      int
++	Ticks             int
++	ShouldResetToIdle bool
+ }
+ 
+ func (g *Game) Update() error {
+-	g.Ticks++
+-	if g.Ticks &gt;= 10 {
++	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
++		g.CurrentAnim = RightClick
+ 		g.Ticks = 0
+-		g.CurrentFrame++
+-		if g.CurrentFrame &gt;= len(g.CurrentAnim.Frames) {
+-			g.CurrentFrame = 0
++		g.CurrentFrame = 0
++		g.ShouldResetToIdle = true
++		return nil
++	}
++
++	g.Ticks++
++	if g.Ticks &lt; 10 {
++		return nil
++	}
++
++	g.Ticks = 0
++	g.CurrentFrame++
++	if g.CurrentFrame &gt;= len(g.CurrentAnim.Frames) {
++		g.CurrentFrame = 0
++		if g.ShouldResetToIdle {
++			g.CurrentAnim = Idle
++			g.ShouldResetToIdle = false
+ 		}
+ 	}
+ 	return nil
+</pre></body></html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[dd806f8cdb] add Windows icon | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / dd806f8cdb</strong><hr><pre>commit dd806f8cdb4a07075c5eca4db576262184840e1e
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jun 17 18:06:52 2023 +0700
+
+    add Windows icon
+
+diff --git a/Makefile b/Makefile
+index 581ba51..3c17458 100644
+--- a/Makefile
++++ b/Makefile
+@@ -9,5 +9,13 @@ dist-windows:
+ 		go build -o dist/windows/gorts.exe -ldflags -H=windowsgui
+ 	cp -r web dist/windows/web
+ 
++# gorts.ico was produced from Haiku OS&#39;s midiplayer icon using imagemagick:
++# convert -background transparent -density 300 \
++#   -define &#39;icon:auto-resize=256,128,64,32,24,16&#39; \
++#   App_MidiPlayer.svg ~/pj/gorts/gorts.ico
++gorts.syso: gorts.ico
++	# needs `go install github.com/akavel/rsrc@latest`
++	rsrc -ico gorts.ico -o gorts.syso
++
+ clean:
+ 	rm -rf dist/*
+diff --git a/gorts.ico b/gorts.ico
+new file mode 100644
+index 0000000..73ec296
+Binary files /dev/null and b/gorts.ico differ
+diff --git a/gorts.syso b/gorts.syso
+new file mode 100644
+index 0000000..7211ec8
+Binary files /dev/null and b/gorts.syso differ
+</pre></body></html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b10bb4d677] typography &amp; &lt;video&gt; fallback (for netsurf mostly) | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / b10bb4d677</strong><hr><pre>commit b10bb4d677654de4c1d208cc023311605853e257
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Sep 22 20:21:07 2021 +0700
+
+    typography &amp; &lt;video&gt; fallback (for netsurf mostly)
+
+diff --git a/content/posts/simplest-possible-stepmania-soft-to-hard-pad-mod.md b/content/posts/simplest-possible-stepmania-soft-to-hard-pad-mod.md
+index 3de8837..8564c53 100644
+--- a/content/posts/simplest-possible-stepmania-soft-to-hard-pad-mod.md
++++ b/content/posts/simplest-possible-stepmania-soft-to-hard-pad-mod.md
+@@ -83,6 +83,9 @@
+ 
+ &lt;video controls&gt;
+   &lt;source src=&quot;https://junk.imnhan.com/softpadmod.mp4&quot; type=&quot;video/mp4&quot;&gt;
++  &lt;a href=&quot;https://junk.imnhan.com/softpadmod.mp4&quot;&gt;
++    Video: https://junk.imnhan.com/softpadmod.mp4
++  &lt;/a&gt;
+ &lt;/video&gt;
+ 
+ &lt;strike&gt;(man I wonder if we&#39;ll ever get a Melty Blood 2)&lt;/strike&gt;  
+diff --git a/content/posts/streaming-videos-from-google-drive.md b/content/posts/streaming-videos-from-google-drive.md
+index 3d6923b..a1e098e 100644
+--- a/content/posts/streaming-videos-from-google-drive.md
++++ b/content/posts/streaming-videos-from-google-drive.md
+@@ -8,6 +8,9 @@
+ 
+ &lt;video controls&gt;
+   &lt;source src=&quot;https://junk.imnhan.com/gflick-phone-demo.mp4&quot; type=&quot;video/mp4&quot;&gt;
++  &lt;a href=&quot;https://junk.imnhan.com/gflick-phone-demo.mp4&quot;&gt;
++    Video: https://junk.imnhan.com/gflick-phone-demo.mp4
++  &lt;/a&gt;
+ &lt;/video&gt;
+ 
+ The longer version follows.
+diff --git a/content/posts/towards-an-acceptable-video-playing-experience.md b/content/posts/towards-an-acceptable-video-playing-experience.md
+index be6332b..e879727 100644
+--- a/content/posts/towards-an-acceptable-video-playing-experience.md
++++ b/content/posts/towards-an-acceptable-video-playing-experience.md
+@@ -100,6 +100,9 @@ ## Enter gflick
+ 
+ &lt;video controls&gt;
+   &lt;source src=&quot;https://junk.imnhan.com/gflick.mp4&quot; type=&quot;video/mp4&quot;&gt;
++  &lt;a href=&quot;https://junk.imnhan.com/gflick.mp4&quot;&gt;
++    Video: https://junk.imnhan.com/gflick.mp4
++  &lt;/a&gt;
+ &lt;/video&gt;
+ 
+ It can run just fine as a local server, but cumbersome and not practical on
+diff --git a/content/posts/video-streaming-finale-or-why-put-io-is-awesome.md b/content/posts/video-streaming-finale-or-why-put-io-is-awesome.md
+index 2425085..a14d360 100644
+--- a/content/posts/video-streaming-finale-or-why-put-io-is-awesome.md
++++ b/content/posts/video-streaming-finale-or-why-put-io-is-awesome.md
+@@ -24,6 +24,7 @@
+ 
+ &lt;video controls&gt;
+   &lt;source src=&quot;/images/put.io_01_mpv.mp4&quot; type=&quot;video/mp4&quot;&gt;
++  &lt;a href=&quot;/images/put.io_01_mpv.mp4&quot;&gt;Video: /images/put.io_01_mpv.mp4&lt;/a&gt;
+ &lt;/video&gt;
+ 
+ 
+diff --git a/nhanb-theme/static/css/main.css b/nhanb-theme/static/css/main.css
+index 9208ea4..45388a1 100644
+--- a/nhanb-theme/static/css/main.css
++++ b/nhanb-theme/static/css/main.css
+@@ -41,7 +41,7 @@ video {
+ }
+ 
+ p {
+-  line-height: 1.5rem;
++  line-height: 1.4rem;
+ }
+ 
+ li {
+</pre></body></html>

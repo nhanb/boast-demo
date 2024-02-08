@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[4d336f64a2] fix bug when walking against a KDE panel | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 4d336f64a2</strong><hr><pre>commit 4d336f64a298976fa0563955ef8040431a0eeec1
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Oct 4 17:54:01 2023 +0700
+
+    fix bug when walking against a KDE panel
+
+diff --git a/states.go b/states.go
+index 3d2e248..76d0233 100644
+--- a/states.go
++++ b/states.go
+@@ -133,7 +133,9 @@ func (s *StateDrag) Update(sm *StateMachine) {
+ 	}
+ 	s.PreviousMousePos = mousePos
+ }
+-func (s *StateDrag) EndAnimHook(sm *StateMachine) {}
++func (s *StateDrag) EndAnimHook(sm *StateMachine) {
++	syncWinPos(sm)
++}
+ 
+ type StateRClick struct{}
+ 
+@@ -217,7 +219,24 @@ func (s *StateWalk) Update(sm *StateMachine) {
+ 	}
+ }
+ func (s *StateWalk) EndAnimHook(sm *StateMachine) {
++	// On KDE, our window isn&#39;t allowed to walk over a vertical taskbar
++	// (&quot;panel&quot; in KDE parlance), so when gura walks agains a taskbar, the
++	// in-game position (sm.x) will get out of sync with the actual window
++	// position. Therefore, we must run a sync:
++	syncWinPos(sm)
++
+ 	if randBool(StopChance) {
+ 		sm.SetState(&amp;StateIdle{})
+ 	}
+ }
++
++// Sometimes the sm.x/y doesn&#39;t match the window&#39;s actual position on screen.
++// Run this at the end of States that might end up in that situation.
++func syncWinPos(sm *StateMachine) {
++	actualX, actualY := ebiten.WindowPosition()
++	if actualX != sm.x || actualY != sm.y {
++		//fmt.Printf(&quot;ingame: %d,%d - actual: %d,%d\n&quot;, sm.x, sm.y, actualX, actualY)
++		sm.x = actualX
++		sm.y = actualY
++	}
++}
+</pre></body></html>

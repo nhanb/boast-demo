@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[06883f5f6c] play nice with people who prefer http | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 06883f5f6c</strong><hr><pre>commit 06883f5f6c0c66b9bcdebf3f681e95c102c0f780
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jul 26 20:58:17 2022 +0700
+
+    play nice with people who prefer http
+
+diff --git a/publishconf.py b/publishconf.py
+index a7b0f78..fc11395 100644
+--- a/publishconf.py
++++ b/publishconf.py
+@@ -2,16 +2,16 @@
+ # -*- coding: utf-8 -*- #
+ import os
+ import sys
++
+ sys.path.append(os.curdir)
+ 
+ from pelicanconf import *  # noqa
+ 
+-
+ # This file is only used if you use `make publish` or
+ # explicitly specify it as your config file.
+ 
+ SITEURL = &quot;https://hi.imnhan.com&quot;
+-RELATIVE_URLS = False
++RELATIVE_URLS = True
+ 
+ DELETE_OUTPUT_DIRECTORY = True
+ 
+</pre></body></html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[c0a8d23d08] scheduled token cleanup | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / c0a8d23d08</strong><hr><pre>commit c0a8d23d08cd915d162449d790e699d05baa6e3e
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Aug 18 18:57:02 2020 +0700
+
+    scheduled token cleanup
+
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index ec545b5..57a581d 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -2,9 +2,8 @@
+ import secrets
+ from typing import List, Tuple
+ 
+-import argon2
+-
+ import apsw
++import argon2
+ 
+ from .database.common import run_sql, run_sql_many, run_sql_on_demand
+ 
+@@ -390,3 +389,14 @@ def delete_token(user_id, token):
+         return_num_affected=True,
+     )
+     return num_deleted
++
++
++def delete_expired_tokens():
++    num_deleted = run_sql(
++        &quot;&quot;&quot;
++        DELETE FROM token
++        WHERE datetime(last_accessed_at, lifespan) &lt; datetime(&#39;now&#39;);
++        &quot;&quot;&quot;,
++        return_num_affected=True,
++    )
++    return num_deleted
+diff --git a/src/pytaku/scheduler.py b/src/pytaku/scheduler.py
+index 742b341..d65fa33 100644
+--- a/src/pytaku/scheduler.py
++++ b/src/pytaku/scheduler.py
+@@ -1,14 +1,18 @@
+ import time
+ from datetime import datetime, timedelta
+ 
+-from .persistence import find_outdated_titles, save_title
++from .persistence import (
++    delete_expired_tokens,
++    find_outdated_titles,
++    save_title,
++)
+ from .source_sites import get_title
+ 
+ now = datetime.now
+ 
+ 
+ def main_loop():
+-    workers = [UpdateOutdatedTitles()]
++    workers = [UpdateOutdatedTitles(), DeleteExpiredTokens()]
+ 
+     while True:
+         for worker in workers:
+@@ -44,3 +48,12 @@ def run(self):
+             updated_title = get_title(title[&quot;site&quot;], title[&quot;id&quot;])
+             save_title(updated_title)
+             print(&quot; done&quot;)
++
++
++class DeleteExpiredTokens(Worker):
++    interval = timedelta(days=1)
++
++    def run(self):
++        num_deleted = delete_expired_tokens()
++        if num_deleted &gt; 0:
++            print(&quot;Deleted&quot;, num_deleted, &quot;tokens&quot;)
+</pre></body></html>

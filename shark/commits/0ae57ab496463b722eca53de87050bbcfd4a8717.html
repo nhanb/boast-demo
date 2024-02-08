@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[0ae57ab496] simplify github action using matrix | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 0ae57ab496</strong><hr><pre>commit 0ae57ab496463b722eca53de87050bbcfd4a8717
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jun 30 21:42:33 2022 +0700
+
+    simplify github action using matrix
+
+diff --git a/.github/workflows/main.yml b/.github/workflows/main.yml
+index 3b245c8..66fc027 100644
+--- a/.github/workflows/main.yml
++++ b/.github/workflows/main.yml
+@@ -8,49 +8,39 @@ on:
+ 
+ jobs:
+ 
+-  build-linux-win:
+-    runs-on: ubuntu-latest
++  build-everything:
++
++    strategy:
++      matrix:
++        os: [ubuntu-latest, macos-latest]
++
++    runs-on: ${{ matrix.os }}
++
+     steps:
+     - uses: actions/checkout@v3
+-
+-    - name: Set up Go
+-      uses: actions/setup-go@v3
++    - uses: actions/setup-go@v3
+       with:
+         go-version: 1.18
+ 
+-    - name: Install ebiten deps
++    - name: Install ebiten linux deps
++      if: runner.os == &#39;Linux&#39;
+       run: sudo apt-get install -y libc6-dev libglu1-mesa-dev libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libxxf86vm-dev libasound2-dev pkg-config
+ 
+-    - name: Build
+-      run: |
+-        make linux
+-        make win
+-
+-    - name: Upload Linux build
+-      uses: actions/upload-artifact@v3
+-      with:
+-        name: Linux build
+-        path: dist/shark-linux
++    - run: make
+ 
+-    - name: Upload Windows build
++    - name: Upload ${{ runner.os }} build
+       uses: actions/upload-artifact@v3
+       with:
+-        name: Windows build
+-        path: dist/shark-win.exe
+-
+-  build-mac:
+-    runs-on: macos-latest
+-    steps:
+-    - uses: actions/checkout@v3
+-
+-    - uses: actions/setup-go@v3
+-      with:
+-        go-version: 1.18
++        name: ${{ runner.os }} shark
++        path: dist/*
+ 
+-    - run: make mac
++    - name: Cross-compile Windows build
++      if: runner.os == &#39;Linux&#39;
++      run: make win
+ 
+-    - name: Upload macOS build
++    - name: Upload cross-compiled Windows build
++      if: runner.os == &#39;Linux&#39;
+       uses: actions/upload-artifact@v3
+       with:
+-        name: macOS build
+-        path: dist/shark-mac
++        name: Windows shark
++        path: dist/*.exe
+</pre></body></html>

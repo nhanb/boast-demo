@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[73eaf3602b] e-ink friendly tweaks | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 73eaf3602b</strong><hr><pre>commit 73eaf3602b95212241c4c490d6f4d860b645c20c
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Sep 25 09:15:47 2021 +0700
+
+    e-ink friendly tweaks
+
+diff --git a/content/pages/about.md b/content/pages/about.md
+index db14314..18b58f9 100644
+--- a/content/pages/about.md
++++ b/content/pages/about.md
+@@ -13,12 +13,16 @@
+ This blog is generated using [Pelican][1] and hosted on Github Pages.
+ Its source code can be found on my [github repo][2].
+ 
++Think its font looks ugly? Customize it yourself! No really, this site is
++configured to use your browser&#39;s designated `sans-serif` font, which you can
++customize. Here&#39;s a [guide for Chrome][4].
++
+ I make a point not to include 3rd-party javascript on the page, with the
+ exception of [Disqus][3], which is not loaded by default - you&#39;ll need to
+ explicitly click on the &quot;show comments&quot; button below each post if you want to
+ view or write comments. I think that&#39;s a reasonable compromise.
+ 
+-
+ [1]: http://getpelican.com
+ [2]: https://github.com/nhanb/imnhan.com
+ [3]: https://disqus.com/
++[4]: https://support.google.com/chrome/answer/96810
+diff --git a/nhanb-theme/static/css/article.css b/nhanb-theme/static/css/article.css
+index 6457aea..ff40c0b 100644
+--- a/nhanb-theme/static/css/article.css
++++ b/nhanb-theme/static/css/article.css
+@@ -4,6 +4,6 @@ .article-title {
+ }
+ 
+ #comments {
+-  border-top: 2px solid brown;
++  border-top: 2px solid var(--link-color);
+   padding-top: 0.7rem;
+ }
+diff --git a/nhanb-theme/static/css/index.css b/nhanb-theme/static/css/index.css
+index de0329d..d3702e6 100644
+--- a/nhanb-theme/static/css/index.css
++++ b/nhanb-theme/static/css/index.css
+@@ -10,6 +10,7 @@ .article-list li {
+ 
+ .article-list a {
+   font-weight: bold;
++  text-decoration: none;
+ }
+ 
+ .article-list time {
+diff --git a/nhanb-theme/static/css/main.css b/nhanb-theme/static/css/main.css
+index 45388a1..bf7604d 100644
+--- a/nhanb-theme/static/css/main.css
++++ b/nhanb-theme/static/css/main.css
+@@ -1,7 +1,7 @@
+ html {
+   --bg-color: cornsilk;
+   --fg-color: black;
+-  --link-color: brown;
++  --link-color: black;
+   --hr-border: 2px solid var(--link-color);
+ 
+   font-size: 100%;
+@@ -17,11 +17,17 @@ body {
+ }
+ 
+ a {
+-  text-decoration: none;
+   color: var(--link-color);
++  text-decoration-skip-ink: none;
+ }
+ a:hover {
+-  text-decoration: underline;
++  background-color: var(--link-color);
++  color: var(--bg-color);
++  text-decoration: none;
++}
++header a,
++nav a {
++  text-decoration: none;
+ }
+ 
+ figure,
+@@ -66,7 +72,7 @@ figcaption {
+ blockquote {
+   background-color: blanchedalmond;
+   border: 2px solid burlywood;
+-  border-left: 5px solid burlywood;
++  border-left: 1rem solid burlywood;
+   padding: 5px;
+   padding-left: 7px;
+   margin-left: 2rem;
+@@ -106,9 +112,11 @@ code {
+ 
+ p code,
+ li code {
+-  padding: 0.2rem 0.2rem 0.1rem 0.2rem;
+-  border-radius: 0.2rem;
+-  border: 1px solid lightgray;
++  background-color: ivory;
++}
++a:hover code {
++  background-color: var(--link-color);
++  color: var(--bg-color);
+ }
+ 
+ pre {
+@@ -120,6 +128,18 @@ pre code {
+   font-size: 0.9rem;
+ }
+ 
++/* Pygments tweaks */
++.highlight {
++  background-color: ivory;
++  border: 1px solid #ccc;
++}
++/* When using fenced blockquote without language name, pygments outputs `err`
++ * class for some reason
++ */
++.highlight .err {
++  border: none;
++}
++
+ /* site-specific stuff follows */
+ 
+ #main {
+diff --git a/nhanb-theme/static/css/pygment.css b/nhanb-theme/static/css/pygment.css
+new file mode 100644
+index 0000000..27764ba
+--- /dev/null
++++ b/nhanb-theme/static/css/pygment.css
+@@ -0,0 +1,74 @@
++pre { line-height: 125%; margin: 0; }
++td.linenos pre { color: #000000; background-color: #f0f0f0; padding: 0 5px 0 5px; }
++span.linenos { color: #000000; background-color: #f0f0f0; padding: 0 5px 0 5px; }
++td.linenos pre.special { color: #000000; background-color: #ffffc0; padding: 0 5px 0 5px; }
++span.linenos.special { color: #000000; background-color: #ffffc0; padding: 0 5px 0 5px; }
++.highlight .hll { background-color: #ffffcc }
++.highlight { background: #f0f0f0; }
++.highlight .c { color: #60a0b0; font-style: italic } /* Comment */
++.highlight .err { border: 1px solid #FF0000 } /* Error */
++.highlight .k { color: #007020; font-weight: bold } /* Keyword */
++.highlight .o { color: #666666 } /* Operator */
++.highlight .ch { color: #60a0b0; font-style: italic } /* Comment.Hashbang */
++.highlight .cm { color: #60a0b0; font-style: italic } /* Comment.Multiline */
++.highlight .cp { color: #007020 } /* Comment.Preproc */
++.highlight .cpf { color: #60a0b0; font-style: italic } /* Comment.PreprocFile */
++.highlight .c1 { color: #60a0b0; font-style: italic } /* Comment.Single */
++.highlight .cs { color: #60a0b0; background-color: #fff0f0 } /* Comment.Special */
++.highlight .gd { color: #A00000 } /* Generic.Deleted */
++.highlight .ge { font-style: italic } /* Generic.Emph */
++.highlight .gr { color: #FF0000 } /* Generic.Error */
++.highlight .gh { color: #000080; font-weight: bold } /* Generic.Heading */
++.highlight .gi { color: #00A000 } /* Generic.Inserted */
++.highlight .go { color: #888888 } /* Generic.Output */
++.highlight .gp { color: #c65d09; font-weight: bold } /* Generic.Prompt */
++.highlight .gs { font-weight: bold } /* Generic.Strong */
++.highlight .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
++.highlight .gt { color: #0044DD } /* Generic.Traceback */
++.highlight .kc { color: #007020; font-weight: bold } /* Keyword.Constant */
++.highlight .kd { color: #007020; font-weight: bold } /* Keyword.Declaration */
++.highlight .kn { color: #007020; font-weight: bold } /* Keyword.Namespace */
++.highlight .kp { color: #007020 } /* Keyword.Pseudo */
++.highlight .kr { color: #007020; font-weight: bold } /* Keyword.Reserved */
++.highlight .kt { color: #902000 } /* Keyword.Type */
++.highlight .m { color: #40a070 } /* Literal.Number */
++.highlight .s { color: #4070a0 } /* Literal.String */
++.highlight .na { color: #4070a0 } /* Name.Attribute */
++.highlight .nb { color: #007020 } /* Name.Builtin */
++.highlight .nc { color: #0e84b5; font-weight: bold } /* Name.Class */
++.highlight .no { color: #60add5 } /* Name.Constant */
++.highlight .nd { color: #555555; font-weight: bold } /* Name.Decorator */
++.highlight .ni { color: #d55537; font-weight: bold } /* Name.Entity */
++.highlight .ne { color: #007020 } /* Name.Exception */
++.highlight .nf { color: #06287e } /* Name.Function */
++.highlight .nl { color: #002070; font-weight: bold } /* Name.Label */
++.highlight .nn { color: #0e84b5; font-weight: bold } /* Name.Namespace */
++.highlight .nt { color: #062873; font-weight: bold } /* Name.Tag */
++.highlight .nv { color: #bb60d5 } /* Name.Variable */
++.highlight .ow { color: #007020; font-weight: bold } /* Operator.Word */
++.highlight .w { color: #bbbbbb } /* Text.Whitespace */
++.highlight .mb { color: #40a070 } /* Literal.Number.Bin */
++.highlight .mf { color: #40a070 } /* Literal.Number.Float */
++.highlight .mh { color: #40a070 } /* Literal.Number.Hex */
++.highlight .mi { color: #40a070 } /* Literal.Number.Integer */
++.highlight .mo { color: #40a070 } /* Literal.Number.Oct */
++.highlight .sa { color: #4070a0 } /* Literal.String.Affix */
++.highlight .sb { color: #4070a0 } /* Literal.String.Backtick */
++.highlight .sc { color: #4070a0 } /* Literal.String.Char */
++.highlight .dl { color: #4070a0 } /* Literal.String.Delimiter */
++.highlight .sd { color: #4070a0; font-style: italic } /* Literal.String.Doc */
++.highlight .s2 { color: #4070a0 } /* Literal.String.Double */
++.highlight .se { color: #4070a0; font-weight: bold } /* Literal.String.Escape */
++.highlight .sh { color: #4070a0 } /* Literal.String.Heredoc */
++.highlight .si { color: #70a0d0; font-style: italic } /* Literal.String.Interpol */
++.highlight .sx { color: #c65d09 } /* Literal.String.Other */
++.highlight .sr { color: #235388 } /* Literal.String.Regex */
++.highlight .s1 { color: #4070a0 } /* Literal.String.Single */
++.highlight .ss { color: #517918 } /* Literal.String.Symbol */
++.highlight .bp { color: #007020 } /* Name.Builtin.Pseudo */
++.highlight .fm { color: #06287e } /* Name.Function.Magic */
++.highlight .vc { color: #bb60d5 } /* Name.Variable.Class */
++.highlight .vg { color: #bb60d5 } /* Name.Variable.Global */
++.highlight .vi { color: #bb60d5 } /* Name.Variable.Instance */
++.highlight .vm { color: #bb60d5 } /* Name.Variable.Magic */
++.highlight .il { color: #40a070 } /* Literal.Number.Integer.Long */
+diff --git a/nhanb-theme/templates/base.html b/nhanb-theme/templates/base.html
+index 7eab8e0..29a32a9 100644
+--- a/nhanb-theme/templates/base.html
++++ b/nhanb-theme/templates/base.html
+@@ -4,7 +4,7 @@
+   &lt;meta charset=&quot;utf-8&quot;&gt;
+   &lt;title&gt;{% block title %}{{ SITENAME }} - {{ SITESUBTITLE }}{% endblock %}&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/theme/css/zenburn.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/theme/css/pygment.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/theme/css/main.css&quot;&gt;
+   {% block header_extras %}{% endblock %}
+ &lt;/head&gt;
+</pre></body></html>

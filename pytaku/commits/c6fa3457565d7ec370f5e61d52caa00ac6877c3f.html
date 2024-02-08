@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[c6fa345756] only show &quot;read up to&quot; button where applicable | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / c6fa345756</strong><hr><pre>commit c6fa3457565d7ec370f5e61d52caa00ac6877c3f
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 5 18:16:52 2021 +0700
+
+    only show &quot;read up to&quot; button where applicable
+    
+    Also only disable &quot;read up to&quot; buttons of affected chapters instead of
+    all chapters during http request.
+
+diff --git a/src/pytaku/js-src/routes/title.js b/src/pytaku/js-src/routes/title.js
+index bf5485c..4692476 100644
+--- a/src/pytaku/js-src/routes/title.js
++++ b/src/pytaku/js-src/routes/title.js
+@@ -6,10 +6,11 @@ function Title(initialVNode) {
+   let isTogglingFollow = false;
+   let isMarkingAllAsRead = false;
+   let isMarkingAllAsUnread = false;
+-  let isMarkingPreviousAsRead = false;
++  let isMarkingAsReadStartingFrom = null;
+   let title = {};
+   let allAreRead;
+   let allAreUnread;
++  let readUpTo;
+ 
+   return {
+     oninit: (vnode) =&gt; {
+@@ -37,14 +38,15 @@ function Title(initialVNode) {
+       if (!isLoading &amp;&amp; Auth.isLoggedIn()) {
+         allAreRead = true;
+         allAreUnread = true;
+-        for (let chap of title.chapters) {
+-          if (!chap.is_read) {
+-            allAreRead = false;
+-          } else {
++        readUpTo = title.chapters.length; // biggest index + 1
++
++        for (var i = title.chapters.length - 1; i &gt;= 0; i--) {
++          const chap = title.chapters[i];
++          if (chap.is_read) {
++            if (readUpTo === i + 1) readUpTo = i;
+             allAreUnread = false;
+-          }
+-          if (allAreRead === false &amp;&amp; allAreUnread === false) {
+-            break;
++          } else {
++            allAreRead = false;
+           }
+         }
+       }
+@@ -104,7 +106,7 @@ function Title(initialVNode) {
+                           : &quot;Click to mark all chapters as read&quot;,
+                         onclick: (ev) =&gt; {
+                           const confirmed = window.confirm(
+-                            &quot;Do you surely want to read all chapters?&quot;
++                            &quot;Are you sure you want to read all chapters?&quot;
+                           );
+                           if (!confirmed) {
+                             return;
+@@ -153,7 +155,7 @@ function Title(initialVNode) {
+                           : &quot;Click to mark all chapters as unread&quot;,
+                         onclick: (ev) =&gt; {
+                           const confirmed = window.confirm(
+-                            &quot;Do you surely want to unread all chapters?&quot;
++                            &quot;Are you sure you want to unread all chapters?&quot;
+                           );
+                           if (!confirmed) {
+                             return;
+@@ -205,55 +207,63 @@ function Title(initialVNode) {
+               title.chapters
+                 ? title.chapters.map((chapter, index) =&gt;
+                     m(&quot;.title--chapter-row&quot;, [
+-                      m(Button, {
+-                        icon: isMarkingPreviousAsRead
+-                          ? &quot;loader&quot;
+-                          : &quot;chevrons-down&quot;,
+-                        color: &quot;grey&quot;,
+-                        title: &quot;Mark all read up to this chapter&quot;,
+-                        disabled: isMarkingPreviousAsRead ? &quot;disabled&quot; : null,
+-                        onclick: (ev) =&gt; {
+-                          const confirmed = window.confirm(
+-                            &quot;Do you surely want to mark all chapters up to this point as read?&quot;
+-                          );
+-                          if (!confirmed) return;
++                      index &lt; readUpTo
++                        ? m(Button, {
++                            icon:
++                              isMarkingAsReadStartingFrom !== null &amp;&amp;
++                              index &gt;= isMarkingAsReadStartingFrom
++                                ? &quot;loader&quot;
++                                : &quot;chevrons-down&quot;,
++                            color: &quot;green&quot;,
++                            title: &quot;Mark all read up to this chapter&quot;,
++                            disabled:
++                              isMarkingAsReadStartingFrom !== null &amp;&amp;
++                              index &gt;= isMarkingAsReadStartingFrom
++                                ? &quot;disabled&quot;
++                                : null,
++                            onclick: (ev) =&gt; {
++                              const confirmed = window.confirm(
++                                &quot;Are you sure you want to mark all chapters up to this point as read?&quot;
++                              );
++                              if (!confirmed) return;
+ 
+-                          isMarkingPreviousAsRead = true;
+-                          m.redraw();
++                              isMarkingAsReadStartingFrom = index;
++                              m.redraw();
+ 
+-                          const chaptersToMark = title.chapters
+-                            .slice(index)
+-                            .filter((ch) =&gt; !ch.is_read);
++                              const chaptersToMark = title.chapters
++                                .slice(index)
++                                .filter((ch) =&gt; !ch.is_read);
+ 
+-                          if (chaptersToMark.length == 0) {
+-                            isMarkingPreviousAsRead = false;
+-                            m.redraw();
+-                            return;
+-                          }
++                              if (chaptersToMark.length == 0) {
++                                isMarkingAsReadStartingFrom = null;
++                                m.redraw();
++                                return;
++                              }
+ 
+-                          Auth.request({
+-                            method: &quot;POST&quot;,
+-                            url: &quot;/api/read&quot;,
+-                            body: {
+-                              read: chaptersToMark.map((ch) =&gt; {
+-                                return {
+-                                  site: title.site,
+-                                  title_id: title.id,
+-                                  chapter_id: ch.id,
+-                                };
+-                              }),
++                              Auth.request({
++                                method: &quot;POST&quot;,
++                                url: &quot;/api/read&quot;,
++                                body: {
++                                  read: chaptersToMark.map((ch) =&gt; {
++                                    return {
++                                      site: title.site,
++                                      title_id: title.id,
++                                      chapter_id: ch.id,
++                                    };
++                                  }),
++                                },
++                              })
++                                .then((resp) =&gt; {
++                                  chaptersToMark.forEach((chap) =&gt; {
++                                    chap.is_read = true;
++                                  });
++                                })
++                                .finally(() =&gt; {
++                                  isMarkingAsReadStartingFrom = null;
++                                });
+                             },
+                           })
+-                            .then((resp) =&gt; {
+-                              chaptersToMark.forEach((chap) =&gt; {
+-                                chap.is_read = true;
+-                              });
+-                            })
+-                            .finally(() =&gt; {
+-                              isMarkingPreviousAsRead = false;
+-                            });
+-                        },
+-                      }),
++                        : null,
+                       m(Chapter, {
+                         site: title.site,
+                         titleId: title.id,
+</pre></body></html>

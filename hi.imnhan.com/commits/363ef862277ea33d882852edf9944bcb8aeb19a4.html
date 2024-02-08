@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[363ef86227] add video player post | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 363ef86227</strong><hr><pre>commit 363ef862277ea33d882852edf9944bcb8aeb19a4
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Apr 26 12:12:35 2020 +0700
+
+    add video player post
+
+diff --git a/content/posts/towards-an-acceptable-video-playing-experience.md b/content/posts/towards-an-acceptable-video-playing-experience.md
+new file mode 100644
+index 0000000..780d20d
+--- /dev/null
++++ b/content/posts/towards-an-acceptable-video-playing-experience.md
+@@ -0,0 +1,135 @@
++Title: Towards an acceptable video playing experience
++Date: 2020-04-26 10:06
++Category: side projects
++
++I watch movies and TV shows.
++Naturally, I have some strong preferences on how to view them:
++
++**English subtitles**. Most things I watch are in English.
++Although I&#39;m perfectly comfortable with face-to-face English conversations, I
++just can&#39;t keep up with English dialogue in movies.
++I also don&#39;t want to put up with badly translated subs, so English subtitles
++they must be. This rules out most Vietnamese &quot;netflixes&quot;.
++
++**1080p**, unless it&#39;s ancient or super rare stuff.
++
++**Streamable from tablets**. I shouldn&#39;t need to turn on my PC just to catch up
++on the latest Better Call Saul episode.
++
++In 2020, there sure are a variety of options available, all of which fall short
++in some ways:
++
++- Shady ad-infested Vietnamese movie streaming sites (phimmoi etc): Obnoxious
++  pop-up tabs aside, they always [abuse Google Drive][1] (or even Facebook?)
++  storage behind the scene. Problem is Google Drive encoding is lossy as hell,
++  so even at 1080p they look noticeably worse than the original. Also they
++  almost always come with hardcoded Vietnamese subs.
++
++- Netflix clones by big ISPs: Pathetic catalogues. Vietnamese subs.
++
++- Netflix itself: Actually quite good thanks to usable Android app, but besides
++  the increasingly shitty catalogue, it&#39;s [impossible to get 1080p from
++  Linux][2]. Also I hate that I can&#39;t manually set the video quality: even if
++  my current connection gets slow I&#39;d rather pause and wait for buffering
++  instead of putting up with a pixelated 480p mess. I still have my Netflix
++  subscription today, but only grudgingly.
++
++- &quot;dude, like, just torrent it&quot;. Solid advice since torrents usually come with
++  embedded English sub, but it requires actually downloading the thing first,
++  and can&#39;t easily switch devices without moving the file along.
++
++- Setting up a torrent + plex server? That would require (1) ample disk space,
++  (2) generous network bandwidth, (3) actual horsepower for transcoding and (4)
++  fast enough network access from home or wherever I watch movies from.
++
++    - A local NAS-style server satisfies (1), (3) &amp; (4) but struggles with (2),
++      and I don&#39;t want it to hog my home internet pipes.
++
++    - Finding a VPS service with (1) &amp; (2) is doable, but (3) gets expensive
++      fast and usually they&#39;re in the US or EU which can never have (4). I&#39;m
++      actually running a seedbox on Ramnode but can&#39;t run plex on it because of
++      lack of (3) and (4). If I&#39;m willing to pay more I can get a Hetzner
++      dedicated server which can probably do (3) but (4) gets even worse.
++
++
++## Remote seedbox + Google Drive
++
++I settled on Netflix and torrented stuff that&#39;s not available there.
++For the seedbox, I installed Transmission-web on a Ramnode VPS that has 320GB
++of HDD at $50/year. The network bandwidth is meh but it gets the job done.
++
++Since Transmission supports hooks via external scripts, I set it up so that
++downloaded torrents get uploaded to my Google Drive using `rclone`.
++
++Now whenever I find something interesting that&#39;s not on Netflix, I look for a
++working torrent file and tell my seedbox to get it. Thanks to the web interface
++I can do it from both my PC and tablet. I don&#39;t have to keep my devices running
++so it doesn&#39;t matter if the torrent is not well-seeded and takes a long time.
++
++Once the file lands on Google Drive, I can either:
++
++- watch it directly from GDrive&#39;s web/Android app if I don&#39;t care about
++  subtitles or original quality, or
++
++- download the file first and watch properly
++
++The latter is not ideal.
++
++
++## Enter gflick
++
++Turns out advanced video players like `mpv` and `vlc` can directly stream HTTP
++videos with full support for seeking and audio / text(a.k.a subtitles) tracks.
++See, well-formed video container formats will have metadata at the beginning of
++the file telling where each track lies within the file. The player can download
++just the metadata first, then the subtitle track, then the actual video track
++starting from a specific position. This is only possible if the http server
++supports partial content download [via the `Range` header][3].
++
++Google Drive does have a &quot;direct link&quot; API in the form of
++`https://www.googleapis.com/drive/v3/files/&lt;fileId&gt;?alt=media`, which luckily
++supports partial download. The bad news is downloading private files requires
++authentication via a bearer token. The only HTTP authentication scheme that
++these players support, as far as I know, is [Basic auth][4].
++
++So I wrote [gflick][5], which is practically an HTTP proxy that does Google
++authentication behind the scene, exposing a plain HTTP streaming endpoint so
++`mpv` and the like can use without modification.
++
++Here&#39;s what it looks like in action:
++
++&lt;video controls&gt;
++  &lt;source src=&quot;https://junk.imnhan.com/gflick.mp4&quot; type=&quot;video/mp4&quot;&gt;
++&lt;/video&gt;
++
++It can run just fine as a local server, but cumbersome and not practical on
++tablets, so I put it on a publicly accessible server, protected by nginx which
++does TLS and Basic Auth. As mentioned earlier, good video players can do basic
++auth out of the box. Gflick also exposes a simple web interface to browse my
++Google Drives, so now I can browse my drive on any pc/tablet, and watch things
++with full seek, subtitle/audio track support, right?
++
++Not quite. While desktop versions of these players work fine, their Android
++versions won&#39;t play it. Now I regret selling my Surface Go! :(
++
++And... that&#39;s where I&#39;m stuck at the moment. Not sure if I should buy one of
++those Chinese Surface knock-offs or what.
++
++
++## Other failed attempts
++
++- [mpv-gdrive][6]: Using mpv&#39;s lua scripting API to automatically set the
++  correct bearer auth headers. Worked fine on desktop, failed miserably on
++  android.
++- [drivein][7]: Uses `rclone mount`. Worked fine on desktop, android wouldn&#39;t
++  allow mounting without root.
++
++Also both of those required setting up each client device. Not ideal.
++
++[1]: https://kipalog.com/posts/Cac-web-phim-da-giam-99-99--chi-phi-bang-google-drive-nhu-the-nao
++[2]: https://help.netflix.com/en/node/23742
++[3]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range
++[4]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#Basic_authentication_scheme
++[5]: https://github.com/nhanb/gflick
++[6]: https://github.com/nhanb/mpv-gdrive
++[7]: https://github.com/nhanb/drivein
+diff --git a/motherfucking-pelican-theme b/motherfucking-pelican-theme
+index 6dc40a3..ddf30d5 160000
+--- a/motherfucking-pelican-theme
++++ b/motherfucking-pelican-theme
+@@ -1 +1 @@
+-Subproject commit 6dc40a3a37ec69e02535e1024aa2424ee357193f
++Subproject commit ddf30d526f639bedeee809873e90577e5eeb054b
+diff --git a/pelicanconf.py b/pelicanconf.py
+index b83e853..3e41312 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -69,7 +69,7 @@
+ FEED_DOMAIN = SITEURL
+ FEED_ALL_ATOM = &quot;feeds/all.atom.xml&quot;
+ FEED_ATOM = &quot;feeds/atom.xml&quot;
+-CATEGORY_FEED_ATOM = &quot;feeds/%s.atom.xml&quot;
++CATEGORY_FEED_ATOM = &quot;feeds/{slug}.atom.xml&quot;
+ 
+ # ========= Theme-specific settings follow =============
+ 
+</pre></body></html>

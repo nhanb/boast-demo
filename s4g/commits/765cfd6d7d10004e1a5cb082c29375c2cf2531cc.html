@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[765cfd6d7d] yakshave home template: reponsives | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 765cfd6d7d</strong><hr><pre>commit 765cfd6d7d10004e1a5cb082c29375c2cf2531cc
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jul 12 21:18:40 2023 +0700
+
+    yakshave home template: reponsives
+
+diff --git a/docs/_theme/home.tmpl b/docs/_theme/home.tmpl
+index 37d93ba..fdc3cd8 100644
+--- a/docs/_theme/home.tmpl
++++ b/docs/_theme/home.tmpl
+@@ -28,8 +28,9 @@
+   {{- range .ArticlesInFeed}}
+   {{- if not .IsDraft}}
+   &lt;li&gt;
+-    {{.PostedAt.Local.Format &quot;2006-01-02&quot;}} —
++    &lt;span class=&quot;time-prefix&quot;&gt;{{.PostedAt.Local.Format &quot;2006-01-02&quot;}} — &lt;/span&gt;
+     &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
++    &lt;span class=&quot;time-suffix&quot;&gt;({{.PostedAt.Local.Format &quot;2006-01-02&quot;}})&lt;/span&gt;
+   &lt;/li&gt;
+   {{- end}}
+   {{- end}}
+@@ -59,9 +60,28 @@ hr {
+ 
+ ul {
+   padding: 0;
+-  list-style-type: none;
++  list-style: none;
+   /*font-size: 1.1rem;*/
+ }
++
++.time-suffix {
++  display: none;
++}
++
++@media (max-width: 30rem) {
++  .time-suffix {
++    display: inline;
++  }
++  .time-prefix {
++    display: none;
++  }
++  li {
++    margin-bottom: 0.5rem;
++  }
++  li::before {
++    content: &#39;❖&#39;;
++  }
++}
+ &lt;/style&gt;
+ 
+ {{template &quot;footer&quot; .}}
+diff --git a/docs/index.html b/docs/index.html
+index 8144f02..36b2cbc 100644
+--- a/docs/index.html
++++ b/docs/index.html
+@@ -34,12 +34,14 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ 
+ &lt;ul&gt;
+   &lt;li&gt;
+-    2023-04-05 —
++    &lt;span class=&quot;time-prefix&quot;&gt;2023-04-05 — &lt;/span&gt;
+     &lt;a href=&quot;/webmaker2000/mfws.html&quot;&gt;This is a motherfucking website.&lt;/a&gt;
++    &lt;span class=&quot;time-suffix&quot;&gt;(2023-04-05)&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li&gt;
+-    2008-04-24 —
++    &lt;span class=&quot;time-prefix&quot;&gt;2008-04-24 — &lt;/span&gt;
+     &lt;a href=&quot;/webmaker2000/scale/&quot;&gt;I&amp;#39;m Going To Scale My Foot Up Your Ass&lt;/a&gt;
++    &lt;span class=&quot;time-suffix&quot;&gt;(2008-04-24)&lt;/span&gt;
+   &lt;/li&gt;
+ &lt;/ul&gt;
+ 
+@@ -67,9 +69,28 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ 
+ ul {
+   padding: 0;
+-  list-style-type: none;
++  list-style: none;
+    
+ }
++
++.time-suffix {
++  display: none;
++}
++
++@media (max-width: 30rem) {
++  .time-suffix {
++    display: inline;
++  }
++  .time-prefix {
++    display: none;
++  }
++  li {
++    margin-bottom: 0.5rem;
++  }
++  li::before {
++    content: &#39;❖&#39;;
++  }
++}
+ &lt;/style&gt;
+ 
+ &lt;footer&gt;
+diff --git a/theme/home.tmpl b/theme/home.tmpl
+index 37d93ba..fdc3cd8 100644
+--- a/theme/home.tmpl
++++ b/theme/home.tmpl
+@@ -28,8 +28,9 @@
+   {{- range .ArticlesInFeed}}
+   {{- if not .IsDraft}}
+   &lt;li&gt;
+-    {{.PostedAt.Local.Format &quot;2006-01-02&quot;}} —
++    &lt;span class=&quot;time-prefix&quot;&gt;{{.PostedAt.Local.Format &quot;2006-01-02&quot;}} — &lt;/span&gt;
+     &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
++    &lt;span class=&quot;time-suffix&quot;&gt;({{.PostedAt.Local.Format &quot;2006-01-02&quot;}})&lt;/span&gt;
+   &lt;/li&gt;
+   {{- end}}
+   {{- end}}
+@@ -59,9 +60,28 @@ hr {
+ 
+ ul {
+   padding: 0;
+-  list-style-type: none;
++  list-style: none;
+   /*font-size: 1.1rem;*/
+ }
++
++.time-suffix {
++  display: none;
++}
++
++@media (max-width: 30rem) {
++  .time-suffix {
++    display: inline;
++  }
++  .time-prefix {
++    display: none;
++  }
++  li {
++    margin-bottom: 0.5rem;
++  }
++  li::before {
++    content: &#39;❖&#39;;
++  }
++}
+ &lt;/style&gt;
+ 
+ {{template &quot;footer&quot; .}}
+</pre></body></html>

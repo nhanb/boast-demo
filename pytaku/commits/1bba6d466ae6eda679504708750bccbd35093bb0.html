@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1bba6d466a] fix mangadex cover link | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 1bba6d466a</strong><hr><pre>commit 1bba6d466ae6eda679504708750bccbd35093bb0
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Mar 14 10:49:00 2021 +0700
+
+    fix mangadex cover link
+    
+    It may not always have a `?` now.
+
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index 3d45d33..85e06e4 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -27,7 +27,10 @@ def get_title(self, title_id):
+         groups_dict = {group[&quot;id&quot;]: group[&quot;name&quot;] for group in groups}
+ 
+         cover = manga[&quot;mainCover&quot;].split(&quot;/&quot;)[-1]
+-        cover_ext = cover[cover.find(&quot;.&quot;) + 1 : cover.rfind(&quot;?&quot;)]
++        ext_start_index = cover.find(&quot;.&quot;) + 1
++        url_params_index = cover.rfind(&quot;?&quot;)
++        ext_end_index = url_params_index if url_params_index != -1 else None
++        cover_ext = cover[ext_start_index:ext_end_index]
+ 
+         current_timestamp = time.time()
+ 
+diff --git a/tests/mangoapi/test_mangadex.py b/tests/mangoapi/test_mangadex.py
+index 8815031..74f3c30 100644
+--- a/tests/mangoapi/test_mangadex.py
++++ b/tests/mangoapi/test_mangadex.py
+@@ -88,6 +88,11 @@ def test_get_title_webtoon():
+     assert title[&quot;is_webtoon&quot;] is True
+ 
+ 
++def test_get_title_no_url_params():
++    title = Mangadex().get_title(&quot;23801&quot;)
++    assert title[&quot;cover_ext&quot;] == &quot;jpg&quot;
++
++
+ def test_get_chapter():
+     chap = Mangadex().get_chapter(&quot;doesn&#39;t matter&quot;, &quot;696882&quot;)
+     pages = chap.pop(&quot;pages&quot;)
+</pre></body></html>

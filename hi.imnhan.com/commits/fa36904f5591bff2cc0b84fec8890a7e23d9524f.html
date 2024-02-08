@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[fa36904f55] add google webmaster auth and remove date from post urls | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / fa36904f55</strong><hr><pre>commit fa36904f5591bff2cc0b84fec8890a7e23d9524f
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Sat Sep 7 10:25:34 2013 +0700
+
+    add google webmaster auth and remove date from post urls
+
+diff --git a/content/extra/google3f40dbd543a603fa.html b/content/extra/google3f40dbd543a603fa.html
+new file mode 100644
+index 0000000..e94bd72
+--- /dev/null
++++ b/content/extra/google3f40dbd543a603fa.html
+@@ -0,0 +1 @@
++google-site-verification: google3f40dbd543a603fa.html
+\ No newline at end of file
+diff --git a/content/installing-programs-in-ubuntu.md b/content/installing-programs-in-ubuntu.md
+index 1430540..60bb712 100644
+--- a/content/installing-programs-in-ubuntu.md
++++ b/content/installing-programs-in-ubuntu.md
+@@ -114,7 +114,7 @@ ## Packages
+ - `sudo apt-get install package-name` to install package
+ - `sudo apt-get remove package-name` - it&#39;s obvious isn&#39;t it?
+ - `sudo apt-get update` - update package list. Note that it only updates the list, not the packages
+-- `sudo apt-get upgrade` - update packages
++- `sudo apt-get upgrade` - upgrade packages to their latest versions
+ 
+ There will be programs that are not available on the official repositories, but are provided as
+ package files (Dropbox for example). Remember that the right package format for Ubuntu is `.deb`
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 312a47b..08fd289 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -24,13 +24,15 @@
+ FILES_TO_COPY = ((&#39;extra/CNAME&#39;, &#39;CNAME&#39;),
+                  (&#39;extra/README.markdown&#39;, &#39;README.markdown&#39;),
+                  (&#39;extra/favicon.ico&#39;, &#39;favicon.ico&#39;),
+-                 (&#39;extra/cal.html&#39;, &#39;calendar/index.html&#39;)
++                 (&#39;extra/cal.html&#39;, &#39;calendar/index.html&#39;),
++                 (&#39;extra/google3f40dbd543a603fa.html&#39;,
++                  &#39;google3f40dbd543a603fa.html&#39;),
+                  )
+ 
+-ARTICLE_URL = &#39;{date:%Y}/{date:%m}/{slug}/&#39;
+-ARTICLE_SAVE_AS = &#39;{date:%Y}/{date:%m}/{slug}/index.html&#39;
+-ARTICLE_LANG_URL = &#39;{date:%Y}/{date:%m}/{slug}-{lang}/&#39;
+-ARTICLE_LANG_SAVE_AS = &#39;{date:%Y}/{date:%m}/{slug}-{lang}/index.html&#39;
++ARTICLE_URL = &#39;posts/{slug}/&#39;
++ARTICLE_SAVE_AS = &#39;posts/{slug}/index.html&#39;
++ARTICLE_LANG_URL = &#39;posts/{slug}-{lang}/&#39;
++ARTICLE_LANG_SAVE_AS = &#39;posts/{slug}-{lang}/index.html&#39;
+ 
+ PAGE_URL = (&#39;pages/{slug}/&#39;)
+ PAGE_SAVE_AS = (&#39;pages/{slug}/index.html&#39;)
+</pre></body></html>

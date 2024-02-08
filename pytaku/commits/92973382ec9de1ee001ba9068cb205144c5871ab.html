@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[92973382ec] get rid of browser&#39;s SameSite cookie warning | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 92973382ec</strong><hr><pre>commit 92973382ec9de1ee001ba9068cb205144c5871ab
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jan 21 19:49:28 2021 +0700
+
+    get rid of browser&#39;s SameSite cookie warning
+    
+    oopsie
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 0c7b27f..70e0a4f 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.30&quot;
++version = &quot;0.3.31&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 51c7238..25bec95 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -361,7 +361,7 @@ def api_logout():
+     if num_deleted != 1:
+         return jsonify({&quot;message&quot;: &quot;Invalid token.&quot;}), 401
+     resp = make_response(&quot;{}&quot;, 200)
+-    resp.set_cookie(&quot;token&quot;, &quot;&quot;, expires=0)
++    resp.set_cookie(&quot;token&quot;, &quot;&quot;, expires=0, samesite=&quot;Strict&quot;)
+     return resp
+ 
+ 
+</pre></body></html>

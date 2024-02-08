@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b832bd2ec0] og:image must be full url apparently | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / b832bd2ec0</strong><hr><pre>commit b832bd2ec001f9a8ddb38d94ad518f7484faf6c1
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 21 23:54:41 2023 +0700
+
+    og:image must be full url apparently
+    
+    Discord preview wouldn&#39;t work otherwise.
+
+diff --git a/docs/_s4g/theme/base.tmpl b/docs/_s4g/theme/base.tmpl
+index f27d1ad..710d06d 100644
+--- a/docs/_s4g/theme/base.tmpl
++++ b/docs/_s4g/theme/base.tmpl
+@@ -15,12 +15,12 @@
+     &lt;meta property=&quot;og:description&quot; content=&quot;{{.Post.Description}}&quot; /&gt;
+     &lt;meta name=&quot;twitter:description&quot; content=&quot;{{.Post.Description}}&quot; /&gt;
+   {{- end -}}
+-  {{- if .Post.Thumb -}}
+-    &lt;meta property=&quot;og:image&quot; content=&quot;{{.Post.Thumb}}&quot; /&gt;
+-    &lt;meta name=&quot;twitter:image&quot; content=&quot;{{.Post.Thumb}}&quot; /&gt;
++  {{- if .Post.OpenGraphImage -}}
++    &lt;meta property=&quot;og:image&quot; content=&quot;{{.Post.OpenGraphImage}}&quot; /&gt;
++    &lt;meta name=&quot;twitter:image&quot; content=&quot;{{.Post.OpenGraphImage}}&quot; /&gt;
+   {{- else if .Site.DefaultThumb -}}
+-    &lt;meta property=&quot;og:image&quot; content=&quot;{{.Site.Root}}{{.Site.DefaultThumb}}&quot; /&gt;
+-    &lt;meta name=&quot;twitter:image&quot; content=&quot;{{.Site.Root}}{{.Site.DefaultThumb}}&quot; /&gt;
++    &lt;meta property=&quot;og:image&quot; content=&quot;{{.Site.Address}}{{.Site.Root}}{{.Site.DefaultThumb}}&quot; /&gt;
++    &lt;meta name=&quot;twitter:image&quot; content=&quot;{{.Site.Address}}{{.Site.Root}}{{.Site.DefaultThumb}}&quot; /&gt;
+   {{- end }}
+   {{- if .Site.AuthorTwitter -}}
+     &lt;meta name=&quot;twitter:site&quot; content=&quot;{{.Site.AuthorTwitter}}&quot; /&gt;
+diff --git a/main.go b/main.go
+index 1209e75..17c4b12 100644
+--- a/main.go
++++ b/main.go
+@@ -261,13 +261,17 @@ type Article struct {
+ 	OutputPath string
+ 	DjotBody   []byte
+ 	ArticleMetadata
+-	WebPath       string
+-	TemplatePaths []string
++	WebPath        string
++	TemplatePaths  []string
++	OpenGraphImage string
+ }
+ 
+-func (a *Article) ComputeDerivedFields(root string) {
++func (a *Article) ComputeDerivedFields(addr, root string) {
+ 	a.WebPath = computeWebPath(root, a.OutputPath)
+ 	a.TemplatePaths = computeTemplatePaths(a.Path, a.Templates)
++	if a.Thumb != &quot;&quot; {
++		a.OpenGraphImage = addr + root + filepath.Dir(a.Path) + &quot;/&quot; + a.Thumb
++	}
+ }
+ 
+ func computeWebPath(root string, outputPath string) string {
+@@ -393,7 +397,7 @@ func findArticles(fsys writablefs.FS, site *SiteMetadata) (map[string]Article, e
+ 			DjotBody:        bodyText,
+ 			ArticleMetadata: meta,
+ 		}
+-		article.ComputeDerivedFields(site.Root)
++		article.ComputeDerivedFields(site.Address, site.Root)
+ 		result[article.Path] = article
+ 		return nil
+ 	})
+diff --git a/theme/base.tmpl b/theme/base.tmpl
+index f27d1ad..710d06d 100644
+--- a/theme/base.tmpl
++++ b/theme/base.tmpl
+@@ -15,12 +15,12 @@
+     &lt;meta property=&quot;og:description&quot; content=&quot;{{.Post.Description}}&quot; /&gt;
+     &lt;meta name=&quot;twitter:description&quot; content=&quot;{{.Post.Description}}&quot; /&gt;
+   {{- end -}}
+-  {{- if .Post.Thumb -}}
+-    &lt;meta property=&quot;og:image&quot; content=&quot;{{.Post.Thumb}}&quot; /&gt;
+-    &lt;meta name=&quot;twitter:image&quot; content=&quot;{{.Post.Thumb}}&quot; /&gt;
++  {{- if .Post.OpenGraphImage -}}
++    &lt;meta property=&quot;og:image&quot; content=&quot;{{.Post.OpenGraphImage}}&quot; /&gt;
++    &lt;meta name=&quot;twitter:image&quot; content=&quot;{{.Post.OpenGraphImage}}&quot; /&gt;
+   {{- else if .Site.DefaultThumb -}}
+-    &lt;meta property=&quot;og:image&quot; content=&quot;{{.Site.Root}}{{.Site.DefaultThumb}}&quot; /&gt;
+-    &lt;meta name=&quot;twitter:image&quot; content=&quot;{{.Site.Root}}{{.Site.DefaultThumb}}&quot; /&gt;
++    &lt;meta property=&quot;og:image&quot; content=&quot;{{.Site.Address}}{{.Site.Root}}{{.Site.DefaultThumb}}&quot; /&gt;
++    &lt;meta name=&quot;twitter:image&quot; content=&quot;{{.Site.Address}}{{.Site.Root}}{{.Site.DefaultThumb}}&quot; /&gt;
+   {{- end }}
+   {{- if .Site.AuthorTwitter -}}
+     &lt;meta name=&quot;twitter:site&quot; content=&quot;{{.Site.AuthorTwitter}}&quot; /&gt;
+</pre></body></html>

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[204421cb6b] remove outdated notes, update ideas.dj | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 204421cb6b</strong><hr><pre>commit 204421cb6bf61bfa77e06e42124ae65b79251b5b
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Sep 6 12:41:05 2023 +0700
+
+    remove outdated notes, update ideas.dj
+
+diff --git a/_s4g/manifest b/_s4g/manifest
+index c742133..e04eba1 100644
+--- a/_s4g/manifest
++++ b/_s4g/manifest
+@@ -18,7 +18,6 @@ movie-streaming/gflick/index.html
+ movie-streaming/index.html
+ movie-streaming/put.io/index.html
+ node-webkit/index.html
+-notes.html
+ pathogen-vs-vundle/index.html
+ petition-fraud/index.html
+ pippable-webapp/index.html
+@@ -59,5 +58,4 @@ stepmania-pad/index.html
+ tmux-italics/index.html
+ ubuntu-programs/index.html
+ vim-open-link/index.html
+-virtualenvwrapper/index.html
+-yaks.html
+\ No newline at end of file
++virtualenvwrapper/index.html
+\ No newline at end of file
+diff --git a/ideas.dj b/ideas.dj
+index 5e51328..61e101b 100644
+--- a/ideas.dj
++++ b/ideas.dj
+@@ -2,24 +2,27 @@ Title: Potential project ideas
+ ShowInFeed: false
+ ---
+ 
+-## Self hosted RSS reader in D
++## Self hosted RSS reader in pure Go
+ 
+ - Single executable, web based
+-- SQLite3
+-- Either use adamdruppe&#39;s rss.d or wrap libmrss
++- bbolt
+ - Bonus: e-ink friendly display
+ - Bonus: netsurf friendly
+ 
+-## Desktop GUI blogging CMS using tkinter
++## Desktop GUI blogging CMS using Tcl/Tk + Go backend
+ 
+ - Native win/mac look-and-feel, acceptable on linux (`clam` looks alright)
+-- Split screen: one with markdown/bbcode source and one with rendered preview
++- SQLite as application file format
++- WYSIWYG à la ProseMirror, exportable to djot/markdown.
+ - Sane embedded image/video/etc. file management via GUI
++
+   + Bonus: 1-click preprocessing: strip EXIF, losslessly optimize image
++
+ - *No embedded browser*
+ - Is static site generator, but supports 1-click deployment to neocities,
+   github/gitlab/sourcehut pages etc.
+-- Human-friend distribution e.g. nuitka, pyoxidizer (pyinstaller is pretty meh)
++- Human-friendly distribution.
++  Ideally only two binaries: main proram and tclsh/wish executable.
+ - Bonus: pluggable templates
+ 
+ ## Discord bot that launches CSGO/etc. server on demand
+diff --git a/ideas.html b/ideas.html
+index 69054ea..a583170 100644
+--- a/ideas.html
++++ b/ideas.html
+@@ -34,17 +34,14 @@
+ 
+ &lt;h1&gt;Potential project ideas&lt;/h1&gt;
+ 
+-&lt;section id=&quot;Self-hosted-RSS-reader-in-D&quot;&gt;
+-&lt;h2&gt;Self hosted RSS reader in D&lt;a href=&quot;#Self-hosted-RSS-reader-in-D&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
++&lt;section id=&quot;Self-hosted-RSS-reader-in-pure-Go&quot;&gt;
++&lt;h2&gt;Self hosted RSS reader in pure Go&lt;a href=&quot;#Self-hosted-RSS-reader-in-pure-Go&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;ul&gt;
+ &lt;li&gt;
+ Single executable, web based
+ &lt;/li&gt;
+ &lt;li&gt;
+-SQLite3
+-&lt;/li&gt;
+-&lt;li&gt;
+-Either use adamdruppe’s rss.d or wrap libmrss
++bbolt
+ &lt;/li&gt;
+ &lt;li&gt;
+ Bonus: e-ink friendly display
+@@ -54,18 +51,25 @@ &lt;h2&gt;Self hosted RSS reader in D&lt;a href=&quot;#Self-hosted-RSS-reader-in-D&quot; class=&quot;hea
+ &lt;/li&gt;
+ &lt;/ul&gt;
+ &lt;/section&gt;
+-&lt;section id=&quot;Desktop-GUI-blogging-CMS-using-tkinter&quot;&gt;
+-&lt;h2&gt;Desktop GUI blogging CMS using tkinter&lt;a href=&quot;#Desktop-GUI-blogging-CMS-using-tkinter&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
++&lt;section id=&quot;Desktop-GUI-blogging-CMS-using-Tcl-Tk-Go-backend&quot;&gt;
++&lt;h2&gt;Desktop GUI blogging CMS using Tcl/Tk + Go backend&lt;a href=&quot;#Desktop-GUI-blogging-CMS-using-Tcl-Tk-Go-backend&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;ul&gt;
+ &lt;li&gt;
+ Native win/mac look-and-feel, acceptable on linux (&lt;code&gt;clam&lt;/code&gt; looks alright)
+ &lt;/li&gt;
+ &lt;li&gt;
+-Split screen: one with markdown/bbcode source and one with rendered preview
++SQLite as application file format
++&lt;/li&gt;
++&lt;li&gt;
++WYSIWYG à la ProseMirror, exportable to djot/markdown.
+ &lt;/li&gt;
+ &lt;li&gt;
+ Sane embedded image/video/etc. file management via GUI
+-+ Bonus: 1-click preprocessing: strip EXIF, losslessly optimize image
++&lt;ul&gt;
++&lt;li&gt;
++Bonus: 1-click preprocessing: strip EXIF, losslessly optimize image
++&lt;/li&gt;
++&lt;/ul&gt;
+ &lt;/li&gt;
+ &lt;li&gt;
+ &lt;strong&gt;No embedded browser&lt;/strong&gt;
+@@ -75,7 +79,8 @@ &lt;h2&gt;Desktop GUI blogging CMS using tkinter&lt;a href=&quot;#Desktop-GUI-blogging-CMS-usi
+ github/gitlab/sourcehut pages etc.
+ &lt;/li&gt;
+ &lt;li&gt;
+-Human-friend distribution e.g. nuitka, pyoxidizer (pyinstaller is pretty meh)
++Human-friendly distribution.
++Ideally only two binaries: main proram and tclsh/wish executable.
+ &lt;/li&gt;
+ &lt;li&gt;
+ Bonus: pluggable templates
+diff --git a/notes.dj b/notes.dj
+deleted file mode 100644
+index 949e839..0000000
+--- a/notes.dj
++++ /dev/null
+@@ -1,28 +0,0 @@
+-Title: Random notes
+-ShowInFeed: false
+----
+-
+-In which I jot down scattered tidbits on various topics.
+-
+-## SRE
+-
+-There&#39;s a good [checklist](http://rachelbythebay.com/w/2019/07/21/reliability/)
+-on Rachel By The Bay, the gist is:
+-
+-- Rollbacks should work. On every deployment.
+-- A to AB to B (a.k.a. make before break):
+-
+-    - v2 code/data should not break v1 code/data
+-
+-- Strict(er than JSON) schema-ing when you fling data across places
+-
+-    - Protobuf, etc.
+-    - You should only _begin_ to consider JSON if you need to talk to browsers
+-
+-- Please fix 500s.
+-
+-    - Also you should only get 400s when talking to external things out of your control
+-
+-Her [follow-up](http://rachelbythebay.com/w/2019/10/05/nxdomain/) is a nice
+-scary story too. Also reminder that &quot;infra-as-code&quot; abstractions isn&#39;t an
+-excuse _not_ to learn the underlying infra properly.
+diff --git a/notes.html b/notes.html
+deleted file mode 100644
+index 88d341d..0000000
+--- a/notes.html
++++ /dev/null
+@@ -1,88 +0,0 @@
+-&lt;!DOCTYPE html&gt;
+-&lt;html&gt;
+-
+-&lt;head&gt;
+-  &lt;meta charset=&quot;utf-8&quot; /&gt;
+-  &lt;title&gt;Random notes | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+-  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+-  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+-
+-  &lt;meta property=&quot;og:title&quot; content=&quot;Random notes&quot; /&gt;
+-  &lt;meta name=&quot;twitter:title&quot; content=&quot;Random notes&quot; /&gt;
+-  &lt;meta name=&quot;twitter:card&quot; content=&quot;summary&quot; /&gt;&lt;meta property=&quot;og:image&quot; content=&quot;https://hi.imnhan.com/about/keyboard-warrior.jpg&quot; /&gt;
+-    &lt;meta name=&quot;twitter:image&quot; content=&quot;https://hi.imnhan.com/about/keyboard-warrior.jpg&quot; /&gt;&lt;meta name=&quot;twitter:site&quot; content=&quot;@nhanb&quot; /&gt;
+-&lt;/head&gt;
+-
+-&lt;body&gt;
+-
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+-&lt;nav&gt;
+-  &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+-  &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+-  &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+-
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+-
+-&lt;/nav&gt;
+-&lt;hr class=&quot;nav-hr&quot;&gt;
+-
+-
+-&lt;main&gt;
+-
+-&lt;h1&gt;Random notes&lt;/h1&gt;
+-
+-&lt;p&gt;In which I jot down scattered tidbits on various topics.&lt;/p&gt;
+-&lt;section id=&quot;SRE&quot;&gt;
+-&lt;h2&gt;SRE&lt;a href=&quot;#SRE&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+-&lt;p&gt;There’s a good &lt;a href=&quot;http://rachelbythebay.com/w/2019/07/21/reliability/&quot;&gt;checklist&lt;/a&gt;
+-on Rachel By The Bay, the gist is:&lt;/p&gt;
+-&lt;ul&gt;
+-&lt;li&gt;
+-Rollbacks should work. On every deployment.
+-&lt;/li&gt;
+-&lt;li&gt;
+-A to AB to B (a.k.a. make before break):
+-&lt;ul&gt;
+-&lt;li&gt;
+-v2 code/data should not break v1 code/data
+-&lt;/li&gt;
+-&lt;/ul&gt;
+-&lt;/li&gt;
+-&lt;li&gt;
+-Strict(er than JSON) schema-ing when you fling data across places
+-&lt;ul&gt;
+-&lt;li&gt;
+-Protobuf, etc.
+-&lt;/li&gt;
+-&lt;li&gt;
+-You should only &lt;em&gt;begin&lt;/em&gt; to consider JSON if you need to talk to browsers
+-&lt;/li&gt;
+-&lt;/ul&gt;
+-&lt;/li&gt;
+-&lt;li&gt;
+-Please fix 500s.
+-&lt;ul&gt;
+-&lt;li&gt;
+-Also you should only get 400s when talking to external things out of your control
+-&lt;/li&gt;
+-&lt;/ul&gt;
+-&lt;/li&gt;
+-&lt;/ul&gt;
+-&lt;p&gt;Her &lt;a href=&quot;http://rachelbythebay.com/w/2019/10/05/nxdomain/&quot;&gt;follow-up&lt;/a&gt; is a nice
+-scary story too. Also reminder that “infra-as-code” abstractions isn’t an
+-excuse &lt;em&gt;not&lt;/em&gt; to learn the underlying infra properly.&lt;/p&gt;
+-&lt;/section&gt;
+-
+-&lt;/main&gt;
+-
+-&lt;footer&gt;
+-© 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà&amp;nbsp;phê&amp;nbsp;sữa&amp;nbsp;đá&lt;/a&gt;
+-&lt;/footer&gt;
+-
+-&lt;/body&gt;
+-
+-&lt;/html&gt;
+diff --git a/yaks.dj b/yaks.dj
+deleted file mode 100644
+index da5b9b1..0000000
+--- a/yaks.dj
++++ /dev/null
+@@ -1,39 +0,0 @@
+-Title: Yak shaving
+-ShowInFeed: false
+----
+-
+-Basically my TODOs, in pursuit of the ever-pervasive _pleasant workflow_.
+-
+-## Replacing tmux with kitty
+-
+-All blockers seem to have been addressed now?
+-
+-- [tmuxp replacement](https://sw.kovidgoyal.net/kitty/index.html#startup-sessions)
+-- [seamless navigation alongside vimsplit](https://github.com/knubie/vim-kitty-navigator)
+-
+-
+-## Interesting tools
+-
+-- [pyinfra](https://pointlessramblings.com/posts/why-you-should-try-pyinfra/):
+-
+-    + faster than ansible, from my anecdotal experience
+-    + python, not yaml
+-    + truly agentless (doesn&#39;t even require python)
+-
+-- [doit](https://pydoit.org/): I just want a cross-platform `make`.
+-
+-
+-## Home server
+-
+-Specs:
+-
+-- Thinkpad T430 whose screen just broke
+-- Accessible via Tailscale
+-- Debian 10 installed on main SSD
+-- 2x1TB Seagate HDDs, LUKS encrypted, running a RAID1 btrfs pool.
+-
+-Services:
+-
+-- Syncthing
+-- Some RSS reader
+-- Some bookmarking system that does full text search.
+diff --git a/yaks.html b/yaks.html
+deleted file mode 100644
+index c187d25..0000000
+--- a/yaks.html
++++ /dev/null
+@@ -1,112 +0,0 @@
+-&lt;!DOCTYPE html&gt;
+-&lt;html&gt;
+-
+-&lt;head&gt;
+-  &lt;meta charset=&quot;utf-8&quot; /&gt;
+-  &lt;title&gt;Yak shaving | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+-  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+-  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+-
+-  &lt;meta property=&quot;og:title&quot; content=&quot;Yak shaving&quot; /&gt;
+-  &lt;meta name=&quot;twitter:title&quot; content=&quot;Yak shaving&quot; /&gt;
+-  &lt;meta name=&quot;twitter:card&quot; content=&quot;summary&quot; /&gt;&lt;meta property=&quot;og:image&quot; content=&quot;https://hi.imnhan.com/about/keyboard-warrior.jpg&quot; /&gt;
+-    &lt;meta name=&quot;twitter:image&quot; content=&quot;https://hi.imnhan.com/about/keyboard-warrior.jpg&quot; /&gt;&lt;meta name=&quot;twitter:site&quot; content=&quot;@nhanb&quot; /&gt;
+-&lt;/head&gt;
+-
+-&lt;body&gt;
+-
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+-&lt;nav&gt;
+-  &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+-  &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+-  &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+-
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+-
+-&lt;/nav&gt;
+-&lt;hr class=&quot;nav-hr&quot;&gt;
+-
+-
+-&lt;main&gt;
+-
+-&lt;h1&gt;Yak shaving&lt;/h1&gt;
+-
+-&lt;p&gt;Basically my TODOs, in pursuit of the ever-pervasive &lt;em&gt;pleasant workflow&lt;/em&gt;.&lt;/p&gt;
+-&lt;section id=&quot;Replacing-tmux-with-kitty&quot;&gt;
+-&lt;h2&gt;Replacing tmux with kitty&lt;a href=&quot;#Replacing-tmux-with-kitty&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+-&lt;p&gt;All blockers seem to have been addressed now?&lt;/p&gt;
+-&lt;ul&gt;
+-&lt;li&gt;
+-&lt;a href=&quot;https://sw.kovidgoyal.net/kitty/index.html#startup-sessions&quot;&gt;tmuxp replacement&lt;/a&gt;
+-&lt;/li&gt;
+-&lt;li&gt;
+-&lt;a href=&quot;https://github.com/knubie/vim-kitty-navigator&quot;&gt;seamless navigation alongside vimsplit&lt;/a&gt;
+-&lt;/li&gt;
+-&lt;/ul&gt;
+-&lt;/section&gt;
+-&lt;section id=&quot;Interesting-tools&quot;&gt;
+-&lt;h2&gt;Interesting tools&lt;a href=&quot;#Interesting-tools&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+-&lt;ul&gt;
+-&lt;li&gt;
+-&lt;a href=&quot;https://pointlessramblings.com/posts/why-you-should-try-pyinfra/&quot;&gt;pyinfra&lt;/a&gt;:
+-&lt;ul&gt;
+-&lt;li&gt;
+-faster than ansible, from my anecdotal experience
+-&lt;/li&gt;
+-&lt;li&gt;
+-python, not yaml
+-&lt;/li&gt;
+-&lt;li&gt;
+-truly agentless (doesn’t even require python)
+-&lt;/li&gt;
+-&lt;/ul&gt;
+-&lt;/li&gt;
+-&lt;li&gt;
+-&lt;a href=&quot;https://pydoit.org/&quot;&gt;doit&lt;/a&gt;: I just want a cross-platform &lt;code&gt;make&lt;/code&gt;.
+-&lt;/li&gt;
+-&lt;/ul&gt;
+-&lt;/section&gt;
+-&lt;section id=&quot;Home-server&quot;&gt;
+-&lt;h2&gt;Home server&lt;a href=&quot;#Home-server&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+-&lt;p&gt;Specs:&lt;/p&gt;
+-&lt;ul&gt;
+-&lt;li&gt;
+-Thinkpad T430 whose screen just broke
+-&lt;/li&gt;
+-&lt;li&gt;
+-Accessible via Tailscale
+-&lt;/li&gt;
+-&lt;li&gt;
+-Debian 10 installed on main SSD
+-&lt;/li&gt;
+-&lt;li&gt;
+-2x1TB Seagate HDDs, LUKS encrypted, running a RAID1 btrfs pool.
+-&lt;/li&gt;
+-&lt;/ul&gt;
+-&lt;p&gt;Services:&lt;/p&gt;
+-&lt;ul&gt;
+-&lt;li&gt;
+-Syncthing
+-&lt;/li&gt;
+-&lt;li&gt;
+-Some RSS reader
+-&lt;/li&gt;
+-&lt;li&gt;
+-Some bookmarking system that does full text search.
+-&lt;/li&gt;
+-&lt;/ul&gt;
+-&lt;/section&gt;
+-
+-&lt;/main&gt;
+-
+-&lt;footer&gt;
+-© 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà&amp;nbsp;phê&amp;nbsp;sữa&amp;nbsp;đá&lt;/a&gt;
+-&lt;/footer&gt;
+-
+-&lt;/body&gt;
+-
+-&lt;/html&gt;
+</pre></body></html>

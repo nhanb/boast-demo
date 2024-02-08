@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[7c8dac31ec] add code block &amp; block quote styling | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 7c8dac31ec</strong><hr><pre>commit 7c8dac31ec9a6e3bb680050c6f3925410392a27f
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 21 11:14:16 2023 +0700
+
+    add code block &amp; block quote styling
+
+diff --git a/docs/_theme/base.css b/docs/_theme/base.css
+index 813e870..f68f6ee 100644
+--- a/docs/_theme/base.css
++++ b/docs/_theme/base.css
+@@ -19,3 +19,25 @@ footer {
+   text-align: right;
+   font-size: 0.8rem;
+ }
++
++pre {
++  padding: 0.5rem;
++  border: 1px solid black;
++  background-color: #eee;
++  overflow-y: scroll;
++}
++
++blockquote {
++  padding-left: 7px;
++  margin: 1.5rem 0 1.5rem 2rem;
++  quotes: &quot;\201C&quot; &quot;\201D&quot;;
++  /* prevent long links from breaking out of the blockquote: */
++  overflow-wrap: break-word;
++}
++blockquote::before {
++  position: absolute;
++  margin-left: -0.5em;
++  margin-top: -0.25em;
++  font-size: 3em;
++  content: open-quote;
++}
+diff --git a/theme/base.css b/theme/base.css
+index 813e870..f68f6ee 100644
+--- a/theme/base.css
++++ b/theme/base.css
+@@ -19,3 +19,25 @@ footer {
+   text-align: right;
+   font-size: 0.8rem;
+ }
++
++pre {
++  padding: 0.5rem;
++  border: 1px solid black;
++  background-color: #eee;
++  overflow-y: scroll;
++}
++
++blockquote {
++  padding-left: 7px;
++  margin: 1.5rem 0 1.5rem 2rem;
++  quotes: &quot;\201C&quot; &quot;\201D&quot;;
++  /* prevent long links from breaking out of the blockquote: */
++  overflow-wrap: break-word;
++}
++blockquote::before {
++  position: absolute;
++  margin-left: -0.5em;
++  margin-top: -0.25em;
++  font-size: 3em;
++  content: open-quote;
++}
+</pre></body></html>

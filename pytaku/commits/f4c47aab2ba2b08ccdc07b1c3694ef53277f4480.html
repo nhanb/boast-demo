@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[f4c47aab2b] updating every 12hrs is more than enough | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / f4c47aab2b</strong><hr><pre>commit f4c47aab2ba2b08ccdc07b1c3694ef53277f4480
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jun 19 17:44:59 2021 +0700
+
+    updating every 12hrs is more than enough
+
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 0144cbf..17ca544 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -302,7 +302,7 @@ def unread(user_id, site, title_id, chapter_id):
+     )
+ 
+ 
+-def find_outdated_titles(since=&quot;-6 hours&quot;):
++def find_outdated_titles(since=&quot;-12 hours&quot;):
+     return run_sql(
+         &quot;SELECT id, site FROM title WHERE updated_at &lt;= datetime(&#39;now&#39;, ?);&quot;, (since,)
+     )
+diff --git a/src/pytaku/scheduler.py b/src/pytaku/scheduler.py
+index 389228e..07255b8 100644
+--- a/src/pytaku/scheduler.py
++++ b/src/pytaku/scheduler.py
+@@ -1,4 +1,3 @@
+-import random
+ import time
+ import traceback
+ from abc import ABC, abstractmethod
+@@ -65,7 +64,9 @@ class UpdateOutdatedTitles(Worker):
+     interval = timedelta(hours=2)
+ 
+     def run(self):
+-        for title in find_outdated_titles():
++        outdated_titles = find_outdated_titles()
++        print(f&quot;Found {len(outdated_titles)} outdated titles&quot;)
++        for title in outdated_titles:
+             if title[&quot;site&quot;] == &quot;mangadex&quot;:
+                 # print(f&quot;Skipped title {title[&#39;id&#39;]} from {title[&#39;site&#39;]}.&quot;)
+                 continue
+</pre></body></html>

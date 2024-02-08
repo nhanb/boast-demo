@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[c247b86019] configurable &quot;outdated&quot; threshold for manga | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / c247b86019</strong><hr><pre>commit c247b860197be833eb7b669b2be8b6df47109be8
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jun 22 22:06:12 2021 +0700
+
+    configurable &quot;outdated&quot; threshold for manga
+
+diff --git a/src/pytaku/conf.py b/src/pytaku/conf.py
+index aa53ca4..758bd88 100644
+--- a/src/pytaku/conf.py
++++ b/src/pytaku/conf.py
+@@ -8,6 +8,8 @@ class Config(GoodConf):
+     MANGADEX_PASSWORD = Value()
+     FLASK_SECRET_KEY = Value(initial=lambda: token_urlsafe(50))
+ 
++    MANGA_HOURS_UNTIL_OUTDATED = Value(default=6)
++
+     PROXY_PREFIX = Value(default=&quot;&quot;)
+     # ^ use this to e.g. point to a CDN&#39;s domain
+     PROXY_CACHE_DIR = Value(default=&quot;proxy_cache&quot;)
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 17ca544..9b21cf1 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -5,6 +5,7 @@
+ import apsw
+ import argon2
+ 
++from .conf import config
+ from .database.common import run_sql, run_sql_many
+ 
+ 
+@@ -302,7 +303,7 @@ def unread(user_id, site, title_id, chapter_id):
+     )
+ 
+ 
+-def find_outdated_titles(since=&quot;-12 hours&quot;):
++def find_outdated_titles(since=f&quot;-{config.MANGA_HOURS_UNTIL_OUTDATED} hours&quot;):
+     return run_sql(
+         &quot;SELECT id, site FROM title WHERE updated_at &lt;= datetime(&#39;now&#39;, ?);&quot;, (since,)
+     )
+</pre></body></html>

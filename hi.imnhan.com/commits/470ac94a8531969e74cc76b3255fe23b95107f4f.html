@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[470ac94a85] remove cruft, embrace the motherfuckingwebsite way | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 470ac94a85</strong><hr><pre>commit 470ac94a8531969e74cc76b3255fe23b95107f4f
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Oct 11 18:53:16 2020 +0700
+
+    remove cruft, embrace the motherfuckingwebsite way
+    
+    - no web fonts, just good ole sans-serif and monospace. Default fonts
+      nowadays have good Vietnamese glyph coverage anyway.
+    - no includes in base template.
+    - rely more on *gasp* default browser styling.
+
+diff --git a/content/pages/about.md b/content/pages/about.md
+index 21c1872..db14314 100644
+--- a/content/pages/about.md
++++ b/content/pages/about.md
+@@ -1,13 +1,9 @@
+ Title: About
+ Thumb: images/keyboard-warrior.jpg
+ 
+-## About me
+-
+-![literally me](/images/keyboard-warrior.jpg)
+-
+ Hi, I&#39;m Nhân. I make web&lt;strike&gt;shit&lt;/strike&gt;stuff for a living.
+ 
+-## About this blog
++![literally me](/images/keyboard-warrior.jpg)
+ 
+ My mind is a sad mess that cannot hold much information after a couple of
+ months or so. This blog is where I write down interesting things I discover.
+diff --git a/nhanb-theme/CREDITS.mkd b/nhanb-theme/CREDITS.mkd
+deleted file mode 100644
+index a04cd87..0000000
+--- a/nhanb-theme/CREDITS.mkd
++++ /dev/null
+@@ -1,197 +0,0 @@
+-This theme uses code / assets from the following projects:
+-
+-# Zenburn Pygments theme
+-
+-https://github.com/richleland/pygments-css (public domain)
+-
+-```
+-This is free and unencumbered software released into the public domain.
+-Anyone is free to copy, modify, publish, use, compile, sell, or
+-distribute this software, either in source code form or as a compiled
+-binary, for any purpose, commercial or non-commercial, and by any
+-means.
+-In jurisdictions that recognize copyright laws, the author or authors
+-of this software dedicate any and all copyright interest in the
+-software to the public domain. We make this dedication for the benefit
+-of the public at large and to the detriment of our heirs and
+-successors. We intend this dedication to be an overt act of
+-relinquishment in perpetuity of all present and future rights to this
+-software under copyright law.
+-THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,
+-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+-OTHER DEALINGS IN THE SOFTWARE.
+-For more information, please refer to &lt;http://unlicense.org&gt;
+-```
+-
+-# Source Serif Pro font family
+-
+-https://adobe-fonts.github.io/source-serif-pro
+-
+-```
+-Copyright 2014 - 2017 Adobe Systems Incorporated (http://www.adobe.com/), with Reserved Font Name &#39;Source&#39;. All Rights Reserved. Source is a trademark of Adobe Systems Incorporated in the United States and/or other countries.
+-
+-This Font Software is licensed under the SIL Open Font License, Version 1.1.
+-
+-This license is copied below, and is also available with a FAQ at: http://scripts.sil.org/OFL
+-
+-
+------------------------------------------------------------
+-SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+------------------------------------------------------------
+-
+-PREAMBLE
+-The goals of the Open Font License (OFL) are to stimulate worldwide
+-development of collaborative font projects, to support the font creation
+-efforts of academic and linguistic communities, and to provide a free and
+-open framework in which fonts may be shared and improved in partnership
+-with others.
+-
+-The OFL allows the licensed fonts to be used, studied, modified and
+-redistributed freely as long as they are not sold by themselves. The
+-fonts, including any derivative works, can be bundled, embedded, 
+-redistributed and/or sold with any software provided that any reserved
+-names are not used by derivative works. The fonts and derivatives,
+-however, cannot be released under any other type of license. The
+-requirement for fonts to remain under this license does not apply
+-to any document created using the fonts or their derivatives.
+-
+-DEFINITIONS
+-&quot;Font Software&quot; refers to the set of files released by the Copyright
+-Holder(s) under this license and clearly marked as such. This may
+-include source files, build scripts and documentation.
+-
+-&quot;Reserved Font Name&quot; refers to any names specified as such after the
+-copyright statement(s).
+-
+-&quot;Original Version&quot; refers to the collection of Font Software components as
+-distributed by the Copyright Holder(s).
+-
+-&quot;Modified Version&quot; refers to any derivative made by adding to, deleting,
+-or substituting -- in part or in whole -- any of the components of the
+-Original Version, by changing formats or by porting the Font Software to a
+-new environment.
+-
+-&quot;Author&quot; refers to any designer, engineer, programmer, technical
+-writer or other person who contributed to the Font Software.
+-
+-PERMISSION &amp; CONDITIONS
+-Permission is hereby granted, free of charge, to any person obtaining
+-a copy of the Font Software, to use, study, copy, merge, embed, modify,
+-redistribute, and sell modified and unmodified copies of the Font
+-Software, subject to the following conditions:
+-
+-1) Neither the Font Software nor any of its individual components,
+-in Original or Modified Versions, may be sold by itself.
+-
+-2) Original or Modified Versions of the Font Software may be bundled,
+-redistributed and/or sold with any software, provided that each copy
+-contains the above copyright notice and this license. These can be
+-included either as stand-alone text files, human-readable headers or
+-in the appropriate machine-readable metadata fields within text or
+-binary files as long as those fields can be easily viewed by the user.
+-
+-3) No Modified Version of the Font Software may use the Reserved Font
+-Name(s) unless explicit written permission is granted by the corresponding
+-Copyright Holder. This restriction only applies to the primary font name as
+-presented to the users.
+-
+-4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+-Software shall not be used to promote, endorse or advertise any
+-Modified Version, except to acknowledge the contribution(s) of the
+-Copyright Holder(s) and the Author(s) or with their explicit written
+-permission.
+-
+-5) The Font Software, modified or unmodified, in part or in whole,
+-must be distributed entirely under this license, and must not be
+-distributed under any other license. The requirement for fonts to
+-remain under this license does not apply to any document created
+-using the Font Software.
+-
+-TERMINATION
+-This license becomes null and void if any of the above conditions are
+-not met.
+-
+-DISCLAIMER
+-THE FONT SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,
+-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+-OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+-COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+-INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+-DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+-FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+-OTHER DEALINGS IN THE FONT SOFTWARE.
+-```
+-
+-# Heuristica font family
+-
+-https://www.fontsquirrel.com/fonts/heuristica
+-
+-```
+-SIL Open Font License v1.10
+-
+-This license can also be found at this permalink: https://www.fontsquirrel.com/license/heuristica
+-
+-Copyright 1989, 1991 Adobe Systems Incorporated. All rights reserved.
+-Utopia is either a registered trademark or trademark of Adobe Systems
+-Incorporated in the United States and/or other countries. Used under
+-license.
+-
+-Copyright 2006 Han The Thanh, Vntopia font family, http://vntex.sf.net
+-
+-Copyright (c) 2008-2012, Andrey V. Panov (panov@canopus.iacp.dvo.ru),
+-with Reserved Font Name Heuristica.
+-
+-This Font Software is licensed under the SIL Open Font License, Version 1.1.
+-This license is copied below, and is also available with a FAQ at:
+-http://scripts.sil.org/OFL
+-
+-This Font Software is licensed under the SIL Open Font License, Version 1.1.
+-This license is copied below, and is also available with a FAQ at: http://scripts.sil.org/OFL
+-
+-—————————————————————————————-
+-SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+-—————————————————————————————-
+-
+-PREAMBLE
+-The goals of the Open Font License (OFL) are to stimulate worldwide development of collaborative font projects, to support the font creation efforts of academic and linguistic communities, and to provide a free and open framework in which fonts may be shared and improved in partnership with others.
+-
+-The OFL allows the licensed fonts to be used, studied, modified and redistributed freely as long as they are not sold by themselves. The fonts, including any derivative works, can be bundled, embedded, redistributed and/or sold with any software provided that any reserved names are not used by derivative works. The fonts and derivatives, however, cannot be released under any other type of license. The requirement for fonts to remain under this license does not apply to any document created using the fonts or their derivatives.
+-
+-DEFINITIONS
+-“Font Software” refers to the set of files released by the Copyright Holder(s) under this license and clearly marked as such. This may include source files, build scripts and documentation.
+-
+-“Reserved Font Name” refers to any names specified as such after the copyright statement(s).
+-
+-“Original Version” refers to the collection of Font Software components as distributed by the Copyright Holder(s).
+-
+-“Modified Version” refers to any derivative made by adding to, deleting, or substituting—in part or in whole—any of the components of the Original Version, by changing formats or by porting the Font Software to a new environment.
+-
+-“Author” refers to any designer, engineer, programmer, technical writer or other person who contributed to the Font Software.
+-
+-PERMISSION &amp; CONDITIONS
+-Permission is hereby granted, free of charge, to any person obtaining a copy of the Font Software, to use, study, copy, merge, embed, modify, redistribute, and sell modified and unmodified copies of the Font Software, subject to the following conditions:
+-
+-1) Neither the Font Software nor any of its individual components, in Original or Modified Versions, may be sold by itself.
+-
+-2) Original or Modified Versions of the Font Software may be bundled, redistributed and/or sold with any software, provided that each copy contains the above copyright notice and this license. These can be included either as stand-alone text files, human-readable headers or in the appropriate machine-readable metadata fields within text or binary files as long as those fields can be easily viewed by the user.
+-
+-3) No Modified Version of the Font Software may use the Reserved Font Name(s) unless explicit written permission is granted by the corresponding Copyright Holder. This restriction only applies to the primary font name as presented to the users.
+-
+-4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font Software shall not be used to promote, endorse or advertise any Modified Version, except to acknowledge the contribution(s) of the Copyright Holder(s) and the Author(s) or with their explicit written permission.
+-
+-5) The Font Software, modified or unmodified, in part or in whole, must be distributed entirely under this license, and must not be distributed under any other license. The requirement for fonts to remain under this license does not apply to any document created using the Font Software.
+-
+-TERMINATION
+-This license becomes null and void if any of the above conditions are not met.
+-
+-DISCLAIMER
+-THE FONT SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
+-Notes from Fontsquirrel about the heritage of this font:
+-
+-http://www.ctan.org/tex-archive/fonts/heuristica/
+-```
+diff --git a/nhanb-theme/README.mkd b/nhanb-theme/README.mkd
+index 46c7d77..e378f31 100644
+--- a/nhanb-theme/README.mkd
++++ b/nhanb-theme/README.mkd
+@@ -5,33 +5,32 @@ My minimal [Pelican](1) theme. Inspired by [motherfuckingwebsite](2) and
+ [2]: http://motherfuckingwebsite.com/
+ [3]: http://bettermotherfuckingwebsite.com/
+ 
+-# License
++This theme also uses third-party open source code, whose licenses are
++included below.
+ 
+-This theme is released under the MIT license:
++# Zenburn Pygments theme
+ 
+-```
+-The MIT License (MIT)
+-
+-Copyright (c) 2015 Bùi Thành Nhân
+-
+-Permission is hereby granted, free of charge, to any person obtaining a copy
+-of this software and associated documentation files (the &quot;Software&quot;), to deal
+-in the Software without restriction, including without limitation the rights
+-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+-copies of the Software, and to permit persons to whom the Software is
+-furnished to do so, subject to the following conditions:
++https://github.com/richleland/pygments-css (public domain)
+ 
+-The above copyright notice and this permission notice shall be included in
+-all copies or substantial portions of the Software.
+-
+-THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+-THE SOFTWARE.
+ ```
+-
+-This theme also uses good chunk of third-party open source code, whose licenses can be found in
+-CREDITS.mkd
++This is free and unencumbered software released into the public domain.
++Anyone is free to copy, modify, publish, use, compile, sell, or
++distribute this software, either in source code form or as a compiled
++binary, for any purpose, commercial or non-commercial, and by any
++means.
++In jurisdictions that recognize copyright laws, the author or authors
++of this software dedicate any and all copyright interest in the
++software to the public domain. We make this dedication for the benefit
++of the public at large and to the detriment of our heirs and
++successors. We intend this dedication to be an overt act of
++relinquishment in perpetuity of all present and future rights to this
++software under copyright law.
++THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,
++EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
++MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
++IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
++OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
++ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
++OTHER DEALINGS IN THE SOFTWARE.
++For more information, please refer to &lt;http://unlicense.org&gt;
++```
+diff --git a/nhanb-theme/static/css/article.css b/nhanb-theme/static/css/article.css
+index d33910f..05c94b9 100644
+--- a/nhanb-theme/static/css/article.css
++++ b/nhanb-theme/static/css/article.css
+@@ -1,3 +1,3 @@
+ .article-title {
+-    margin-bottom: 0px;
++  margin-bottom: 0px;
+ }
+diff --git a/nhanb-theme/static/css/index.css b/nhanb-theme/static/css/index.css
+index 036303f..81d75b9 100644
+--- a/nhanb-theme/static/css/index.css
++++ b/nhanb-theme/static/css/index.css
+@@ -1,23 +1,18 @@
+-.article-title {
+-    margin-bottom: 0px;
+-    margin-top: 42px;
++.article-list {
++  list-style-type: none;
++  margin: 0;
++  padding: 0;
+ }
+ 
+-a.article {
+-    color: black;
+-    display: block;
+-    margin-left: -15px;
+-    margin-right: -15px;
+-    padding-left: 15px;
+-    padding-right: 15px;
++.article-list li {
++  margin-bottom: 1rem;
+ }
+ 
+-a.article:active {
+-    color: white;
+-    background-color: black;
++.article-list a {
++  display: block;
++  font-weight: bold;
+ }
+ 
+-ul.article-list {
+-    list-style-type: none;
+-    padding: 0px 0px;
++time {
++  font-size: 0.9em;
+ }
+diff --git a/nhanb-theme/static/css/main.css b/nhanb-theme/static/css/main.css
+index 5d5342b..f3eadbe 100644
+--- a/nhanb-theme/static/css/main.css
++++ b/nhanb-theme/static/css/main.css
+@@ -1,233 +1,143 @@
+-/* ====================================
+- * Basic stuff
+- * ==================================== */
+-
+ body {
+-  background-color: beige;
+-  color: black;
+-  font-family: &quot;Source Serif Pro&quot;, serif;
+-  font-size: 20px;
+-  text-rendering: optimizeLegibility;
+-  margin: 0 0;
+-  padding: 0 0;
+-  border: none;
+-}
+-
+-#main {
+-  max-width: 750px;
+-  margin: 0px auto 0px auto;
+-  padding: 20px;
+-}
+-
+-hr {
+-  border: 1px solid #777;
++  font-family: sans-serif;
++  max-width: 700px;
++  margin: 0 auto;
++  padding: 0 0.5rem;
++  background-color: white;
++  /* always show vertical scrollbar to avoid content shifting: */
++  overflow-y: scroll;
+ }
+ 
+ a {
+-  color: #ce0000;
+   text-decoration: none;
+-  padding-top: 4px;
+-  padding-bottom: 2px;
++  color: #990d0d;
+ }
+-
+ a:hover {
+-  background-color: #fffbe8;
++  text-decoration: underline;
+ }
+ 
+-a:active {
+-  background-color: #ce0000;
+-  color: white;
++figure,
++img,
++video {
++  display: block;
++  max-width: 100%;
+ }
+ 
+-p {
+-  line-height: 1.5;
+-  margin-top: 1em;
++video {
++  border: 1px solid black;
++  box-sizing: border-box;
+ }
+ 
+-li p {
+-  margin: 0;
++p {
++  line-height: 1.5rem;
+ }
+ 
+ li {
+-  margin-bottom: 8px;
++  margin-bottom: 0.5rem;
+ }
+ 
+-video {
+-  width: 100%;
+-}
+-
+-blockquote {
+-  margin: 1em 0 1em 2em;
+-  background-color: #fafaed;
+-  padding: 0.2em 0.2em 0.2em 0.5em;
+-  border-left: 4px solid grey;
+-  font-size: 0.9em;
++iframe {
++  max-width: 100%;
+ }
+ 
+-blockquote p {
++figure {
+   margin: 0;
++  padding: 0;
++  border: 1px solid black;
++  display: inline-block;
++  font-style: italic;
++}
++figcaption {
++  padding: 5px;
+ }
+ 
+-h1,
+-h2,
+-h3,
+-h4 {
+-  line-height: 1.2;
++blockquote {
++  background-color: #efefef;
++  border-left: 4px solid #ccc;
++  padding: 5px;
++  margin-left: 2rem;
++  margin-right: 0;
++}
++blockquote &gt; * {
++  margin: 0;
+ }
+ 
+-h1 + p,
+-h2 + p,
+-h3 + p,
+-h4 + p {
+-  margin-top: -10px;
++time {
++  white-space: nowrap;
++  font-family: inherit;
++  font-size: inherit;
+ }
+ 
+-h1 {
+-  font-size: 35px;
++ul {
++  padding-left: 2rem;
+ }
+ 
+-h2 {
+-  font-size: 34px;
+-  margin-top: 1rem;
++hr {
++  border: 0;
++  border-top: 1px solid black;
+ }
+ 
+-h3 {
+-  font-size: 30px;
+-  font-style: italic;
+-  font-weight: 600;
++.clearfix {
++  clear: both;
+ }
+ 
+-article img {
+-  max-width: 100%;
++code {
++  font-size: 1rem;
++  font-family: monospace;
++  background-color: #eaeaea;
+ }
+ 
+ pre {
+-  padding: 15px 15px;
+-  width: calc(100% - 30px); /* Cancels out the left/right paddings */
+-  font-size: 16px;
++  padding: 0.5rem;
+   overflow-x: auto;
++  font-family: monospace;
+ }
+-
+-code {
+-  background-color: #ffedcd;
+-  border-radius: 3px;
+-  font-size: 0.8em;
+-  padding: 3px 5px 1px 5px;
++pre code {
++  font-size: 0.9rem;
+ }
+ 
+-.pagination {
+-  margin-top: 40px;
+-}
++/* site-specific stuff follows */
+ 
+-.next {
+-  float: right;
++nav {
++  border: 1px solid black;
++  border-left: 0;
++  border-right: 0;
++  margin: 0.8rem auto 1rem auto;
+ }
+ 
+-.prev {
+-  float: left;
++nav ul {
++  margin: 0;
++  padding: 0.5rem 0;
+ }
+ 
+-#content {
++footer {
+   margin-top: 1.5rem;
+-  clear: both;
+-}
+-
+-time {
+-  color: black;
+-  font-size: 0.9em;
++  border-top: 1px solid black;
++  padding: 0.5rem 0;
+ }
+ 
+-/* ====================================
+- * Navbar
+- * ==================================== */
+-
+-nav {
+-  font-weight: 600;
+-  font-size: 28px;
++#site-name {
++  font-size: 1.5rem;
++  margin-bottom: 0;
+ }
+ 
+-.navbar {
+-  padding: 0px 0px;
+-  margin: 5px -15px 12px 0px;
+-  /* -15 to cancel out navbar&gt;li&#39;s right margin */
++#site-subtitle {
++  margin: 0;
+ }
+ 
+ .navbar &gt; li {
+   display: inline;
+   list-style-type: none;
+-  margin: 0px 15px 0px 0px;
+ }
+-
+ #left-navbar {
+   float: left;
+ }
+-
++#left-navbar li {
++  margin-right: 1rem;
++}
+ #right-navbar {
+   float: right;
+ }
+-
+-#hr-nav {
+-  clear: both;
+-}
+-
+-/* ====================================
+- * Header
+- * ==================================== */
+-
+-#site-name {
+-  margin-top: 5px;
+-  margin-bottom: 0px;
+-  font-size: 40px;
+-  font-weight: 700;
+-}
+-
+-#site-subtitle {
+-  margin-top: 0px;
+-  font-size: 20px;
+-  font-weight: 400;
+-}
+-/* ====================================
+- * Footer
+- * ==================================== */
+-
+-footer {
+-  font-size: 18px;
+-}
+-
+-#hr-comment,
+-#hr-footer {
+-  margin-top: 40px;
+-}
+-
+-/* ====================================
+- * Phone / small tablet sizes
+- * ==================================== */
+-@media (max-width: 767px) {
+-  nav {
+-    font-size: 24px;
+-  }
+-
+-  body {
+-    font-size: 18px;
+-  }
+-
+-  h1 {
+-    font-size: 30px;
+-  }
+-
+-  h2 {
+-    font-size: 26px;
+-  }
+-
+-  h3 {
+-    font-size: 20px;
+-    font-weight: 700;
+-  }
+-}
+-
+-@media (min-width: 480px) {
+-  #main {
+-    padding-left: 40px;
+-    padding-right: 40px;
+-  }
++#right-navbar li {
++  margin-left: 1rem;
+ }
+diff --git a/nhanb-theme/static/fonts/Heuristica-BoldItalic.ttf b/nhanb-theme/static/fonts/Heuristica-BoldItalic.ttf
+deleted file mode 100644
+index 39d3536..0000000
+Binary files a/nhanb-theme/static/fonts/Heuristica-BoldItalic.ttf and /dev/null differ
+diff --git a/nhanb-theme/static/fonts/Heuristica-Italic.ttf b/nhanb-theme/static/fonts/Heuristica-Italic.ttf
+deleted file mode 100644
+index 4c6306f..0000000
+Binary files a/nhanb-theme/static/fonts/Heuristica-Italic.ttf and /dev/null differ
+diff --git a/nhanb-theme/static/fonts/SourceSerifPro-Bold.otf.woff b/nhanb-theme/static/fonts/SourceSerifPro-Bold.otf.woff
+deleted file mode 100644
+index c5902c0..0000000
+Binary files a/nhanb-theme/static/fonts/SourceSerifPro-Bold.otf.woff and /dev/null differ
+diff --git a/nhanb-theme/static/fonts/SourceSerifPro-Bold.otf.woff2 b/nhanb-theme/static/fonts/SourceSerifPro-Bold.otf.woff2
+deleted file mode 100644
+index 7b7682c..0000000
+Binary files a/nhanb-theme/static/fonts/SourceSerifPro-Bold.otf.woff2 and /dev/null differ
+diff --git a/nhanb-theme/static/fonts/SourceSerifPro-Bold.ttf b/nhanb-theme/static/fonts/SourceSerifPro-Bold.ttf
+deleted file mode 100644
+index a5cec46..0000000
+Binary files a/nhanb-theme/static/fonts/SourceSerifPro-Bold.ttf and /dev/null differ
+diff --git a/nhanb-theme/static/fonts/SourceSerifPro-Regular.otf.woff b/nhanb-theme/static/fonts/SourceSerifPro-Regular.otf.woff
+deleted file mode 100644
+index 0bb7e8f..0000000
+Binary files a/nhanb-theme/static/fonts/SourceSerifPro-Regular.otf.woff and /dev/null differ
+diff --git a/nhanb-theme/static/fonts/SourceSerifPro-Regular.otf.woff2 b/nhanb-theme/static/fonts/SourceSerifPro-Regular.otf.woff2
+deleted file mode 100644
+index 513e4c8..0000000
+Binary files a/nhanb-theme/static/fonts/SourceSerifPro-Regular.otf.woff2 and /dev/null differ
+diff --git a/nhanb-theme/static/fonts/SourceSerifPro-Regular.ttf b/nhanb-theme/static/fonts/SourceSerifPro-Regular.ttf
+deleted file mode 100644
+index 2d3cff3..0000000
+Binary files a/nhanb-theme/static/fonts/SourceSerifPro-Regular.ttf and /dev/null differ
+diff --git a/nhanb-theme/static/fonts/SourceSerifPro-Semibold.otf.woff b/nhanb-theme/static/fonts/SourceSerifPro-Semibold.otf.woff
+deleted file mode 100644
+index d4e322b..0000000
+Binary files a/nhanb-theme/static/fonts/SourceSerifPro-Semibold.otf.woff and /dev/null differ
+diff --git a/nhanb-theme/static/fonts/SourceSerifPro-Semibold.otf.woff2 b/nhanb-theme/static/fonts/SourceSerifPro-Semibold.otf.woff2
+deleted file mode 100644
+index b6e4740..0000000
+Binary files a/nhanb-theme/static/fonts/SourceSerifPro-Semibold.otf.woff2 and /dev/null differ
+diff --git a/nhanb-theme/static/fonts/SourceSerifPro-Semibold.ttf b/nhanb-theme/static/fonts/SourceSerifPro-Semibold.ttf
+deleted file mode 100644
+index 7e6fc6f..0000000
+Binary files a/nhanb-theme/static/fonts/SourceSerifPro-Semibold.ttf and /dev/null differ
+diff --git a/nhanb-theme/static/fonts/fonts.css b/nhanb-theme/static/fonts/fonts.css
+deleted file mode 100644
+index e3f01aa..0000000
+--- a/nhanb-theme/static/fonts/fonts.css
++++ /dev/null
+@@ -1,50 +0,0 @@
+-@font-face {
+-  font-family: &#39;Source Serif Pro&#39;;
+-  src: url(&#39;SourceSerifPro-Regular.otf.woff2&#39;) format(&#39;woff2&#39;),
+-       url(&#39;SourceSerifPro-Regular.otf.woff&#39;) format(&#39;woff&#39;),
+-       url(&#39;SourceSerifPro-Regular.ttf&#39;) format(&#39;truetype&#39;);
+-  font-style: normal;
+-  font-weight: 400;
+-}
+-
+-@font-face {
+-  font-family: &#39;Source Serif Pro&#39;;
+-  src: url(&#39;SourceSerifPro-Semibold.otf.woff2&#39;) format(&#39;woff2&#39;),
+-       url(&#39;SourceSerifPro-Semibold.otf.woff&#39;) format(&#39;woff&#39;),
+-       url(&#39;SourceSerifPro-Semibold.ttf&#39;) format(&#39;truetype&#39;);
+-  font-style: normal;
+-  font-weight: 600;
+-}
+-
+-@font-face {
+-  font-family: &#39;Source Serif Pro&#39;;
+-  src: url(&#39;SourceSerifPro-Bold.otf.woff2&#39;) format(&#39;woff2&#39;),
+-       url(&#39;SourceSerifPro-Bold.otf.woff&#39;) format(&#39;woff&#39;),
+-       url(&#39;SourceSerifPro-Bold.ttf&#39;) format(&#39;truetype&#39;);
+-  font-style: normal;
+-  font-weight: 700;
+-}
+-
+-/* Workaround until italics land in Source Serif Pro:
+- * https://github.com/adobe-fonts/source-serif-pro/issues/2
+- */
+-@font-face {
+-  font-family: &#39;Source Serif Pro&#39;;
+-  src: url(&#39;Heuristica-Italic.ttf&#39;) format(&#39;truetype&#39;);
+-  font-style: italic;
+-  font-weight: 400;
+-}
+-
+-@font-face {
+-  font-family: &#39;Source Serif Pro&#39;;
+-  src: url(&#39;Heuristica-BoldItalic.ttf&#39;) format(&#39;truetype&#39;);
+-  font-style: italic;
+-  font-weight: 700;
+-}
+-
+-@font-face {
+-  font-family: &#39;Source Serif Pro&#39;;
+-  src: url(&#39;Heuristica-BoldItalic.ttf&#39;) format(&#39;truetype&#39;);
+-  font-style: italic;
+-  font-weight: 600;
+-}
+diff --git a/nhanb-theme/templates/_includes/footer.html b/nhanb-theme/templates/_includes/footer.html
+deleted file mode 100644
+index 40bcae3..0000000
+--- a/nhanb-theme/templates/_includes/footer.html
++++ /dev/null
+@@ -1,4 +0,0 @@
+-&amp;copy; 2013–{{ CURRENT_YEAR }}
+-{{ AUTHOR }}
+-&lt;br&gt;
+-{{ FOOTER_TEXT }}
+diff --git a/nhanb-theme/templates/_includes/google_analytics.html b/nhanb-theme/templates/_includes/google_analytics.html
+deleted file mode 100644
+index 0fd7f45..0000000
+--- a/nhanb-theme/templates/_includes/google_analytics.html
++++ /dev/null
+@@ -1,13 +0,0 @@
+-{% if GOOGLE_ANALYTICS %}
+-&lt;!-- Google Analytics --&gt;
+-&lt;script&gt;
+-  (function(i,s,o,g,r,a,m){i[&#39;GoogleAnalyticsObject&#39;]=r;i[r]=i[r]||function(){
+-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+-  })(window,document,&#39;script&#39;,&#39;//www.google-analytics.com/analytics.js&#39;,&#39;ga&#39;);
+-
+-  ga(&#39;create&#39;, &#39;{{ GOOGLE_ANALYTICS }}&#39;, &#39;auto&#39;);
+-  ga(&#39;send&#39;, &#39;pageview&#39;);
+-&lt;/script&gt;
+-&lt;!-- End Google Analytics --&gt;
+-{% endif %}
+diff --git a/nhanb-theme/templates/_includes/header.html b/nhanb-theme/templates/_includes/header.html
+deleted file mode 100644
+index d36e6ce..0000000
+--- a/nhanb-theme/templates/_includes/header.html
++++ /dev/null
+@@ -1,2 +0,0 @@
+-&lt;h1 id=&quot;site-name&quot;&gt;&lt;a href=&quot;/&quot;&gt;{{ SITENAME }}&lt;/a&gt;&lt;/h1&gt;
+-&lt;h2 id=&quot;site-subtitle&quot;&gt;{{ SITESUBTITLE}}&lt;/h2&gt;
+diff --git a/nhanb-theme/templates/_includes/navbar.html b/nhanb-theme/templates/_includes/navbar.html
+deleted file mode 100644
+index 0eb08d1..0000000
+--- a/nhanb-theme/templates/_includes/navbar.html
++++ /dev/null
+@@ -1,16 +0,0 @@
+-&lt;ul class=&quot;navbar&quot; id=&quot;left-navbar&quot;&gt;
+-    {% for title, link in MENUITEMS %}
+-        &lt;li&gt;&lt;a href=&quot;{{ link }}&quot;&gt;{{ title }}&lt;/a&gt;&lt;/li&gt;
+-    {% endfor %}
+-
+-    {% for page in pages if not page.hidden %}
+-        &lt;li&gt;&lt;a href=&quot;{{ SITEURL }}/{{ page.url }}&quot;&gt;{{ page.title }}&lt;/a&gt;&lt;/li&gt;
+-    {% endfor %}
+-&lt;/ul&gt;
+-
+-&lt;ul class=&quot;navbar&quot; id=&quot;right-navbar&quot;&gt;
+-    &lt;li&gt;
+-        &lt;a href=&quot;{{SITE_URL}}/feeds/atom.xml&quot;&gt;Feed&lt;/a&gt;
+-    &lt;/li&gt;
+-
+-&lt;/ul&gt;
+diff --git a/nhanb-theme/templates/base.html b/nhanb-theme/templates/base.html
+index e1d2630..5068677 100644
+--- a/nhanb-theme/templates/base.html
++++ b/nhanb-theme/templates/base.html
+@@ -1,15 +1,12 @@
+ &lt;!DOCTYPE html&gt;
+ &lt;html&gt;
+ &lt;head&gt;
+-    &lt;meta charset=&quot;utf-8&quot;&gt;
+-    &lt;title&gt;{% block title %}{{ SITENAME }} - {{ SITESUBTITLE }}{% endblock %}&lt;/title&gt;
+-    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+-    &lt;link rel=&quot;stylesheet&quot; href=&quot;/theme/fonts/fonts.css&quot;&gt;
+-    &lt;link rel=&quot;stylesheet&quot; href=&quot;/theme/css/zenburn.css&quot;&gt;
+-    &lt;link rel=&quot;stylesheet&quot; href=&quot;/theme/css/main.css&quot;&gt;
+-    {% block header_extras %}{% endblock %}
+-
+-    {% include &#39;_includes/google_analytics.html&#39; %}
++  &lt;meta charset=&quot;utf-8&quot;&gt;
++  &lt;title&gt;{% block title %}{{ SITENAME }} - {{ SITESUBTITLE }}{% endblock %}&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/theme/css/zenburn.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/theme/css/main.css&quot;&gt;
++  {% block header_extras %}{% endblock %}
+ &lt;/head&gt;
+ 
+ &lt;!--
+@@ -17,21 +14,40 @@
+ --&gt;
+ 
+ &lt;body&gt;
+-
+-    &lt;div id=&quot;main&quot;&gt;
+-
+-        &lt;header role=&quot;banner&quot;&gt;{% include &#39;_includes/header.html&#39; %}&lt;/header&gt;
+-        &lt;hr&gt;
+-        &lt;nav role=&quot;navigation&quot;&gt;{% include &#39;_includes/navbar.html&#39; %}&lt;/nav&gt;
+-        &lt;hr id=&quot;hr-nav&quot;&gt;
+-
+-        &lt;div id=&quot;content&quot;&gt;
+-            {% block content %}{% endblock %}
+-        &lt;/div&gt;
+-
+-        &lt;hr id=&quot;hr-footer&quot;&gt;
+-        &lt;footer&gt;{% include &#39;_includes/footer.html&#39; %}&lt;/footer&gt;
++  &lt;div id=&quot;main&quot;&gt;
++
++    &lt;header role=&quot;banner&quot;&gt;
++      &lt;h1 id=&quot;site-name&quot;&gt;&lt;a href=&quot;/&quot;&gt;{{ SITENAME }}&lt;/a&gt;&lt;/h1&gt;
++      &lt;p id=&quot;site-subtitle&quot;&gt;{{ SITESUBTITLE}}&lt;/p&gt;
++    &lt;/header&gt;
++
++    &lt;nav role=&quot;navigation&quot;&gt;
++      &lt;ul class=&quot;navbar&quot; id=&quot;left-navbar&quot;&gt;
++        {% for title, link in MENUITEMS %}
++          &lt;li&gt;&lt;a href=&quot;{{ link }}&quot;&gt;{{ title }}&lt;/a&gt;&lt;/li&gt;
++        {% endfor %}
++        {% for page in pages if not page.hidden %}
++          &lt;li&gt;&lt;a href=&quot;{{ SITEURL }}/{{ page.url }}&quot;&gt;{{ page.title }}&lt;/a&gt;&lt;/li&gt;
++        {% endfor %}
++      &lt;/ul&gt;
++      &lt;ul class=&quot;navbar&quot; id=&quot;right-navbar&quot;&gt;
++        &lt;li&gt;&lt;a href=&quot;{{SITE_URL}}/feeds/atom.xml&quot;&gt;Feed&lt;/a&gt;&lt;/li&gt;
++      &lt;/ul&gt;
++
++    &lt;div class=&quot;clearfix&quot;&gt;
++
++    &lt;/nav&gt;
++
++    &lt;div id=&quot;content&quot;&gt;
++        {% block content %}{% endblock %}
+     &lt;/div&gt;
+ 
++    &lt;footer&gt;
++      &amp;copy; 2013–{{ CURRENT_YEAR }}
++      {{ AUTHOR }}
++      &lt;br&gt;
++      {{ FOOTER_TEXT }}
++    &lt;/footer&gt;
++  &lt;/div&gt;
+ &lt;/body&gt;
+ &lt;/html&gt;
+diff --git a/nhanb-theme/templates/index.html b/nhanb-theme/templates/index.html
+index ef792dd..01cffe2 100644
+--- a/nhanb-theme/templates/index.html
++++ b/nhanb-theme/templates/index.html
+@@ -11,23 +11,22 @@
+ 
+ {% block content %}
+ 
+-&lt;div class=&quot;blog-index&quot;&gt;
+-    {% if articles %}
+-    &lt;ul class=&quot;article-list&quot;&gt;
+-        {% for article in articles_page.object_list %}
+-        &lt;li&gt;
+-            &lt;h1 class=&quot;article-title&quot;&gt;
+-                &lt;a class=&quot;article&quot; href=&quot;{{ SITEURL }}/{{ article.url }}&quot;&gt;
+-                    {{ article.title|striptags }}
+-                &lt;/a&gt;
+-            &lt;/h1&gt;
+-            &lt;time datetime=&quot;{{ article.date }}&quot;&gt;
+-              {{ article.date|strftime(&#39;%B %d, %Y&#39;) }}
+-            &lt;/time&gt;
+-        &lt;/li&gt;
+-        {% endfor %}
+-    &lt;/ul&gt;
+-    {% endif %}
+-&lt;/div&gt;
++{% if articles %}
++
++&lt;p&gt;All of my writings, newest first:&lt;/p&gt;
++
++&lt;ul class=&quot;article-list&quot;&gt;
++  {% for article in articles_page.object_list %}
++  &lt;li&gt;
++    &lt;a class=&quot;article&quot; href=&quot;{{ SITEURL }}/{{ article.url }}&quot;&gt;
++      {{ article.title|striptags }}
++    &lt;/a&gt;
++    &lt;time datetime=&quot;{{ article.date }}&quot;&gt;
++      {{ article.date|strftime(&#39;%B %d, %Y&#39;) }}
++    &lt;/time&gt;
++  &lt;/li&gt;
++  {% endfor %}
++&lt;/ul&gt;
++{% endif %}
+ 
+ {% endblock %}
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 4d8569e..1417635 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -108,5 +108,5 @@
+ 
+ FOOTER_TEXT = &quot;&quot;&quot;
+ Built with &amp;#9829; and probably too much
+-&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://trungnguyenlegend.com/g7/&quot;&gt;G7 X2&lt;/a&gt;.
++&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://www.thecoffeehouse.com/products/ca-phe-phin&quot;&gt;Coffee House&lt;/a&gt;.
+ &quot;&quot;&quot;
+</pre></body></html>

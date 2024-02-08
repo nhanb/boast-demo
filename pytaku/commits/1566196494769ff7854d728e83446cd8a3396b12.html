@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1566196494] fucking importlib | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 1566196494</strong><hr><pre>commit 1566196494769ff7854d728e83446cd8a3396b12
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Sep 18 22:34:53 2021 +0700
+
+    fucking importlib
+    
+    Apparently with python3.9 it would vomit out an IsADirectoryError:
+    
+        IsADirectoryError: [Errno 21] Is a directory:
+        &#39;/home/pytaku/.local/lib/python3.9/site-packages/pytaku/database/migrations&#39;
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 798150a..53dfe02 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.5.0&quot;
++version = &quot;0.5.1&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/database/migrator.py b/src/pytaku/database/migrator.py
+index f9a1909..bdc8c8e 100644
+--- a/src/pytaku/database/migrator.py
++++ b/src/pytaku/database/migrator.py
+@@ -56,7 +56,8 @@ def migrate(overwrite_latest_schema=True):
+     if not Path(DBNAME).is_file():
+         run_sql(&quot;PRAGMA journal_mode = WAL;&quot;)
+ 
+-    with resources.path(migrations, &quot;&quot;) as migrations_dir:
++    with resources.path(migrations, &quot;__init__.py&quot;) as migrations_dir:
++        migrations_dir = migrations_dir.parent
+         pending_migrations = _get_pending_migrations(migrations_dir)
+         if not pending_migrations:
+             print(&quot;Nothing to migrate.&quot;)
+</pre></body></html>

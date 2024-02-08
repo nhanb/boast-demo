@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a6368c2928] make blockquotes look like... quotes | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / a6368c2928</strong><hr><pre>commit a6368c2928b6f4dd437aa96b54f175966f48880a
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jun 7 20:29:06 2023 +0700
+
+    make blockquotes look like... quotes
+
+diff --git a/nhanb-theme/static/css/main.css b/nhanb-theme/static/css/main.css
+index 09423a5..83353ee 100644
+--- a/nhanb-theme/static/css/main.css
++++ b/nhanb-theme/static/css/main.css
+@@ -92,12 +92,19 @@ iframe {
+ }
+ 
+ blockquote {
+-  border-left: 2px solid black;
+   padding-left: 7px;
+   margin: 1.5rem 0 1.5rem 2rem;
++  quotes: &quot;\201C&quot;&quot;\201D&quot;;
+   /* prevent long links from breaking out of the blockquote: */
+   overflow-wrap: break-word;
+ }
++blockquote::before {
++  position: absolute;
++  margin-left: -0.5em;
++  margin-top: -0.25em;
++  font-size: 3em;
++  content: open-quote;
++}
+ blockquote &gt; * {
+   margin: 0;
+ }
+</pre></body></html>

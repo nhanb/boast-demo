@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[cd54931375] done basic setup | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / cd54931375</strong><hr><pre>commit cd549313757a77975d196d153de1f62a9d494625
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Mon May 13 11:52:03 2013 +0700
+
+    done basic setup
+
+diff --git a/Makefile b/Makefile
+index 39c9738..1e5b1bf 100644
+--- a/Makefile
++++ b/Makefile
+@@ -83,6 +83,6 @@ s3_upload: publish
+ 
+ github: publish
+ 	ghp-import $(OUTPUTDIR)
+-	git push origin gh-pages
++	git push git@github.com:nhanb/nhanb.github.io.git gh-pages:master
+ 
+ .PHONY: html help clean regenerate serve devserver publish ssh_upload rsync_upload dropbox_upload ftp_upload s3_upload github
+diff --git a/content/extra/README.markdown b/content/extra/README.markdown
+new file mode 100644
+index 0000000..4e719ff
+--- /dev/null
++++ b/content/extra/README.markdown
+@@ -0,0 +1,3 @@
++# Static content for blog.nerdyweekly.com
++
++This repo contains generated HTML only. For markdown sources visit https://github.com/nhanb/blog
+diff --git a/pelicanconf.py b/pelicanconf.py
+index a14f27d..20dae45 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -2,7 +2,7 @@
+ # -*- coding: utf-8 -*- #
+ from __future__ import unicode_literals
+ 
+-AUTHOR = u&#39;Bui Thanh Nhan&#39;
++AUTHOR = u&#39;Bùi Thành Nhân&#39;
+ SITENAME = u&#39;Nhanb&#39;
+ SITEURL = &#39;&#39;
+ 
+@@ -16,10 +16,10 @@
+ TRANSLATION_FEED_ATOM = None
+ 
+ # Blogroll
+-LINKS =  ((&#39;Pelican&#39;, &#39;http://getpelican.com/&#39;),
+-          (&#39;Python.org&#39;, &#39;http://python.org/&#39;),
+-          (&#39;Jinja2&#39;, &#39;http://jinja.pocoo.org/&#39;),
+-          (&#39;You can modify those links in your config file&#39;, &#39;#&#39;),)
++LINKS = ((&#39;Pelican&#39;, &#39;http://getpelican.com/&#39;),
++         (&#39;Python.org&#39;, &#39;http://python.org/&#39;),
++         (&#39;Jinja2&#39;, &#39;http://jinja.pocoo.org/&#39;)
++         )
+ 
+ # Social widget
+ SOCIAL = ((&#39;You can add links in your config file&#39;, &#39;#&#39;),
+diff --git a/publishconf.py b/publishconf.py
+index 9e705ca..fbb2e89 100644
+--- a/publishconf.py
++++ b/publishconf.py
+@@ -10,8 +10,8 @@
+ sys.path.append(os.curdir)
+ from pelicanconf import *
+ 
+-SITEURL = &#39;http://blog.nerdyweekly.com/blog&#39;
+-RELATIVE_URLS = False
++SITEURL = &#39;http://nhanb.github.io/blog&#39;
++RELATIVE_URLS = True
+ 
+ FEED_ALL_ATOM = &#39;feeds/all.atom.xml&#39;
+ CATEGORY_FEED_ATOM = &#39;feeds/%s.atom.xml&#39;
+@@ -19,7 +19,8 @@
+ DELETE_OUTPUT_DIRECTORY = True
+ 
+ # Copy CNAME file to output
+-FILES_TO_COPY = ((&#39;extra/CNAME&#39;, &#39;CNAME&#39;),)
++FILES_TO_COPY = ((&#39;extra/CNAME&#39;, &#39;CNAME&#39;),
++                 (&#39;extra/README.markdown&#39;, &#39;README.markdown&#39;))
+ 
+ # Following items are often useful when publishing
+ 
+</pre></body></html>

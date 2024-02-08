@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[8608d3b841] simpler metadata format | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 8608d3b841</strong><hr><pre>commit 8608d3b841bba717b2c4219aae2031cf208bcf87
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jul 10 18:41:10 2023 +0700
+
+    simpler metadata format
+    
+    `Key: val` feels more natural to write.
+    As a bonus, we no longer need the toml dependency.
+
+diff --git a/feed.go b/feed.go
+index 9dc9e1e..4cee63a 100644
+--- a/feed.go
++++ b/feed.go
+@@ -31,9 +31,9 @@ func generateFeed(site SiteMetadata, posts []Article, path string) []byte {
+ 		Updated: atom.Time(posts[0].PostedAt),
+ 		Entry:   entries,
+ 		Author: &amp;atom.Person{
+-			Name:  site.Author.Name,
+-			URI:   site.Author.URI,
+-			Email: site.Author.Email,
++			Name:  site.AuthorName,
++			URI:   site.AuthorURI,
++			Email: site.AuthorEmail,
+ 		},
+ 		Link: []atom.Link{{Rel: &quot;self&quot;, Href: path}},
+ 	}
+diff --git a/go.mod b/go.mod
+index 432d81d..1435631 100644
+--- a/go.mod
++++ b/go.mod
+@@ -2,8 +2,6 @@ module go.imnhan.com/webmaker2000
+ 
+ go 1.20
+ 
+-require github.com/BurntSushi/toml v1.3.2
+-
+ require (
+ 	github.com/fsnotify/fsnotify v1.6.0
+ 	golang.org/x/tools v0.10.0
+diff --git a/go.sum b/go.sum
+index 27f5e0e..ec91993 100644
+--- a/go.sum
++++ b/go.sum
+@@ -1,5 +1,3 @@
+-github.com/BurntSushi/toml v1.3.2 h1:o7IhLm0Msx3BaB+n3Ag7L8EVlByGnpq14C4YWiu/gL8=
+-github.com/BurntSushi/toml v1.3.2/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
+ github.com/fsnotify/fsnotify v1.6.0 h1:n+5WquG0fcWoWp6xPWfHdbskMCQaFnG6PfBrh1Ky4HY=
+ github.com/fsnotify/fsnotify v1.6.0/go.mod h1:sl3t1tCWJFWoRz9R8WJCbQihKKwmorjAbSClcnxKAGw=
+ golang.org/x/sys v0.0.0-20220908164124-27713097b956/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+diff --git a/main.go b/main.go
+index 38472a3..0c0aeb8 100644
+--- a/main.go
++++ b/main.go
+@@ -14,7 +14,6 @@
+ 	&quot;strings&quot;
+ 	&quot;time&quot;
+ 
+-	&quot;github.com/BurntSushi/toml&quot;
+ 	&quot;go.imnhan.com/webmaker2000/djot&quot;
+ 	&quot;go.imnhan.com/webmaker2000/livereload&quot;
+ 	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
+@@ -34,7 +33,7 @@ func main() {
+ 
+ 	if new != &quot;&quot; {
+ 		fmt.Println(&quot;Making new site at&quot;, new)
+-		err := makeSite(new, newSiteMetadata())
++		err := makeSite(new, NewSiteMetadata())
+ 		if err != nil {
+ 			log.Fatal(err)
+ 		}
+@@ -78,7 +77,7 @@ func main() {
+ func regenerate(fsys writablefs.FS) {
+ 	defer timer(&quot;Took %s&quot;)()
+ 
+-	site := readSiteMetadata(fsys)
++	site := ReadSiteMetadata(fsys)
+ 	articles := findArticles(fsys)
+ 
+ 	if len(articles) == 0 {
+@@ -138,37 +137,6 @@ func regenerate(fsys writablefs.FS) {
+ 	WriteManifest(fsys, generatedFiles)
+ }
+ 
+-type SiteMetadata struct {
+-	Address      string
+-	Name         string
+-	Tagline      string
+-	HomePath     string
+-	ShowFooter   bool
+-	GenerateHome bool
+-	Author       struct {
+-		Name  string
+-		URI   string
+-		Email string
+-	}
+-}
+-
+-func newSiteMetadata() SiteMetadata {
+-	return SiteMetadata{
+-		HomePath:     &quot;/&quot;,
+-		ShowFooter:   true,
+-		GenerateHome: true,
+-	}
+-}
+-
+-func readSiteMetadata(fsys writablefs.FS) SiteMetadata {
+-	sm := newSiteMetadata()
+-	_, err := toml.DecodeFS(fsys, SiteFileName, &amp;sm)
+-	if err != nil {
+-		panic(err)
+-	}
+-	return sm
+-}
+-
+ type Article struct {
+ 	Fs         writablefs.FS
+ 	Path       string
+@@ -178,15 +146,6 @@ type Article struct {
+ 	ArticleMetadata
+ }
+ 
+-type ArticleMetadata struct {
+-	Title      string
+-	IsDraft    bool
+-	PostedAt   time.Time
+-	Templates  []string
+-	ShowInFeed bool
+-	ShowInNav  bool
+-}
+-
+ func (a *Article) WebPath() string {
+ 	if a.webPath != &quot;&quot; {
+ 		return a.webPath
+@@ -313,7 +272,7 @@ func findArticles(fsys writablefs.FS) (result []Article) {
+ 			ShowInFeed: true,
+ 			ShowInNav:  false,
+ 		}
+-		_, err = toml.Decode(metaText, &amp;meta)
++		err = UnmarshalMetadata([]byte(metaText), &amp;meta)
+ 		if err != nil {
+ 			fmt.Printf(&quot;FIXME: Malformed article metadata in %s: %s\n&quot;, path, err)
+ 			return nil
+diff --git a/makesite.go b/makesite.go
+index 1a4ddec..789d243 100644
+--- a/makesite.go
++++ b/makesite.go
+@@ -8,8 +8,6 @@
+ 	&quot;io/ioutil&quot;
+ 	&quot;os&quot;
+ 	&quot;path/filepath&quot;
+-
+-	&quot;github.com/BurntSushi/toml&quot;
+ )
+ 
+ //go:embed theme
+@@ -22,16 +20,9 @@ func makeSite(path string, meta SiteMetadata) error {
+ 		return fmt.Errorf(&quot;make site: %w&quot;, err)
+ 	}
+ 
+-	// Create site metadata file
+-	metaFilePath := filepath.Join(path, SiteFileName)
+-	metaFile, err := os.Create(metaFilePath)
+-	if err != nil {
+-		return fmt.Errorf(&quot;create site metadata: %w&quot;, err)
+-	}
+-	defer metaFile.Close()
+-
+-	metaEncoder := toml.NewEncoder(metaFile)
+-	err = metaEncoder.Encode(meta)
++	// Write site metadata file
++	data := MarshalMetadata(&amp;meta)
++	err = ioutil.WriteFile(filepath.Join(path, SiteFileName), data, 0664)
+ 	if err != nil {
+ 		return fmt.Errorf(&quot;write site metadata: %w&quot;, err)
+ 	}
+diff --git a/metadata.go b/metadata.go
+new file mode 100644
+index 0000000..50f138f
+--- /dev/null
++++ b/metadata.go
+@@ -0,0 +1,129 @@
++package main
++
++import (
++	&quot;fmt&quot;
++	&quot;io/fs&quot;
++	&quot;reflect&quot;
++	&quot;strings&quot;
++	&quot;time&quot;
++
++	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
++)
++
++type SiteMetadata struct {
++	Address      string
++	Name         string
++	Tagline      string
++	HomePath     string
++	ShowFooter   bool
++	GenerateHome bool
++	AuthorName   string
++	AuthorURI    string
++	AuthorEmail  string
++}
++
++type ArticleMetadata struct {
++	Title      string
++	IsDraft    bool
++	PostedAt   time.Time
++	Templates  []string
++	ShowInFeed bool
++	ShowInNav  bool
++}
++
++func NewSiteMetadata() SiteMetadata {
++	return SiteMetadata{
++		HomePath:     &quot;/&quot;,
++		ShowFooter:   true,
++		GenerateHome: true,
++	}
++}
++
++func ReadSiteMetadata(fsys writablefs.FS) SiteMetadata {
++	sm := NewSiteMetadata()
++
++	data, err := fs.ReadFile(fsys, SiteFileName)
++	if err != nil {
++		panic(err)
++	}
++
++	UnmarshalMetadata(data, &amp;sm)
++	return sm
++}
++
++// Similar API to json.Unmarshal but supports neither struct tags nor nesting.
++func UnmarshalMetadata(data []byte, dest any) error {
++	m := metaTextToMap(data)
++
++	s := reflect.ValueOf(dest).Elem()
++	sType := s.Type()
++	for i := 0; i &lt; s.NumField(); i++ {
++		f := s.Field(i)
++		val, ok := m[sType.Field(i).Name]
++		if ok {
++			switch f.Type().String() {
++			case &quot;string&quot;:
++				s.Field(i).SetString(val)
++
++			case &quot;bool&quot;:
++				if val != &quot;true&quot; &amp;&amp; val != &quot;false&quot; {
++					return fmt.Errorf(
++						&quot;invalid boolean: expected true/false, got %s&quot;, val,
++					)
++				}
++				s.Field(i).SetBool(val == &quot;true&quot;)
++
++			case &quot;time.Time&quot;:
++				tVal, err := time.ParseInLocation(&quot;2006-01-02&quot;, val, time.Local)
++				tVal = tVal.Local()
++				if err != nil {
++					return fmt.Errorf(
++						&quot;invalid date: expected YYYY-MM-DD, got %s&quot;, val,
++					)
++				}
++				s.Field(i).Set(reflect.ValueOf(tVal))
++
++			default:
++				panic(fmt.Sprintf(
++					&quot;unsupported metadata field type: %s&quot;,
++					f.Type().String(),
++				))
++			}
++		}
++	}
++	return nil
++}
++
++func MarshalMetadata(v any) []byte {
++	result := &quot;&quot;
++
++	s := reflect.ValueOf(v).Elem()
++	sType := s.Type()
++	for i := 0; i &lt; s.NumField(); i++ {
++		f := s.Field(i)
++		key := sType.Field(i).Name
++		val := f.Interface()
++		result += fmt.Sprintf(&quot;%s: %v\n&quot;, key, val)
++	}
++
++	return []byte(result)
++}
++
++func metaTextToMap(s []byte) map[string]string {
++	result := make(map[string]string)
++	lines := strings.Split(strings.TrimSpace(string(s)), &quot;\n&quot;)
++	for i, l := range lines {
++		if len(l) == 0 || l[0] == &#39;#&#39; {
++			continue
++		}
++		key, val, ok := strings.Cut(l, &quot;:&quot;)
++		if !ok {
++			fmt.Printf(&quot;Metadata: invalid line %d: &#39;%s&#39;\n&quot;, i+1, l)
++			continue
++		}
++		// The trimming will also clean up the stray CR in
++		// Windows-style line breaks.
++		result[strings.TrimSpace(key)] = strings.TrimSpace(val)
++	}
++	return result
++}
+diff --git a/theme/base.tmpl b/theme/base.tmpl
+index 9ef2b9e..a1f0d72 100644
+--- a/theme/base.tmpl
++++ b/theme/base.tmpl
+@@ -15,7 +15,7 @@
+ 
+ {{- if .Site.ShowFooter}}
+ &lt;footer&gt;
+-© {{if eq .StartYear .Now.Year}}{{.StartYear}}{{else}}{{.StartYear}}–{{.Now.Year}}{{end}} {{.Site.Author.Name}}&lt;br&gt;
++© {{if eq .StartYear .Now.Year}}{{.StartYear}}{{else}}{{.StartYear}}–{{.Now.Year}}{{end}} {{.Site.AuthorName}}&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
+ {{- end}}
+diff --git a/www/about/index.dj b/www/about/index.dj
+index 685af49..a8fe1cf 100644
+--- a/www/about/index.dj
++++ b/www/about/index.dj
+@@ -1,7 +1,7 @@
+ +++
+-Title = &quot;About&quot;
+-ShowInFeed = false
+-ShowInNav = true
++Title: About
++ShowInFeed: false
++ShowInNav: true
+ +++
+ 
+ ## About this site
+diff --git a/www/hello/index.dj b/www/hello/index.dj
+index b5a2185..03c4e26 100644
+--- a/www/hello/index.dj
++++ b/www/hello/index.dj
+@@ -1,6 +1,6 @@
+ +++
+-Title = &quot;Hello&quot;
+-PostedAt = 2022-01-02
++Title: Hello
++PostedAt: 2022-01-02
+ +++
+ 
+ Hello world.
+diff --git a/www/mfws.dj b/www/mfws.dj
+index 953384d..0b2dc40 100644
+--- a/www/mfws.dj
++++ b/www/mfws.dj
+@@ -1,6 +1,6 @@
+ +++
+-Title = &quot;This is a motherfucking website.&quot;
+-PostedAt = 2023-04-05
++Title: This is a motherfucking website.
++PostedAt: 2023-04-05
+ +++
+ 
+ And it&#39;s fucking perfect.
+diff --git a/www/website.wbmkr2k b/www/website.wbmkr2k
+index 947a0f1..9bd2671 100644
+--- a/www/website.wbmkr2k
++++ b/www/website.wbmkr2k
+@@ -1,11 +1,7 @@
+-# vim: ft=toml
+-# -*- mode: toml; -*-
++Address: https://coolzone.example.com
++Name: CoolZone
++Tagline: Cool people only.
+ 
+-Address = &quot;https://coolzone.example.com&quot;
+-Name = &quot;CoolZone&quot;
+-Tagline = &quot;Cool people only.&quot;
+-
+-[Author]
+-Name = &quot;Coolio McCool&quot;
+-URI = &quot;https://author.example.com&quot;
+-Email = &quot;coolio@example.com&quot;
++AuthorName: Coolio McCool
++AuthorURI: https://author.example.com
++AuthorEmail: coolio@example.com
+</pre></body></html>

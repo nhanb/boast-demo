@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[f5e7a6b694] rename UserFileErr to UserErr | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / f5e7a6b694</strong><hr><pre>commit f5e7a6b694fe1d92a1cf669fe820c7218b4a7563
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jul 20 17:22:52 2023 +0700
+
+    rename UserFileErr to UserErr
+
+diff --git a/errs/errs.go b/errs/errs.go
+index 6ad5572..2614757 100644
+--- a/errs/errs.go
++++ b/errs/errs.go
+@@ -7,7 +7,7 @@
+ 
+ // Represents a user input error, which in webmaker2000&#39;s case is almost
+ // always some malformed file.
+-type UserFileErr struct {
++type UserErr struct {
+ 	File string
+ 	Msg  string
+ 
+@@ -21,14 +21,14 @@ type UserFileErr struct {
+ 	Field string
+ }
+ 
+-func (e *UserFileErr) Error() string {
++func (e *UserErr) Error() string {
+ 	return fmt.Sprintf(
+ 		&quot;UserFileErr: %s - %d:%d:%s %s&quot;,
+ 		e.File, e.Line, e.Column, e.Field, e.Msg,
+ 	)
+ }
+ 
+-func (e *UserFileErr) Html() template.HTML {
++func (e *UserErr) Html() template.HTML {
+ 	content := fmt.Sprintf(&quot;In file &lt;b&gt;%s&lt;/b&gt;&quot;, e.File)
+ 	if e.Line != 0 {
+ 		content += fmt.Sprintf(&quot;, line %d&quot;, e.Line)
+diff --git a/livereload/error.go b/livereload/error.go
+index ac929ec..5750618 100644
+--- a/livereload/error.go
++++ b/livereload/error.go
+@@ -22,7 +22,7 @@ type errTmplInput struct {
+ 
+ func serveError(w http.ResponseWriter, r *http.Request, e error) {
+ 	var buf bytes.Buffer
+-	var uerr *errs.UserFileErr
++	var uerr *errs.UserErr
+ 	ok := errors.As(e, &amp;uerr)
+ 
+ 	var tmplInput errTmplInput
+diff --git a/main.go b/main.go
+index 95f00f1..be06e87 100644
+--- a/main.go
++++ b/main.go
+@@ -211,7 +211,7 @@ func regenerate(fsys writablefs.FS) (site *SiteMetadata, err error) {
+ 	for _, link := range site.NavbarLinks {
+ 		a, ok := articles[link]
+ 		if !ok {
+-			return nil, &amp;errs.UserFileErr{
++			return nil, &amp;errs.UserErr{
+ 				File:  SiteFileName,
+ 				Field: &quot;NavbarLinks&quot;,
+ 				Msg:   fmt.Sprintf(`&quot;%s&quot; does not exist`, link),
+diff --git a/metadata.go b/metadata.go
+index 2952388..0b5a3f4 100644
+--- a/metadata.go
++++ b/metadata.go
+@@ -65,7 +65,7 @@ func ReadSiteMetadata(fsys writablefs.FS) (*SiteMetadata, error) {
+ }
+ 
+ // Similar API to json.Unmarshal but supports neither struct tags nor nesting.
+-func UnmarshalMetadata(data []byte, dest any) *errs.UserFileErr {
++func UnmarshalMetadata(data []byte, dest any) *errs.UserErr {
+ 	m := metaTextToMap(data)
+ 
+ 	s := reflect.ValueOf(dest).Elem()
+@@ -82,7 +82,7 @@ func UnmarshalMetadata(data []byte, dest any) *errs.UserFileErr {
+ 			case &quot;int&quot;:
+ 				intVal, err := strconv.Atoi(val)
+ 				if err != nil {
+-					return &amp;errs.UserFileErr{
++					return &amp;errs.UserErr{
+ 						Field: fieldName,
+ 						Msg:   fmt.Sprintf(`invalid int: &quot;%s&quot;`, err),
+ 					}
+@@ -91,7 +91,7 @@ func UnmarshalMetadata(data []byte, dest any) *errs.UserFileErr {
+ 
+ 			case &quot;bool&quot;:
+ 				if val != &quot;true&quot; &amp;&amp; val != &quot;false&quot; {
+-					return &amp;errs.UserFileErr{
++					return &amp;errs.UserErr{
+ 						Field: fieldName,
+ 						Msg: fmt.Sprintf(
+ 							`invalid boolean: expected true/false, got &quot;%s&quot;`,
+@@ -105,7 +105,7 @@ func UnmarshalMetadata(data []byte, dest any) *errs.UserFileErr {
+ 				tVal, err := time.ParseInLocation(&quot;2006-01-02&quot;, val, time.Local)
+ 				tVal = tVal.Local()
+ 				if err != nil {
+-					return &amp;errs.UserFileErr{
++					return &amp;errs.UserErr{
+ 						Field: fieldName,
+ 						Msg: fmt.Sprintf(
+ 							`invalid date: expected YYYY-MM-DD, got &quot;%s&quot;`, val,
+</pre></body></html>

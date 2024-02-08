@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[524cdc9836] update voxel post; add .noborder helper | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 524cdc9836</strong><hr><pre>commit 524cdc983673c54a8d029b26082d826745399c8f
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Apr 25 14:45:40 2023 +0700
+
+    update voxel post; add .noborder helper
+
+diff --git a/content/images/voxel_audio_device.png b/content/images/voxel_audio_device.png
+index e181c33..f8f38db 100644
+Binary files a/content/images/voxel_audio_device.png and b/content/images/voxel_audio_device.png differ
+diff --git a/content/images/voxel_keys_f.png b/content/images/voxel_keys_f.png
+new file mode 100644
+index 0000000..337df51
+Binary files /dev/null and b/content/images/voxel_keys_f.png differ
+diff --git a/content/images/voxel_keys_mod.jpg b/content/images/voxel_keys_mod.jpg
+new file mode 100644
+index 0000000..25e46ef
+Binary files /dev/null and b/content/images/voxel_keys_mod.jpg differ
+diff --git a/content/posts/acer-chromebook-spin.md b/content/posts/acer-chromebook-spin.md
+index 56bf166..7b79bf1 100644
+--- a/content/posts/acer-chromebook-spin.md
++++ b/content/posts/acer-chromebook-spin.md
+@@ -5,12 +5,12 @@
+ Thumb: images/voxel_battery.jpg
+ 
+ 
+-**TL;DR:** bright crisp screen, acceptable keyboard, thin &amp; light build, buggy
+-touchpad on both ChromeOS and Linux, almost usable on MrChromebox UEFI + Arch
+-Linux except for the fact that sound crashes most of the time. It&#39;s absolutely
+-not worth the sticker price at [$1,099.99][1] (lol). Maybe consider buying if
+-you can find it at a heavy discount and the Linux sound issue has been fixed
+-somehow.
++**TL;DR:** bright crisp screen, acceptable keyboard, thin &amp; light build, random
++touchpad lag on both ChromeOS and Linux, almost usable on MrChromebox UEFI +
++Arch Linux except for the fact that internal speakers crash most of the time
++(wired headphones work fine though). It&#39;s absolutely not worth the sticker
++price at [$1,099.99][1] (lol). Maybe consider buying if you can find it at a
++heavy discount and the speakers issue has been fixed somehow.
+ 
+ ## Context
+ 
+@@ -115,9 +115,11 @@ ## Real Arch Linux on MrChromebox UEFI
+ configs lifted straight from ChromeOS upstream. Sure enough, the device showed
+ up:
+ 
+-![default-profile-get](/images/voxel_audio_device.png)
++![default-profile-get](/images/voxel_audio_device.png &quot;&quot;)
+ 
+-And it would actually play sound... for a while until it crashes.
++And it would actually play sound... for a while until it crashes. I later found
++out that wired headphones work just fine, so only using internal speakers is
++problematic.
+ 
+ I collected logs and tried googling but nothing comes up that matches my case.
+ Asking in the eupnea discord server yielded an uncertain response:
+@@ -136,6 +138,24 @@ ## Real Arch Linux on MrChromebox UEFI
+ 
+ But hey, I would have never known any of this if I hadn&#39;t tried, right?
+ 
++## Aside: Chromebook keyboard quirks on KDE
++
++The most glaring issue is the absence of the `windows` key (aka `super`,
++`hyper`, or `meta`). It&#39;s not a huge problem for me: I always make `capslock`
++act as a `ctrl` key, so I can turn the original `ctrl` into `windows` instead:
++
++![changed-modifier-keys](/images/voxel_keys_mod.jpg)
++
++Another problem is that the F1-12 keys are not usable: they are [mapped to
++function keys][10] in MrChromebox UEFI firmware, and there&#39;s no modifier to use
++them as F-keys either. That means no F11 to toggle fullscreen, no Alt-F4, no F9
++to toggle drop-down terminal, etc. Fortunately such global shortcuts can be
++configured trivially from KDE&#39;s system preferences. On the other hand,
++application-specific features that are hardwired to use F-keys are simply
++unreachable: `htop` is one such example.
++
++![htop-fkeys-unusable](/images/voxel_keys_f.png)
++
+ [1]: https://www.acer.com/us-en/chromebooks/acer-chromebook-enterprise-spin-713-cp713-3w/pdp/NX.AHAAA.006
+ [2]: https://git.sr.ht/~nhanb/neodots
+ [3]: https://wiki.archlinux.org/title/Chrome_OS_devices/Crostini
+@@ -145,3 +165,4 @@ ## Real Arch Linux on MrChromebox UEFI
+ [7]: https://wiki.mrchromebox.tech/Firmware_Write_Protect#Hardware_Write_Protection
+ [8]: /images/voxel_chromebook_cp7133w.pdf
+ [9]: https://mrchromebox.tech/#fwscript
++[10]: https://github.com/MrChromebox/firmware/issues/349
+diff --git a/content/posts/introducing-mcross.md b/content/posts/introducing-mcross.md
+index 6cdaba8..ff94066 100644
+--- a/content/posts/introducing-mcross.md
++++ b/content/posts/introducing-mcross.md
+@@ -21,7 +21,7 @@
+ cool stuff people on the gemini-verse are up to. Therefore, I need a gemini
+ browser. _Naturally_, I [wrote one][12]:
+ 
+-![McRoss Browser screenshot](/images/mcross_01_screenshot.png)
++![McRoss Browser screenshot](/images/mcross_01_screenshot.png &quot;&quot;)
+ 
+ At this stage it can browse plaintext and gemini content, but not binary yet.
+ It also doesn&#39;t verify TLS certificates, because turns out [in the gemini
+diff --git a/content/posts/working-with-sqlite-without-an-orm.md b/content/posts/working-with-sqlite-without-an-orm.md
+index 2aa396f..d486774 100644
+--- a/content/posts/working-with-sqlite-without-an-orm.md
++++ b/content/posts/working-with-sqlite-without-an-orm.md
+@@ -4,7 +4,7 @@
+          and sane driver defaults.
+ Thumb: images/byte_databases.jpg
+ 
+-![byte-magazine-databases](/images/byte_databases.jpg &quot;&quot;)
++![byte-magazine-databases](/images/byte_databases.jpg)
+ _[(seriously though, BYTE covers are the best)][18]_
+ 
+ 
+diff --git a/nhanb-theme/static/css/main.css b/nhanb-theme/static/css/main.css
+index 5267b9a..09423a5 100644
+--- a/nhanb-theme/static/css/main.css
++++ b/nhanb-theme/static/css/main.css
+@@ -49,6 +49,10 @@ video {
+   border: 2px solid black;
+ }
+ 
++img[title] {
++  border: none;
++}
++
+ article {
+   /* prevent long URLs from causing a horizontal scroll on mobile */
+   overflow-wrap: break-word;
+</pre></body></html>

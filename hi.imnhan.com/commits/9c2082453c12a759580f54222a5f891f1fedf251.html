@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[9c2082453c] use motherfucking-pelican-theme | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 9c2082453c</strong><hr><pre>commit 9c2082453c12a759580f54222a5f891f1fedf251
+Author: nhanb &lt;nhan@nerdyweekly.com&gt;
+Date:   Fri Jun 5 13:42:40 2015 +0700
+
+    use motherfucking-pelican-theme
+
+diff --git a/.gitmodules b/.gitmodules
+index e69de29..3c7855d 100644
+--- a/.gitmodules
++++ b/.gitmodules
+@@ -0,0 +1,3 @@
++[submodule &quot;motherfucking-pelican-theme&quot;]
++	path = motherfucking-pelican-theme
++	url = git@github.com:nhanb/motherfucking-pelican-theme.git
+diff --git a/motherfucking-pelican-theme b/motherfucking-pelican-theme
+new file mode 160000
+index 0000000..aa3df9d
+--- /dev/null
++++ b/motherfucking-pelican-theme
+@@ -0,0 +1 @@
++Subproject commit aa3df9d3020e7754441b5963e3e753eeca4e8c6d
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 9c8d90f..07dc7db 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -7,7 +7,7 @@
+ SITESUBTITLE = u&#39;Thoughts on programming and other stuff that matters&#39;
+ SITEURL = &#39;&#39;
+ 
+-THEME = u&#39;/home/nhanb/open-source/pelican-octopress-theme&#39;
++THEME = u&#39;./motherfucking-pelican-theme&#39;
+ 
+ TIMEZONE = &#39;Asia/Ho_Chi_Minh&#39;
+ 
+@@ -51,26 +51,11 @@
+ TAG_URL = (&#39;tag/{slug}/&#39;)
+ TAG_SAVE_AS = (&#39;tag/{slug}/index.html&#39;)
+ 
+-DEFAULT_PAGINATION = 10
++DEFAULT_PAGINATION = False
+ 
+ AUTHOR_NAME = u&#39;Bùi Thành Nhân&#39;
+ AUTHOR_SLUG = &quot;nhanb&quot;
+ 
+-# Social widget
+-SOCIAL = (
+-    (&#39;Résumé&#39;, &#39;http://resume.nerdyweekly.com&#39;),
+-    (&#39;Github&#39;, &#39;https://github.com/nhanb&#39;),
+-    (&#39;Facebook&#39;, &#39;https://www.facebook.com/thanhnhanb&#39;),
+-    (&#39;Google+&#39;,
+-     &#39;https://plus.google.com/114388334309097537564?rel=author&#39;),
+-)
+-
+-## Blogroll
+-#LINKS = ((&#39;Pelican&#39;, &#39;http://getpelican.com/&#39;),
+-         #(&#39;Python.org&#39;, &#39;http://python.org/&#39;),
+-         #(&#39;Jinja2&#39;, &#39;http://jinja.pocoo.org/&#39;)
+-         #)
+-
+ THEME_STATIC_PATHS = [&#39;static&#39;]
+ 
+ MENUITEMS = (
+@@ -83,3 +68,5 @@
+ FEED_ALL_ATOM = &#39;feeds/all.atom.xml&#39;
+ FEED_ATOM = &#39;feeds/atom.xml&#39;
+ CATEGORY_FEED_ATOM = &#39;feeds/%s.atom.xml&#39;
++
++GITHUB_USERNAME = &#39;nhanb&#39;
+</pre></body></html>

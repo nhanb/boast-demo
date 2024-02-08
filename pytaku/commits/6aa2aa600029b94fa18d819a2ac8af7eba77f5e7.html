@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[6aa2aa6000] mangasee workaround | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 6aa2aa6000</strong><hr><pre>commit 6aa2aa600029b94fa18d819a2ac8af7eba77f5e7
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Mar 14 11:09:15 2021 +0700
+
+    mangasee workaround
+
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+index 72eba43..dc2baef 100644
+--- a/src/mangoapi/mangasee.py
++++ b/src/mangoapi/mangasee.py
+@@ -13,7 +13,7 @@
+     ),
+     &quot;chapter_title_name&quot;: re.compile(r&#39;vm\.IndexName = &quot;([^&quot;]+)&quot;&#39;),
+     &quot;chapter_data&quot;: re.compile(r&quot;vm\.CurChapter = (\{[^\}]+\})&quot;),
+-    &quot;chapter_img_server&quot;: re.compile(r&#39;vm\.CurPathName = &quot;([^&quot;]+)&quot;&#39;),
++    &quot;chapter_img_server&quot;: re.compile(r&#39;vm\.CurPathNamez? = &quot;([^&quot;]+)&quot;&#39;),
+ }
+ 
+ 
+</pre></body></html>

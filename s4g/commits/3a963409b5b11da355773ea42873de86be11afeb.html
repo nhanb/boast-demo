@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[3a963409b5] add GenerateHome option; set default site metadata | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 3a963409b5</strong><hr><pre>commit 3a963409b5b11da355773ea42873de86be11afeb
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jul 4 23:49:04 2023 +0700
+
+    add GenerateHome option; set default site metadata
+
+diff --git a/main.go b/main.go
+index fa79a7b..542fd48 100644
+--- a/main.go
++++ b/main.go
+@@ -52,7 +52,9 @@ func main() {
+ 		a.WriteHtmlFile(&amp;site, pages, startYear)
+ 	}
+ 
+-	WriteHomePage(fsys, site, posts, pages, startYear)
++	if site.GenerateHome {
++		WriteHomePage(fsys, site, posts, pages, startYear)
++	}
+ 
+ 	fsys.WriteFile(FEED_PATH, generateFeed(site, posts, site.HomePath+FEED_PATH))
+ 
+@@ -65,26 +67,29 @@ func main() {
+ }
+ 
+ type SiteMetadata struct {
+-	Address       string
+-	Name          string
+-	Tagline       string
+-	HomePath      string
+-	DisableFooter bool
+-	Author        struct {
++	Address      string
++	Name         string
++	Tagline      string
++	HomePath     string
++	ShowFooter   bool
++	GenerateHome bool
++	Author       struct {
+ 		Name  string
+ 		URI   string
+ 		Email string
+ 	}
+ }
+ 
+-func readSiteMetadata(fsys WritableFS) (sm SiteMetadata) {
++func readSiteMetadata(fsys WritableFS) SiteMetadata {
++	sm := SiteMetadata{
++		HomePath:     &quot;/&quot;,
++		ShowFooter:   true,
++		GenerateHome: true,
++	}
+ 	_, err := toml.DecodeFS(fsys, &quot;website.toml&quot;, &amp;sm)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+-	if sm.HomePath == &quot;&quot; {
+-		sm.HomePath = &quot;/&quot;
+-	}
+ 	return sm
+ }
+ 
+diff --git a/www/_theme/base.tmpl b/www/_theme/base.tmpl
+index 703f97f..0cc1439 100644
+--- a/www/_theme/base.tmpl
++++ b/www/_theme/base.tmpl
+@@ -18,7 +18,7 @@
+ &lt;body&gt;
+ {{template &quot;body&quot; .}}
+ 
+-{{if not .Site.DisableFooter}}
++{{if .Site.ShowFooter}}
+ &lt;footer&gt;
+ © {{if eq .StartYear .Now.Year}}{{.StartYear}}{{else}}{{.StartYear}}–{{.Now.Year}}{{end}} {{.Site.Author.Name}}&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+diff --git a/www/website.toml b/www/website.toml
+index c3a7f0b..18cf5d1 100644
+--- a/www/website.toml
++++ b/www/website.toml
+@@ -1,8 +1,6 @@
+ Address = &quot;https://coolzone.example.com&quot;
+ Name = &quot;CoolZone&quot;
+ Tagline = &quot;Cool people only.&quot;
+-HomePath = &quot;/&quot;
+-DisableFooter = false
+ 
+ [Author]
+ Name = &quot;Coolio McCool&quot;
+</pre></body></html>

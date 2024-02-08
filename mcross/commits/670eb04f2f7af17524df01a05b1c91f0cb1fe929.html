@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[670eb04f2f] os-specific pointer cursors | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 670eb04f2f</strong><hr><pre>commit 670eb04f2f7af17524df01a05b1c91f0cb1fe929
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat May 16 10:53:31 2020 +0700
+
+    os-specific pointer cursors
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 93f8340..9efa363 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;mcross&quot;
+-version = &quot;0.4.0&quot;
++version = &quot;0.4.1&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index c5c237d..1b0f801 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -14,6 +14,17 @@
+ from .model import Model
+ from .widgets import ReadOnlyText
+ 
++# OS-specific values
++if sys.platform == &quot;win32&quot;:
++    TTK_THEME = &quot;vista&quot;
++    POINTER_CURSOR = &quot;center_ptr&quot;
++elif sys.platform == &quot;darwin&quot;:
++    TTK_THEME = &quot;aqua&quot;
++    POINTER_CURSOR = &quot;pointinghand&quot;
++else:
++    TTK_THEME = &quot;clam&quot;
++    POINTER_CURSOR = &quot;hand1&quot;
++
+ 
+ def pick_font(names):
+     available = font.families()
+@@ -135,19 +146,14 @@ def __init__(self, root: Tk, model: Model):
+         text_scrollbar.pack(side=&quot;left&quot;, fill=&quot;y&quot;)
+ 
+         style = ttk.Style()
+-        if sys.platform == &quot;win32&quot;:
+-            style.theme_use(&quot;vista&quot;)
+-        elif sys.platform == &quot;darwin&quot;:
+-            style.theme_use(&quot;aqua&quot;)
+-        else:
+-            style.theme_use(&quot;clam&quot;)
++        style.theme_use(TTK_THEME)
+ 
+     def _on_go(self, ev=None):
+         if self.go_callback is not None:
+             self.go_callback(&quot;gemini://&quot; + self.address_bar.get())
+ 
+     def _on_link_enter(self, ev):
+-        self.text.config(cursor=&quot;hand1&quot;)
++        self.text.config(cursor=POINTER_CURSOR)
+ 
+     def _on_link_leave(self, ev):
+         self.text.config(cursor=&quot;xterm&quot;)
+</pre></body></html>

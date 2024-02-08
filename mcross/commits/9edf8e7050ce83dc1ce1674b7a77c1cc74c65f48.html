@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[9edf8e7050] remove unused parse_absolute_url() function | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 9edf8e7050</strong><hr><pre>commit 9edf8e7050ce83dc1ce1674b7a77c1cc74c65f48
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat May 16 16:55:53 2020 +0700
+
+    remove unused parse_absolute_url() function
+
+diff --git a/src/mcross/transport.py b/src/mcross/transport.py
+index 8d1ff3f..ae103f5 100644
+--- a/src/mcross/transport.py
++++ b/src/mcross/transport.py
+@@ -33,12 +33,6 @@ def _parse_resp_header(header, pattern=re.compile(r&quot;^(\d\d)\s+(.{,1024})\r\n$&quot;))
+     return status, meta
+ 
+ 
+-def parse_absolute_url(absolute_url):
+-    assert absolute_url.startswith(&quot;gemini://&quot;), f&quot;Malformed url: {absolute_url}&quot;
+-    parsed = urlparse(absolute_url)
+-    return parsed
+-
+-
+ # TODO: GeminiUrl&#39;s context-aware parse() method probably doesn&#39;t belong
+ # in a &quot;transport&quot; module.
+ 
+</pre></body></html>

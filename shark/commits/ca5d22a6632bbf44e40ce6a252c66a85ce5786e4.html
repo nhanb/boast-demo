@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ca5d22a663] hungry &amp; feeding animation; also app icon | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / ca5d22a663</strong><hr><pre>commit ca5d22a6632bbf44e40ce6a252c66a85ce5786e4
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jul 9 17:33:28 2022 +0700
+
+    hungry &amp; feeding animation; also app icon
+    
+    Since the new feeding anim extends 12px upwards, other sprites needed to
+    be extended as well.
+    
+    It may have been more proper to implement some sort of per-sprite coords
+    system but then I decided to just go with the simplest alternative.
+    
+    Also added app icon and configurable x,y flags.
+
+diff --git a/README.md b/README.md
+index a78a3d2..a6b8e68 100644
+--- a/README.md
++++ b/README.md
+@@ -3,12 +3,17 @@ # What
+ ![](https://user-images.githubusercontent.com/1446315/177188223-ad9759c9-4ef4-44e0-84d8-03cfd46129b8.png)
+ 
+ This is a PoC &quot;desktop pet&quot; à la [shimeji][1] using [ebitengine][2] that runs
+-on Windows, Linux, and macOS. It currently has only 3 animations: idle
+-(default), left-click dragging, and right-click.
++on Windows, Linux, and macOS. It currently has only 5 animations:
+ 
+-Here&#39;s a demo video:
++- `Idle`
++- `Dragging`
++- `Right-click`
++- After some time has passed (1 hour by default), a `Hungry` animation will be
++  activated, during which dragging is disabled.
++- When `Hungry`, right-click to start `Feeding` animation and reset to the
++  normal idle state.
+ 
+-https://user-images.githubusercontent.com/1446315/176439983-091dec3d-bc36-4ae3-8b78-2a2a7f11e90d.mp4
++Here&#39;s a [demo video](https://user-images.githubusercontent.com/1446315/178103169-006c2bc0-ebb9-4014-aba5-8a1fbc3d0733.mp4).
+ 
+ Fair warning: I&#39;m a Go noob who mostly has no idea what he&#39;s doing.
+ Read the source code at your own peril.
+@@ -32,9 +37,20 @@ # Usage
+ make the file executable with `chmod +x &lt;file-name&gt;`.
+ 
+ If run from a terminal, use the `-h` argument to see available options.
+-Currently there&#39;s only a `-size` argument which changes how big your shark will
+-be rendered. Windows users can create a shortcut which lets you specify your
+-desired arguments.
++Windows users can [create a shortcut][7] to save their desired options.
++
++Here are the currently supported options:
++
++```
++-hungry int
++      The number of seconds it takes for Gura to go hungry (default 3600)
++-size int
++      Size multiplier: make Gura as big as you want (default 1)
++-x int
++      X position on screen (default 9999)
++-y int
++      Y position on screen (default 9999)
++```
+ 
+ # Compile from source
+ 
+@@ -70,6 +86,7 @@ # License
+ [4]: https://www.facebook.com/meexway
+ [5]: https://github.com/nhanb/shark/releases/latest
+ [6]: https://ebiten.org/documents/install.html
++[7]: https://superuser.com/questions/29569/how-to-add-command-line-options-to-shortcut
+ 
+ [srht]: https://builds.sr.ht/~nhanb/shark/commits/master
+ [gh]: https://github.com/nhanb/shark/actions/workflows/main.yml
+diff --git a/icon.png b/icon.png
+new file mode 100644
+index 0000000..fec1082
+Binary files /dev/null and b/icon.png differ
+diff --git a/main.go b/main.go
+index 172f394..ec39238 100644
+--- a/main.go
++++ b/main.go
+@@ -4,8 +4,10 @@
+ 	&quot;bytes&quot;
+ 	&quot;embed&quot;
+ 	&quot;flag&quot;
++	&quot;image&quot;
+ 	_ &quot;image/png&quot;
+ 	&quot;log&quot;
++	&quot;time&quot;
+ 
+ 	&quot;github.com/hajimehoshi/ebiten/v2&quot;
+ 	&quot;github.com/hajimehoshi/ebiten/v2/ebitenutil&quot;
+@@ -13,7 +15,7 @@
+ )
+ 
+ const SPRITE_X = 100
+-const SPRITE_Y = 123
++const SPRITE_Y = 135
+ 
+ //go:embed sprites/idle/*
+ var IdleSprites embed.FS
+@@ -24,6 +26,15 @@
+ //go:embed sprites/drag/*
+ var DragSprites embed.FS
+ 
++//go:embed sprites/hungry/*
++var HungrySprites embed.FS
++
++//go:embed sprites/feeding/*
++var FeedingSprites embed.FS
++
++//go:embed icon.png
++var IconFile []byte
++
+ type Anim struct {
+ 	Frames []*ebiten.Image
+ }
+@@ -38,6 +49,9 @@ type Game struct {
+ 	PreviousMousePos Vector
+ 	WinStartPos      Vector
+ 	MouseStartPos    Vector
++
++	LastFed                time.Time
++	NanosecondsUntilHungry time.Duration
+ }
+ 
+ type Vector struct{ x, y int }
+@@ -60,6 +74,46 @@ func GlobalCursorPosition() Vector {
+ }
+ 
+ func (g *Game) Update() error {
++	isHungry := false
++
++	if time.Now().Sub(g.LastFed) &gt;= g.NanosecondsUntilHungry {
++		// The only allowed interaction when hungry is right-click to feed.
++		isHungry = true
++		g.IsDragging = false
++		if g.CurrentAnim != Hungry {
++			g.CurrentAnim = Hungry
++			g.Ticks = 0
++			g.CurrentFrame = 0
++			return nil
++		} else if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
++			g.CurrentAnim = Feeding
++			g.Ticks = 0
++			g.CurrentFrame = 0
++			g.LastFed = time.Now()
++			return nil
++		}
++	}
++
++	if !isHungry &amp;&amp; g.CurrentAnim != Feeding {
++		handleNonHungryInputs(g)
++	}
++
++	g.Ticks++
++	if g.Ticks &lt; 10 {
++		return nil
++	}
++	g.Ticks = 0
++	g.CurrentFrame++
++	if g.CurrentFrame &gt;= len(g.CurrentAnim.Frames) {
++		g.CurrentFrame = 0
++		if g.CurrentAnim == RightClick || g.CurrentAnim == Feeding {
++			g.CurrentAnim = Idle
++		}
++	}
++	return nil
++}
++
++func handleNonHungryInputs(g *Game) {
+ 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
+ 		if g.CurrentAnim == Idle {
+ 			g.CurrentAnim = RightClick
+@@ -89,28 +143,16 @@ func (g *Game) Update() error {
+ 		newWinPos := g.WinStartPos.Add(mousePos.Subtract(g.MouseStartPos))
+ 		ebiten.SetWindowPosition(newWinPos.x, newWinPos.y)
+ 	}
+-	g.PreviousMousePos = mousePos
+-
+-	g.Ticks++
+-	if g.Ticks &lt; 10 {
+-		return nil
+-	}
+ 
+-	g.Ticks = 0
+-	g.CurrentFrame++
+-	if g.CurrentFrame &gt;= len(g.CurrentAnim.Frames) {
+-		g.CurrentFrame = 0
+-		if g.CurrentAnim == RightClick {
+-			g.CurrentAnim = Idle
+-		}
+-	}
+-	return nil
++	g.PreviousMousePos = mousePos
+ }
+ 
+ func (g *Game) Draw(screen *ebiten.Image) {
+ 	screen.DrawImage(g.CurrentAnim.Frames[g.CurrentFrame], nil)
+ 	/*
+ 		debugStr := &quot;&quot;
++		debugStr += fmt.Sprintf(&quot;%v\n&quot;, g.Ticks)
++		debugStr += fmt.Sprintf(&quot;%v\n&quot;, g.LastFed)
+ 		if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+ 			debugStr += &quot;Dragging\n&quot;
+ 		}
+@@ -140,31 +182,48 @@ func NewAnim(sprites embed.FS, subdir string) *Anim {
+ 	return &amp;Anim{frames}
+ }
+ 
+-var Idle, RightClick, Drag *Anim
++var Idle, RightClick, Drag, Hungry, Feeding *Anim
+ 
+ func init() {
+ 	Idle = NewAnim(IdleSprites, &quot;idle&quot;)
+ 	Drag = NewAnim(DragSprites, &quot;drag&quot;)
+ 	RightClick = NewAnim(RightClickSprites, &quot;right-click&quot;)
++	Hungry = NewAnim(HungrySprites, &quot;hungry&quot;)
++	Feeding = NewAnim(FeedingSprites, &quot;feeding&quot;)
+ }
+ 
+ func main() {
+-	var sizeFlag int
++	var sizeFlag, xFlag, yFlag int
++	var secondsUntilHungryFlag int64
+ 	flag.IntVar(
+-		&amp;sizeFlag, &quot;size&quot;, 2, &quot;Size multiplier: make Gura as big as you want.&quot;,
++		&amp;sizeFlag, &quot;size&quot;, 1, &quot;Size multiplier: make Gura as big as you want&quot;,
+ 	)
++	flag.Int64Var(
++		&amp;secondsUntilHungryFlag,
++		&quot;hungry&quot;,
++		3600,
++		&quot;The number of seconds it takes for Gura to go hungry&quot;,
++	)
++	flag.IntVar(&amp;xFlag, &quot;x&quot;, 9999, &quot;X position on screen&quot;)
++	flag.IntVar(&amp;yFlag, &quot;y&quot;, 9999, &quot;Y position on screen&quot;)
+ 	flag.Parse()
+ 
+ 	var game Game
+ 	game.CurrentAnim = Idle
++	game.LastFed = time.Now()
++	game.NanosecondsUntilHungry = time.Duration(secondsUntilHungryFlag) * 1_000_000_000
+ 
+ 	ebiten.SetWindowSize(SPRITE_X*sizeFlag, SPRITE_Y*sizeFlag)
+ 	ebiten.SetWindowTitle(&quot;Shark!&quot;)
+ 	ebiten.SetWindowDecorated(false)
+ 	ebiten.SetScreenTransparent(true)
+-	ebiten.SetWindowPosition(9999, 9999)
++	ebiten.SetWindowPosition(xFlag, yFlag)
+ 	ebiten.SetWindowFloating(true)
+ 
++	AppIcon, _, iconerr := image.Decode(bytes.NewReader(IconFile))
++	PanicIfErr(iconerr)
++	ebiten.SetWindowIcon([]image.Image{AppIcon})
++
+ 	err := ebiten.RunGame(&amp;game)
+ 	PanicIfErr(err)
+ }
+diff --git a/sprites/drag/00.png b/sprites/drag/00.png
+index aa3d25c..3f1fbe4 100644
+Binary files a/sprites/drag/00.png and b/sprites/drag/00.png differ
+diff --git a/sprites/drag/01.png b/sprites/drag/01.png
+index 903b9b7..d6be6b9 100644
+Binary files a/sprites/drag/01.png and b/sprites/drag/01.png differ
+diff --git a/sprites/drag/02.png b/sprites/drag/02.png
+index 5dbbbff..f9a308e 100644
+Binary files a/sprites/drag/02.png and b/sprites/drag/02.png differ
+diff --git a/sprites/drag/03.png b/sprites/drag/03.png
+index 0166ff3..7c07fe2 100644
+Binary files a/sprites/drag/03.png and b/sprites/drag/03.png differ
+diff --git a/sprites/feeding/00.png b/sprites/feeding/00.png
+new file mode 100644
+index 0000000..cf85b29
+Binary files /dev/null and b/sprites/feeding/00.png differ
+diff --git a/sprites/feeding/01.png b/sprites/feeding/01.png
+new file mode 100644
+index 0000000..7e583e3
+Binary files /dev/null and b/sprites/feeding/01.png differ
+diff --git a/sprites/feeding/02.png b/sprites/feeding/02.png
+new file mode 100644
+index 0000000..0e49a18
+Binary files /dev/null and b/sprites/feeding/02.png differ
+diff --git a/sprites/feeding/03.png b/sprites/feeding/03.png
+new file mode 100644
+index 0000000..2119f3d
+Binary files /dev/null and b/sprites/feeding/03.png differ
+diff --git a/sprites/feeding/04.png b/sprites/feeding/04.png
+new file mode 100644
+index 0000000..8e8b3bb
+Binary files /dev/null and b/sprites/feeding/04.png differ
+diff --git a/sprites/feeding/05.png b/sprites/feeding/05.png
+new file mode 100644
+index 0000000..6eff087
+Binary files /dev/null and b/sprites/feeding/05.png differ
+diff --git a/sprites/feeding/06.png b/sprites/feeding/06.png
+new file mode 100644
+index 0000000..6fc3036
+Binary files /dev/null and b/sprites/feeding/06.png differ
+diff --git a/sprites/feeding/07.png b/sprites/feeding/07.png
+new file mode 100644
+index 0000000..3ae8f83
+Binary files /dev/null and b/sprites/feeding/07.png differ
+diff --git a/sprites/feeding/08.png b/sprites/feeding/08.png
+new file mode 100644
+index 0000000..873d9f7
+Binary files /dev/null and b/sprites/feeding/08.png differ
+diff --git a/sprites/feeding/09.png b/sprites/feeding/09.png
+new file mode 100644
+index 0000000..0331abe
+Binary files /dev/null and b/sprites/feeding/09.png differ
+diff --git a/sprites/feeding/10.png b/sprites/feeding/10.png
+new file mode 100644
+index 0000000..9e50928
+Binary files /dev/null and b/sprites/feeding/10.png differ
+diff --git a/sprites/feeding/11.png b/sprites/feeding/11.png
+new file mode 100644
+index 0000000..b8b5fbf
+Binary files /dev/null and b/sprites/feeding/11.png differ
+diff --git a/sprites/feeding/12.png b/sprites/feeding/12.png
+new file mode 100644
+index 0000000..a18f042
+Binary files /dev/null and b/sprites/feeding/12.png differ
+diff --git a/sprites/feeding/13.png b/sprites/feeding/13.png
+new file mode 100644
+index 0000000..3fda4aa
+Binary files /dev/null and b/sprites/feeding/13.png differ
+diff --git a/sprites/feeding/14.png b/sprites/feeding/14.png
+new file mode 100644
+index 0000000..d35cd22
+Binary files /dev/null and b/sprites/feeding/14.png differ
+diff --git a/sprites/feeding/15.png b/sprites/feeding/15.png
+new file mode 100644
+index 0000000..9dec2b0
+Binary files /dev/null and b/sprites/feeding/15.png differ
+diff --git a/sprites/feeding/16.png b/sprites/feeding/16.png
+new file mode 100644
+index 0000000..d35cd22
+Binary files /dev/null and b/sprites/feeding/16.png differ
+diff --git a/sprites/feeding/17.png b/sprites/feeding/17.png
+new file mode 100644
+index 0000000..1b2b09e
+Binary files /dev/null and b/sprites/feeding/17.png differ
+diff --git a/sprites/feeding/18.png b/sprites/feeding/18.png
+new file mode 100644
+index 0000000..45b1fcb
+Binary files /dev/null and b/sprites/feeding/18.png differ
+diff --git a/sprites/feeding/19.png b/sprites/feeding/19.png
+new file mode 100644
+index 0000000..e3990d7
+Binary files /dev/null and b/sprites/feeding/19.png differ
+diff --git a/sprites/feeding/20.png b/sprites/feeding/20.png
+new file mode 100644
+index 0000000..fe51403
+Binary files /dev/null and b/sprites/feeding/20.png differ
+diff --git a/sprites/feeding/21.png b/sprites/feeding/21.png
+new file mode 100644
+index 0000000..e3990d7
+Binary files /dev/null and b/sprites/feeding/21.png differ
+diff --git a/sprites/feeding/22.png b/sprites/feeding/22.png
+new file mode 100644
+index 0000000..a2a61af
+Binary files /dev/null and b/sprites/feeding/22.png differ
+diff --git a/sprites/feeding/23.png b/sprites/feeding/23.png
+new file mode 100644
+index 0000000..07c520a
+Binary files /dev/null and b/sprites/feeding/23.png differ
+diff --git a/sprites/hungry/00.png b/sprites/hungry/00.png
+new file mode 100644
+index 0000000..275b4c9
+Binary files /dev/null and b/sprites/hungry/00.png differ
+diff --git a/sprites/hungry/01.png b/sprites/hungry/01.png
+new file mode 100644
+index 0000000..5ae6e53
+Binary files /dev/null and b/sprites/hungry/01.png differ
+diff --git a/sprites/hungry/02.png b/sprites/hungry/02.png
+new file mode 100644
+index 0000000..00314b0
+Binary files /dev/null and b/sprites/hungry/02.png differ
+diff --git a/sprites/hungry/03.png b/sprites/hungry/03.png
+new file mode 100644
+index 0000000..ad53559
+Binary files /dev/null and b/sprites/hungry/03.png differ
+diff --git a/sprites/hungry/04.png b/sprites/hungry/04.png
+new file mode 100644
+index 0000000..00314b0
+Binary files /dev/null and b/sprites/hungry/04.png differ
+diff --git a/sprites/hungry/05.png b/sprites/hungry/05.png
+new file mode 100644
+index 0000000..ad53559
+Binary files /dev/null and b/sprites/hungry/05.png differ
+diff --git a/sprites/hungry/06.png b/sprites/hungry/06.png
+new file mode 100644
+index 0000000..00314b0
+Binary files /dev/null and b/sprites/hungry/06.png differ
+diff --git a/sprites/hungry/07.png b/sprites/hungry/07.png
+new file mode 100644
+index 0000000..ad53559
+Binary files /dev/null and b/sprites/hungry/07.png differ
+diff --git a/sprites/hungry/08.png b/sprites/hungry/08.png
+new file mode 100644
+index 0000000..00314b0
+Binary files /dev/null and b/sprites/hungry/08.png differ
+diff --git a/sprites/hungry/09.png b/sprites/hungry/09.png
+new file mode 100644
+index 0000000..ad53559
+Binary files /dev/null and b/sprites/hungry/09.png differ
+diff --git a/sprites/hungry/10.png b/sprites/hungry/10.png
+new file mode 100644
+index 0000000..00314b0
+Binary files /dev/null and b/sprites/hungry/10.png differ
+diff --git a/sprites/hungry/11.png b/sprites/hungry/11.png
+new file mode 100644
+index 0000000..5ae6e53
+Binary files /dev/null and b/sprites/hungry/11.png differ
+diff --git a/sprites/idle/00.png b/sprites/idle/00.png
+index bf58b9d..427f70a 100644
+Binary files a/sprites/idle/00.png and b/sprites/idle/00.png differ
+diff --git a/sprites/idle/01.png b/sprites/idle/01.png
+index c415bc6..56264ae 100644
+Binary files a/sprites/idle/01.png and b/sprites/idle/01.png differ
+diff --git a/sprites/idle/02.png b/sprites/idle/02.png
+index 104cd6b..68d54c2 100644
+Binary files a/sprites/idle/02.png and b/sprites/idle/02.png differ
+diff --git a/sprites/idle/03.png b/sprites/idle/03.png
+index 30d9a92..43af11b 100644
+Binary files a/sprites/idle/03.png and b/sprites/idle/03.png differ
+diff --git a/sprites/right-click/02.png b/sprites/right-click/02.png
+index 2bb24e9..82fd142 100644
+Binary files a/sprites/right-click/02.png and b/sprites/right-click/02.png differ
+diff --git a/sprites/right-click/03.png b/sprites/right-click/03.png
+index 708d7a0..2f26274 100644
+Binary files a/sprites/right-click/03.png and b/sprites/right-click/03.png differ
+diff --git a/sprites/right-click/04.png b/sprites/right-click/04.png
+index 08cad6e..a5bca4e 100644
+Binary files a/sprites/right-click/04.png and b/sprites/right-click/04.png differ
+diff --git a/sprites/right-click/05.png b/sprites/right-click/05.png
+index 3529645..5bb6a1b 100644
+Binary files a/sprites/right-click/05.png and b/sprites/right-click/05.png differ
+diff --git a/sprites/right-click/06.png b/sprites/right-click/06.png
+index 08cad6e..bc2de1b 100644
+Binary files a/sprites/right-click/06.png and b/sprites/right-click/06.png differ
+diff --git a/sprites/right-click/07.png b/sprites/right-click/07.png
+index 708d7a0..6aeb37e 100644
+Binary files a/sprites/right-click/07.png and b/sprites/right-click/07.png differ
+diff --git a/sprites/right-click/08.png b/sprites/right-click/08.png
+index 732939f..bd1c930 100644
+Binary files a/sprites/right-click/08.png and b/sprites/right-click/08.png differ
+diff --git a/sprites/right-click/09.png b/sprites/right-click/09.png
+index 0828b1b..ded991e 100644
+Binary files a/sprites/right-click/09.png and b/sprites/right-click/09.png differ
+diff --git a/sprites/right-click/10.png b/sprites/right-click/10.png
+index 732939f..bd1c930 100644
+Binary files a/sprites/right-click/10.png and b/sprites/right-click/10.png differ
+diff --git a/sprites/right-click/11.png b/sprites/right-click/11.png
+index 9c65e86..0f91019 100644
+Binary files a/sprites/right-click/11.png and b/sprites/right-click/11.png differ
+diff --git a/sprites/right-click/12.png b/sprites/right-click/12.png
+index 9c65e86..0f91019 100644
+Binary files a/sprites/right-click/12.png and b/sprites/right-click/12.png differ
+diff --git a/sprites/right-click/13.png b/sprites/right-click/13.png
+index 56fd593..d3121ad 100644
+Binary files a/sprites/right-click/13.png and b/sprites/right-click/13.png differ
+diff --git a/sprites/right-click/14.png b/sprites/right-click/14.png
+index 094a760..31f311a 100644
+Binary files a/sprites/right-click/14.png and b/sprites/right-click/14.png differ
+diff --git a/sprites/right-click/15.png b/sprites/right-click/15.png
+index f3ee2ac..b39cd94 100644
+Binary files a/sprites/right-click/15.png and b/sprites/right-click/15.png differ
+</pre></body></html>

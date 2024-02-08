@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[06bebfeedd] support unread, and &quot;follows&quot; view improvements | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 06bebfeedd</strong><hr><pre>commit 06bebfeedd869487fe892510e4b65244daee9865
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 8 08:56:07 2020 +0700
+
+    support unread, and &quot;follows&quot; view improvements
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 2dafa4e..0b6e855 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.1.9&quot;
++version = &quot;0.2.0&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/decorators.py b/src/pytaku/decorators.py
+index 6863355..05a9a86 100644
+--- a/src/pytaku/decorators.py
++++ b/src/pytaku/decorators.py
+@@ -2,7 +2,7 @@
+ 
+ from flask import redirect, request, session, url_for
+ 
+-from .persistence import read
++from .persistence import read, unread
+ 
+ 
+ def ensure_session_version(f, CURRENT_VERSION=1):
+@@ -36,9 +36,9 @@ def decorated_function(*args, **kwargs):
+     return decorated_function
+ 
+ 
+-def trigger_has_read(f):
++def toggle_has_read(f):
+     &quot;&quot;&quot;
+-    Augments a view with the ability to mark a chapter as read if there&#39;s a
++    Augments a view with the ability to toggle a chapter&#39;s read status if there&#39;s a
+     `?has_read=&lt;chapter_id&gt;` url param.
+     &quot;&quot;&quot;
+ 
+@@ -46,10 +46,16 @@ def trigger_has_read(f):
+     def decorated_function(*args, **kwargs):
+         assert &quot;site&quot; in kwargs  # only use on site-specific views
+         has_read_chapter_id = request.args.get(&quot;has_read&quot;)
+-        if has_read_chapter_id:
+-            if session.get(&quot;user&quot;):
++        unread_chapter_id = request.args.get(&quot;unread&quot;)
++        assert not (has_read_chapter_id and unread_chapter_id)  # can&#39;t do both
++
++        if session.get(&quot;user&quot;):
++            if has_read_chapter_id:
+                 read(session[&quot;user&quot;][&quot;id&quot;], kwargs[&quot;site&quot;], has_read_chapter_id)
+                 return redirect(request.url[: request.url.rfind(&quot;?&quot;)])
++            elif unread_chapter_id:
++                unread(session[&quot;user&quot;][&quot;id&quot;], kwargs[&quot;site&quot;], unread_chapter_id)
++                return redirect(request.url[: request.url.rfind(&quot;?&quot;)])
+         return f(*args, **kwargs)
+ 
+     return decorated_function
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index a1903a8..a5d7ef6 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -17,7 +17,7 @@
+ 
+ from . import mangadex
+ from .conf import config
+-from .decorators import ensure_session_version, require_login, trigger_has_read
++from .decorators import ensure_session_version, require_login, toggle_has_read
+ from .persistence import (
+     follow,
+     get_followed_titles,
+@@ -162,7 +162,7 @@ def auth_view():
+ 
+ @app.route(&quot;/title/&lt;site&gt;/&lt;title_id&gt;&quot;)
+ @ensure_session_version
+-@trigger_has_read
++@toggle_has_read
+ def title_view(site, title_id):
+     user = session.get(&quot;user&quot;, None)
+     user_id = user[&quot;id&quot;] if user else None
+@@ -180,7 +180,7 @@ def title_view(site, title_id):
+ 
+ @app.route(&quot;/chapter/&lt;site&gt;/&lt;chapter_id&gt;&quot;)
+ @ensure_session_version
+-@trigger_has_read
++@toggle_has_read
+ def chapter_view(site, chapter_id):
+     chapter = load_chapter(site, chapter_id)
+     if not chapter:
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 32e16a7..f5ed0b3 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -52,8 +52,7 @@ def load_title(site, title_id, user_id=None):
+         SELECT id, name, site, cover_ext, chapters, alt_names, descriptions
+         FROM title
+         WHERE id = ?
+-          AND site = ?
+-          AND datetime(updated_at) &gt; datetime(&#39;now&#39;, &#39;-6 hours&#39;);
++          AND site = ?;
+         &quot;&quot;&quot;,
+         (title_id, site),
+     )
+diff --git a/src/pytaku/templates/follows.html b/src/pytaku/templates/follows.html
+index a3ccba1..ac6dda3 100644
+--- a/src/pytaku/templates/follows.html
++++ b/src/pytaku/templates/follows.html
+@@ -45,6 +45,10 @@
+ .chapter:hover {
+   background-color: #eee;
+ }
++.chapter:last-child::after {
++  content: &#39;← resume here&#39;;
++  background-color: cornsilk;
++}
+ 
+ .group {
+   font-size: .9em;
+@@ -74,7 +78,10 @@
+     &lt;/a&gt;
+   &lt;/div&gt;
+   &lt;div class=&quot;chapters&quot;&gt;
+-    {% for ch in title[&#39;chapters&#39;][:6] %}
++    {% if title[&#39;chapters&#39;]|length &gt; 4 %}
++    &lt;a class=&quot;more chapter&quot; href=&quot;{{ title_url }}&quot;&gt;and {{ title[&#39;chapters&#39;]|length - 4 }} more...&lt;/a&gt;
++    {% endif %}
++    {% for ch in title[&#39;chapters&#39;][-4:] %}
+     &lt;a class=&quot;chapter&quot; href=&quot;{{ url_for(&#39;chapter_view&#39;, site=title[&#39;site&#39;], chapter_id=ch[&#39;id&#39;]) }}&quot;&gt;
+       Chapter {{ ch[&#39;num_major&#39;] }}{% if ch[&#39;num_minor&#39;] %}.{{ ch[&#39;num_minor&#39;] }}{% endif %}
+               {% if ch[&#39;volume&#39;] %}Volume {{ ch[&#39;volume&#39;] }} {% endif %}
+@@ -84,9 +91,6 @@
+         {% endfor %}
+     &lt;/a&gt;
+     {% endfor %}
+-    {% if title[&#39;chapters&#39;]|length &gt; 6 %}
+-    &lt;a class=&quot;more chapter&quot; href=&quot;{{ title_url }}&quot;&gt;and more...&lt;/a&gt;
+-    {% endif %}
+   &lt;/div&gt;
+ &lt;/div&gt;
+ {% endfor %}
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index c5ecc47..97151c8 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -50,7 +50,11 @@ &lt;h1&gt;{{ name }}&lt;/h1&gt;
+   &lt;/tr&gt;
+   {% for chapter in chapters %}
+   &lt;tr&gt;
+-    &lt;td&gt;{% if chapter[&#39;is_read&#39;] %}yes{% endif %}&lt;/td&gt;
++    &lt;td&gt;
++      {% if chapter[&#39;is_read&#39;] %}
++      {{ ibutton(href=&#39;?unread=&#39; + chapter[&#39;id&#39;], text=&#39;✓&#39;, color=&#39;green&#39;, title=&#39;Click to unread&#39;) }}
++      {% endif %}
++    &lt;/td&gt;
+     &lt;td&gt;
+       &lt;a href=&quot;{{ url_for(&#39;chapter_view&#39;, chapter_id=chapter[&#39;id&#39;], site=site) }}&quot;&gt;
+         Chapter {{ chapter[&#39;number&#39;] }}
+</pre></body></html>

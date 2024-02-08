@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1417dbe7a8] embed ArticleMetadata; add Templates field | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 1417dbe7a8</strong><hr><pre>commit 1417dbe7a8a9079c110cf7d256b73f1248622076
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jul 6 16:35:31 2023 +0700
+
+    embed ArticleMetadata; add Templates field
+
+diff --git a/feed.go b/feed.go
+index 72a0069..ed45e21 100644
+--- a/feed.go
++++ b/feed.go
+@@ -8,7 +8,7 @@
+ )
+ 
+ // TODO: Use Article&#39;s updated date instead of PostedAt.
+-// I need to implement Article.Meta.UpdatedAt first though.
++// I need to implement Article.UpdatedAt first though.
+ func generateFeed(site SiteMetadata, posts []Article, path string) []byte {
+ 	siteAddr := site.Address
+ 	if !strings.HasSuffix(siteAddr, &quot;/&quot;) {
+@@ -19,16 +19,16 @@ func generateFeed(site SiteMetadata, posts []Article, path string) []byte {
+ 		entries = append(entries, &amp;atom.Entry{
+ 			ID:        siteAddr + p.WebPath,
+ 			Link:      []atom.Link{{Href: siteAddr + p.WebPath}},
+-			Title:     p.Meta.Title,
+-			Published: atom.Time(p.Meta.PostedAt),
+-			Updated:   atom.Time(p.Meta.PostedAt),
++			Title:     p.Title,
++			Published: atom.Time(p.PostedAt),
++			Updated:   atom.Time(p.PostedAt),
+ 		})
+ 	}
+ 
+ 	feed := atom.Feed{
+ 		ID:      siteAddr,
+ 		Title:   site.Name,
+-		Updated: atom.Time(posts[0].Meta.PostedAt),
++		Updated: atom.Time(posts[0].PostedAt),
+ 		Entry:   entries,
+ 		Author: &amp;atom.Person{
+ 			Name:  site.Author.Name,
+diff --git a/main.go b/main.go
+index 542fd48..b3001a3 100644
+--- a/main.go
++++ b/main.go
+@@ -37,18 +37,18 @@ func main() {
+ 
+ 	// Sort posts, newest first
+ 	sort.Slice(posts, func(i int, j int) bool {
+-		return posts[i].Meta.PostedAt.Compare(posts[j].Meta.PostedAt) &gt; 0
++		return posts[i].PostedAt.Compare(posts[j].PostedAt) &gt; 0
+ 	})
+ 
+-	startYear := posts[len(posts)-1].Meta.PostedAt.Year()
++	startYear := posts[len(posts)-1].PostedAt.Year()
+ 
+ 	fmt.Printf(&quot;Found %d posts, %d pages:\n&quot;, len(posts), len(pages))
+ 	for _, a := range posts {
+-		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Meta.Title)
++		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Title)
+ 		a.WriteHtmlFile(&amp;site, pages, startYear)
+ 	}
+ 	for _, a := range pages {
+-		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Meta.Title)
++		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Title)
+ 		a.WriteHtmlFile(&amp;site, pages, startYear)
+ 	}
+ 
+@@ -98,14 +98,15 @@ type Article struct {
+ 	Path     string
+ 	WebPath  string
+ 	DjotBody string
+-	Meta     ArticleMetadata
++	ArticleMetadata
+ }
+ 
+ type ArticleMetadata struct {
+-	Title    string
+-	IsPage   bool
+-	IsDraft  bool
+-	PostedAt time.Time
++	Title     string
++	IsPage    bool
++	IsDraft   bool
++	PostedAt  time.Time
++	Templates []string
+ }
+ 
+ func (a *Article) WriteHtmlFile(site *SiteMetadata, pages []Article, startYear int) {
+@@ -114,13 +115,8 @@ func (a *Article) WriteHtmlFile(site *SiteMetadata, pages []Article, startYear i
+ 
+ 	// Then insert that content into the main template
+ 	var buf bytes.Buffer
+-	tmpl := template.Must(
+-		template.ParseFS(
+-			a.Fs,
+-			&quot;_theme/base.tmpl&quot;,
+-			&quot;_theme/post.tmpl&quot;,
+-		),
+-	)
++	// TODO: should probably reuse the template object for common cases
++	tmpl := template.Must(template.ParseFS(a.Fs, a.Templates...))
+ 	err := tmpl.Execute(&amp;buf, struct {
+ 		Site      *SiteMetadata
+ 		Content   template.HTML
+@@ -133,7 +129,7 @@ func (a *Article) WriteHtmlFile(site *SiteMetadata, pages []Article, startYear i
+ 	}{
+ 		Site:      site,
+ 		Content:   template.HTML(contentHtml),
+-		Title:     fmt.Sprintf(&quot;%s | %s&quot;, a.Meta.Title, site.Name),
++		Title:     fmt.Sprintf(&quot;%s | %s&quot;, a.Title, site.Name),
+ 		Post:      a,
+ 		Pages:     pages,
+ 		Feed:      site.HomePath + FEED_PATH,
+@@ -211,7 +207,9 @@ func findArticles(fsys WritableFS) (posts, pages []Article) {
+ 		metaText := strings.TrimSpace(parts[1])
+ 		bodyText := strings.TrimSpace(parts[2])
+ 
+-		var meta ArticleMetadata
++		meta := ArticleMetadata{
++			Templates: []string{&quot;_theme/base.tmpl&quot;, &quot;_theme/post.tmpl&quot;},
++		}
+ 		_, err = toml.Decode(metaText, &amp;meta)
+ 		if err != nil {
+ 			fmt.Printf(&quot;FIXME: Malformed article metadata in %s: %s&quot;, path, err)
+@@ -219,13 +217,13 @@ func findArticles(fsys WritableFS) (posts, pages []Article) {
+ 		}
+ 
+ 		article := Article{
+-			Fs:       fsys,
+-			Path:     path,
+-			WebPath:  strings.TrimSuffix(path, DJOT_EXT) + &quot;.html&quot;,
+-			DjotBody: bodyText,
+-			Meta:     meta,
++			Fs:              fsys,
++			Path:            path,
++			WebPath:         strings.TrimSuffix(path, DJOT_EXT) + &quot;.html&quot;,
++			DjotBody:        bodyText,
++			ArticleMetadata: meta,
+ 		}
+-		if article.Meta.IsPage {
++		if article.IsPage {
+ 			pages = append(pages, article)
+ 		} else {
+ 			posts = append(posts, article)
+diff --git a/www/_theme/home.tmpl b/www/_theme/home.tmpl
+index 60e9a4a..aaa8ca8 100644
+--- a/www/_theme/home.tmpl
++++ b/www/_theme/home.tmpl
+@@ -11,7 +11,7 @@
+ &lt;div class=&quot;pages&quot;&gt;
+   &lt;a href=&quot;{{.Site.HomePath}}&quot;&gt;Home&lt;/a&gt;
+ {{- range .Pages}}
+-  &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Meta.Title}}&lt;/a&gt;
++  &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+ {{- end}}
+   &lt;a class=&quot;feed-link&quot; href=&quot;{{.Feed}}&quot;&gt;
+     &lt;img src=&quot;{{.Site.HomePath}}_theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
+@@ -24,10 +24,10 @@
+ 
+ &lt;ul&gt;
+   {{- range .Posts}}
+-  {{- if not .Meta.IsDraft}}
++  {{- if not .IsDraft}}
+   &lt;li&gt;
+-    {{.Meta.PostedAt.Local.Format &quot;2006-01-02&quot;}} —
+-    &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Meta.Title}}&lt;/a&gt;
++    {{.PostedAt.Local.Format &quot;2006-01-02&quot;}} —
++    &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+   &lt;/li&gt;
+   {{- end}}
+   {{- end}}
+diff --git a/www/_theme/post.tmpl b/www/_theme/post.tmpl
+index 934c934..b6e7dc0 100644
+--- a/www/_theme/post.tmpl
++++ b/www/_theme/post.tmpl
+@@ -6,14 +6,14 @@
+ &lt;nav&gt;
+   &lt;a href=&quot;{{.Site.HomePath}}&quot;&gt;Home&lt;/a&gt;
+   {{- range .Pages}}
+-  &lt;a href=&quot;{{$.Site.HomePath}}{{.WebPath}}&quot;&gt;{{.Meta.Title}}&lt;/a&gt;
++  &lt;a href=&quot;{{$.Site.HomePath}}{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+   {{- end}}
+ 
+-  {{- if not .Post.Meta.PostedAt.IsZero}}
++  {{- if not .Post.PostedAt.IsZero}}
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+-    &lt;time datetime=&quot;{{.Post.Meta.PostedAt.Local.Format &quot;2006-01-02&quot;}}&quot;&gt;
+-        {{.Post.Meta.PostedAt.Local.Format &quot;Monday, 02 Jan 2006&quot;}}
++    &lt;time datetime=&quot;{{.Post.PostedAt.Local.Format &quot;2006-01-02&quot;}}&quot;&gt;
++        {{.Post.PostedAt.Local.Format &quot;Monday, 02 Jan 2006&quot;}}
+     &lt;/time&gt;
+   &lt;/span&gt;
+   {{- end}}
+@@ -22,7 +22,7 @@
+ 
+ &lt;hr&gt;
+ 
+-&lt;h1 class=&quot;post-title&quot;&gt;{{.Post.Meta.Title}}&lt;/h1&gt;
++&lt;h1 class=&quot;post-title&quot;&gt;{{.Post.Title}}&lt;/h1&gt;
+ &lt;content&gt;
+ {{.Content}}
+ &lt;/content&gt;
+</pre></body></html>

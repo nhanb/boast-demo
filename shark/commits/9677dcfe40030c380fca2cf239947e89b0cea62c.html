@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[9677dcfe40] Makefile: add ldflags for Windows | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 9677dcfe40</strong><hr><pre>commit 9677dcfe40030c380fca2cf239947e89b0cea62c
+Author: raa0121 &lt;raa0121@gmail.com&gt;
+Date:   Tue Jul 5 15:38:42 2022 +0900
+
+    Makefile: add ldflags for Windows
+
+diff --git a/Makefile b/Makefile
+index ddeb7ee..695faba 100644
+--- a/Makefile
++++ b/Makefile
+@@ -8,7 +8,7 @@ linux:
+ 	GOOS=linux GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-linux
+ 
+ windows:
+-	GOOS=windows GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-windows.exe
++	GOOS=windows GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-windows.exe -ldflags -H=windowsgui
+ 
+ macos:
+ 	GOOS=darwin GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-macos
+</pre></body></html>

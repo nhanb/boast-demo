@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[2425bdee16] update &quot;have you built anything cool&quot; | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 2425bdee16</strong><hr><pre>commit 2425bdee167a156ad229daf56b20b41c1da8e138
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Fri Jan 24 12:31:46 2014 +0700
+
+    update &quot;have you built anything cool&quot;
+
+diff --git a/content/have-you-built-anything-cool-.md b/content/have-you-built-anything-cool-.md
+index 1b09623..f5ce173 100644
+--- a/content/have-you-built-anything-cool-.md
++++ b/content/have-you-built-anything-cool-.md
+@@ -46,4 +46,34 @@ ## First year - Welcome to the web, and the GUI programming disillusionment
+ That was my first touch on jQueryUI and regular expressions; I also learned how RMIT&#39;s mekong
+ server sucked to the point that it didn&#39;t allow `get_file_contents()`.
+ 
+-I also learned about MVC and GUI programming with Java swing.
++About school assignments? Nothing interesting: standard barebones LAMP CMS with jQuery glitter
++sprinkled on top. Not a bad experience but meh.
++
++I also learned about MVC and GUI programming with Java swing. I did write a movie ticket program
++with a (pretty minimal) seat picker and
++[a battleship-inspired game](https://github.com/nhanb/sealord): 
++
++![Cinema Movie Picker](/images/cinema_1.png &quot;Cinema Movie Picker&quot;)
++![Seat Picker](/images/cinema_2.png &quot;Seat Picker&quot;)
++![Sealord](/images/sealord.png)
++
++Then it occurred to me that programming GUI interfaces for desktop programs is much more tedius
++than doing it for the web, especially when working with the now-not-favored Swing toolkit.
++Nightmarish days...
++
++Another lession learned the hard way was that &quot;MVC&quot; is not even a concrete thing, and there is
++hardly any obvious &quot;one true way&quot; to implement that. I spent much more time planning for plumbing
++code than I the time I spent actually writing &quot;feature&quot; code. And the result, now looking back, was
++not even that good. And yeah, there was no such thing as &quot;separation of concerns&quot; in my code back
++then, which eventually led to countless times of tracing obscure stack traces for debugging (good
++thing I had a lot of free time back then).
++
++To rub salt in the wound, I came to realize that nobody cared how Swing looked on any desktop
++environment other than OS X and Windows. Font rendering was painful to look at, and the only way to
++make it *a little bit* more acceptable was using a
++[forked version of OpenJDK](http://www.webupd8.org/2013/06/install-openjdk-patched-with-font-fixes.html).
++WTF guys? And that&#39;s not the only problem; let&#39;s talk Look And Feel. The built-in
++getSystemLookAndFeel() could only detect GNOME&#39;s. When developing `ajmg` I discovered that and had
++to wrote my own method that extended the thing to detect more DEs, but soon after that I thought
++&quot;What the hell, why do I even have to do this?&quot; and decided that Swing was dead to me (or any
++desktop Linux user for that matter).
+diff --git a/content/images/cinema_1.png b/content/images/cinema_1.png
+new file mode 100644
+index 0000000..21f9ca1
+Binary files /dev/null and b/content/images/cinema_1.png differ
+diff --git a/content/images/cinema_2.png b/content/images/cinema_2.png
+new file mode 100644
+index 0000000..da68b8e
+Binary files /dev/null and b/content/images/cinema_2.png differ
+diff --git a/content/images/sealord.png b/content/images/sealord.png
+new file mode 100644
+index 0000000..5d035f4
+Binary files /dev/null and b/content/images/sealord.png differ
+</pre></body></html>

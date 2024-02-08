@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[aca263ad32] fix `chapter` &amp; `read` table constraints | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / aca263ad32</strong><hr><pre>commit aca263ad324da0bfe47f8792e1bdf9a276fdd579
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 9 22:22:28 2020 +0700
+
+    fix `chapter` &amp; `read` table constraints
+    
+    Turns out meddling with columns and constraints in SQLite requires
+    some... interesting gymnastics:
+    
+    - turn foreign_keys pragma off
+    - rename existing table
+    - create new table with desired columns &amp; constraints
+    - copy data over
+    - drop old table
+    - turn foreign_keys pragma back on
+    
+    Also, you can&#39;t flip the foreign_keys pragma from inside a transaction,
+    so the whole migrator needed an update.
+    
+    _Also_, even with foreign_keys=off, renaming `chapter` table to
+    `old_chapter` would automatically update the `read` table&#39;s foreign key
+    constraint to point to `old_chapter` too, which is NOT what we want. So
+    we need to set legacy_alter_table=on as well (as an extra bonus, this
+    behavior differs between sqlite versions as well - see the table at
+    https://www.sqlite.org/lang_altertable.html).
+
+diff --git a/src/pytaku/database/migrations/latest_schema.sql b/src/pytaku/database/migrations/latest_schema.sql
+index e1dd9b5..9ba45dd 100644
+--- a/src/pytaku/database/migrations/latest_schema.sql
++++ b/src/pytaku/database/migrations/latest_schema.sql
+@@ -13,22 +13,6 @@ CREATE TABLE title (
+ 
+     unique(id, site)
+ );
+-CREATE TABLE IF NOT EXISTS &quot;old_chapter&quot; (
+-    id text,
+-    title_id text,
+-    site text,
+-    num_major integer,
+-    num_minor integer,
+-    name text,
+-    pages text,
+-    groups text,
+-    updated_at text default (datetime(&#39;now&#39;)), is_webtoon boolean,
+-
+-    foreign key (title_id, site) references title (id, site),
+-    unique(id, title_id, site),
+-    unique(id, site),
+-    unique(num_major, num_minor, title_id)
+-);
+ CREATE TABLE user (
+     id integer primary key,
+     username text unique,
+@@ -45,16 +29,6 @@ CREATE TABLE follow (
+     foreign key (user_id) references user (id),
+     unique(user_id, title_id, site)
+ );
+-CREATE TABLE read (
+-    user_id integer not null,
+-    chapter_id text not null,
+-    site text not null,
+-    updated_at text default (datetime(&#39;now&#39;)),
+-
+-    foreign key (user_id) references user (id),
+-    foreign key (chapter_id, site) references &quot;old_chapter&quot; (id, site),
+-    unique(user_id, chapter_id, site)
+-);
+ CREATE TABLE keyval_store (
+     key text primary key,
+     value text not null,
+@@ -69,9 +43,21 @@ CREATE TABLE chapter (
+     name text,
+     pages text,
+     groups text,
+-    updated_at text default (datetime(&#39;now&#39;)), is_webtoon boolean,
++    updated_at text default (datetime(&#39;now&#39;)),
++    is_webtoon boolean,
+ 
+     foreign key (title_id, site) references title (id, site),
+     unique(site, title_id, id),
+     unique(site, title_id, num_major, num_minor)
+ );
++CREATE TABLE read (
++    user_id integer not null,
++    site text not null,
++    title_id text, -- nullable to accomodate existing mangadex rows, urgh.
++    chapter_id text not null,
++    updated_at text default (datetime(&#39;now&#39;)),
++
++    foreign key (user_id) references user (id),
++    foreign key (site, title_id, chapter_id) references chapter (site, title_id, id),
++    unique(user_id, site, title_id, chapter_id)
++);
+diff --git a/src/pytaku/database/migrations/m0001.sql b/src/pytaku/database/migrations/m0001.sql
+index 700acf3..02f6c8f 100644
+--- a/src/pytaku/database/migrations/m0001.sql
++++ b/src/pytaku/database/migrations/m0001.sql
+@@ -1,3 +1,5 @@
++begin transaction;
++
+ create table title (
+     id text,
+     name text,
+@@ -56,3 +58,5 @@ create table read (
+     foreign key (chapter_id, site) references chapter (id, site),
+     unique(user_id, chapter_id, site)
+ );
++
++commit;
+diff --git a/src/pytaku/database/migrations/m0002.sql b/src/pytaku/database/migrations/m0002.sql
+index 15f1c6e..5cb629c 100644
+--- a/src/pytaku/database/migrations/m0002.sql
++++ b/src/pytaku/database/migrations/m0002.sql
+@@ -1,7 +1,10 @@
+ -- Add key-value store table, for a poor man&#39;s inefficient cache
++begin transaction;
+ 
+ create table keyval_store (
+     key text primary key,
+     value text not null,
+     updated_at text default (datetime(&#39;now&#39;))
+ );
++
++commit;
+diff --git a/src/pytaku/database/migrations/m0003.sql b/src/pytaku/database/migrations/m0003.sql
+index 14d89ec..d581ff4 100644
+--- a/src/pytaku/database/migrations/m0003.sql
++++ b/src/pytaku/database/migrations/m0003.sql
+@@ -2,8 +2,11 @@
+ -- SQLite doesn&#39;t let you do that directly so gotta create a new table
+ -- then copy existing data over.
+ 
+-alter table chapter rename to old_chapter;
++pragma foreign_keys = off; -- to let us do anything at all
++pragma legacy_alter_table = on; -- prevent foreign keys from renaming to &#39;old_chapter&#39; as well
++begin transaction;
+ 
++alter table chapter rename to old_chapter;
+ create table chapter (
+     id text,
+     title_id text,
+@@ -13,11 +16,34 @@ create table chapter (
+     name text,
+     pages text,
+     groups text,
+-    updated_at text default (datetime(&#39;now&#39;)), is_webtoon boolean,
++    updated_at text default (datetime(&#39;now&#39;)),
++    is_webtoon boolean,
+ 
+     foreign key (title_id, site) references title (id, site),
+     unique(site, title_id, id),
+     unique(site, title_id, num_major, num_minor)
+ );
+-
+ insert into chapter select * from old_chapter;
++drop table old_chapter;
++
++
++-- &quot;read&quot; table needs a new &quot;title_id&quot; column too
++alter table read rename to old_read;
++create table read (
++    user_id integer not null,
++    site text not null,
++    title_id text, -- nullable to accomodate existing mangadex rows, urgh.
++    chapter_id text not null,
++    updated_at text default (datetime(&#39;now&#39;)),
++
++    foreign key (user_id) references user (id),
++    foreign key (site, title_id, chapter_id) references chapter (site, title_id, id),
++    unique(user_id, site, title_id, chapter_id)
++);
++insert into read (user_id, site, chapter_id, updated_at)
++    select user_id, site, chapter_id, updated_at from old_read;
++drop table old_read;
++
++commit;
++pragma foreign_keys = on;
++pragma legacy_alter_table = off;
+diff --git a/src/pytaku/database/migrator.py b/src/pytaku/database/migrator.py
+index b275d64..1fe88b9 100644
+--- a/src/pytaku/database/migrator.py
++++ b/src/pytaku/database/migrator.py
+@@ -1,3 +1,4 @@
++import datetime
+ import subprocess
+ from importlib import resources
+ from pathlib import Path
+@@ -65,12 +66,27 @@ def migrate(overwrite_latest_schema=True):
+         migration_contents = _read_migrations(pending_migrations)
+ 
+         conn = get_conn()
+-        with conn:  # apsw provides automatic rollback for free here
+-            cursor = conn.cursor()
+-            for version, sql in migration_contents:
+-                print(&quot;Migrating version&quot;, version, &quot;...&quot;)
+-                cursor.execute(sql)
+-                cursor.execute(f&quot;PRAGMA user_version = {version};&quot;)
++        cursor = conn.cursor()
++
++        # Backup first
++        now = datetime.datetime.utcnow().isoformat(&quot;T&quot;, &quot;milliseconds&quot;)
++        backup_filename = f&quot;db_backup_{now}.sqlite3&quot;
++        print(f&quot;Backup up to {backup_filename}...&quot;, end=&quot;&quot;)
++        cursor.execute(&quot;VACUUM main INTO ?;&quot;, (backup_filename,))
++        print(&quot; done&quot;)
++
++        # Start migrations
++        # NOTE: this is NOT done in a transaction.
++        # You&#39;ll need to do transactions inside your sql scripts.
++        # This is to allow for drastic changes that require temporarily turning off the
++        # foreign_keys pragma, which doesn&#39;t work inside transactions.
++        # If anything goes wrong here, let it abort the whole script. You can always
++        # restore from the backup file.
++        cursor = conn.cursor()
++        for version, sql in migration_contents:
++            print(&quot;Migrating version&quot;, version, &quot;...&quot;)
++            cursor.execute(sql)
++            cursor.execute(f&quot;PRAGMA user_version = {version};&quot;)
+ 
+         if overwrite_latest_schema:
+             _write_db_schema_script(migrations_dir)
+diff --git a/src/pytaku/decorators.py b/src/pytaku/decorators.py
+index 05a9a86..7bd09a9 100644
+--- a/src/pytaku/decorators.py
++++ b/src/pytaku/decorators.py
+@@ -44,17 +44,28 @@ def toggle_has_read(f):
+ 
+     @wraps(f)
+     def decorated_function(*args, **kwargs):
+-        assert &quot;site&quot; in kwargs  # only use on site-specific views
++        assert &quot;site&quot; in kwargs
++        assert &quot;title_id&quot; in kwargs
+         has_read_chapter_id = request.args.get(&quot;has_read&quot;)
+         unread_chapter_id = request.args.get(&quot;unread&quot;)
+         assert not (has_read_chapter_id and unread_chapter_id)  # can&#39;t do both
+ 
+         if session.get(&quot;user&quot;):
+             if has_read_chapter_id:
+-                read(session[&quot;user&quot;][&quot;id&quot;], kwargs[&quot;site&quot;], has_read_chapter_id)
++                read(
++                    session[&quot;user&quot;][&quot;id&quot;],
++                    kwargs[&quot;site&quot;],
++                    kwargs[&quot;title_id&quot;],
++                    has_read_chapter_id,
++                )
+                 return redirect(request.url[: request.url.rfind(&quot;?&quot;)])
+             elif unread_chapter_id:
+-                unread(session[&quot;user&quot;][&quot;id&quot;], kwargs[&quot;site&quot;], unread_chapter_id)
++                unread(
++                    session[&quot;user&quot;][&quot;id&quot;],
++                    kwargs[&quot;site&quot;],
++                    kwargs[&quot;title_id&quot;],
++                    unread_chapter_id,
++                )
+                 return redirect(request.url[: request.url.rfind(&quot;?&quot;)])
+         return f(*args, **kwargs)
+ 
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 3b2ef01..6cedcf4 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -261,20 +261,21 @@ def get_followed_titles(user_id):
+     return sorted(titles, key=lambda t: len(t[&quot;chapters&quot;]), reverse=True)
+ 
+ 
+-def read(user_id, site, chapter_id):
++def read(user_id, site, title_id, chapter_id):
+     run_sql(
+         &quot;&quot;&quot;
+-        INSERT INTO read (user_id, site, chapter_id) VALUES (?, ?, ?)
+-        ON CONFLICT (user_id, site, chapter_id) DO UPDATE SET updated_at=datetime(&#39;now&#39;)
++        INSERT INTO read (user_id, site, title_id, chapter_id) VALUES (?,?,?,?)
++        ON CONFLICT (user_id, site, title_id, chapter_id)
++        DO UPDATE SET updated_at=datetime(&#39;now&#39;);
+         &quot;&quot;&quot;,
+-        (user_id, site, chapter_id),
++        (user_id, site, title_id, chapter_id),
+     )
+ 
+ 
+-def unread(user_id, site, chapter_id):
++def unread(user_id, site, title_id, chapter_id):
+     run_sql(
+-        &quot;DELETE FROM read WHERE user_id=? AND site=? AND chapter_id=?;&quot;,
+-        (user_id, site, chapter_id),
++        &quot;DELETE FROM read WHERE user_id=? AND site=? AND title_id=? AND chapter_id=?;&quot;,
++        (user_id, site, title_id, chapter_id),
+     )
+ 
+ 
+</pre></body></html>

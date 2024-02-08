@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[aec8087672] implement drag state | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / aec8087672</strong><hr><pre>commit aec808767279681aca2ba86a2a335d2fc49d39a1
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 17 13:15:51 2023 +0700
+
+    implement drag state
+
+diff --git a/states.go b/states.go
+index 3c333db..f511309 100644
+--- a/states.go
++++ b/states.go
+@@ -2,6 +2,7 @@
+ 
+ import (
+ 	&quot;github.com/hajimehoshi/ebiten/v2&quot;
++	&quot;github.com/hajimehoshi/ebiten/v2/inpututil&quot;
+ )
+ 
+ type StateMachine struct {
+@@ -13,21 +14,23 @@ type StateMachine struct {
+ }
+ 
+ func NewStateMachine() *StateMachine {
+-	sm := StateMachine{state: StateIdle{}}
+-	sm.state.Enter(&amp;sm)
++	sm := StateMachine{}
++	sm.SetState(&amp;StateIdle{})
+ 	return &amp;sm
+ }
+ 
+-func (sm *StateMachine) setAnim(anim *Anim) {
++func (sm *StateMachine) SetAnim(anim *Anim) {
+ 	sm.anim = anim
+ 	sm.animFrameCount = len(anim.Frames)
++	sm.frameIdx = 0
++	sm.ticks = 0
+ }
+ func (sm *StateMachine) Frame() *ebiten.Image {
+ 	return sm.anim.Frames[sm.frameIdx]
+ }
+-
+-func (sm *StateMachine) HandleInput() {
+-	sm.state.HandleInput(sm)
++func (sm *StateMachine) SetState(s State) {
++	sm.state = s
++	sm.state.Enter(sm)
+ }
+ func (sm *StateMachine) Update() error {
+ 	sm.state.Update(sm)
+@@ -55,18 +58,46 @@ func (sm *StateMachine) Layout(ow, oh int) (sw, sh int) {
+ 
+ type State interface {
+ 	Enter(sm *StateMachine)
+-	HandleInput(sm *StateMachine)
+ 	Update(sm *StateMachine)
+ }
+ 
+-type StateIdle struct{}
+-type StateDrag struct{}
+ type StateRClick struct{}
+ type StateHungry struct{}
+ type StateFeed struct{}
+ type StateWalkL struct{}
+ type StateWalkR struct{}
+ 
+-func (s StateIdle) Enter(sm *StateMachine)       { sm.setAnim(Idle) }
+-func (s StateIdle) HandleInput(sm *StateMachine) {}
+-func (s StateIdle) Update(sm *StateMachine)      {}
++type StateIdle struct{}
++
++func (s *StateIdle) Enter(sm *StateMachine) { sm.SetAnim(Idle) }
++func (s *StateIdle) Update(sm *StateMachine) {
++	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
++		sm.SetState(&amp;StateDrag{})
++		return
++	}
++}
++
++type StateDrag struct {
++	PreviousMousePos Vector
++	WinStartPos      Vector
++	MouseStartPos    Vector
++}
++
++func (s *StateDrag) Enter(sm *StateMachine) {
++	sm.SetAnim(Drag)
++	s.PreviousMousePos = GlobalCursorPosition()
++	s.WinStartPos = CreateVector(ebiten.WindowPosition())
++	s.MouseStartPos = GlobalCursorPosition()
++}
++func (s *StateDrag) Update(sm *StateMachine) {
++	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
++		sm.SetState(&amp;StateIdle{})
++		return
++	}
++	mousePos := GlobalCursorPosition()
++	if mousePos != s.PreviousMousePos {
++		winPos := s.WinStartPos.Add(mousePos.Subtract(s.MouseStartPos))
++		ebiten.SetWindowPosition(winPos.x, winPos.y)
++	}
++	s.PreviousMousePos = mousePos
++}
+</pre></body></html>

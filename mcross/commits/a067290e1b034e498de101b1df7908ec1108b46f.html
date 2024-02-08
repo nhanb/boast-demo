@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a067290e1b] actually I like McRoss more | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / a067290e1b</strong><hr><pre>commit a067290e1b034e498de101b1df7908ec1108b46f
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu May 14 23:34:31 2020 +0700
+
+    actually I like McRoss more
+
+diff --git a/README.md b/README.md
+index 026f941..d36eb82 100644
+--- a/README.md
++++ b/README.md
+@@ -1,4 +1,4 @@
+-McCross is a WIP [gemini://](https://gemini.circumlunar.space/) browser
++McRoss is a WIP [gemini://](https://gemini.circumlunar.space/) browser
+ written in python and tkinter.
+ 
+ It&#39;s developed against gemini://gemini.circumlunar.space/ because apparently
+@@ -15,8 +15,8 @@
+ # Installation
+ 
+ ```sh
+-pip install mccross
+-mccross
++pip install mcross
++mcross
+ ```
+ 
+ # Deps
+diff --git a/pyproject.toml b/pyproject.toml
+index 97c39b0..1e5e006 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,15 +1,15 @@
+ [tool.poetry]
+-name = &quot;mccross&quot;
++name = &quot;mcross&quot;
+ version = &quot;0.1.1&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+ packages = [
+-    { include = &quot;mccross&quot;, from = &quot;src&quot; },
++    { include = &quot;mcross&quot;, from = &quot;src&quot; },
+ ]
+ 
+ [tool.poetry.scripts]
+-mccross = &quot;mccross:run&quot;
++mcross = &quot;mcross:run&quot;
+ 
+ [tool.poetry.dependencies]
+ python = &quot;^3.7&quot;
+diff --git a/src/mccross/__init__.py b/src/mcross/__init__.py
+similarity index 100%
+rename from src/mccross/__init__.py
+rename to src/mcross/__init__.py
+diff --git a/src/mccross/document.py b/src/mcross/document.py
+similarity index 100%
+rename from src/mccross/document.py
+rename to src/mcross/document.py
+diff --git a/src/mccross/gui/__init__.py b/src/mcross/gui/__init__.py
+similarity index 100%
+rename from src/mccross/gui/__init__.py
+rename to src/mcross/gui/__init__.py
+diff --git a/src/mccross/gui/controller.py b/src/mcross/gui/controller.py
+similarity index 95%
+rename from src/mccross/gui/controller.py
+rename to src/mcross/gui/controller.py
+index b040467..2edc5aa 100644
+--- a/src/mccross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -13,7 +13,7 @@ def __init__(self):
+         self.view.go_callback = self.go_callback
+ 
+     def run(self):
+-        self.root.title(&quot;McCross Browser&quot;)
++        self.root.title(&quot;McRoss Browser&quot;)
+         self.root.geometry(&quot;800x600&quot;)
+         self.root.mainloop()
+ 
+diff --git a/src/mccross/gui/model.py b/src/mcross/gui/model.py
+similarity index 96%
+rename from src/mccross/gui/model.py
+rename to src/mcross/gui/model.py
+index 80b4678..6b08883 100644
+--- a/src/mccross/gui/model.py
++++ b/src/mcross/gui/model.py
+@@ -1,7 +1,7 @@
+ from .. import document
+ 
+ DEMO_TEXT = &quot;&quot;&quot;\
+-# Welcome to McCross Browser
++# Welcome to McRoss Browser
+ 
+ ## List
+ 
+@@ -14,7 +14,7 @@
+ 
+ ```
+ [tool.poetry]
+-name = &quot;mccross&quot;
++name = &quot;mcross&quot;
+ version = &quot;0.1.0&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+diff --git a/src/mccross/gui/view.py b/src/mcross/gui/view.py
+similarity index 100%
+rename from src/mccross/gui/view.py
+rename to src/mcross/gui/view.py
+diff --git a/src/mccross/gui/widgets.py b/src/mcross/gui/widgets.py
+similarity index 100%
+rename from src/mccross/gui/widgets.py
+rename to src/mcross/gui/widgets.py
+diff --git a/src/mccross/transport.py b/src/mcross/transport.py
+similarity index 100%
+rename from src/mccross/transport.py
+rename to src/mcross/transport.py
+</pre></body></html>

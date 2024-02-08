@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[aba5965203] boast about my new shiny vim trick | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / aba5965203</strong><hr><pre>commit aba59652033ca4b40443264e01c60ab29d2ef2f0
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 7 13:16:43 2021 +0700
+
+    boast about my new shiny vim trick
+
+diff --git a/content/posts/open-http-link-under-cursor-in-vim.md b/content/posts/open-http-link-under-cursor-in-vim.md
+new file mode 100644
+index 0000000..fb95802
+--- /dev/null
++++ b/content/posts/open-http-link-under-cursor-in-vim.md
+@@ -0,0 +1,74 @@
++Title: Opening http link under the cursor in vim
++Date: 2021-08-07 11:37
++
++Internet&#39;s wise old chatty uncle [Walter Bright](https://www.walterbright.com/)
++recently [commented](https://news.ycombinator.com/item?id=28090272) on Hacker
++News:
++
++&gt; [...]
++&gt;
++&gt; Ever since the Intel CPU spec went online, I started doing this with the code
++&gt; generator - providing links to the man page for the instruction being used:
++&gt;
++&gt; &lt;https://github.com/dlang/dmd/blob/master/src/dmd/cparse.d#L591&gt;
++&gt;
++&gt; And for bug fixes, reference the issue which often gives a detailed
++&gt; explanation for why the code is a certain way:
++&gt;
++&gt; &lt;https://github.com/dlang/dmd/blob/master/src/dmd/backend/cgxmm.d#L1210&gt;
++&gt;
++&gt; Ever since I enhanced the editor I use to open the browser on links, this
++&gt; sort of thing has proven to be very, very handy.
++
++I&#39;ve never had any issue with opening links from vim: I have `&lt;leader&gt;y` set up
++in Visual mode to yank stuff into the system-wide clipboard which I can then
++paste into the browser. However, ever since I mapped `&lt;leader&gt;gh` to trigger
++[`:GBrowse`][1] that opens a browser tab instantly, the old &quot;select &gt; copy &gt;
++switch to browser &gt; Ctrl+T &gt; Ctrl+V&quot; flow started to feel... prehistoric. Mr.
++Bright&#39;s comment gave me the final nudge to actually go ahead and set it up.
++
++The good folks from the [developer encyclopedia][3] suggested `gx` but for some
++reason, setting `g:netrw_browsex_viewer` [didn&#39;t seem to do anything][4] so the
++command would always `wget` the link then tell the browser to open that
++downloaded file. Therefore, I cobbled together this snippet which was adapted
++from those stackoverflow &amp; github threads:
++
++```vimscript
++function! OpenURL()
++  let l:url = matchstr(expand(&quot;&lt;cWORD&gt;&quot;), &#39;https\=:\/\/[^ &gt;,;()]*&#39;)
++  if l:url != &quot;&quot;
++    let l:url = shellescape(l:url, 1)
++    let l:command = &quot;!xdg-open &quot;.l:url
++    echo l:command
++    silent exec l:command
++  else
++    echo &quot;No URL found under cursor.&quot;
++  endif
++endfunction
++
++nnoremap gl :call OpenURL()&lt;cr&gt;
++```
++
++_(if you&#39;re on a Mac, replacing `xdg-open` with `open` will probably
++do the same thing)_
++
++Now whenever I have my cursor on an http(s) url, I can type `gl` from normal
++mode and xdg-open will use my default browser to open it up. This could be
++extended to any other scheme like `mailto` or `ftp` but I don&#39;t have any
++practical use for them right now so that will do.
++
++One drawback is if there&#39;s a whitespace in the URL (which is bad practice
++anyway), my regex won&#39;t match the whole thing. In such cases I&#39;d rather resort
++to good old manual visual mode than try to be clever and make my URL detecting
++logic exponentially more complex. I&#39;d take simple software with obvious, easily
++understood behavior over overcomplicated, (possibly) subtly broken balls of mud
++any day.
++
++By the way, if you looked at my script and got spooked by the idea of executing
++a shell command composed from arbitrary, potentially unsafe input (i.e. text
++file content), don&#39;t worry: that&#39;s what [`shellescape()`][2] is for.
++
++[1]: https://github.com/tpope/vim-fugitive/blob/2dc08dfe354ed5400f5cdb3d5009dcd4024aac8a/doc/fugitive.txt#L213
++[2]: https://learnvimscriptthehardway.stevelosh.com/chapters/32.html#escaping-shell-command-arguments
++[3]: https://stackoverflow.com/questions/9458294/open-url-under-cursor-in-vim-with-browser
++[4]: https://github.com/vim/vim/issues/4738
+diff --git a/nhanb-theme/static/css/main.css b/nhanb-theme/static/css/main.css
+index a63c6f2..2a54013 100644
+--- a/nhanb-theme/static/css/main.css
++++ b/nhanb-theme/static/css/main.css
+@@ -71,10 +71,15 @@ blockquote {
+   padding-left: 7px;
+   margin-left: 2rem;
+   margin-right: 0;
++  /* prevent long links from breaking out of the blockquote: */
++  overflow-wrap: break-word;
+ }
+ blockquote &gt; * {
+   margin: 0;
+ }
++blockquote &gt; p + p {
++  margin-top: 0.5rem;
++}
+ 
+ time {
+   white-space: nowrap;
+</pre></body></html>

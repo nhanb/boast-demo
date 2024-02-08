@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ba57956778] mark as read when user clicks &quot;next&quot; | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / ba57956778</strong><hr><pre>commit ba57956778b69163d26a0f692f42adfcdf4debce
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 23 21:49:14 2020 +0700
+
+    mark as read when user clicks &quot;next&quot;
+
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 14e9630..d934a5e 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -30,10 +30,12 @@
+     import_follows,
+     load_chapter,
+     load_title,
++    read,
+     register_user,
+     save_chapter,
+     save_title,
+     unfollow,
++    unread,
+     verify_username_password,
+ )
+ from .source_sites import (
+@@ -529,3 +531,25 @@ def api_follow():
+         unfollow(request.user_id, site, title_id)
+ 
+     return jsonify({&quot;follow&quot;: should_follow})
++
++
++@app.route(&quot;/api/read&quot;, methods=[&quot;POST&quot;])
++@process_token(required=True)
++def api_read():
++    reads = request.json.get(&quot;read&quot;) or []
++    unreads = request.json.get(&quot;unread&quot;) or []
++    assert reads or unreads
++
++    if reads:
++        for r in reads:
++            read(
++                request.user_id, r[&quot;site&quot;], r[&quot;title_id&quot;], r[&quot;chapter_id&quot;],
++            )
++    if unreads:
++        for u in unreads:
++            read(
++                request.user_id, u[&quot;site&quot;], u[&quot;title_id&quot;], u[&quot;chapter_id&quot;],
++            )
++    # TODO: rewrite read/unread to do bulk updates instead of n+1 queries like these.
++    # ... Or maybe not. SQLite doesn&#39;t mind.
++    return {}
+diff --git a/src/pytaku/static/js/routes/chapter.js b/src/pytaku/static/js/routes/chapter.js
+index e188822..b22a2d7 100644
+--- a/src/pytaku/static/js/routes/chapter.js
++++ b/src/pytaku/static/js/routes/chapter.js
+@@ -103,20 +103,35 @@ function Chapter(initialVNode) {
+           },
+           [m(&quot;i.icon.icon-list&quot;), m(&quot;span&quot;, &quot; chapter list&quot;)]
+         ),
+-        next
+-          ? m(
+-              m.route.Link,
+-              {
+-                class: &quot;touch-friendly&quot;,
+-                href: `/m/${site}/${titleId}/${next.id}`,
+-              },
+-              [m(&quot;span&quot;, &quot;next&quot;), m(&quot;i.icon.icon-chevrons-right&quot;)]
+-            )
+-          : m(Button, {
+-              text: &quot;next&quot;,
+-              icon: &quot;chevrons-right&quot;,
+-              disabled: true,
+-            }),
++        m(
++          m.route.Link,
++          {
++            class: &quot;touch-friendly&quot;,
++            href: next
++              ? `/m/${site}/${titleId}/${next.id}`
++              : `/m/${site}/${titleId}`,
++            onclick: (ev) =&gt; {
++              Auth.request({
++                method: &quot;POST&quot;,
++                url: &quot;/api/read&quot;,
++                body: {
++                  read: [
++                    {
++                      site,
++                      title_id: titleId,
++                      chapter_id: chapter.id,
++                    },
++                  ],
++                },
++              });
++              return true;
++            },
++          },
++          [
++            m(&quot;span&quot;, next ? &quot;next&quot; : &quot;finish&quot;),
++            m(&quot;i.icon.icon-&quot; + (next ? &quot;chevrons-right&quot; : &quot;check-circle&quot;)),
++          ]
++        ),
+       ]);
+       return m(&quot;div.chapter.content&quot;, [
+         m(&quot;h1&quot;, fullChapterName(chapter)),
+diff --git a/src/pytaku/static/js/utils.js b/src/pytaku/static/js/utils.js
+index 46b877d..d8f1f12 100644
+--- a/src/pytaku/static/js/utils.js
++++ b/src/pytaku/static/js/utils.js
+@@ -19,7 +19,7 @@ const Button = {
+ 
+ const Chapter = {
+   view: (vnode) =&gt;
+-    m(&quot;div.utils--chapter&quot;, [
++    m(&quot;div.utils--chapter&quot; + (vnode.attrs.chapter.is_read ? &quot; read&quot; : &quot;&quot;), [
+       m(
+         m.route.Link,
+         {
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index 71978df..9d7bc59 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -324,6 +324,12 @@ .chapter--buttons &gt; button:last-child {
+ .utils--chapter {
+   margin-bottom: 0.5rem;
+ }
++.utils--chapter.read &gt; a:before {
++  content: &quot;🗹&quot;;
++  color: green;
++  margin-right: 0.2rem;
++  font-weight: bold;
++}
+ .utils--chapter &gt; a {
+   padding-left: 0.5rem;
+   padding-right: 0.5rem;
+</pre></body></html>

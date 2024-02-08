@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1392452749] more theming tweaks | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 1392452749</strong><hr><pre>commit 1392452749f3df9f2606c27906b3d1ad7ec479b1
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Oct 10 12:39:19 2021 +0700
+
+    more theming tweaks
+    
+    - change ::before link symbol to make sure it doesn&#39;t fall back to
+      another font, eliminating the vertical alignment problem.
+    - consistent 1px borders
+    - state-of-the-art gradient background
+    - make sure easter egg hint only shows up on javascript-enabled browsers
+
+diff --git a/nhanb-theme/static/css/index.css b/nhanb-theme/static/css/index.css
+index b0c9bdf..5591a94 100644
+--- a/nhanb-theme/static/css/index.css
++++ b/nhanb-theme/static/css/index.css
+@@ -22,9 +22,8 @@ .article-list time {
+ @media (min-width: 760px) {
+   .article:hover::before {
+     position: absolute;
+-    margin-left: -1.2rem;
+-    color: black;
+-    content: &quot;➜&quot;;
+-    line-height: 1.1rem;
++    margin-left: -1rem;
++    color: var(--fg-color);
++    content: &quot;$&quot;;
+   }
+ }
+diff --git a/nhanb-theme/static/css/main.css b/nhanb-theme/static/css/main.css
+index 43aa1c6..6e85f5c 100644
+--- a/nhanb-theme/static/css/main.css
++++ b/nhanb-theme/static/css/main.css
+@@ -1,11 +1,13 @@
+ html {
+   --bg-color: cornsilk;
++  --bg-color2: palegoldenrod;
+   --fg-color: black;
+   --link-color: black;
+   --hr-border: 2px solid var(--link-color);
+ 
+   font-size: 100%;
+-  background-color: var(--bg-color);
++  background-color: var(--bg-color2);
++  background: linear-gradient(var(--bg-color), var(--bg-color2));
+   color: var(--fg-color);
+   /* always show vertical scrollbar to avoid content shifting: */
+   overflow-y: scroll;
+@@ -76,8 +78,7 @@ figcaption {
+ 
+ blockquote {
+   background-color: blanchedalmond;
+-  border: 2px solid burlywood;
+-  border-left: 1rem solid burlywood;
++  border: 1px solid burlywood;
+   padding: 5px;
+   padding-left: 7px;
+   margin-left: 2rem;
+@@ -118,7 +119,6 @@ code {
+ 
+ p code,
+ li code {
+-  background-color: blanchedalmond;
+   border: 1px solid #aaa;
+   padding: 0 3px;
+ }
+diff --git a/nhanb-theme/templates/base.html b/nhanb-theme/templates/base.html
+index 69f32d2..c3ce938 100644
+--- a/nhanb-theme/templates/base.html
++++ b/nhanb-theme/templates/base.html
+@@ -47,9 +47,14 @@ &lt;h2 id=&quot;site-subtitle&quot;&gt;{{ SITESUBTITLE}}&lt;/h2&gt;
+       {{ AUTHOR }}
+       &lt;br&gt;
+       {{ FOOTER_TEXT }}
+-      &lt;p style=&quot;color: beige; font-size: .7rem; margin: 0;&quot;&gt;
+-        Bored? Try entering the Konami code (PC only).
++      &lt;p
++        class=&quot;easter-egg&quot;
++        style=&quot;display: none; font-size: .7em; margin: 0; color: var(--bg-color2);&quot;&gt;
++        Bored? Try entering the Konami code from your keyboard.
+       &lt;/p&gt;
++      &lt;script&gt;
++        document.querySelector(&#39;.easter-egg&#39;).style.display = &#39;block&#39;;
++      &lt;/script&gt;
+     &lt;/footer&gt;
+   &lt;/div&gt;
+ 
+</pre></body></html>

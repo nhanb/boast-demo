@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[769fac659e] move videos into repo | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 769fac659e</strong><hr><pre>commit 769fac659e500e22275b8b96138e266bebb40eed
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Sep 1 12:09:15 2023 +0700
+
+    move videos into repo
+
+diff --git a/movie-streaming/gflick-fixed/gflick-phone-demo.mp4 b/movie-streaming/gflick-fixed/gflick-phone-demo.mp4
+new file mode 100644
+index 0000000..e495558
+Binary files /dev/null and b/movie-streaming/gflick-fixed/gflick-phone-demo.mp4 differ
+diff --git a/movie-streaming/gflick-fixed/index.dj b/movie-streaming/gflick-fixed/index.dj
+index 121ecc9..d7b205c 100644
+--- a/movie-streaming/gflick-fixed/index.dj
++++ b/movie-streaming/gflick-fixed/index.dj
+@@ -8,10 +8,8 @@ mpv-android installed:
+ 
+ ```=html
+ &lt;video controls&gt;
+-  &lt;source src=&quot;https://junk.imnhan.com/gflick-phone-demo.mp4&quot; type=&quot;video/mp4&quot;&gt;
+-  &lt;a href=&quot;https://junk.imnhan.com/gflick-phone-demo.mp4&quot;&gt;
+-    Video: https://junk.imnhan.com/gflick-phone-demo.mp4
+-  &lt;/a&gt;
++  &lt;source src=&quot;gflick-phone-demo.mp4&quot; type=&quot;video/mp4&quot;&gt;
++  &lt;a href=&quot;gflick-phone-demo.mp4&quot;&gt;Video: gflick-phone-demo.mp4&lt;/a&gt;
+ &lt;/video&gt;
+ ```
+ 
+diff --git a/movie-streaming/gflick-fixed/index.html b/movie-streaming/gflick-fixed/index.html
+index ab0359b..25c2513 100644
+--- a/movie-streaming/gflick-fixed/index.html
++++ b/movie-streaming/gflick-fixed/index.html
+@@ -49,10 +49,8 @@ &lt;h1&gt;Streaming videos from Google Drive: a second attempt&lt;/h1&gt;
+ an &lt;a href=&quot;/posts/towards-an-acceptable-video-playing-experience/&quot;&gt;earlier blog post&lt;/a&gt;. It now works like this on an Android phone with
+ mpv-android installed:&lt;/p&gt;
+ &lt;video controls&gt;
+-  &lt;source src=&quot;https://junk.imnhan.com/gflick-phone-demo.mp4&quot; type=&quot;video/mp4&quot;&gt;
+-  &lt;a href=&quot;https://junk.imnhan.com/gflick-phone-demo.mp4&quot;&gt;
+-    Video: https://junk.imnhan.com/gflick-phone-demo.mp4
+-  &lt;/a&gt;
++  &lt;source src=&quot;gflick-phone-demo.mp4&quot; type=&quot;video/mp4&quot;&gt;
++  &lt;a href=&quot;gflick-phone-demo.mp4&quot;&gt;Video: gflick-phone-demo.mp4&lt;/a&gt;
+ &lt;/video&gt;
+ &lt;p&gt;The longer version follows.&lt;/p&gt;
+ &lt;p&gt;&lt;a href=&quot;/posts/towards-an-acceptable-video-playing-experience/&quot;&gt;Previously&lt;/a&gt; I was writing a proxy of sorts that adapted Google Drive’s
+diff --git a/movie-streaming/gflick/gflick.mp4 b/movie-streaming/gflick/gflick.mp4
+new file mode 100644
+index 0000000..6b4051d
+Binary files /dev/null and b/movie-streaming/gflick/gflick.mp4 differ
+diff --git a/movie-streaming/gflick/index.dj b/movie-streaming/gflick/index.dj
+index 3be0372..1932371 100644
+--- a/movie-streaming/gflick/index.dj
++++ b/movie-streaming/gflick/index.dj
+@@ -100,10 +100,8 @@ Here&#39;s what it looks like in action:
+ 
+ ```=html
+ &lt;video controls&gt;
+-  &lt;source src=&quot;https://junk.imnhan.com/gflick.mp4&quot; type=&quot;video/mp4&quot;&gt;
+-  &lt;a href=&quot;https://junk.imnhan.com/gflick.mp4&quot;&gt;
+-    Video: https://junk.imnhan.com/gflick.mp4
+-  &lt;/a&gt;
++  &lt;source src=&quot;gflick.mp4&quot; type=&quot;video/mp4&quot;&gt;
++  &lt;a href=&quot;gflick.mp4&quot;&gt;Video: gflick.mp4&lt;/a&gt;
+ &lt;/video&gt;
+ ```
+ 
+diff --git a/movie-streaming/gflick/index.html b/movie-streaming/gflick/index.html
+index 8c79ba7..d24d79a 100644
+--- a/movie-streaming/gflick/index.html
++++ b/movie-streaming/gflick/index.html
+@@ -142,10 +142,8 @@ &lt;h2&gt;Enter gflick&lt;a href=&quot;#Enter-gflick&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;code&gt;mpv&lt;/code&gt; and the like can use without modification.&lt;/p&gt;
+ &lt;p&gt;Here’s what it looks like in action:&lt;/p&gt;
+ &lt;video controls&gt;
+-  &lt;source src=&quot;https://junk.imnhan.com/gflick.mp4&quot; type=&quot;video/mp4&quot;&gt;
+-  &lt;a href=&quot;https://junk.imnhan.com/gflick.mp4&quot;&gt;
+-    Video: https://junk.imnhan.com/gflick.mp4
+-  &lt;/a&gt;
++  &lt;source src=&quot;gflick.mp4&quot; type=&quot;video/mp4&quot;&gt;
++  &lt;a href=&quot;gflick.mp4&quot;&gt;Video: gflick.mp4&lt;/a&gt;
+ &lt;/video&gt;
+ &lt;p&gt;It can run just fine as a local server, but cumbersome and not practical on
+ tablets, so I put it on a publicly accessible server, protected by nginx which
+diff --git a/stepmania-pad/index.dj b/stepmania-pad/index.dj
+index 29de90f..df69a3d 100644
+--- a/stepmania-pad/index.dj
++++ b/stepmania-pad/index.dj
+@@ -83,10 +83,8 @@ P/s here it is in action:
+ 
+ ```=html
+ &lt;video controls&gt;
+-  &lt;source src=&quot;https://junk.imnhan.com/softpadmod.mp4&quot; type=&quot;video/mp4&quot;&gt;
+-  &lt;a href=&quot;https://junk.imnhan.com/softpadmod.mp4&quot;&gt;
+-    Video: https://junk.imnhan.com/softpadmod.mp4
+-  &lt;/a&gt;
++  &lt;source src=&quot;softpadmod.mp4&quot; type=&quot;video/mp4&quot;&gt;
++  &lt;a href=&quot;softpadmod.mp4&quot;&gt;Video: softpadmod.mp4&lt;/a&gt;
+ &lt;/video&gt;
+ ```
+ 
+diff --git a/stepmania-pad/index.html b/stepmania-pad/index.html
+index 21d6648..fba4264 100644
+--- a/stepmania-pad/index.html
++++ b/stepmania-pad/index.html
+@@ -96,10 +96,8 @@ &lt;h1&gt;Simplest possible stepmania soft-to-hard pad mod&lt;/h1&gt;
+ I’d prefer it didn’t happen though.&lt;/p&gt;
+ &lt;p&gt;P/s here it is in action:&lt;/p&gt;
+ &lt;video controls&gt;
+-  &lt;source src=&quot;https://junk.imnhan.com/softpadmod.mp4&quot; type=&quot;video/mp4&quot;&gt;
+-  &lt;a href=&quot;https://junk.imnhan.com/softpadmod.mp4&quot;&gt;
+-    Video: https://junk.imnhan.com/softpadmod.mp4
+-  &lt;/a&gt;
++  &lt;source src=&quot;softpadmod.mp4&quot; type=&quot;video/mp4&quot;&gt;
++  &lt;a href=&quot;softpadmod.mp4&quot;&gt;Video: softpadmod.mp4&lt;/a&gt;
+ &lt;/video&gt;
+ &lt;p&gt;&lt;del&gt;(man I wonder if we’ll ever get a Melty Blood 2)&lt;/del&gt;&lt;br&gt;
+ Hot damn they’re actually &lt;a href=&quot;https://meltyblood.typelumina.com/en/&quot;&gt;doing it&lt;/a&gt;!&lt;/p&gt;
+diff --git a/stepmania-pad/softpadmod.mp4 b/stepmania-pad/softpadmod.mp4
+new file mode 100644
+index 0000000..6cacad7
+Binary files /dev/null and b/stepmania-pad/softpadmod.mp4 differ
+</pre></body></html>

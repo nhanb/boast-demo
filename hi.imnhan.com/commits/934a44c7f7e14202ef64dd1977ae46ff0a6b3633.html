@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[934a44c7f7] show header links on hover | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 934a44c7f7</strong><hr><pre>commit 934a44c7f7e14202ef64dd1977ae46ff0a6b3633
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Feb 13 20:38:54 2023 +0700
+
+    show header links on hover
+
+diff --git a/nhanb-theme/static/css/main.css b/nhanb-theme/static/css/main.css
+index 8ead5f5..c5c0623 100644
+--- a/nhanb-theme/static/css/main.css
++++ b/nhanb-theme/static/css/main.css
+@@ -26,6 +26,16 @@ button {
+   padding: 0.2rem;
+ }
+ 
++a.headerlink {
++    margin-left: 0.5rem;
++    text-decoration: none;
++    visibility: hidden;
++}
++
++*:hover &gt; a.headerlink {
++    visibility: visible;
++}
++
+ a {
+   color: var(--link-color);
+   text-decoration-skip-ink: none;
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 2a65605..4dd936e 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -19,6 +19,7 @@
+         &quot;markdown.extensions.extra&quot;: {},
+         &quot;markdown.extensions.meta&quot;: {},
+         &quot;smarty&quot;: {},
++        &quot;toc&quot;: {&quot;permalink&quot;: &quot;$&quot;},
+     },
+     &quot;output_format&quot;: &quot;html5&quot;,
+ }
+</pre></body></html>

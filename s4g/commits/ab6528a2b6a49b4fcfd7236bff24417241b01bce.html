@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ab6528a2b6] compute Article&#39;s derived fields once | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / ab6528a2b6</strong><hr><pre>commit ab6528a2b6a49b4fcfd7236bff24417241b01bce
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jul 15 11:50:04 2023 +0700
+
+    compute Article&#39;s derived fields once
+
+diff --git a/main.go b/main.go
+index 6463ca2..7e7b6f7 100644
+--- a/main.go
++++ b/main.go
+@@ -187,11 +187,16 @@ type Article struct {
+ 	DjotBody   []byte
+ 	ArticleMetadata
+ 	WebPath       string
+-	templatePaths []string
++	TemplatePaths []string
+ }
+ 
+-func (a *Article) ComputeWebPath(root string) {
+-	webPath := root + a.OutputPath
++func (a *Article) ComputeDerivedFields(root string) {
++	a.WebPath = computeWebPath(root, a.OutputPath)
++	a.TemplatePaths = computeTemplatePaths(a.Path, a.Templates)
++}
++
++func computeWebPath(root string, outputPath string) string {
++	webPath := root + outputPath
+ 	if strings.HasSuffix(webPath, &quot;/index.html&quot;) {
+ 		webPath = strings.TrimSuffix(webPath, &quot;index.html&quot;)
+ 	}
+@@ -202,24 +207,19 @@ func (a *Article) ComputeWebPath(root string) {
+ 		escaped[i] = url.PathEscape(parts[i])
+ 	}
+ 
+-	a.WebPath = strings.Join(escaped, &quot;/&quot;)
++	return strings.Join(escaped, &quot;/&quot;)
+ }
+ 
+-func (a *Article) TemplatePaths() []string {
+-	if len(a.templatePaths) &gt; 0 {
+-		return a.templatePaths
+-	}
+-	paths := make([]string, len(a.Templates))
++func computeTemplatePaths(articlePath string, templates []string) []string {
++	paths := make([]string, len(templates))
+ 	for i := 0; i &lt; len(paths); i++ {
+-		p := a.Templates[i]
++		p := templates[i]
+ 		if strings.HasPrefix(p, &quot;$&quot;) {
+ 			paths[i] = strings.TrimPrefix(p, &quot;$&quot;)
+ 		} else {
+-			paths[i] = filepath.Join(filepath.Dir(a.Path), p)
++			paths[i] = filepath.Join(filepath.Dir(articlePath), p)
+ 		}
+ 	}
+-
+-	a.templatePaths = paths
+ 	return paths
+ }
+ 
+@@ -235,7 +235,7 @@ func (a *Article) WriteHtmlFile(
+ 	// Then insert that content into the main template
+ 	var buf bytes.Buffer
+ 	// TODO: should probably reuse the template object for common cases
+-	tmpl := template.Must(template.ParseFS(a.Fs, a.TemplatePaths()...))
++	tmpl := template.Must(template.ParseFS(a.Fs, a.TemplatePaths...))
+ 	err := tmpl.Execute(&amp;buf, struct {
+ 		Site           *SiteMetadata
+ 		Content        template.HTML
+@@ -311,7 +311,7 @@ func findArticles(fsys writablefs.FS, site SiteMetadata) map[string]Article {
+ 			DjotBody:        bodyText,
+ 			ArticleMetadata: meta,
+ 		}
+-		article.ComputeWebPath(site.Root)
++		article.ComputeDerivedFields(site.Root)
+ 		result[article.Path] = article
+ 		return nil
+ 	})
+</pre></body></html>

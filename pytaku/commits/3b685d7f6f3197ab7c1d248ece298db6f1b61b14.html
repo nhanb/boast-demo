@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[3b685d7f6f] use per-site http session object | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 3b685d7f6f</strong><hr><pre>commit 3b685d7f6f3197ab7c1d248ece298db6f1b61b14
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 16 15:14:49 2020 +0700
+
+    use per-site http session object
+
+diff --git a/src/mangoapi/base_site.py b/src/mangoapi/base_site.py
+index afa801d..5cbbc36 100644
+--- a/src/mangoapi/base_site.py
++++ b/src/mangoapi/base_site.py
+@@ -1,12 +1,20 @@
+ import functools
+ from abc import ABC, abstractmethod
+ 
++import requests
++
+ 
+ class Site(ABC):
+     def __init__(self):
+-        self._cookies = None
+         self.username = None
+         self.password = None
++        self.is_logged_in = False
++        self.session = requests.Session()
++        self.session.headers.update(
++            {
++                &quot;User-Agent&quot;: &quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36&quot;
++            }
++        )
+ 
+     @abstractmethod
+     def get_title(self, title_id):
+@@ -45,10 +53,12 @@ def requires_login(func):
+ 
+     @functools.wraps(func)
+     def wrapper(self, *args, **kwargs):
+-        if self._cookies is None:
++        # TODO: replace is_logged_in flag check with actual &quot;if rejected then try
++        # logging in&quot; logic, just in case login cookies expire.
++        if not self.is_logged_in:
+             assert self.username
+             assert self.password
+-            self._cookies = self.login(self.username, self.password)
++            self.login(self.username, self.password)
+         return func(self, *args, **kwargs)
+ 
+     return wrapper
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index 4894744..90c404b 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -1,15 +1,13 @@
+ import html
+ import re
+ 
+-import requests
+-
+ from mangoapi.base_site import Site, requires_login
+ 
+ 
+ class Mangadex(Site):
+     def get_title(self, title_id):
+         url = f&quot;https://mangadex.org/api/?id={title_id}&amp;type=manga&quot;
+-        md_resp = requests.get(url)
++        md_resp = self.session.get(url)
+         assert md_resp.status_code == 200, md_resp.text
+         md_json = md_resp.json()
+         assert md_json[&quot;status&quot;] == &quot;OK&quot;
+@@ -41,7 +39,7 @@ def get_title(self, title_id):
+         return title
+ 
+     def get_chapter(self, title_id, chapter_id):
+-        md_resp = requests.get(
++        md_resp = self.session.get(
+             f&quot;https://mangadex.org/api/?id={chapter_id}&amp;type=chapter&amp;saver=0&quot;
+         )
+         assert md_resp.status_code == 200, md_resp.text
+@@ -65,9 +63,7 @@ def get_chapter(self, title_id, chapter_id):
+ 
+     @requires_login
+     def search_title(self, query):
+-        md_resp = requests.get(
+-            f&quot;https://mangadex.org/quick_search/{query}&quot;, cookies=self._cookies,
+-        )
++        md_resp = self.session.get(f&quot;https://mangadex.org/quick_search/{query}&quot;)
+         assert md_resp.status_code == 200, md_resp.text
+ 
+         matches = TITLES_PATTERN.findall(md_resp.text)
+@@ -83,22 +79,19 @@ def search_title(self, query):
+         return titles
+ 
+     def login(self, username, password):
+-        &quot;&quot;&quot;
+-        Returns cookies of a logged in user.
+-        &quot;&quot;&quot;
+         form_data = {
+             &quot;login_username&quot;: username,
+             &quot;login_password&quot;: password,
+             &quot;two_factor&quot;: &quot;&quot;,
+             &quot;remember_me&quot;: &quot;1&quot;,
+         }
+-        md_resp = requests.post(
++        md_resp = self.session.post(
+             &quot;https://mangadex.org/ajax/actions.ajax.php?function=login&quot;,
+             data=form_data,
+             headers={&quot;X-Requested-With&quot;: &quot;XMLHttpRequest&quot;},
+         )
+         assert md_resp.status_code == 200, md_resp.text
+-        return dict(md_resp.cookies)
++        self.is_logged_in = True
+ 
+     def title_cover(self, title_id, cover_ext):
+         return f&quot;https://mangadex.org/images/manga/{title_id}.{cover_ext}&quot;
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+index 0df9a00..5f2080b 100644
+--- a/src/mangoapi/mangasee.py
++++ b/src/mangoapi/mangasee.py
+@@ -1,9 +1,8 @@
+ import json
+ import re
+ 
+-import requests
+-
+ import apsw
++
+ from mangoapi.base_site import Site
+ 
+ regexes = {
+@@ -22,10 +21,11 @@ class Mangasee(Site):
+     search_table = None
+ 
+     def __init__(self, keyval_store=None):
++        super().__init__()
+         self.keyval_store = keyval_store
+ 
+     def get_title(self, title_id):
+-        resp = requests.get(f&quot;https://mangasee123.com/manga/{title_id}&quot;, timeout=3)
++        resp = self.session.get(f&quot;https://mangasee123.com/manga/{title_id}&quot;, timeout=3)
+         assert resp.status_code == 200
+         html = resp.text
+         name = regexes[&quot;title_name&quot;].search(html).group(1).strip()
+@@ -54,7 +54,7 @@ def get_title(self, title_id):
+         }
+ 
+     def get_chapter(self, title_id, chapter_id):
+-        resp = requests.get(
++        resp = self.session.get(
+             f&quot;https://mangasee123.com/read-online/{title_id}-chapter-{chapter_id}.html&quot;
+         )
+         assert resp.status_code == 200
+@@ -108,7 +108,7 @@ def search_title(self, query):
+                 )
+             if not titles:
+                 print(&quot;Fetching mangasee title list...&quot;, end=&quot;&quot;)
+-                resp = requests.get(&quot;https://mangasee123.com/_search.php&quot;)
++                resp = self.session.get(&quot;https://mangasee123.com/_search.php&quot;)
+                 print(&quot; done&quot;)
+                 titles = resp.json()
+                 self.keyval_store.set(&quot;mangasee_titles&quot;, resp.text)
+diff --git a/tests/mangoapi/test_mangadex.py b/tests/mangoapi/test_mangadex.py
+index 6be93fb..b75b5b6 100644
+--- a/tests/mangoapi/test_mangadex.py
++++ b/tests/mangoapi/test_mangadex.py
+@@ -1,7 +1,6 @@
+-import os
++from pytaku.conf import config
+ 
+ from mangoapi.mangadex import Mangadex
+-from pytaku.conf import config
+ 
+ 
+ def test_get_title():
+</pre></body></html>

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[d01856973a] wip scraping queue | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / d01856973a</strong><hr><pre>commit d01856973a553ecaa826a75057511dba1151f974
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue May 5 23:22:24 2020 +0700
+
+    wip scraping queue
+
+diff --git a/poetry.lock b/poetry.lock
+index 2a61293..d391d54 100644
+--- a/poetry.lock
++++ b/poetry.lock
+@@ -49,6 +49,21 @@ optional = false
+ python-versions = &quot;*&quot;
+ version = &quot;0.1.0&quot;
+ 
++[[package]]
++category = &quot;main&quot;
++description = &quot;Screen-scraping library&quot;
++name = &quot;beautifulsoup4&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;4.9.0&quot;
++
++[package.dependencies]
++soupsieve = [&quot;&gt;1.2&quot;, &quot;&lt;2.0&quot;]
++
++[package.extras]
++html5lib = [&quot;html5lib&quot;]
++lxml = [&quot;lxml&quot;]
++
+ [[package]]
+ category = &quot;dev&quot;
+ description = &quot;The uncompromising code formatter.&quot;
+@@ -69,6 +84,22 @@ typed-ast = &quot;&gt;=1.4.0&quot;
+ [package.extras]
+ d = [&quot;aiohttp (&gt;=3.3.2)&quot;, &quot;aiohttp-cors&quot;]
+ 
++[[package]]
++category = &quot;main&quot;
++description = &quot;Python package for providing Mozilla&#39;s CA Bundle.&quot;
++name = &quot;certifi&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;2020.4.5.1&quot;
++
++[[package]]
++category = &quot;main&quot;
++description = &quot;Universal encoding detector for Python 2 and 3&quot;
++name = &quot;chardet&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;3.0.4&quot;
++
+ [[package]]
+ category = &quot;dev&quot;
+ description = &quot;Composable command line interface toolkit&quot;
+@@ -147,6 +178,14 @@ maintainer = [&quot;zest.releaser&quot;]
+ tests = [&quot;django (&lt;2.1)&quot;, &quot;ruamel.yaml&quot;, &quot;pytest (3.5.0)&quot;, &quot;pytest-cov (2.5.1)&quot;, &quot;pytest-mock (1.7.1)&quot;]
+ yaml = [&quot;ruamel.yaml&quot;]
+ 
++[[package]]
++category = &quot;main&quot;
++description = &quot;Internationalized Domain Names in Applications (IDNA)&quot;
++name = &quot;idna&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++version = &quot;2.9&quot;
++
+ [[package]]
+ category = &quot;dev&quot;
+ description = &quot;Read metadata from Python packages&quot;
+@@ -248,6 +287,20 @@ parso = &quot;&gt;=0.5.2&quot;
+ [package.extras]
+ testing = [&quot;colorama (0.4.1)&quot;, &quot;docopt&quot;, &quot;pytest (&gt;=3.9.0,&lt;5.0.0)&quot;]
+ 
++[[package]]
++category = &quot;main&quot;
++description = &quot;Powerful and Pythonic XML processing library combining libxml2/libxslt with the ElementTree API.&quot;
++name = &quot;lxml&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, != 3.4.*&quot;
++version = &quot;4.5.0&quot;
++
++[package.extras]
++cssselect = [&quot;cssselect (&gt;=0.7)&quot;]
++html5 = [&quot;html5lib&quot;]
++htmlsoup = [&quot;beautifulsoup4&quot;]
++source = [&quot;Cython (&gt;=0.29.7)&quot;]
++
+ [[package]]
+ category = &quot;dev&quot;
+ description = &quot;McCabe checker, plugin for flake8&quot;
+@@ -423,6 +476,24 @@ optional = false
+ python-versions = &quot;*&quot;
+ version = &quot;2020.4.4&quot;
+ 
++[[package]]
++category = &quot;main&quot;
++description = &quot;Python HTTP for Humans.&quot;
++name = &quot;requests&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
++version = &quot;2.23.0&quot;
++
++[package.dependencies]
++certifi = &quot;&gt;=2017.4.17&quot;
++chardet = &quot;&gt;=3.0.2,&lt;4&quot;
++idna = &quot;&gt;=2.5,&lt;3&quot;
++urllib3 = &quot;&gt;=1.21.1,&lt;1.25.0 || &gt;1.25.0,&lt;1.25.1 || &gt;1.25.1,&lt;1.26&quot;
++
++[package.extras]
++security = [&quot;pyOpenSSL (&gt;=0.14)&quot;, &quot;cryptography (&gt;=1.3.4)&quot;]
++socks = [&quot;PySocks (&gt;=1.5.6,&lt;1.5.7 || &gt;1.5.7)&quot;, &quot;win-inet-pton&quot;]
++
+ [[package]]
+ category = &quot;dev&quot;
+ description = &quot;Python 2 and 3 compatibility utilities&quot;
+@@ -432,6 +503,14 @@ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*&quot;
+ version = &quot;1.14.0&quot;
+ 
++[[package]]
++category = &quot;main&quot;
++description = &quot;A modern CSS selector implementation for Beautiful Soup.&quot;
++name = &quot;soupsieve&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;1.9.5&quot;
++
+ [[package]]
+ category = &quot;main&quot;
+ description = &quot;Non-validating SQL parser&quot;
+@@ -482,6 +561,19 @@ optional = false
+ python-versions = &quot;*&quot;
+ version = &quot;1.35&quot;
+ 
++[[package]]
++category = &quot;main&quot;
++description = &quot;HTTP library with thread-safe connection pooling, file post, and more.&quot;
++name = &quot;urllib3&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, &lt;4&quot;
++version = &quot;1.25.9&quot;
++
++[package.extras]
++brotli = [&quot;brotlipy (&gt;=0.6.0)&quot;]
++secure = [&quot;certifi&quot;, &quot;cryptography (&gt;=1.3.4)&quot;, &quot;idna (&gt;=2.0.0)&quot;, &quot;pyOpenSSL (&gt;=0.14)&quot;, &quot;ipaddress&quot;]
++socks = [&quot;PySocks (&gt;=1.5.6,&lt;1.5.7 || &gt;1.5.7,&lt;2.0)&quot;]
++
+ [[package]]
+ category = &quot;dev&quot;
+ description = &quot;Measures number of Terminal column cells of wide-character codes&quot;
+@@ -505,7 +597,7 @@ docs = [&quot;sphinx&quot;, &quot;jaraco.packaging (&gt;=3.2)&quot;, &quot;rst.linker (&gt;=1.9)&quot;]
+ testing = [&quot;jaraco.itertools&quot;, &quot;func-timeout&quot;]
+ 
+ [metadata]
+-content-hash = &quot;6bda94aa80b72143c515264c16b725f01d1bcac858b642f637dd99deca5cf6c7&quot;
++content-hash = &quot;785d3de004285b89514d1f2fb02101901499db037100a2841959771244936f57&quot;
+ python-versions = &quot;^3.7&quot;
+ 
+ [metadata.files]
+@@ -529,10 +621,23 @@ backcall = [
+     {file = &quot;backcall-0.1.0.tar.gz&quot;, hash = &quot;sha256:38ecd85be2c1e78f77fd91700c76e14667dc21e2713b63876c0eb901196e01e4&quot;},
+     {file = &quot;backcall-0.1.0.zip&quot;, hash = &quot;sha256:bbbf4b1e5cd2bdb08f915895b51081c041bac22394fdfcfdfbe9f14b77c08bf2&quot;},
+ ]
++beautifulsoup4 = [
++    {file = &quot;beautifulsoup4-4.9.0-py2-none-any.whl&quot;, hash = &quot;sha256:a4bbe77fd30670455c5296242967a123ec28c37e9702a8a81bd2f20a4baf0368&quot;},
++    {file = &quot;beautifulsoup4-4.9.0-py3-none-any.whl&quot;, hash = &quot;sha256:d4e96ac9b0c3a6d3f0caae2e4124e6055c5dcafde8e2f831ff194c104f0775a0&quot;},
++    {file = &quot;beautifulsoup4-4.9.0.tar.gz&quot;, hash = &quot;sha256:594ca51a10d2b3443cbac41214e12dbb2a1cd57e1a7344659849e2e20ba6a8d8&quot;},
++]
+ black = [
+     {file = &quot;black-19.10b0-py36-none-any.whl&quot;, hash = &quot;sha256:1b30e59be925fafc1ee4565e5e08abef6b03fe455102883820fe5ee2e4734e0b&quot;},
+     {file = &quot;black-19.10b0.tar.gz&quot;, hash = &quot;sha256:c2edb73a08e9e0e6f65a0e6af18b059b8b1cdd5bef997d7a0b181df93dc81539&quot;},
+ ]
++certifi = [
++    {file = &quot;certifi-2020.4.5.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:1d987a998c75633c40847cc966fcf5904906c920a7f17ef374f5aa4282abd304&quot;},
++    {file = &quot;certifi-2020.4.5.1.tar.gz&quot;, hash = &quot;sha256:51fcb31174be6e6664c5f69e3e1691a2d72a1a12e90f872cbdb1567eb47b6519&quot;},
++]
++chardet = [
++    {file = &quot;chardet-3.0.4-py2.py3-none-any.whl&quot;, hash = &quot;sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691&quot;},
++    {file = &quot;chardet-3.0.4.tar.gz&quot;, hash = &quot;sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae&quot;},
++]
+ click = [
+     {file = &quot;click-7.1.2-py2.py3-none-any.whl&quot;, hash = &quot;sha256:dacca89f4bfadd5de3d7489b7c8a566eee0d3676333fbb50030263894c38c0dc&quot;},
+     {file = &quot;click-7.1.2.tar.gz&quot;, hash = &quot;sha256:d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a&quot;},
+@@ -561,6 +666,10 @@ goodconf = [
+     {file = &quot;goodconf-1.0.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:beb2f9ed734015e1becd4338d8b1e363cf51fb52e2f794f4e85e8c59d097442e&quot;},
+     {file = &quot;goodconf-1.0.0.tar.gz&quot;, hash = &quot;sha256:2c33460b4d9859ffacff32355b7effb1a922a16c1d54e8edd6452503bd8e809b&quot;},
+ ]
++idna = [
++    {file = &quot;idna-2.9-py2.py3-none-any.whl&quot;, hash = &quot;sha256:a068a21ceac8a4d63dbfd964670474107f541babbd2250d61922f029858365fa&quot;},
++    {file = &quot;idna-2.9.tar.gz&quot;, hash = &quot;sha256:7588d1c14ae4c77d74036e8c22ff447b26d0fde8f007354fd48a7814db15b7cb&quot;},
++]
+ importlib-metadata = [
+     {file = &quot;importlib_metadata-1.6.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:2a688cbaa90e0cc587f1df48bdc97a6eadccdcd9c35fb3f976a09e3b5016d90f&quot;},
+     {file = &quot;importlib_metadata-1.6.0.tar.gz&quot;, hash = &quot;sha256:34513a8a0c4962bc66d35b359558fd8a5e10cd472d37aec5f66858addef32c1e&quot;},
+@@ -584,6 +693,35 @@ jedi = [
+     {file = &quot;jedi-0.15.2-py2.py3-none-any.whl&quot;, hash = &quot;sha256:1349c1e8c107095a55386628bb3b2a79422f3a2cab8381e34ce19909e0cf5064&quot;},
+     {file = &quot;jedi-0.15.2.tar.gz&quot;, hash = &quot;sha256:e909527104a903606dd63bea6e8e888833f0ef087057829b89a18364a856f807&quot;},
+ ]
++lxml = [
++    {file = &quot;lxml-4.5.0-cp27-cp27m-macosx_10_9_x86_64.whl&quot;, hash = &quot;sha256:0701f7965903a1c3f6f09328c1278ac0eee8f56f244e66af79cb224b7ef3801c&quot;},
++    {file = &quot;lxml-4.5.0-cp27-cp27m-manylinux1_i686.whl&quot;, hash = &quot;sha256:06d4e0bbb1d62e38ae6118406d7cdb4693a3fa34ee3762238bcb96c9e36a93cd&quot;},
++    {file = &quot;lxml-4.5.0-cp27-cp27m-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:5828c7f3e615f3975d48f40d4fe66e8a7b25f16b5e5705ffe1d22e43fb1f6261&quot;},
++    {file = &quot;lxml-4.5.0-cp27-cp27m-win32.whl&quot;, hash = &quot;sha256:afdb34b715daf814d1abea0317b6d672476b498472f1e5aacbadc34ebbc26e89&quot;},
++    {file = &quot;lxml-4.5.0-cp27-cp27m-win_amd64.whl&quot;, hash = &quot;sha256:585c0869f75577ac7a8ff38d08f7aac9033da2c41c11352ebf86a04652758b7a&quot;},
++    {file = &quot;lxml-4.5.0-cp27-cp27mu-manylinux1_i686.whl&quot;, hash = &quot;sha256:8a0ebda56ebca1a83eb2d1ac266649b80af8dd4b4a3502b2c1e09ac2f88fe128&quot;},
++    {file = &quot;lxml-4.5.0-cp27-cp27mu-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:fe976a0f1ef09b3638778024ab9fb8cde3118f203364212c198f71341c0715ca&quot;},
++    {file = &quot;lxml-4.5.0-cp35-cp35m-manylinux1_i686.whl&quot;, hash = &quot;sha256:7bc1b221e7867f2e7ff1933165c0cec7153dce93d0cdba6554b42a8beb687bdb&quot;},
++    {file = &quot;lxml-4.5.0-cp35-cp35m-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:d068f55bda3c2c3fcaec24bd083d9e2eede32c583faf084d6e4b9daaea77dde8&quot;},
++    {file = &quot;lxml-4.5.0-cp35-cp35m-win32.whl&quot;, hash = &quot;sha256:e4aa948eb15018a657702fee0b9db47e908491c64d36b4a90f59a64741516e77&quot;},
++    {file = &quot;lxml-4.5.0-cp35-cp35m-win_amd64.whl&quot;, hash = &quot;sha256:1f2c4ec372bf1c4a2c7e4bb20845e8bcf8050365189d86806bad1e3ae473d081&quot;},
++    {file = &quot;lxml-4.5.0-cp36-cp36m-macosx_10_9_x86_64.whl&quot;, hash = &quot;sha256:5d467ce9c5d35b3bcc7172c06320dddb275fea6ac2037f72f0a4d7472035cea9&quot;},
++    {file = &quot;lxml-4.5.0-cp36-cp36m-manylinux1_i686.whl&quot;, hash = &quot;sha256:95e67224815ef86924fbc2b71a9dbd1f7262384bca4bc4793645794ac4200717&quot;},
++    {file = &quot;lxml-4.5.0-cp36-cp36m-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:ebec08091a22c2be870890913bdadd86fcd8e9f0f22bcb398abd3af914690c15&quot;},
++    {file = &quot;lxml-4.5.0-cp36-cp36m-win32.whl&quot;, hash = &quot;sha256:deadf4df349d1dcd7b2853a2c8796593cc346600726eff680ed8ed11812382a7&quot;},
++    {file = &quot;lxml-4.5.0-cp36-cp36m-win_amd64.whl&quot;, hash = &quot;sha256:f2b74784ed7e0bc2d02bd53e48ad6ba523c9b36c194260b7a5045071abbb1012&quot;},
++    {file = &quot;lxml-4.5.0-cp37-cp37m-macosx_10_9_x86_64.whl&quot;, hash = &quot;sha256:fa071559f14bd1e92077b1b5f6c22cf09756c6de7139370249eb372854ce51e6&quot;},
++    {file = &quot;lxml-4.5.0-cp37-cp37m-manylinux1_i686.whl&quot;, hash = &quot;sha256:edc15fcfd77395e24543be48871c251f38132bb834d9fdfdad756adb6ea37679&quot;},
++    {file = &quot;lxml-4.5.0-cp37-cp37m-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:fd52e796fee7171c4361d441796b64df1acfceb51f29e545e812f16d023c4bbc&quot;},
++    {file = &quot;lxml-4.5.0-cp37-cp37m-win32.whl&quot;, hash = &quot;sha256:90ed0e36455a81b25b7034038e40880189169c308a3df360861ad74da7b68c1a&quot;},
++    {file = &quot;lxml-4.5.0-cp37-cp37m-win_amd64.whl&quot;, hash = &quot;sha256:df533af6f88080419c5a604d0d63b2c33b1c0c4409aba7d0cb6de305147ea8c8&quot;},
++    {file = &quot;lxml-4.5.0-cp38-cp38-macosx_10_9_x86_64.whl&quot;, hash = &quot;sha256:b4b2c63cc7963aedd08a5f5a454c9f67251b1ac9e22fd9d72836206c42dc2a72&quot;},
++    {file = &quot;lxml-4.5.0-cp38-cp38-manylinux1_i686.whl&quot;, hash = &quot;sha256:e5d842c73e4ef6ed8c1bd77806bf84a7cb535f9c0cf9b2c74d02ebda310070e1&quot;},
++    {file = &quot;lxml-4.5.0-cp38-cp38-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:63dbc21efd7e822c11d5ddbedbbb08cd11a41e0032e382a0fd59b0b08e405a3a&quot;},
++    {file = &quot;lxml-4.5.0-cp38-cp38-win32.whl&quot;, hash = &quot;sha256:4235bc124fdcf611d02047d7034164897ade13046bda967768836629bc62784f&quot;},
++    {file = &quot;lxml-4.5.0-cp38-cp38-win_amd64.whl&quot;, hash = &quot;sha256:d5b3c4b7edd2e770375a01139be11307f04341ec709cf724e0f26ebb1eef12c3&quot;},
++    {file = &quot;lxml-4.5.0.tar.gz&quot;, hash = &quot;sha256:8620ce80f50d023d414183bf90cc2576c2837b88e00bea3f33ad2630133bbb60&quot;},
++]
+ mccabe = [
+     {file = &quot;mccabe-0.6.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42&quot;},
+     {file = &quot;mccabe-0.6.1.tar.gz&quot;, hash = &quot;sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f&quot;},
+@@ -678,10 +816,18 @@ regex = [
+     {file = &quot;regex-2020.4.4-cp38-cp38-win_amd64.whl&quot;, hash = &quot;sha256:5bfed051dbff32fd8945eccca70f5e22b55e4148d2a8a45141a3b053d6455ae3&quot;},
+     {file = &quot;regex-2020.4.4.tar.gz&quot;, hash = &quot;sha256:295badf61a51add2d428a46b8580309c520d8b26e769868b922750cf3ce67142&quot;},
+ ]
++requests = [
++    {file = &quot;requests-2.23.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:43999036bfa82904b6af1d99e4882b560e5e2c68e5c4b0aa03b655f3d7d73fee&quot;},
++    {file = &quot;requests-2.23.0.tar.gz&quot;, hash = &quot;sha256:b3f43d496c6daba4493e7c431722aeb7dbc6288f52a6e04e7b6023b0247817e6&quot;},
++]
+ six = [
+     {file = &quot;six-1.14.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c&quot;},
+     {file = &quot;six-1.14.0.tar.gz&quot;, hash = &quot;sha256:236bdbdce46e6e6a3d61a337c0f8b763ca1e8717c03b369e87a7ec7ce1319c0a&quot;},
+ ]
++soupsieve = [
++    {file = &quot;soupsieve-1.9.5-py2.py3-none-any.whl&quot;, hash = &quot;sha256:bdb0d917b03a1369ce964056fc195cfdff8819c40de04695a80bc813c3cfa1f5&quot;},
++    {file = &quot;soupsieve-1.9.5.tar.gz&quot;, hash = &quot;sha256:e2c1c5dee4a1c36bcb790e0fabd5492d874b8ebd4617622c4f6a731701060dda&quot;},
++]
+ sqlparse = [
+     {file = &quot;sqlparse-0.3.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:022fb9c87b524d1f7862b3037e541f68597a730a8843245c349fc93e1643dc4e&quot;},
+     {file = &quot;sqlparse-0.3.1.tar.gz&quot;, hash = &quot;sha256:e162203737712307dfe78860cc56c8da8a852ab2ee33750e33aeadf38d12c548&quot;},
+@@ -721,6 +867,10 @@ typed-ast = [
+ ujson = [
+     {file = &quot;ujson-1.35.tar.gz&quot;, hash = &quot;sha256:f66073e5506e91d204ab0c614a148d5aa938bdbf104751be66f8ad7a222f5f86&quot;},
+ ]
++urllib3 = [
++    {file = &quot;urllib3-1.25.9-py2.py3-none-any.whl&quot;, hash = &quot;sha256:88206b0eb87e6d677d424843ac5209e3fb9d0190d0ee169599165ec25e9d9115&quot;},
++    {file = &quot;urllib3-1.25.9.tar.gz&quot;, hash = &quot;sha256:3018294ebefce6572a474f0604c2021e33b3fd8006ecd11d62107a5d2a963527&quot;},
++]
+ wcwidth = [
+     {file = &quot;wcwidth-0.1.9-py2.py3-none-any.whl&quot;, hash = &quot;sha256:cafe2186b3c009a04067022ce1dcd79cb38d8d65ee4f4791b8888d6599d1bbe1&quot;},
+     {file = &quot;wcwidth-0.1.9.tar.gz&quot;, hash = &quot;sha256:ee73862862a156bf77ff92b09034fc4825dd3af9cf81bc5b360668d425f3c5f1&quot;},
+diff --git a/pyproject.toml b/pyproject.toml
+index 0411818..fcd37fb 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -19,6 +19,9 @@ python = &quot;^3.7&quot;
+ django = &quot;^3.0.5&quot;
+ psycopg2 = &quot;^2.8.5&quot;
+ goodconf = &quot;^1.0.0&quot;
++requests = &quot;^2.23.0&quot;
++beautifulsoup4 = &quot;^4.9.0&quot;
++lxml = &quot;^4.5.0&quot;
+ 
+ [tool.poetry.dev-dependencies]
+ python-language-server = &quot;^0.31.10&quot;
+diff --git a/src/pytaku/asgi.py b/src/pytaku/asgi.py
+deleted file mode 100644
+index 2061535..0000000
+--- a/src/pytaku/asgi.py
++++ /dev/null
+@@ -1,16 +0,0 @@
+-&quot;&quot;&quot;
+-ASGI config for pytaku project.
+-
+-It exposes the ASGI callable as a module-level variable named ``application``.
+-
+-For more information on this file, see
+-https://docs.djangoproject.com/en/3.0/howto/deployment/asgi/
+-&quot;&quot;&quot;
+-
+-import os
+-
+-from django.core.asgi import get_asgi_application
+-
+-os.environ.setdefault(&quot;DJANGO_SETTINGS_MODULE&quot;, &quot;pytaku.settings&quot;)
+-
+-application = get_asgi_application()
+diff --git a/src/pytaku/settings.py b/src/pytaku/settings.py
+index d0ab210..3795e7d 100644
+--- a/src/pytaku/settings.py
++++ b/src/pytaku/settings.py
+@@ -42,6 +42,7 @@
+     &quot;django.contrib.messages&quot;,
+     &quot;django.contrib.staticfiles&quot;,
+     &quot;pytaku_web&quot;,
++    &quot;pytaku_scraper&quot;,
+ ]
+ 
+ MIDDLEWARE = [
+diff --git a/src/pytaku_scraper/__init__.py b/src/pytaku_scraper/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/src/pytaku_scraper/models.py b/src/pytaku_scraper/models.py
+new file mode 100644
+index 0000000..8ca2a54
+--- /dev/null
++++ b/src/pytaku_scraper/models.py
+@@ -0,0 +1,27 @@
++from django.contrib.postgres.fields import JSONField
++from django.db import models
++
++QUEUE_NAMES = [(&quot;Scrape&quot;, &quot;scrape&quot;)]
++
++
++class ScrapeAttempt(models.Model):
++    class Meta:
++        db_table = &quot;scrape_attempt&quot;
++
++    scraped_at = models.DateTimeField(auto_now_add=True)
++
++    url = models.CharField(max_length=1024)
++    method = models.CharField(max_length=7)
++    headers = JSONField(default=dict)
++    body = models.TextField()
++
++    resp_body = models.TextField()
++    resp_status = models.IntegerField()
++
++
++class TaskQueue(models.Model):
++    class Meta:
++        db_table = &quot;task_queue&quot;
++
++    created_at = models.DateTimeField(auto_now_add=True)
++    name = models.CharField(max_length=100, choices=QUEUE_NAMES)
+diff --git a/src/pytaku_scraper/sites/__init__.py b/src/pytaku_scraper/sites/__init__.py
+new file mode 100644
+index 0000000..8f796a6
+--- /dev/null
++++ b/src/pytaku_scraper/sites/__init__.py
+@@ -0,0 +1,15 @@
++from importlib import import_module
++from urllib.parse import urlparse
++
++available_sites = {&quot;mangadex.org&quot;: &quot;.mangadex&quot;}
++
++
++# return suitable module from url
++def get_site(url):
++    netloc = urlparse(url).netloc
++    module_name = available_sites.get(netloc)
++    return (
++        None
++        if module_name is None
++        else import_module(module_name, &quot;pytaku_web.scraper&quot;)
++    )
+diff --git a/src/pytaku_scraper/sites/mangadex.py b/src/pytaku_scraper/sites/mangadex.py
+new file mode 100644
+index 0000000..189c440
+--- /dev/null
++++ b/src/pytaku_scraper/sites/mangadex.py
+@@ -0,0 +1,182 @@
++import itertools
++import re
++
++import requests
++from attr import attrib, attrs
++from bs4 import BeautifulSoup
++
++DOMAIN = &quot;https://mangadex.org&quot;
++API_URL = &quot;https://mangadex.org/api/&quot;
++
++session = requests.Session()
++session.headers = {
++    &quot;User-Agent&quot;: &quot;Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0&quot;
++}
++
++
++@attrs(slots=True, kw_only=True)
++class Title(object):
++    url = attrib(type=str)
++    name = attrib(type=str)
++    alt_names = attrib(type=list)
++    authors = attrib(type=list)
++    tags = attrib(type=list)
++    publication_status = attrib(type=str)
++    descriptions = attrib(type=list)
++    chapters = attrib(type=list)
++
++
++@attrs(slots=True, kw_only=True)
++class Chapter(object):
++    name = attrib(type=str)
++    pages = attrib(type=list)
++
++
++def title_url_from_id(original_id):
++    return f&quot;{DOMAIN}/title/{original_id}&quot;
++
++
++def chapter_url_from_id(original_id):
++    return f&quot;{DOMAIN}/chapter/{original_id}&quot;
++
++
++_chapter_url_regex = re.compile(&quot;^&quot; + DOMAIN + r&quot;/chapter/(\d+)/?$&quot;)
++
++
++def chapter_id_from_url(url):
++    match = _chapter_url_regex.match(url)
++    return match.group(1) if match else None
++
++
++_title_url_regex = re.compile(&quot;^&quot; + DOMAIN + r&quot;/title/(\d+)(/.*)?$&quot;)
++
++
++def title_id_from_url(url):
++    match = _title_url_regex.match(url)
++    return match.group(1) if match else None
++
++
++def scrape_title(original_id):
++    source_url = title_url_from_id(original_id)
++    html = session.get(source_url).text
++    soup = BeautifulSoup(html, &quot;lxml&quot;)
++    print(soup)
++
++    url = soup.select(&#39;link[rel=&quot;canonical&quot;]&#39;)[0].attrs[&quot;href&quot;]
++    name = soup.select(&quot;.card-header span.mx-1&quot;)[0].text
++
++    alt_names = _get_next_column_of(soup, &quot;Alt name(s)&quot;, &quot;li&quot;)
++    authors = _get_next_column_of(soup, &quot;Author&quot;, &quot;a&quot;)
++    artists = _get_next_column_of(soup, &quot;Artist&quot;, &quot;a&quot;)
++    genres = _get_next_column_of(soup, &quot;Genre&quot;, &quot;a&quot;)
++    themes = _get_next_column_of(soup, &quot;Theme&quot;, &quot;a&quot;)
++    pub_status = _get_next_column_of(soup, &quot;Pub. status&quot;)
++
++    raw_descs = _get_next_column_of(soup, &quot;Description&quot;)
++    descriptions = [desc.strip() for desc in raw_descs.split(&quot;\n\n&quot;) if desc.strip()]
++
++    chapters = _get_chapters(soup)
++    return {
++        &quot;url&quot;: url,
++        &quot;name&quot;: name,
++        &quot;alt_names&quot;: alt_names,
++        &quot;authors&quot;: sorted(set(authors + artists)),
++        &quot;tags&quot;: sorted(set(genres + themes)),
++        &quot;publication_status&quot;: pub_status,
++        &quot;descriptions&quot;: descriptions,
++        &quot;chapters&quot;: chapters,
++    }
++
++
++def _get_next_column_of(soup, query, subtag=None):
++    label = soup.find(&quot;div&quot;, string=f&quot;{query}:&quot;)
++    if label is None:
++        return None if subtag is None else []
++
++    # newlines also count as sibling, so we have to filter them out:
++    siblings = [sibl for sibl in label.next_siblings if sibl.name is not None]
++    if len(siblings) != 1:
++        raise Exception(f&#39;Unexpected siblings found for &quot;{query}&quot;: {siblings}&#39;)
++    next_column = siblings[0]
++    return _get_column_content(next_column, subtag)
++
++
++def _get_column_content(column, subtag):
++    if subtag is None:
++        return column.text.strip()
++    else:
++        return [
++            child.text.strip()
++            for child in column.find_all(subtag)
++            if child.text.strip()
++        ]
++
++
++def _get_chapters(soup):
++    chapter_page_urls = _chapter_page_urls(soup)
++    chapter_page_soups = [
++        BeautifulSoup(session.get(f&quot;{DOMAIN}{url}&quot;).text, &quot;lxml&quot;)
++        for url in chapter_page_urls
++    ]
++    chapter_page_soups.insert(0, soup)  # saves us 1 http request :)
++    chapters = [_chapters_data(soup) for soup in chapter_page_soups]
++    return list(itertools.chain(*chapters))  # flatten list of list
++
++
++def _chapter_page_urls(soup):
++    &quot;&quot;&quot;
++    Excluding first page because we already have it
++    &quot;&quot;&quot;
++    last_chapter_link_tag = soup.find(title=&quot;Jump to last page&quot;)
++    if not last_chapter_link_tag:
++        return []
++
++    last_chapter_link = last_chapter_link_tag.parent.attrs[&quot;href&quot;]
++    if last_chapter_link[-1] == &quot;/&quot;:
++        last_chapter_link = last_chapter_link[:-1]
++
++    parts = last_chapter_link.split(&quot;/&quot;)
++    max_page = int(parts.pop())
++
++    template = &quot;/&quot;.join(parts + [&quot;%d/&quot;])
++
++    return [template % page_num for page_num in range(2, max_page + 1)]
++
++
++def _chapters_data(soup):
++    chapter_container = soup.find(class_=&quot;chapter-container&quot;)
++
++    def is_chapter_link(href):
++        return href.startswith(&quot;/chapter/&quot;) and not href.endswith(&quot;comments&quot;)
++
++    chapters = chapter_container.find_all(&quot;a&quot;, href=is_chapter_link)
++
++    eng_chapters = [
++        {
++            &quot;id&quot;: chapter_id_from_url(f&#39;{DOMAIN}{chapter.attrs[&quot;href&quot;]}&#39;),
++            &quot;name&quot;: chapter.text,
++        }
++        for chapter in chapters
++        if chapter.parent.parent.find(class_=&quot;flag&quot;, title=&quot;English&quot;)
++    ]
++    return eng_chapters
++
++
++def scrape_chapter(original_id):
++    data = session.get(API_URL, params={&quot;id&quot;: original_id, &quot;type&quot;: &quot;chapter&quot;}).json()
++
++    if data[&quot;status&quot;] == &quot;deleted&quot;:
++        return None
++
++    # data[&quot;server&quot;] can be either of:
++    # - &quot;/data/...&quot; - meaning same origin as web server: https://mangadex.org/data/...
++    # - &quot;https://sX.mangadex.org/data/...&quot; where X is any digit.
++    page_base_url = data[&quot;server&quot;] + data[&quot;hash&quot;]
++    if page_base_url.startswith(&quot;/&quot;):
++        page_base_url = f&quot;https://mangadex.org{page_base_url}&quot;
++    pages = [f&quot;{page_base_url}/{page}&quot; for page in data[&quot;page_array&quot;]]
++
++    return {
++        &quot;name&quot;: data[&quot;title&quot;],
++        &quot;pages&quot;: pages,
++    }
+</pre></body></html>

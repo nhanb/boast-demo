@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[c8bbd8c9e3] gracefully handle empty chapter list | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / c8bbd8c9e3</strong><hr><pre>commit c8bbd8c9e3aa48cda9fed0638b8f6053794a033f
+Author: Liem Ly Quan &lt;liemlyquan@gmail.com&gt;
+Date:   Sat Aug 8 20:04:52 2020 +0700
+
+    gracefully handle empty chapter list
+    
+    closes #1
+
+diff --git a/src/mangoapi/__init__.py b/src/mangoapi/__init__.py
+index fbf49bd..cbbc5d1 100644
+--- a/src/mangoapi/__init__.py
++++ b/src/mangoapi/__init__.py
+@@ -55,7 +55,7 @@ def get_title(title_id):
+                 &quot;groups&quot;: _extract_groups(chap),
+                 **_parse_chapter_number(chap[&quot;chapter&quot;]),
+             }
+-            for chap_id, chap in md_json[&quot;chapter&quot;].items()
++            for chap_id, chap in md_json.get(&quot;chapter&quot;, {}).items()
+             if chap[&quot;lang_code&quot;] == &quot;gb&quot; and chap[&quot;group_name&quot;] != &quot;MangaPlus&quot;
+         ],
+     }
+</pre></body></html>

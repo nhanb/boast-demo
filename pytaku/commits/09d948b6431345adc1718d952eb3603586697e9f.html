@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[09d948b643] lazy dark mode | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 09d948b643</strong><hr><pre>commit 09d948b6431345adc1718d952eb3603586697e9f
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Sep 29 21:32:44 2023 +0700
+
+    lazy dark mode
+
+diff --git a/src/pytaku/static/darkmode.css b/src/pytaku/static/darkmode.css
+new file mode 100644
+index 0000000..1af0e15
+--- /dev/null
++++ b/src/pytaku/static/darkmode.css
+@@ -0,0 +1,17 @@
++@media (prefers-color-scheme: dark) {
++  :root {
++    background-color: #333;
++    color: #eee;
++  }
++
++  footer {
++    background-color: var(--bg-black);
++    color: #eee;
++    border: none;
++  }
++
++  .follows--title.non-empty,
++  .title--descriptions {
++    background-color: #555;
++  }
++}
+diff --git a/src/pytaku/templates/spa.html b/src/pytaku/templates/spa.html
+index be5f0a0..ed98465 100644
+--- a/src/pytaku/templates/spa.html
++++ b/src/pytaku/templates/spa.html
+@@ -13,6 +13,7 @@
+     &lt;link rel=&quot;stylesheet&quot; href=&quot;{{ url_for(&#39;static&#39;, filename=&#39;feathericons/iconfont.css&#39;) }}&quot;&gt;
+     &lt;link rel=&quot;stylesheet&quot; href=&quot;{{ url_for(&#39;static&#39;, filename=&#39;lookandfeel.css&#39;) }}&quot;&gt;
+     &lt;link rel=&quot;stylesheet&quot; href=&quot;{{ url_for(&#39;static&#39;, filename=&#39;spa.css&#39;) }}&quot;&gt;
++    &lt;link rel=&quot;stylesheet&quot; href=&quot;{{ url_for(&#39;static&#39;, filename=&#39;darkmode.css&#39;) }}&quot;&gt;
+ 
+     {% if open_graph %}
+     &lt;meta property=&quot;og:title&quot; content=&quot;{{ open_graph[&#39;title&#39;] }}&quot;&gt;
+</pre></body></html>

@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[194d2cfb50] basic home page with icon font | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 194d2cfb50</strong><hr><pre>commit 194d2cfb50f8fdcd655e35450b1c02abd1958ee2
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 15 15:24:39 2020 +0700
+
+    basic home page with icon font
+
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index ba140a5..89624d9 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -51,13 +51,6 @@
+ )
+ 
+ 
+-@app.route(&quot;/&quot;)
+-def home_view():
+-    if session.get(&quot;user&quot;):
+-        return redirect(url_for(&quot;follows_view&quot;))
+-    return render_template(&quot;old/home.html&quot;)
+-
+-
+ @app.route(&quot;/following&quot;, methods=[&quot;GET&quot;])
+ @require_login
+ def follows_view():
+@@ -358,3 +351,19 @@ def ensure_titles(site_title_pairs: List[Tuple[str, str]]):
+             title = future.result()
+             save_title(title)
+             print(f&quot;Saved {title[&#39;site&#39;]}: {title[&#39;name&#39;]}&quot;)
++
++
++&quot;&quot;&quot;
++New Mithril-based SPA views follow
++&quot;&quot;&quot;
++
++
++@app.route(&quot;/&quot;)
++@app.route(&quot;/h&quot;)
++def home_view():
++    return render_template(&quot;spa.html&quot;)
++
++
++@app.route(&quot;/f&quot;)
++def f_view():
++    return render_template(&quot;spa.html&quot;)
+diff --git a/src/pytaku/static/base.css b/src/pytaku/static/base.css
+index 63032dc..babcfd1 100644
+--- a/src/pytaku/static/base.css
++++ b/src/pytaku/static/base.css
+@@ -13,7 +13,7 @@ :root {
+   --body-padding: 0.5rem;
+ 
+   font-size: 100%;
+-  font-family: &quot;Ubuntu&quot;, sans-serif;
++  font-family: sans-serif;
+   overflow-y: scroll;
+ }
+ 
+diff --git a/src/pytaku/static/feathericons/LICENSES b/src/pytaku/static/feathericons/LICENSES
+new file mode 100644
+index 0000000..ee84884
+--- /dev/null
++++ b/src/pytaku/static/feathericons/LICENSES
+@@ -0,0 +1,48 @@
++# Feature Icons: https://github.com/feathericons/feather
++
++The MIT License (MIT)
++
++Copyright (c) 2013-2017 Cole Bemis
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the &quot;Software&quot;), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.
++
++
++# Feature Icons - icon font version: https://github.com/AT-UI/feather-font
++
++The MIT License (MIT)
++
++Copyright (c) 2013-2017 Cole Bemis
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the &quot;Software&quot;), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.
+diff --git a/src/pytaku/static/feathericons/font.ttf b/src/pytaku/static/feathericons/font.ttf
+new file mode 100644
+index 0000000..2657c1c
+Binary files /dev/null and b/src/pytaku/static/feathericons/font.ttf differ
+diff --git a/src/pytaku/static/feathericons/font.woff b/src/pytaku/static/feathericons/font.woff
+new file mode 100644
+index 0000000..2c2092e
+Binary files /dev/null and b/src/pytaku/static/feathericons/font.woff differ
+diff --git a/src/pytaku/static/feathericons/iconfont.css b/src/pytaku/static/feathericons/iconfont.css
+new file mode 100644
+index 0000000..a467283
+--- /dev/null
++++ b/src/pytaku/static/feathericons/iconfont.css
+@@ -0,0 +1,696 @@
++/* Feather iconfont version: https://github.com/AT-UI/feather-font */
++@font-face {
++  font-family: &quot;icons&quot;;
++  src: url(&quot;font.woff&quot;) format(&quot;woff&quot;), url(&quot;font.ttf&quot;) format(&quot;truetype&quot;);
++}
++.icon {
++  font-family: &quot;icons&quot; !important;
++  font-size: inherit;
++  font-style: normal;
++  -webkit-font-smoothing: antialiased;
++  -moz-osx-font-smoothing: grayscale;
++}
++.icon-alert-octagon:before {
++  content: &quot;\e81b&quot;;
++}
++.icon-alert-circle:before {
++  content: &quot;\e81c&quot;;
++}
++.icon-activity:before {
++  content: &quot;\e81d&quot;;
++}
++.icon-alert-triangle:before {
++  content: &quot;\e81e&quot;;
++}
++.icon-align-center:before {
++  content: &quot;\e81f&quot;;
++}
++.icon-airplay:before {
++  content: &quot;\e820&quot;;
++}
++.icon-align-justify:before {
++  content: &quot;\e821&quot;;
++}
++.icon-align-left:before {
++  content: &quot;\e822&quot;;
++}
++.icon-align-right:before {
++  content: &quot;\e823&quot;;
++}
++.icon-arrow-down-left:before {
++  content: &quot;\e824&quot;;
++}
++.icon-arrow-down-right:before {
++  content: &quot;\e825&quot;;
++}
++.icon-anchor:before {
++  content: &quot;\e826&quot;;
++}
++.icon-aperture:before {
++  content: &quot;\e827&quot;;
++}
++.icon-arrow-left:before {
++  content: &quot;\e828&quot;;
++}
++.icon-arrow-right:before {
++  content: &quot;\e829&quot;;
++}
++.icon-arrow-down:before {
++  content: &quot;\e82a&quot;;
++}
++.icon-arrow-up-left:before {
++  content: &quot;\e82b&quot;;
++}
++.icon-arrow-up-right:before {
++  content: &quot;\e82c&quot;;
++}
++.icon-arrow-up:before {
++  content: &quot;\e82d&quot;;
++}
++.icon-award:before {
++  content: &quot;\e82e&quot;;
++}
++.icon-bar-chart:before {
++  content: &quot;\e82f&quot;;
++}
++.icon-at-sign:before {
++  content: &quot;\e830&quot;;
++}
++.icon-bar-chart-:before {
++  content: &quot;\e831&quot;;
++}
++.icon-battery-charging:before {
++  content: &quot;\e832&quot;;
++}
++.icon-bell-off:before {
++  content: &quot;\e833&quot;;
++}
++.icon-battery:before {
++  content: &quot;\e834&quot;;
++}
++.icon-bluetooth:before {
++  content: &quot;\e835&quot;;
++}
++.icon-bell:before {
++  content: &quot;\e836&quot;;
++}
++.icon-book:before {
++  content: &quot;\e837&quot;;
++}
++.icon-briefcase:before {
++  content: &quot;\e838&quot;;
++}
++.icon-camera-off:before {
++  content: &quot;\e839&quot;;
++}
++.icon-calendar:before {
++  content: &quot;\e83a&quot;;
++}
++.icon-bookmark:before {
++  content: &quot;\e83b&quot;;
++}
++.icon-box:before {
++  content: &quot;\e83c&quot;;
++}
++.icon-camera:before {
++  content: &quot;\e83d&quot;;
++}
++.icon-check-circle:before {
++  content: &quot;\e83e&quot;;
++}
++.icon-check:before {
++  content: &quot;\e83f&quot;;
++}
++.icon-check-square:before {
++  content: &quot;\e840&quot;;
++}
++.icon-cast:before {
++  content: &quot;\e841&quot;;
++}
++.icon-chevron-down:before {
++  content: &quot;\e842&quot;;
++}
++.icon-chevron-left:before {
++  content: &quot;\e843&quot;;
++}
++.icon-chevron-right:before {
++  content: &quot;\e844&quot;;
++}
++.icon-chevron-up:before {
++  content: &quot;\e845&quot;;
++}
++.icon-chevrons-down:before {
++  content: &quot;\e846&quot;;
++}
++.icon-chevrons-right:before {
++  content: &quot;\e847&quot;;
++}
++.icon-chevrons-up:before {
++  content: &quot;\e848&quot;;
++}
++.icon-chevrons-left:before {
++  content: &quot;\e849&quot;;
++}
++.icon-circle:before {
++  content: &quot;\e84a&quot;;
++}
++.icon-clipboard:before {
++  content: &quot;\e84b&quot;;
++}
++.icon-chrome:before {
++  content: &quot;\e84c&quot;;
++}
++.icon-clock:before {
++  content: &quot;\e84d&quot;;
++}
++.icon-cloud-lightning:before {
++  content: &quot;\e84e&quot;;
++}
++.icon-cloud-drizzle:before {
++  content: &quot;\e84f&quot;;
++}
++.icon-cloud-rain:before {
++  content: &quot;\e850&quot;;
++}
++.icon-cloud-off:before {
++  content: &quot;\e851&quot;;
++}
++.icon-codepen:before {
++  content: &quot;\e852&quot;;
++}
++.icon-cloud-snow:before {
++  content: &quot;\e853&quot;;
++}
++.icon-compass:before {
++  content: &quot;\e854&quot;;
++}
++.icon-copy:before {
++  content: &quot;\e855&quot;;
++}
++.icon-corner-down-right:before {
++  content: &quot;\e856&quot;;
++}
++.icon-corner-down-left:before {
++  content: &quot;\e857&quot;;
++}
++.icon-corner-left-down:before {
++  content: &quot;\e858&quot;;
++}
++.icon-corner-left-up:before {
++  content: &quot;\e859&quot;;
++}
++.icon-corner-up-left:before {
++  content: &quot;\e85a&quot;;
++}
++.icon-corner-up-right:before {
++  content: &quot;\e85b&quot;;
++}
++.icon-corner-right-down:before {
++  content: &quot;\e85c&quot;;
++}
++.icon-corner-right-up:before {
++  content: &quot;\e85d&quot;;
++}
++.icon-cpu:before {
++  content: &quot;\e85e&quot;;
++}
++.icon-credit-card:before {
++  content: &quot;\e85f&quot;;
++}
++.icon-crosshair:before {
++  content: &quot;\e860&quot;;
++}
++.icon-disc:before {
++  content: &quot;\e861&quot;;
++}
++.icon-delete:before {
++  content: &quot;\e862&quot;;
++}
++.icon-download-cloud:before {
++  content: &quot;\e863&quot;;
++}
++.icon-download:before {
++  content: &quot;\e864&quot;;
++}
++.icon-droplet:before {
++  content: &quot;\e865&quot;;
++}
++.icon-edit-:before {
++  content: &quot;\e866&quot;;
++}
++.icon-edit:before {
++  content: &quot;\e867&quot;;
++}
++.icon-edit-1:before {
++  content: &quot;\e868&quot;;
++}
++.icon-external-link:before {
++  content: &quot;\e869&quot;;
++}
++.icon-eye:before {
++  content: &quot;\e86a&quot;;
++}
++.icon-feather:before {
++  content: &quot;\e86b&quot;;
++}
++.icon-facebook:before {
++  content: &quot;\e86c&quot;;
++}
++.icon-file-minus:before {
++  content: &quot;\e86d&quot;;
++}
++.icon-eye-off:before {
++  content: &quot;\e86e&quot;;
++}
++.icon-fast-forward:before {
++  content: &quot;\e86f&quot;;
++}
++.icon-file-text:before {
++  content: &quot;\e870&quot;;
++}
++.icon-film:before {
++  content: &quot;\e871&quot;;
++}
++.icon-file:before {
++  content: &quot;\e872&quot;;
++}
++.icon-file-plus:before {
++  content: &quot;\e873&quot;;
++}
++.icon-folder:before {
++  content: &quot;\e874&quot;;
++}
++.icon-filter:before {
++  content: &quot;\e875&quot;;
++}
++.icon-flag:before {
++  content: &quot;\e876&quot;;
++}
++.icon-globe:before {
++  content: &quot;\e877&quot;;
++}
++.icon-grid:before {
++  content: &quot;\e878&quot;;
++}
++.icon-heart:before {
++  content: &quot;\e879&quot;;
++}
++.icon-home:before {
++  content: &quot;\e87a&quot;;
++}
++.icon-github:before {
++  content: &quot;\e87b&quot;;
++}
++.icon-image:before {
++  content: &quot;\e87c&quot;;
++}
++.icon-inbox:before {
++  content: &quot;\e87d&quot;;
++}
++.icon-layers:before {
++  content: &quot;\e87e&quot;;
++}
++.icon-info:before {
++  content: &quot;\e87f&quot;;
++}
++.icon-instagram:before {
++  content: &quot;\e880&quot;;
++}
++.icon-layout:before {
++  content: &quot;\e881&quot;;
++}
++.icon-link-:before {
++  content: &quot;\e882&quot;;
++}
++.icon-life-buoy:before {
++  content: &quot;\e883&quot;;
++}
++.icon-link:before {
++  content: &quot;\e884&quot;;
++}
++.icon-log-in:before {
++  content: &quot;\e885&quot;;
++}
++.icon-list:before {
++  content: &quot;\e886&quot;;
++}
++.icon-lock:before {
++  content: &quot;\e887&quot;;
++}
++.icon-log-out:before {
++  content: &quot;\e888&quot;;
++}
++.icon-loader:before {
++  content: &quot;\e889&quot;;
++}
++.icon-mail:before {
++  content: &quot;\e88a&quot;;
++}
++.icon-maximize-:before {
++  content: &quot;\e88b&quot;;
++}
++.icon-map:before {
++  content: &quot;\e88c&quot;;
++}
++.icon-maximize:before {
++  content: &quot;\e88d&quot;;
++}
++.icon-map-pin:before {
++  content: &quot;\e88e&quot;;
++}
++.icon-menu:before {
++  content: &quot;\e88f&quot;;
++}
++.icon-message-circle:before {
++  content: &quot;\e890&quot;;
++}
++.icon-message-square:before {
++  content: &quot;\e891&quot;;
++}
++.icon-minimize-:before {
++  content: &quot;\e892&quot;;
++}
++.icon-mic-off:before {
++  content: &quot;\e893&quot;;
++}
++.icon-minus-circle:before {
++  content: &quot;\e894&quot;;
++}
++.icon-mic:before {
++  content: &quot;\e895&quot;;
++}
++.icon-minus-square:before {
++  content: &quot;\e896&quot;;
++}
++.icon-minus:before {
++  content: &quot;\e897&quot;;
++}
++.icon-moon:before {
++  content: &quot;\e898&quot;;
++}
++.icon-monitor:before {
++  content: &quot;\e899&quot;;
++}
++.icon-more-vertical:before {
++  content: &quot;\e89a&quot;;
++}
++.icon-more-horizontal:before {
++  content: &quot;\e89b&quot;;
++}
++.icon-move:before {
++  content: &quot;\e89c&quot;;
++}
++.icon-music:before {
++  content: &quot;\e89d&quot;;
++}
++.icon-navigation-:before {
++  content: &quot;\e89e&quot;;
++}
++.icon-navigation:before {
++  content: &quot;\e89f&quot;;
++}
++.icon-octagon:before {
++  content: &quot;\e8a0&quot;;
++}
++.icon-package:before {
++  content: &quot;\e8a1&quot;;
++}
++.icon-pause-circle:before {
++  content: &quot;\e8a2&quot;;
++}
++.icon-pause:before {
++  content: &quot;\e8a3&quot;;
++}
++.icon-percent:before {
++  content: &quot;\e8a4&quot;;
++}
++.icon-phone-call:before {
++  content: &quot;\e8a5&quot;;
++}
++.icon-phone-forwarded:before {
++  content: &quot;\e8a6&quot;;
++}
++.icon-phone-missed:before {
++  content: &quot;\e8a7&quot;;
++}
++.icon-phone-off:before {
++  content: &quot;\e8a8&quot;;
++}
++.icon-phone-incoming:before {
++  content: &quot;\e8a9&quot;;
++}
++.icon-phone:before {
++  content: &quot;\e8aa&quot;;
++}
++.icon-phone-outgoing:before {
++  content: &quot;\e8ab&quot;;
++}
++.icon-pie-chart:before {
++  content: &quot;\e8ac&quot;;
++}
++.icon-play-circle:before {
++  content: &quot;\e8ad&quot;;
++}
++.icon-play:before {
++  content: &quot;\e8ae&quot;;
++}
++.icon-plus-square:before {
++  content: &quot;\e8af&quot;;
++}
++.icon-plus-circle:before {
++  content: &quot;\e8b0&quot;;
++}
++.icon-plus:before {
++  content: &quot;\e8b1&quot;;
++}
++.icon-pocket:before {
++  content: &quot;\e8b2&quot;;
++}
++.icon-printer:before {
++  content: &quot;\e8b3&quot;;
++}
++.icon-power:before {
++  content: &quot;\e8b4&quot;;
++}
++.icon-radio:before {
++  content: &quot;\e8b5&quot;;
++}
++.icon-repeat:before {
++  content: &quot;\e8b6&quot;;
++}
++.icon-refresh-ccw:before {
++  content: &quot;\e8b7&quot;;
++}
++.icon-rewind:before {
++  content: &quot;\e8b8&quot;;
++}
++.icon-rotate-ccw:before {
++  content: &quot;\e8b9&quot;;
++}
++.icon-refresh-cw:before {
++  content: &quot;\e8ba&quot;;
++}
++.icon-rotate-cw:before {
++  content: &quot;\e8bb&quot;;
++}
++.icon-save:before {
++  content: &quot;\e8bc&quot;;
++}
++.icon-search:before {
++  content: &quot;\e8bd&quot;;
++}
++.icon-server:before {
++  content: &quot;\e8be&quot;;
++}
++.icon-scissors:before {
++  content: &quot;\e8bf&quot;;
++}
++.icon-share-:before {
++  content: &quot;\e8c0&quot;;
++}
++.icon-share:before {
++  content: &quot;\e8c1&quot;;
++}
++.icon-shield:before {
++  content: &quot;\e8c2&quot;;
++}
++.icon-settings:before {
++  content: &quot;\e8c3&quot;;
++}
++.icon-skip-back:before {
++  content: &quot;\e8c4&quot;;
++}
++.icon-shuffle:before {
++  content: &quot;\e8c5&quot;;
++}
++.icon-sidebar:before {
++  content: &quot;\e8c6&quot;;
++}
++.icon-skip-forward:before {
++  content: &quot;\e8c7&quot;;
++}
++.icon-slack:before {
++  content: &quot;\e8c8&quot;;
++}
++.icon-slash:before {
++  content: &quot;\e8c9&quot;;
++}
++.icon-smartphone:before {
++  content: &quot;\e8ca&quot;;
++}
++.icon-square:before {
++  content: &quot;\e8cb&quot;;
++}
++.icon-speaker:before {
++  content: &quot;\e8cc&quot;;
++}
++.icon-star:before {
++  content: &quot;\e8cd&quot;;
++}
++.icon-stop-circle:before {
++  content: &quot;\e8ce&quot;;
++}
++.icon-sun:before {
++  content: &quot;\e8cf&quot;;
++}
++.icon-sunrise:before {
++  content: &quot;\e8d0&quot;;
++}
++.icon-tablet:before {
++  content: &quot;\e8d1&quot;;
++}
++.icon-tag:before {
++  content: &quot;\e8d2&quot;;
++}
++.icon-sunset:before {
++  content: &quot;\e8d3&quot;;
++}
++.icon-target:before {
++  content: &quot;\e8d4&quot;;
++}
++.icon-thermometer:before {
++  content: &quot;\e8d5&quot;;
++}
++.icon-thumbs-up:before {
++  content: &quot;\e8d6&quot;;
++}
++.icon-thumbs-down:before {
++  content: &quot;\e8d7&quot;;
++}
++.icon-toggle-left:before {
++  content: &quot;\e8d8&quot;;
++}
++.icon-toggle-right:before {
++  content: &quot;\e8d9&quot;;
++}
++.icon-trash-:before {
++  content: &quot;\e8da&quot;;
++}
++.icon-trash:before {
++  content: &quot;\e8db&quot;;
++}
++.icon-trending-up:before {
++  content: &quot;\e8dc&quot;;
++}
++.icon-trending-down:before {
++  content: &quot;\e8dd&quot;;
++}
++.icon-triangle:before {
++  content: &quot;\e8de&quot;;
++}
++.icon-type:before {
++  content: &quot;\e8df&quot;;
++}
++.icon-twitter:before {
++  content: &quot;\e8e0&quot;;
++}
++.icon-upload:before {
++  content: &quot;\e8e1&quot;;
++}
++.icon-umbrella:before {
++  content: &quot;\e8e2&quot;;
++}
++.icon-upload-cloud:before {
++  content: &quot;\e8e3&quot;;
++}
++.icon-unlock:before {
++  content: &quot;\e8e4&quot;;
++}
++.icon-user-check:before {
++  content: &quot;\e8e5&quot;;
++}
++.icon-user-minus:before {
++  content: &quot;\e8e6&quot;;
++}
++.icon-user-plus:before {
++  content: &quot;\e8e7&quot;;
++}
++.icon-user-x:before {
++  content: &quot;\e8e8&quot;;
++}
++.icon-user:before {
++  content: &quot;\e8e9&quot;;
++}
++.icon-users:before {
++  content: &quot;\e8ea&quot;;
++}
++.icon-video-off:before {
++  content: &quot;\e8eb&quot;;
++}
++.icon-video:before {
++  content: &quot;\e8ec&quot;;
++}
++.icon-voicemail:before {
++  content: &quot;\e8ed&quot;;
++}
++.icon-volume-x:before {
++  content: &quot;\e8ee&quot;;
++}
++.icon-volume-:before {
++  content: &quot;\e8ef&quot;;
++}
++.icon-volume-1:before {
++  content: &quot;\e8f0&quot;;
++}
++.icon-volume:before {
++  content: &quot;\e8f1&quot;;
++}
++.icon-watch:before {
++  content: &quot;\e8f2&quot;;
++}
++.icon-wifi:before {
++  content: &quot;\e8f3&quot;;
++}
++.icon-x-square:before {
++  content: &quot;\e8f4&quot;;
++}
++.icon-wind:before {
++  content: &quot;\e8f5&quot;;
++}
++.icon-x:before {
++  content: &quot;\e8f6&quot;;
++}
++.icon-x-circle:before {
++  content: &quot;\e8f7&quot;;
++}
++.icon-zap:before {
++  content: &quot;\e8f8&quot;;
++}
++.icon-zoom-in:before {
++  content: &quot;\e8f9&quot;;
++}
++.icon-zoom-out:before {
++  content: &quot;\e8fa&quot;;
++}
++.icon-command:before {
++  content: &quot;\e8fb&quot;;
++}
++.icon-cloud:before {
++  content: &quot;\e8fc&quot;;
++}
++.icon-hash:before {
++  content: &quot;\e8fd&quot;;
++}
++.icon-headphones:before {
++  content: &quot;\e8fe&quot;;
++}
+diff --git a/src/pytaku/static/lookandfeel.css b/src/pytaku/static/lookandfeel.css
+new file mode 100644
+index 0000000..bc43b85
+--- /dev/null
++++ b/src/pytaku/static/lookandfeel.css
+@@ -0,0 +1,116 @@
++:root {
++  --btn-red: #ef4f39;
++  --btn-red-bottom: #b94434;
++  --btn-green: #3ba60a;
++  --btn-green-bottom: #338a0d;
++  --btn-blue: #009ee8;
++  --btn-blue-bottom: #26789f;
++  --btn-gray: #444;
++  --btn-gray-bottom: #555;
++  --bg-black: #231f20;
++  --border-radius: 3px;
++  --body-padding: 0.5rem;
++
++  font-size: 100%;
++  font-family: &quot;Ubuntu&quot;, sans-serif;
++  overflow-y: scroll;
++  line-height: 1.2rem;
++}
++
++h1,
++h2,
++h3,
++h4 {
++  margin-top: 1rem;
++  margin-bottom: 0.5rem;
++  font-weight: bold;
++}
++
++h1 {
++  font-size: 2rem;
++}
++
++h2 {
++  font-size: 1.5rem;
++}
++
++table {
++  border-collapse: collapse;
++}
++td,
++th {
++  border: 1px solid black;
++  padding: 0.5em;
++}
++tr:nth-child(even) {
++  background-color: #eee;
++}
++th {
++  background-color: #777;
++  color: white;
++}
++
++input {
++  padding: 0.3rem;
++}
++
++p {
++  line-height: 1.5rem;
++}
++
++.button {
++  display: inline-block;
++  user-select: none;
++  margin: 0;
++  display: inline-flex;
++  align-items: center;
++  justify-content: center;
++  vertical-align: bottom;
++
++  cursor: pointer;
++  border: 0;
++  padding: 0.5rem 1rem 0.3rem 1rem;
++  border-radius: var(--border-radius);
++  color: white;
++  text-decoration: none;
++}
++.button &gt; * {
++  margin-right: 0.3rem;
++}
++.button &gt; *:last-child {
++  margin-right: 0;
++}
++.button:hover {
++  filter: brightness(110%);
++}
++.button:active {
++  filter: brightness(90%);
++}
++.button:focus {
++  box-shadow: 0 0 2px black;
++}
++.button.red {
++  background-color: var(--btn-red);
++  border-bottom: 4px solid var(--btn-red-bottom);
++}
++.button.green {
++  background-color: var(--btn-green);
++  border-bottom: 4px solid var(--btn-green-bottom);
++}
++.button.blue {
++  background-color: var(--btn-blue);
++  border-bottom: 4px solid var(--btn-blue-bottom);
++}
++.button.gray {
++  background-color: var(--btn-gray);
++  border-bottom: 4px solid var(--btn-gray-bottom);
++}
++.button.disabled,
++.button.disabled:hover,
++.button.disabled:active {
++  background-color: #aaa;
++  border-bottom: 4px solid #aaa;
++  filter: none;
++  cursor: default;
++  opacity: 0.5;
++}
+diff --git a/src/pytaku/static/main.js b/src/pytaku/static/main.js
+new file mode 100644
+index 0000000..f9e74f8
+--- /dev/null
++++ b/src/pytaku/static/main.js
+@@ -0,0 +1,49 @@
++/* Top-level Components */
++
++let Home = {
++  view: (vnode) =&gt; {
++    return m(&quot;div&quot;, { class: &quot;main&quot; }, [
++      m(Navbar),
++      m(&quot;div.content&quot;, [
++        m(&quot;p&quot;, &quot;Try searching for some manga title using the box above.&quot;),
++        m(&quot;p&quot;, &quot;Logging in allows you to follow manga titles.&quot;),
++      ]),
++    ]);
++  },
++};
++
++let Following = {
++  view: (vnode) =&gt; {
++    return &quot;Follows&quot;;
++  },
++};
++
++let Navbar = {
++  view: (vnode) =&gt; {
++    return m(&quot;nav&quot;, [
++      m(m.route.Link, { class: &quot;nav--logo&quot;, href: &quot;/&quot; }, [
++        m(&quot;img.nav--logo--img&quot;, {
++          src: &quot;/static/pytaku.svg&quot;,
++          alt: &quot;home&quot;,
++        }),
++      ]),
++      m(&quot;form.nav--search-form&quot;, [
++        m(&quot;input&quot;, { placeholder: &quot;search title name&quot; }),
++        m(&quot;button&quot;, { type: &quot;submit&quot; }, [m(&quot;i.icon.icon-search&quot;)]),
++      ]),
++      m(m.route.Link, { class: &quot;nav--link&quot;, href: &quot;/l&quot; }, [
++        m(&quot;i.icon.icon-log-in&quot;),
++        &quot;login / register&quot;,
++      ]),
++    ]);
++  },
++};
++
++/* Entry point */
++
++root = document.getElementById(&quot;spa-root&quot;);
++m.route.prefix = &quot;&quot;;
++m.route(root, &quot;/h&quot;, {
++  &quot;/h&quot;: Home,
++  &quot;/f&quot;: Following,
++});
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+new file mode 100644
+index 0000000..a1b33d2
+--- /dev/null
++++ b/src/pytaku/static/spa.css
+@@ -0,0 +1,70 @@
++/* Navbar */
++nav {
++  background-color: var(--bg-black);
++  padding: var(--body-padding);
++  display: flex;
++  flex-wrap: wrap;
++}
++.nav--logo {
++  width: 150px;
++  margin-right: var(--body-padding);
++}
++.nav--logo--img {
++  max-width: 100%;
++  display: block;
++}
++.nav--search-form {
++  display: inline-flex;
++  align-items: stretch;
++}
++.nav--link {
++  color: white;
++  text-decoration: none;
++  display: inline-flex;
++  align-items: center;
++}
++.nav--link:hover {
++  text-decoration: underline;
++}
++.nav--link:last-child {
++  margin-left: auto;
++}
++.nav--link i {
++  margin-right: 0.3rem;
++}
++
++/* Route content common styling */
++.content {
++  padding: var(--body-padding);
++}
++.content &gt; * {
++  display: block;
++  margin-top: 0.5rem;
++  margin-bottom: 0.5rem;
++}
++
++/* Sticky footer */
++footer {
++  padding: var(--body-padding);
++  line-height: 1.5em;
++  opacity: 0.7;
++  border-top: 1px solid #ccc;
++  background-color: #eee;
++}
++footer a {
++  color: inherit;
++}
++html,
++body {
++  height: 100%;
++}
++body {
++  display: flex;
++  flex-direction: column;
++}
++#spa-root {
++  flex: 1 0 auto;
++}
++footer {
++  flex-shrink: 0;
++}
+diff --git a/src/pytaku/templates/spa.html b/src/pytaku/templates/spa.html
+new file mode 100644
+index 0000000..ce3b087
+--- /dev/null
++++ b/src/pytaku/templates/spa.html
+@@ -0,0 +1,49 @@
++{# vim: ft=htmldjango
++#}&lt;!doctype html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;meta charset=&quot;utf-8&quot;&gt;
++    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
++    &lt;link rel=&quot;icon&quot; type=&quot;image/svg+xml&quot; href=&quot;/static/favicon.svg&quot;&gt;
++    &lt;link rel=&quot;alternate icon&quot; type=&quot;image/png&quot; href=&quot;/static/favicon.png&quot;&gt;
++
++    &lt;title&gt;{% block title %} {% endblock %} - Pytaku&lt;/title&gt;
++
++    &lt;link rel=&quot;stylesheet&quot; href=&quot;{{ url_for(&#39;static&#39;, filename=&#39;minireset.css&#39;) }}&quot;&gt;
++    &lt;link rel=&quot;stylesheet&quot; href=&quot;{{ url_for(&#39;static&#39;, filename=&#39;feathericons/iconfont.css&#39;) }}&quot;&gt;
++    &lt;link rel=&quot;stylesheet&quot; href=&quot;{{ url_for(&#39;static&#39;, filename=&#39;lookandfeel.css&#39;) }}&quot;&gt;
++    &lt;link rel=&quot;stylesheet&quot; href=&quot;{{ url_for(&#39;static&#39;, filename=&#39;spa.css&#39;) }}&quot;&gt;
++
++    {% if open_graph %}
++    &lt;meta property=&quot;og:title&quot; content=&quot;{{ open_graph[&#39;title&#39;] }}&quot;&gt;
++    &lt;meta property=&quot;og:image&quot; content=&quot;{{ open_graph[&#39;image&#39;] }}&quot;&gt;
++    &lt;meta property=&quot;og:description&quot; content=&quot;{{ open_graph[&#39;description&#39;] }}&quot;&gt;
++    {% endif %}
++
++    {% block head %}{% endblock %}
++  &lt;/head&gt;
++
++  &lt;body&gt;
++    &lt;div id=&quot;spa-root&quot;&gt;
++      &lt;noscript&gt;
++        &lt;p&gt;Please enable JavaScript to use Pytaku.&lt;/p&gt;
++        &lt;p&gt;It&#39;s snappy and doesn&#39;t do anything spooky to your browser. Pinky promise!&lt;/p&gt;
++      &lt;/noscript&gt;
++    &lt;/div&gt;
++
++    &lt;footer&gt;
++      &lt;p&gt;Pytaku is &lt;a href=&quot;https://git.sr.ht/~nhanb/pytaku&quot;&gt;free and open source software&lt;/a&gt;.&lt;/p&gt;
++      &lt;p&gt;
++        &lt;strong&gt;This is a test instance.&lt;/strong&gt;
++        Database may be wiped. Bugs may be present.&lt;br&gt;
++        Your favorite mangaka may never recover from his
++        &lt;a href=&quot;https://junk.imnhan.com/hunter_x_idol.jpg&quot;&gt;idol addiction&lt;/a&gt;
++        and your favorite series may never finish.
++      &lt;/p&gt;
++    &lt;/footer&gt;
++
++    &lt;script&gt;const initialState = &quot;{{ initial_state }}&quot;;&lt;/script&gt;
++    &lt;script src=&quot;https://unpkg.com/mithril/mithril.js&quot;&gt;&lt;/script&gt;
++    &lt;script src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;main.js&#39;) }}&quot;&gt;&lt;/script&gt;
++  &lt;/body&gt;
++&lt;/html&gt;
+</pre></body></html>

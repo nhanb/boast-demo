@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[43e9c9a9d2] succumb to webfonts | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 43e9c9a9d2</strong><hr><pre>commit 43e9c9a9d2fd589453ce90d8639447082c809b02
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 30 23:20:16 2023 +0700
+
+    succumb to webfonts
+
+diff --git a/_s4g/settings.txt b/_s4g/settings.txt
+index a95d190..91e9de6 100644
+--- a/_s4g/settings.txt
++++ b/_s4g/settings.txt
+@@ -4,7 +4,7 @@ Tagline: and this is my humble corner on the intertubes
+ Root: /
+ ShowFooter: true
+ FooterText: Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+-NavbarLinks: index.dj, about/index.dj, projects/index.dj, #CV🡕#https://cv.imnhan.com
++NavbarLinks: index.dj, about/index.dj, projects/index.dj, #CV↗#https://cv.imnhan.com
+ DefaultThumb: about/keyboard-warrior.jpg
+ 
+ AuthorName: Bùi Thành Nhân
+diff --git a/_s4g/theme/base.css b/_s4g/theme/base.css
+index 9ecb0ae..f988970 100644
+--- a/_s4g/theme/base.css
++++ b/_s4g/theme/base.css
+@@ -1,11 +1,25 @@
+ html {
+-  font-family: system-ui, sans-serif;
+-  font-size: 1em;
++  font-size: 1em; /* respect user configured font size */
+   max-width: 45rem;
+   margin: auto;
++
+   /* Always show scrollbar, to prevent content shifting when navigating
+    * between long and short pages: */
+   overflow-y: scroll;
++
++  font-family: &quot;IBM Plex Sans&quot;, sans-serif;
++}
++
++code,
++pre {
++  font-family: &quot;IBM Plex Mono&quot;;
++}
++code {
++  color: darkred;
++}
++pre code {
++  color: inherit;
++  font-size: 0.9rem;
+ }
+ 
+ p,
+diff --git a/_s4g/theme/base.tmpl b/_s4g/theme/base.tmpl
+index 710d06d..2347f2f 100644
+--- a/_s4g/theme/base.tmpl
++++ b/_s4g/theme/base.tmpl
+@@ -6,6 +6,7 @@
+   &lt;title&gt;{{if .Title}}{{.Title}} | {{end}}{{ .Site.Name -}}&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;{{.Feed}}&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.ThemePath}}/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.ThemePath}}/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;{{.Post.Title}}&quot; /&gt;
+diff --git a/_s4g/theme/fonts.css b/_s4g/theme/fonts.css
+new file mode 100644
+index 0000000..4847036
+--- /dev/null
++++ b/_s4g/theme/fonts.css
+@@ -0,0 +1,79 @@
++/* ibm-plex-sans-regular - latin_latin-ext_vietnamese */
++@font-face {
++  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
++  font-family: &quot;IBM Plex Sans&quot;;
++  font-style: normal;
++  font-weight: 400;
++  src: url(&quot;./fonts/ibm-plex-sans-v19-latin_latin-ext_vietnamese-regular.woff2&quot;)
++    format(&quot;woff2&quot;); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
++}
++
++/* ibm-plex-sans-italic - latin_latin-ext_vietnamese */
++@font-face {
++  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
++  font-family: &quot;IBM Plex Sans&quot;;
++  font-style: italic;
++  font-weight: 400;
++  src: url(&quot;./fonts/ibm-plex-sans-v19-latin_latin-ext_vietnamese-italic.woff2&quot;)
++    format(&quot;woff2&quot;); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
++}
++
++/* ibm-plex-sans-700 - latin_latin-ext_vietnamese */
++@font-face {
++  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
++  font-family: &quot;IBM Plex Sans&quot;;
++  font-style: normal;
++  font-weight: 700;
++  src: url(&quot;./fonts/ibm-plex-sans-v19-latin_latin-ext_vietnamese-700.woff2&quot;)
++    format(&quot;woff2&quot;); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
++}
++
++/* ibm-plex-sans-700italic - latin_latin-ext_vietnamese */
++@font-face {
++  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
++  font-family: &quot;IBM Plex Sans&quot;;
++  font-style: italic;
++  font-weight: 700;
++  src: url(&quot;./fonts/ibm-plex-sans-v19-latin_latin-ext_vietnamese-700italic.woff2&quot;)
++    format(&quot;woff2&quot;); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
++}
++
++/* ibm-plex-mono-regular - latin_latin-ext_vietnamese */
++@font-face {
++  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
++  font-family: &quot;IBM Plex Mono&quot;;
++  font-style: normal;
++  font-weight: 400;
++  src: url(&quot;./fonts/ibm-plex-mono-v19-latin_latin-ext_vietnamese-regular.woff2&quot;)
++    format(&quot;woff2&quot;); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
++}
++
++/* ibm-plex-mono-italic - latin_latin-ext_vietnamese */
++@font-face {
++  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
++  font-family: &quot;IBM Plex Mono&quot;;
++  font-style: italic;
++  font-weight: 400;
++  src: url(&quot;./fonts/ibm-plex-mono-v19-latin_latin-ext_vietnamese-italic.woff2&quot;)
++    format(&quot;woff2&quot;); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
++}
++
++/* ibm-plex-mono-700 - latin_latin-ext_vietnamese */
++@font-face {
++  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
++  font-family: &quot;IBM Plex Mono&quot;;
++  font-style: normal;
++  font-weight: 700;
++  src: url(&quot;./fonts/ibm-plex-mono-v19-latin_latin-ext_vietnamese-700.woff2&quot;)
++    format(&quot;woff2&quot;); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
++}
++
++/* ibm-plex-mono-700italic - latin_latin-ext_vietnamese */
++@font-face {
++  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
++  font-family: &quot;IBM Plex Mono&quot;;
++  font-style: italic;
++  font-weight: 700;
++  src: url(&quot;./fonts/ibm-plex-mono-v19-latin_latin-ext_vietnamese-700italic.woff2&quot;)
++    format(&quot;woff2&quot;); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
++}
+diff --git a/_s4g/theme/fonts/ibm-plex-mono-v19-latin_latin-ext_vietnamese-700.woff2 b/_s4g/theme/fonts/ibm-plex-mono-v19-latin_latin-ext_vietnamese-700.woff2
+new file mode 100644
+index 0000000..ae26811
+Binary files /dev/null and b/_s4g/theme/fonts/ibm-plex-mono-v19-latin_latin-ext_vietnamese-700.woff2 differ
+diff --git a/_s4g/theme/fonts/ibm-plex-mono-v19-latin_latin-ext_vietnamese-700italic.woff2 b/_s4g/theme/fonts/ibm-plex-mono-v19-latin_latin-ext_vietnamese-700italic.woff2
+new file mode 100644
+index 0000000..d33bcea
+Binary files /dev/null and b/_s4g/theme/fonts/ibm-plex-mono-v19-latin_latin-ext_vietnamese-700italic.woff2 differ
+diff --git a/_s4g/theme/fonts/ibm-plex-mono-v19-latin_latin-ext_vietnamese-italic.woff2 b/_s4g/theme/fonts/ibm-plex-mono-v19-latin_latin-ext_vietnamese-italic.woff2
+new file mode 100644
+index 0000000..9add339
+Binary files /dev/null and b/_s4g/theme/fonts/ibm-plex-mono-v19-latin_latin-ext_vietnamese-italic.woff2 differ
+diff --git a/_s4g/theme/fonts/ibm-plex-mono-v19-latin_latin-ext_vietnamese-regular.woff2 b/_s4g/theme/fonts/ibm-plex-mono-v19-latin_latin-ext_vietnamese-regular.woff2
+new file mode 100644
+index 0000000..22546e9
+Binary files /dev/null and b/_s4g/theme/fonts/ibm-plex-mono-v19-latin_latin-ext_vietnamese-regular.woff2 differ
+diff --git a/_s4g/theme/fonts/ibm-plex-sans-v19-latin_latin-ext_vietnamese-700.woff2 b/_s4g/theme/fonts/ibm-plex-sans-v19-latin_latin-ext_vietnamese-700.woff2
+new file mode 100644
+index 0000000..874541f
+Binary files /dev/null and b/_s4g/theme/fonts/ibm-plex-sans-v19-latin_latin-ext_vietnamese-700.woff2 differ
+diff --git a/_s4g/theme/fonts/ibm-plex-sans-v19-latin_latin-ext_vietnamese-700italic.woff2 b/_s4g/theme/fonts/ibm-plex-sans-v19-latin_latin-ext_vietnamese-700italic.woff2
+new file mode 100644
+index 0000000..6841277
+Binary files /dev/null and b/_s4g/theme/fonts/ibm-plex-sans-v19-latin_latin-ext_vietnamese-700italic.woff2 differ
+diff --git a/_s4g/theme/fonts/ibm-plex-sans-v19-latin_latin-ext_vietnamese-italic.woff2 b/_s4g/theme/fonts/ibm-plex-sans-v19-latin_latin-ext_vietnamese-italic.woff2
+new file mode 100644
+index 0000000..45a8861
+Binary files /dev/null and b/_s4g/theme/fonts/ibm-plex-sans-v19-latin_latin-ext_vietnamese-italic.woff2 differ
+diff --git a/_s4g/theme/fonts/ibm-plex-sans-v19-latin_latin-ext_vietnamese-regular.woff2 b/_s4g/theme/fonts/ibm-plex-sans-v19-latin_latin-ext_vietnamese-regular.woff2
+new file mode 100644
+index 0000000..15f29dd
+Binary files /dev/null and b/_s4g/theme/fonts/ibm-plex-sans-v19-latin_latin-ext_vietnamese-regular.woff2 differ
+diff --git a/_s4g/theme/includes.tmpl b/_s4g/theme/includes.tmpl
+index 64af20d..11df5c5 100644
+--- a/_s4g/theme/includes.tmpl
++++ b/_s4g/theme/includes.tmpl
+@@ -5,7 +5,7 @@
+   &lt;a href=&quot;{{.Url}}&quot; {{if .NewTab}}target=&quot;_blank&quot;{{end}}&gt;{{.Text}}&lt;/a&gt;
+   {{- end}}
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;{{.Feed}}&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;{{.Feed}}&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+ 
+   {{- if not .Post.PostedAt.IsZero}}
+   &lt;span class=&quot;posted-on&quot;&gt;
+diff --git a/_s4g/theme/navbar.css b/_s4g/theme/navbar.css
+index 168723a..53dcb73 100644
+--- a/_s4g/theme/navbar.css
++++ b/_s4g/theme/navbar.css
+@@ -1,5 +1,5 @@
+ nav &gt; a {
+-  margin-right: 1rem;
++  margin-right: 0.7rem;
+   text-decoration: none;
+ }
+ 
+@@ -10,11 +10,11 @@ nav &gt; .posted-on {
+ 
+ .nav-hr {
+   clear: both;
+-  margin: 0;
+ }
+ 
+ .feed-link {
+   padding: 0 0.2rem;
++  margin-left: -0.2rem; /* make up for padding -&gt; avoid misalignment */
+   color: #d2660b;
+   background-color: white;
+   text-decoration: none;
+diff --git a/about/index.html b/about/index.html
+index 59dc7bf..8155286 100644
+--- a/about/index.html
++++ b/about/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;About | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;About&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+ 
+ &lt;/nav&gt;
+ &lt;hr class=&quot;nav-hr&quot;&gt;
+diff --git a/chromebook/index.html b/chromebook/index.html
+index 3573a8c..f12df58 100644
+--- a/chromebook/index.html
++++ b/chromebook/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Acer Chromebook Spin 713 &amp;#34;Voxel&amp;#34;: an adequate Crostini device, a buggy Linux laptop | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Acer Chromebook Spin 713 &amp;#34;Voxel&amp;#34;: an adequate Crostini device, a buggy Linux laptop&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2023-04-22&quot;&gt;
+diff --git a/cool/index.html b/cool/index.html
+index c3f078b..dbcb778 100644
+--- a/cool/index.html
++++ b/cool/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;&amp;#34;Have you built anything cool?&amp;#34; | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;&amp;#34;Have you built anything cool?&amp;#34;&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2014-01-25&quot;&gt;
+diff --git a/custom-theme/index.html b/custom-theme/index.html
+index 6f877e4..5a84914 100644
+--- a/custom-theme/index.html
++++ b/custom-theme/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Look ma, no stock theme! | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Look ma, no stock theme!&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2015-06-05&quot;&gt;
+diff --git a/fcitx/index.html b/fcitx/index.html
+index 7d4bf22..df0eb28 100644
+--- a/fcitx/index.html
++++ b/fcitx/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Dẹp ibus-unikey đi, dùng fcitx-unikey nhé! | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Dẹp ibus-unikey đi, dùng fcitx-unikey nhé!&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2015-01-29&quot;&gt;
+diff --git a/fightstick-1/index.html b/fightstick-1/index.html
+index 3756eda..0d767a7 100644
+--- a/fightstick-1/index.html
++++ b/fightstick-1/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;My first DIY fightstick: Part 1 | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;My first DIY fightstick: Part 1&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2015-12-08&quot;&gt;
+diff --git a/fightstick-2/index.html b/fightstick-2/index.html
+index c2374d2..4064ad2 100644
+--- a/fightstick-2/index.html
++++ b/fightstick-2/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;My first DIY fightstick: Part 2 | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;My first DIY fightstick: Part 2&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2016-01-23&quot;&gt;
+diff --git a/go-stack/index.html b/go-stack/index.html
+index 8ef593f..380a5e3 100644
+--- a/go-stack/index.html
++++ b/go-stack/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Go, Postgres, Caddy, systemd: a simple, highly portable, Docker-free web stack | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Go, Postgres, Caddy, systemd: a simple, highly portable, Docker-free web stack&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2023-02-12&quot;&gt;
+diff --git a/hdviet/index.html b/hdviet/index.html
+index 40b3522..40da224 100644
+--- a/hdviet/index.html
++++ b/hdviet/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;How I bypassed my university&amp;#39;s domain blocker to watch movies on hdviet.com | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;How I bypassed my university&amp;#39;s domain blocker to watch movies on hdviet.com&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2014-03-17&quot;&gt;
+diff --git a/ideas.html b/ideas.html
+index 71eaa7b..6615226 100644
+--- a/ideas.html
++++ b/ideas.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Potential project ideas | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Potential project ideas&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+ 
+ &lt;/nav&gt;
+ &lt;hr class=&quot;nav-hr&quot;&gt;
+diff --git a/index.html b/index.html
+index 3f01132..6b68179 100644
+--- a/index.html
++++ b/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Home | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Home&quot; /&gt;
+@@ -27,9 +28,9 @@ &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+ 
+ &lt;/nav&gt;
+ &lt;hr class=&quot;nav-hr&quot;&gt;
+diff --git a/linux-automation/index.html b/linux-automation/index.html
+index e85db8a..ea52752 100644
+--- a/linux-automation/index.html
++++ b/linux-automation/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Why I use Linux: Automation | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Why I use Linux: Automation&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2013-06-07&quot;&gt;
+diff --git a/manjaro-xfce/index.html b/manjaro-xfce/index.html
+index e04d5ef..0d04278 100644
+--- a/manjaro-xfce/index.html
++++ b/manjaro-xfce/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;What I did after installing Manjaro xfce | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;What I did after installing Manjaro xfce&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2014-02-04&quot;&gt;
+diff --git a/mcross/index.html b/mcross/index.html
+index fe08b91..3af4e20 100644
+--- a/mcross/index.html
++++ b/mcross/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Introducing McRoss—a minimal gemini browser | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Introducing McRoss—a minimal gemini browser&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2020-05-29&quot;&gt;
+diff --git a/movie-streaming/gflick-fixed/index.html b/movie-streaming/gflick-fixed/index.html
+index 8b42163..e9279f5 100644
+--- a/movie-streaming/gflick-fixed/index.html
++++ b/movie-streaming/gflick-fixed/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Streaming videos from Google Drive: a second attempt | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Streaming videos from Google Drive: a second attempt&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2020-06-10&quot;&gt;
+diff --git a/movie-streaming/gflick/index.html b/movie-streaming/gflick/index.html
+index cc2b835..082506d 100644
+--- a/movie-streaming/gflick/index.html
++++ b/movie-streaming/gflick/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Towards an acceptable video playing experience | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Towards an acceptable video playing experience&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2020-04-26&quot;&gt;
+diff --git a/movie-streaming/index.html b/movie-streaming/index.html
+index 9e83146..91aeae8 100644
+--- a/movie-streaming/index.html
++++ b/movie-streaming/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;The movie streaming saga | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;The movie streaming saga&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+ 
+ &lt;/nav&gt;
+ &lt;hr class=&quot;nav-hr&quot;&gt;
+diff --git a/movie-streaming/put.io/index.html b/movie-streaming/put.io/index.html
+index 60ef8f1..f703c14 100644
+--- a/movie-streaming/put.io/index.html
++++ b/movie-streaming/put.io/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;The video streaming finale, or why put.io is awesome | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;The video streaming finale, or why put.io is awesome&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2020-10-21&quot;&gt;
+diff --git a/node-webkit/index.html b/node-webkit/index.html
+index 9d00f42..fc5a8c2 100644
+--- a/node-webkit/index.html
++++ b/node-webkit/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Setting up your development environment for a node-webkit project | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Setting up your development environment for a node-webkit project&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2014-05-01&quot;&gt;
+diff --git a/notes.html b/notes.html
+index 358c14f..90f15a0 100644
+--- a/notes.html
++++ b/notes.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Random notes | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Random notes&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+ 
+ &lt;/nav&gt;
+ &lt;hr class=&quot;nav-hr&quot;&gt;
+diff --git a/pathogen-vs-vundle/index.html b/pathogen-vs-vundle/index.html
+index 58c6a41..5f4f09c 100644
+--- a/pathogen-vs-vundle/index.html
++++ b/pathogen-vs-vundle/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Modern vim plugin management: Pathogen vs Vundle | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Modern vim plugin management: Pathogen vs Vundle&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2013-05-13&quot;&gt;
+diff --git a/petition-fraud/index.html b/petition-fraud/index.html
+index dafacdb..44bbbb4 100644
+--- a/petition-fraud/index.html
++++ b/petition-fraud/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;I did NOT sign that online petition! | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;I did NOT sign that online petition!&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2016-03-12&quot;&gt;
+diff --git a/pippable-webapp/index.html b/pippable-webapp/index.html
+index 16ea581..56fce0d 100644
+--- a/pippable-webapp/index.html
++++ b/pippable-webapp/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;I made my python webapp installable via pip | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;I made my python webapp installable via pip&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2021-10-02&quot;&gt;
+diff --git a/projects/index.html b/projects/index.html
+index 432732b..fe6adb4 100644
+--- a/projects/index.html
++++ b/projects/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Projects | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Projects&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+ 
+ &lt;/nav&gt;
+ &lt;hr class=&quot;nav-hr&quot;&gt;
+diff --git a/pyqt5/index.html b/pyqt5/index.html
+index ba8e766..04b9f1a 100644
+--- a/pyqt5/index.html
++++ b/pyqt5/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;How to install PyQt5 on a virtualenv on Ubuntu 14.04 | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;How to install PyQt5 on a virtualenv on Ubuntu 14.04&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2015-02-14&quot;&gt;
+diff --git a/pytaku-old/index.html b/pytaku-old/index.html
+index c02539c..4b20458 100644
+--- a/pytaku-old/index.html
++++ b/pytaku-old/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Introducing Pytaku—the only online manga reader you&amp;#39;ll ever need | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Introducing Pytaku—the only online manga reader you&amp;#39;ll ever need&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2015-01-02&quot;&gt;
+diff --git a/rmit-wifi/index.html b/rmit-wifi/index.html
+index 381dc37..d92c7de 100644
+--- a/rmit-wifi/index.html
++++ b/rmit-wifi/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Fix RMIT wi-fi issue in Ubuntu 13.04 and variants | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Fix RMIT wi-fi issue in Ubuntu 13.04 and variants&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2013-06-17&quot;&gt;
+diff --git a/s4g/index.html b/s4g/index.html
+index d2e4680..61270c2 100644
+--- a/s4g/index.html
++++ b/s4g/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;s4g is a Stupidly Simple Static Site Generator | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;s4g is a Stupidly Simple Static Site Generator&quot; /&gt;
+@@ -22,9 +23,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2023-08-24&quot;&gt;
+diff --git a/sqlite-python/index.html b/sqlite-python/index.html
+index 1f03bba..b2d0091 100644
+--- a/sqlite-python/index.html
++++ b/sqlite-python/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Working with SQLite in Python without an ORM or migration framework | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Working with SQLite in Python without an ORM or migration framework&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2022-01-30&quot;&gt;
+diff --git a/stepmania-pad/index.html b/stepmania-pad/index.html
+index 347a23e..288501a 100644
+--- a/stepmania-pad/index.html
++++ b/stepmania-pad/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Simplest possible stepmania soft-to-hard pad mod | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Simplest possible stepmania soft-to-hard pad mod&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2021-02-08&quot;&gt;
+diff --git a/tmux-italics/index.html b/tmux-italics/index.html
+index c50d428..58d961f 100644
+--- a/tmux-italics/index.html
++++ b/tmux-italics/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Enable italic text inside vim inside tmux inside gnome-terminal | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Enable italic text inside vim inside tmux inside gnome-terminal&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2014-08-02&quot;&gt;
+diff --git a/ubuntu-programs/index.html b/ubuntu-programs/index.html
+index f434658..b212c41 100644
+--- a/ubuntu-programs/index.html
++++ b/ubuntu-programs/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Installing programs in Ubuntu | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Installing programs in Ubuntu&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2013-09-06&quot;&gt;
+diff --git a/vim-open-link/index.html b/vim-open-link/index.html
+index ed4bf47..126f22a 100644
+--- a/vim-open-link/index.html
++++ b/vim-open-link/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Opening http link under the cursor in vim | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Opening http link under the cursor in vim&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2021-08-07&quot;&gt;
+diff --git a/virtualenvwrapper/index.html b/virtualenvwrapper/index.html
+index 16f16de..4e6e724 100644
+--- a/virtualenvwrapper/index.html
++++ b/virtualenvwrapper/index.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Virtualenv(wrapper), python2 and python3 | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Virtualenv(wrapper), python2 and python3&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2014-12-16&quot;&gt;
+diff --git a/yaks.html b/yaks.html
+index e78f059..a08afaf 100644
+--- a/yaks.html
++++ b/yaks.html
+@@ -6,6 +6,7 @@
+   &lt;title&gt;Yak shaving | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/fonts.css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ 
+   &lt;meta property=&quot;og:title&quot; content=&quot;Yak shaving&quot; /&gt;
+@@ -21,9 +22,9 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV🡕&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
+ 
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;Atom&amp;nbsp;Feed&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+ 
+ &lt;/nav&gt;
+ &lt;hr class=&quot;nav-hr&quot;&gt;
+</pre></body></html>

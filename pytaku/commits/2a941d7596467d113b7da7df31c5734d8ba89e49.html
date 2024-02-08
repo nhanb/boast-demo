@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[2a941d7596] fix bug when there&#39;s no description | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 2a941d7596</strong><hr><pre>commit 2a941d7596467d113b7da7df31c5734d8ba89e49
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Mar 20 22:01:04 2022 +0700
+
+    fix bug when there&#39;s no description
+    
+    Also updated some other tests because their respective values on
+    mangadex changed.
+
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index e56ba61..876b5c1 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -36,7 +36,9 @@ def get_title(self, title_id):
+                 cover = rel[&quot;attributes&quot;][&quot;fileName&quot;]
+ 
+         descriptions = attrs[&quot;description&quot;]
+-        if &quot;en&quot; in descriptions:
++        if not descriptions:
++            description = &quot;&quot;
++        elif &quot;en&quot; in descriptions:
+             description = descriptions[&quot;en&quot;]
+         else:
+             description = list(descriptions.values())[0]
+@@ -47,7 +49,9 @@ def get_title(self, title_id):
+             &quot;site&quot;: &quot;mangadex&quot;,
+             &quot;cover_ext&quot;: cover,
+             &quot;alt_names&quot;: [list(alt.values())[0] for alt in attrs[&quot;altTitles&quot;]],
+-            &quot;descriptions&quot;: [_bbparser.format(html.unescape(description).strip())],
++            &quot;descriptions&quot;: [_bbparser.format(html.unescape(description).strip())]
++            if description
++            else [],
+             &quot;descriptions_format&quot;: &quot;html&quot;,
+             &quot;is_webtoon&quot;: is_web_comic,
+             &quot;chapters&quot;: self.get_chapters_list(title_id),
+diff --git a/tests/mangoapi/test_mangadex.py b/tests/mangoapi/test_mangadex.py
+index aff99b9..3783eda 100644
+--- a/tests/mangoapi/test_mangadex.py
++++ b/tests/mangoapi/test_mangadex.py
+@@ -19,6 +19,7 @@ def test_get_title():
+             &quot;恶魔奶爸&quot;,
+             &quot;惡魔奶爸&quot;,
+             &quot;바알세불&quot;,
++            &quot;बेलजेबब&quot;,
+         ],
+         &quot;descriptions_format&quot;: &quot;html&quot;,
+         &quot;is_webtoon&quot;: False,
+@@ -61,29 +62,37 @@ def test_get_chapter():
+ def test_search():
+     md = Mangadex()
+     results = md.search_title(&quot;beelzebub&quot;)
+-    assert results == [
+-        {
+-            &quot;id&quot;: &quot;8af3ad21-3e7e-4fb5-b344-d0044ec154fc&quot;,
+-            &quot;name&quot;: &quot;Beelzebub&quot;,
+-            &quot;site&quot;: &quot;mangadex&quot;,
+-            &quot;thumbnail&quot;: &quot;https://uploads.mangadex.org/covers/8af3ad21-3e7e-4fb5-b344-d0044ec154fc/bab3ccbf-7479-4117-ad92-4dedced54ceb.jpg.256.jpg&quot;,
+-        },
+-        {
+-            &quot;id&quot;: &quot;72378871-9afc-47bd-902f-0d8116adb390&quot;,
+-            &quot;name&quot;: &quot;Beelzebub - Digital Colored Comics&quot;,
+-            &quot;site&quot;: &quot;mangadex&quot;,
+-            &quot;thumbnail&quot;: &quot;https://uploads.mangadex.org/covers/72378871-9afc-47bd-902f-0d8116adb390/c8b9b385-b7b9-4101-bf71-4f0d66fc35ff.jpg.256.jpg&quot;,
+-        },
+-        {
+-            &quot;id&quot;: &quot;b4320039-9b91-44a7-a60d-c7ba8c0684e7&quot;,
+-            &quot;name&quot;: &quot;Beelzebub-jou no Oki ni Mesu mama.&quot;,
+-            &quot;site&quot;: &quot;mangadex&quot;,
+-            &quot;thumbnail&quot;: &quot;https://uploads.mangadex.org/covers/b4320039-9b91-44a7-a60d-c7ba8c0684e7/ed566a45-c9f2-4f7e-84f8-ae7fc328ab15.jpg.256.jpg&quot;,
+-        },
+-        {
+-            &quot;id&quot;: &quot;a453af66-0dac-4966-b246-b37c96b27245&quot;,
+-            &quot;name&quot;: &quot;Makai kara Kita Maid-san&quot;,
+-            &quot;site&quot;: &quot;mangadex&quot;,
+-            &quot;thumbnail&quot;: &quot;https://uploads.mangadex.org/covers/a453af66-0dac-4966-b246-b37c96b27245/7e50b22d-b027-4ee1-bd15-94f05fa6cecb.jpg.256.jpg&quot;,
+-        },
+-    ]
++    assert sorted(results, key=lambda x: x[&quot;name&quot;]) == sorted(
++        [
++            {
++                &quot;id&quot;: &quot;8af3ad21-3e7e-4fb5-b344-d0044ec154fc&quot;,
++                &quot;name&quot;: &quot;Beelzebub&quot;,
++                &quot;site&quot;: &quot;mangadex&quot;,
++                &quot;thumbnail&quot;: &quot;https://uploads.mangadex.org/covers/8af3ad21-3e7e-4fb5-b344-d0044ec154fc/bab3ccbf-7479-4117-ad92-4dedced54ceb.jpg.256.jpg&quot;,
++            },
++            {
++                &quot;id&quot;: &quot;72378871-9afc-47bd-902f-0d8116adb390&quot;,
++                &quot;name&quot;: &quot;Beelzebub - Digital Colored Comics&quot;,
++                &quot;site&quot;: &quot;mangadex&quot;,
++                &quot;thumbnail&quot;: &quot;https://uploads.mangadex.org/covers/72378871-9afc-47bd-902f-0d8116adb390/c8b9b385-b7b9-4101-bf71-4f0d66fc35ff.jpg.256.jpg&quot;,
++            },
++            {
++                &quot;id&quot;: &quot;b4320039-9b91-44a7-a60d-c7ba8c0684e7&quot;,
++                &quot;name&quot;: &quot;Beelzebub-jou no Oki ni Mesu mama.&quot;,
++                &quot;site&quot;: &quot;mangadex&quot;,
++                &quot;thumbnail&quot;: &quot;https://uploads.mangadex.org/covers/b4320039-9b91-44a7-a60d-c7ba8c0684e7/dc879d3e-5cfd-4651-ab79-6fa6b37d9664.jpg.256.jpg&quot;,
++            },
++            {
++                &quot;id&quot;: &quot;a453af66-0dac-4966-b246-b37c96b27245&quot;,
++                &quot;name&quot;: &quot;Makai kara Kita Maid-san&quot;,
++                &quot;site&quot;: &quot;mangadex&quot;,
++                &quot;thumbnail&quot;: &quot;https://uploads.mangadex.org/covers/a453af66-0dac-4966-b246-b37c96b27245/7e50b22d-b027-4ee1-bd15-94f05fa6cecb.jpg.256.jpg&quot;,
++            },
++        ],
++        key=lambda x: x[&quot;name&quot;],
++    )
++
++
++def test_get_title_with_empty_descriptions():
++    title = Mangadex().get_title(&quot;fc102424-d94b-4a1b-98bc-d5062cd768d6&quot;)
++    assert title[&quot;descriptions&quot;] == []
+</pre></body></html>

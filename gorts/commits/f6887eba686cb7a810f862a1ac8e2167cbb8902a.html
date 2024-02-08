@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[f6887eba68] gui: check diff both ways | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / f6887eba68</strong><hr><pre>commit f6887eba686cb7a810f862a1ac8e2167cbb8902a
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jun 20 11:41:43 2023 +0700
+
+    gui: check diff both ways
+
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index d5ef6b0..184f97a 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -183,14 +183,12 @@ proc applystate {} {
+ proc discardstate {} {
+     foreach key [array names ::scoreboard] {
+         set ::scoreboard($key) $::applied_scoreboard($key)
+-        ::checkdiff &quot;&quot; $key &quot;&quot;
+     }
+ }
+ 
+ proc update_applied_state {} {
+     foreach key [array names ::scoreboard] {
+         set ::applied_scoreboard($key) $::scoreboard($key)
+-        ::checkdiff &quot;&quot; $key &quot;&quot;
+     }
+ }
+ 
+@@ -201,6 +199,7 @@ proc setupdiffcheck {} {
+     }
+ 
+     trace add variable ::scoreboard write ::checkdiff
++    trace add variable ::applied_scoreboard write ::checkdiff
+ }
+ 
+ proc checkdiff {_ key _} {
+</pre></body></html>

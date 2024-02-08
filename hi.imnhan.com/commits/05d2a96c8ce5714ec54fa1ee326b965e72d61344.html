@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[05d2a96c8c] wifi issue update | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 05d2a96c8c</strong><hr><pre>commit 05d2a96c8ce5714ec54fa1ee326b965e72d61344
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Mon Dec 16 19:14:52 2013 +0700
+
+    wifi issue update
+
+diff --git a/content/fix-rmit-wifi-issue-with-ubuntu-13-04.md b/content/fix-rmit-wifi-issue-with-ubuntu-13-04.md
+index 032b8f2..d930389 100644
+--- a/content/fix-rmit-wifi-issue-with-ubuntu-13-04.md
++++ b/content/fix-rmit-wifi-issue-with-ubuntu-13-04.md
+@@ -31,3 +31,14 @@ ## The solution
+ This is a [known bug](https://bugs.launchpad.net/ubuntu/+source/network-manager/+bug/1104476) and
+ many have complained about it. There seems to be no developer assigned to fix it though. I&#39;ll keep
+ you updated on the issue.
++
++### Update (Dec 16, 2013)
++
++A fix has been released in GNOME upstream but not incorporated into official Ubuntu repositories
++yet. An impatient contributor has created his own PPA to provide the fixed package. To install it,
++enter the following commands:
++
++    :::bash
++    sudo sudo add-apt-repository ppa:pritambaral/nms
++    sudo apt-get update
++    sudo apt-get install network-manager-gnome
+</pre></body></html>

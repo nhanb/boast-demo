@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b9532a1eb4] title route | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / b9532a1eb4</strong><hr><pre>commit b9532a1eb4a8abf91f0d820b98ba79eebe0526b3
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 23 00:06:45 2020 +0700
+
+    title route
+
+diff --git a/src/pytaku/decorators.py b/src/pytaku/decorators.py
+index 8bcaa84..599dd36 100644
+--- a/src/pytaku/decorators.py
++++ b/src/pytaku/decorators.py
+@@ -15,27 +15,39 @@ def decorated_function(*args, **kwargs):
+     return decorated_function
+ 
+ 
+-def require_token(f):
+-    @wraps(f)
+-    def decorated_function(*args, **kwargs):
+-        header = request.headers.get(&quot;Authorization&quot;)
+-        if not header or not header.startswith(&quot;Bearer &quot;):
+-            return (
+-                jsonify({&quot;message&quot;: &quot;Missing `Authorization: Bearer &lt;token&gt;` header.&quot;}),
+-                401,
+-            )
+-
+-        token = header[len(&quot;Bearer &quot;) :]
+-        user_id = verify_token(token)
+-        if user_id is None:
+-            return jsonify({&quot;message&quot;: &quot;Invalid token.&quot;}), 401
+-
+-        request.token = token
+-        request.user_id = user_id
+-
+-        return f(*args, **kwargs)
+-
+-    return decorated_function
++def process_token(required=True):
++    def decorator(f):
++        @wraps(f)
++        def decorated_function(*args, **kwargs):
++            header = request.headers.get(&quot;Authorization&quot;)
++            if not header or not header.startswith(&quot;Bearer &quot;):
++                if required:
++                    return (
++                        jsonify(
++                            {
++                                &quot;message&quot;: &quot;Missing `Authorization: Bearer &lt;token&gt;` header.&quot;
++                            }
++                        ),
++                        401,
++                    )
++                else:
++                    request.token = None
++                    request.user_id = None
++                    return f(*args, **kwargs)
++
++            token = header[len(&quot;Bearer &quot;) :]
++            user_id = verify_token(token)
++            if user_id is None:
++                return jsonify({&quot;message&quot;: &quot;Invalid token.&quot;}), 401
++
++            request.token = token
++            request.user_id = user_id
++
++            return f(*args, **kwargs)
++
++        return decorated_function
++
++    return decorator
+ 
+ 
+ def toggle_has_read(f):
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 29b5d01..5ebcdfe 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -19,7 +19,7 @@
+ )
+ 
+ from .conf import config
+-from .decorators import require_login, require_token, toggle_has_read
++from .decorators import process_token, require_login, toggle_has_read
+ from .persistence import (
+     create_token,
+     delete_token,
+@@ -170,28 +170,6 @@ def auth_view():
+     return render_template(&quot;old/auth.html&quot;)
+ 
+ 
+-@app.route(&quot;/m/&lt;site&gt;/&lt;title_id&gt;&quot;)
+-@toggle_has_read
+-def title_view(site, title_id):
+-    user = session.get(&quot;user&quot;, None)
+-    user_id = user[&quot;id&quot;] if user else None
+-    title = load_title(site, title_id, user_id=user_id)
+-    if not title:
+-        print(&quot;Getting title&quot;, title_id)
+-        title = get_title(site, title_id)
+-        print(&quot;Saving title&quot;, title_id, &quot;to db&quot;)
+-        save_title(title)
+-    else:
+-        print(&quot;Loading title&quot;, title_id, &quot;from db&quot;)
+-    title[&quot;cover&quot;] = title_cover(site, title_id, title[&quot;cover_ext&quot;])
+-    if site == &quot;mangadex&quot;:
+-        title[&quot;cover&quot;] = url_for(
+-            &quot;proxy_view&quot;, b64_url=_encode_proxy_url(title[&quot;cover&quot;])
+-        )
+-    title[&quot;source_url&quot;] = title_source_url(site, title_id)
+-    return render_template(&quot;old/title.html&quot;, **title)
+-
+-
+ @app.route(&quot;/m/&lt;site&gt;/&lt;title_id&gt;/&lt;chapter_id&gt;&quot;)
+ @toggle_has_read
+ def chapter_view(site, title_id, chapter_id):
+@@ -372,6 +350,44 @@ def home_view(query=None):
+     return render_template(&quot;spa.html&quot;)
+ 
+ 
++def _title(site, title_id, user_id=None):
++    title = load_title(site, title_id, user_id=user_id)
++    if not title:
++        print(&quot;Getting title&quot;, title_id)
++        title = get_title(site, title_id)
++        print(&quot;Saving title&quot;, title_id, &quot;to db&quot;)
++        save_title(title)
++    else:
++        print(&quot;Loading title&quot;, title_id, &quot;from db&quot;)
++    title[&quot;cover&quot;] = title_cover(site, title_id, title[&quot;cover_ext&quot;])
++    if site == &quot;mangadex&quot;:
++        title[&quot;cover&quot;] = url_for(
++            &quot;proxy_view&quot;, b64_url=_encode_proxy_url(title[&quot;cover&quot;])
++        )
++    title[&quot;source_url&quot;] = title_source_url(site, title_id)
++    return title
++
++
++@app.route(&quot;/m/&lt;site&gt;/&lt;title_id&gt;&quot;)
++def spa_title_view(site, title_id):
++    title = _title(site, title_id)
++    return render_template(
++        &quot;spa.html&quot;,
++        open_graph={
++            &quot;title&quot;: title[&quot;name&quot;],
++            &quot;image&quot;: title[&quot;cover&quot;],
++            &quot;description&quot;: &quot;\n&quot;.join(title[&quot;descriptions&quot;]),
++        },
++    )
++
++
++@app.route(&quot;/api/title/&lt;site&gt;/&lt;title_id&gt;&quot;, methods=[&quot;GET&quot;])
++@process_token(required=False)
++def api_title(site, title_id):
++    title = _title(site, title_id, user_id=request.user_id)
++    return title
++
++
+ @app.route(&quot;/api/register&quot;, methods=[&quot;POST&quot;])
+ def api_register():
+     username = request.json[&quot;username&quot;].strip()
+@@ -420,13 +436,13 @@ def api_login():
+ 
+ 
+ @app.route(&quot;/api/verify-token&quot;, methods=[&quot;GET&quot;])
+-@require_token
++@process_token(required=True)
+ def api_verify_token():
+     return {&quot;user_id&quot;: request.user_id, &quot;username&quot;: get_username(request.user_id)}, 200
+ 
+ 
+ @app.route(&quot;/api/logout&quot;, methods=[&quot;POST&quot;])
+-@require_token
++@process_token(required=True)
+ def api_logout():
+     num_deleted = delete_token(request.token)
+     if num_deleted != 1:
+@@ -435,7 +451,7 @@ def api_logout():
+ 
+ 
+ @app.route(&quot;/api/follows&quot;, methods=[&quot;GET&quot;])
+-@require_token
++@process_token(required=True)
+ def api_follows():
+     titles = get_followed_titles(request.user_id)
+     for title in titles:
+diff --git a/src/pytaku/static/js/layout.js b/src/pytaku/static/js/layout.js
+index 7698c14..cbd56db 100644
+--- a/src/pytaku/static/js/layout.js
++++ b/src/pytaku/static/js/layout.js
+@@ -1,4 +1,5 @@
+ import { Auth, SearchModel } from &quot;./models.js&quot;;
++import { Button } from &quot;./utils.js&quot;;
+ 
+ function Navbar(initialVNode) {
+   let isLoggingOut = false;
+@@ -8,30 +9,24 @@ function Navbar(initialVNode) {
+       let userLink;
+       if (Auth.isLoggedIn()) {
+         userLink = m(&quot;span.nav--greeting&quot;, [
+-          &quot;Welcome, &quot;,
+-          m(&quot;b&quot;, Auth.username),
+-          &quot; &quot;,
+-          m(
+-            &quot;button&quot;,
+-            {
+-              onclick: (ev) =&gt; {
+-                isLoggingOut = true;
+-                m.redraw();
+-                Auth.logout()
+-                  .then(() =&gt; {
+-                    m.route.set(&quot;/&quot;);
+-                  })
+-                  .finally(() =&gt; {
+-                    isLoggingOut = false;
+-                  });
+-              },
+-              disabled: isLoggingOut ? &quot;disabled&quot; : null,
++          m(&quot;span&quot;, [&quot;Welcome, &quot;, m(&quot;b&quot;, Auth.username)]),
++          m(Button, {
++            text: isLoggingOut ? &quot; logging out&quot; : &quot; logout&quot;,
++            icon: &quot;log-out&quot;,
++            color: &quot;red&quot;,
++            onclick: (ev) =&gt; {
++              isLoggingOut = true;
++              m.redraw();
++              Auth.logout()
++                .then(() =&gt; {
++                  m.route.set(&quot;/&quot;);
++                })
++                .finally(() =&gt; {
++                  isLoggingOut = false;
++                });
+             },
+-            [
+-              m(&quot;i.icon.icon-log-out&quot;),
+-              isLoggingOut ? &quot; logging out&quot; : &quot; logout&quot;,
+-            ]
+-          ),
++            disabled: isLoggingOut ? &quot;disabled&quot; : null,
++          }),
+         ]);
+       } else {
+         userLink = m(m.route.Link, { class: &quot;nav--link&quot;, href: &quot;/a&quot; }, [
+@@ -66,7 +61,7 @@ function Navbar(initialVNode) {
+               },
+               value: SearchModel.query,
+             }),
+-            m(&quot;button[type=submit]&quot;, [m(&quot;i.icon.icon-search&quot;)]),
++            m(Button, { color: &quot;red&quot;, icon: &quot;search&quot;, type: &quot;submit&quot; }),
+           ]
+         ),
+         userLink,
+diff --git a/src/pytaku/static/js/main.js b/src/pytaku/static/js/main.js
+index 7863e87..68e84ef 100644
+--- a/src/pytaku/static/js/main.js
++++ b/src/pytaku/static/js/main.js
+@@ -4,6 +4,7 @@ import Authentication from &quot;./routes/authentication.js&quot;;
+ import Home from &quot;./routes/home.js&quot;;
+ import Follows from &quot;./routes/follows.js&quot;;
+ import Search from &quot;./routes/search.js&quot;;
++import Title from &quot;./routes/title.js&quot;;
+ 
+ Auth.init().then(() =&gt; {
+   const root = document.getElementById(&quot;spa-root&quot;);
+@@ -52,5 +53,15 @@ Auth.init().then(() =&gt; {
+           })
+         ),
+     },
++    &quot;/m/:site/:titleId&quot;: {
++      render: (vnode) =&gt;
++        m(
++          Layout,
++          m(Title, {
++            site: vnode.attrs.site,
++            titleId: vnode.attrs.titleId,
++          })
++        ),
++    },
+   });
+ });
+diff --git a/src/pytaku/static/js/routes/authentication.js b/src/pytaku/static/js/routes/authentication.js
+index bb37d16..30cc850 100644
+--- a/src/pytaku/static/js/routes/authentication.js
++++ b/src/pytaku/static/js/routes/authentication.js
+@@ -1,4 +1,5 @@
+ import { Auth } from &quot;../models.js&quot;;
++import { Button } from &quot;../utils.js&quot;;
+ 
+ function Authentication(initialVNode) {
+   let loginUsername;
+@@ -84,16 +85,13 @@ function Authentication(initialVNode) {
+               }),
+               &quot; Remember me&quot;,
+             ]),
+-            m(
+-              &quot;button[type=submit]&quot;,
+-              {
+-                disabled: loggingIn ? &quot;disabled&quot; : null,
+-              },
+-              [
+-                m(&quot;i.icon.icon-log-in&quot;),
+-                loggingIn ? &quot; Logging in...&quot; : &quot; Log in&quot;,
+-              ]
+-            ),
++            m(Button, {
++              type: &quot;submit&quot;,
++              disabled: loggingIn ? &quot;disabled&quot; : null,
++              text: loggingIn ? &quot; Logging in...&quot; : &quot; Log in&quot;,
++              icon: &quot;log-in&quot;,
++              color: &quot;blue&quot;,
++            }),
+             m(&quot;p.auth--form--error-message&quot;, loginErrorMessage),
+           ]
+         ),
+@@ -162,16 +160,13 @@ function Authentication(initialVNode) {
+                 },
+               }
+             ),
+-            m(
+-              &quot;button[type=submit]&quot;,
+-              {
+-                disabled: registering ? &quot;disabled&quot; : null,
+-              },
+-              [
+-                m(&quot;i.icon.icon-user-plus&quot;),
+-                registering ? &quot; Registering...&quot; : &quot; Register&quot;,
+-              ]
+-            ),
++            m(Button, {
++              type: &quot;submit&quot;,
++              disabled: registering ? &quot;disabled&quot; : null,
++              text: registering ? &quot; Registering...&quot; : &quot; Register&quot;,
++              icon: &quot;user-plus&quot;,
++              color: &quot;green&quot;,
++            }),
+             m(
+               &quot;p&quot;,
+               {
+diff --git a/src/pytaku/static/js/routes/follows.js b/src/pytaku/static/js/routes/follows.js
+index 7097eec..04e2ad4 100644
+--- a/src/pytaku/static/js/routes/follows.js
++++ b/src/pytaku/static/js/routes/follows.js
+@@ -1,24 +1,10 @@
+ import { Auth } from &quot;../models.js&quot;;
+-import { LoadingMessage, truncate } from &quot;../utils.js&quot;;
+-
+-function fullChapterName(chapter) {
+-  let result = &quot;Chapter &quot; + chapter.num_major;
+-  if (chapter.num_minor) {
+-    result += &quot;.&quot; + chapter.num_minor;
+-  }
+-  if (chapter.volume) {
+-    result += &quot; Volume &quot; + chapter.volume;
+-  }
+-  if (chapter.name) {
+-    result += &quot; - &quot; + chapter.name;
+-  }
+-  return result;
+-}
++import { LoadingMessage, fullChapterName, Chapter } from &quot;../utils.js&quot;;
+ 
+ const Title = {
+   view: (vnode) =&gt; {
+     const title = vnode.attrs.title;
+-    const numChaptersToDisplay = 4;
++    const numChaptersToDisplay = 3;
+ 
+     return m(
+       &quot;div.follows--title&quot; + (title.chapters.length === 0 ? &quot;.empty&quot; : &quot;&quot;),
+@@ -39,21 +25,11 @@ const Title = {
+                 `and ${title.chapters.length - numChaptersToDisplay} more...`
+               )
+             : &quot;&quot;,
+-          title.chapters.slice(-numChaptersToDisplay).map((chapter) =&gt;
+-            m(
+-              m.route.Link,
+-              {
+-                href: `/m/${title.site}/${title.id}/${chapter.id}`,
+-                class: &quot;follows--chapter&quot;,
+-              },
+-              [
+-                fullChapterName(chapter),
+-                chapter.groups.map((group) =&gt; {
+-                  m(&quot;span.follows--group&quot;, truncate(group, 20));
+-                }),
+-              ]
+-            )
+-          ),
++          title.chapters
++            .slice(-numChaptersToDisplay)
++            .map((chapter) =&gt;
++              m(Chapter, { site: title.site, titleId: title.id, chapter })
++            ),
+         ]),
+       ]
+     );
+diff --git a/src/pytaku/static/js/routes/title.js b/src/pytaku/static/js/routes/title.js
+new file mode 100644
+index 0000000..186ae17
+--- /dev/null
++++ b/src/pytaku/static/js/routes/title.js
+@@ -0,0 +1,65 @@
++import { Auth } from &quot;../models.js&quot;;
++import { LoadingMessage, Button, fullChapterName, Chapter } from &quot;../utils.js&quot;;
++
++function Title(initialVNode) {
++  let isLoading = false;
++  let title = {};
++
++  return {
++    oninit: (vnode) =&gt; {
++      document.title = &quot;Manga&quot;;
++      isLoading = true;
++      m.redraw();
++
++      Auth.request({
++        method: &quot;GET&quot;,
++        url: &quot;/api/title/:site/:titleId&quot;,
++        params: {
++          site: vnode.attrs.site,
++          titleId: vnode.attrs.titleId,
++        },
++      })
++        .then((resp) =&gt; {
++          title = resp;
++          document.title = title.name;
++        })
++        .finally(() =&gt; {
++          isLoading = false;
++        });
++    },
++    view: (vnode) =&gt; {
++      return m(
++        &quot;div.content&quot;,
++        isLoading
++          ? m(LoadingMessage)
++          : [
++              m(&quot;h1&quot;, title.name),
++              m(&quot;div.title--details&quot;, [
++                Auth.isLoggedIn()
++                  ? m(Button, {
++                      text: &quot;Follow&quot;,
++                      icon: &quot;bookmark&quot;,
++                      color: &quot;green&quot;,
++                    })
++                  : null,
++                &quot; &quot;,
++                m(
++                  &quot;a.touch-friendly[title=Go to source site][target=_blank]&quot;,
++                  { href: title.source_url },
++                  [title.site, m(&quot;i.icon.icon-arrow-up-right&quot;)]
++                ),
++              ]),
++              m(&quot;img.title--cover[alt=cover]&quot;, { src: title.cover }),
++              title.descriptions.map((desc) =&gt; m(&quot;p&quot;, desc)),
++              title.chapters
++                ? title.chapters.map((chapter) =&gt;
++                    m(Chapter, { site: title.site, titleId: title.id, chapter })
++                  )
++                : m(&quot;p&quot;, &quot;This one has no chapters.&quot;),
++            ]
++      );
++    },
++  };
++}
++
++export default Title;
+diff --git a/src/pytaku/static/js/utils.js b/src/pytaku/static/js/utils.js
+index bf0105a..46b877d 100644
+--- a/src/pytaku/static/js/utils.js
++++ b/src/pytaku/static/js/utils.js
+@@ -2,7 +2,60 @@ const LoadingMessage = {
+   view: (vnode) =&gt; m(&quot;h2.blink&quot;, [m(&quot;i.icon.icon-loader.spin&quot;), &quot; loading...&quot;]),
+ };
+ 
+-const truncate = (input, size) =&gt;
+-  input.length &gt; size ? `${input.substring(0, size)}...` : input;
++const Button = {
++  view: (vnode) =&gt;
++    m(
++      &quot;button&quot;,
++      {
++        class: vnode.attrs.color || &quot;&quot;,
++        ...vnode.attrs,
++      },
++      [
++        vnode.attrs.icon ? m(`i.icon.icon-${vnode.attrs.icon}`) : null,
++        vnode.attrs.text ? m(&quot;span&quot;, vnode.attrs.text) : null,
++      ]
++    ),
++};
++
++const Chapter = {
++  view: (vnode) =&gt;
++    m(&quot;div.utils--chapter&quot;, [
++      m(
++        m.route.Link,
++        {
++          href: `/m/${vnode.attrs.site}/${vnode.attrs.titleId}/${vnode.attrs.chapter.id}`,
++          class: &quot;touch-friendly&quot;,
++        },
++        [
++          m(&quot;span&quot;, fullChapterName(vnode.attrs.chapter)),
++          vnode.attrs.chapter.groups.map((group) =&gt;
++            m(&quot;span.utils--chapter--group&quot;, truncate(group, 20))
++          ),
++        ]
++      ),
++      ,
++    ]),
++};
++
++function truncate(input, size) {
++  return input.length &gt; size ? `${input.substring(0, size)}...` : input;
++}
++
++function fullChapterName(chapter) {
++  let result = &quot;&quot;;
++  if (typeof chapter.num_major !== &quot;undefined&quot;) {
++    result += (chapter.volume ? &quot;Ch.&quot; : &quot;Chapter &quot;) + chapter.num_major;
++  }
++  if (chapter.num_minor) {
++    result += &quot;.&quot; + chapter.num_minor;
++  }
++  if (chapter.volume) {
++    result += &quot; Vol. &quot; + chapter.volume;
++  }
++  if (chapter.name) {
++    result += &quot; - &quot; + chapter.name;
++  }
++  return result;
++}
+ 
+-export { LoadingMessage, truncate };
++export { LoadingMessage, Button, Chapter, truncate, fullChapterName };
+diff --git a/src/pytaku/static/lookandfeel.css b/src/pytaku/static/lookandfeel.css
+index bc43b85..018294e 100644
+--- a/src/pytaku/static/lookandfeel.css
++++ b/src/pytaku/static/lookandfeel.css
+@@ -58,7 +58,8 @@ p {
+   line-height: 1.5rem;
+ }
+ 
+-.button {
++button,
++a.touch-friendly {
+   display: inline-block;
+   user-select: none;
+   margin: 0;
+@@ -66,51 +67,59 @@ .button {
+   align-items: center;
+   justify-content: center;
+   vertical-align: bottom;
+-
+   cursor: pointer;
+   border: 0;
+   padding: 0.5rem 1rem 0.3rem 1rem;
+   border-radius: var(--border-radius);
++}
++button {
+   color: white;
+-  text-decoration: none;
++  background-color: var(--btn-gray);
++  border-bottom: 4px solid var(--btn-gray-bottom);
+ }
+-.button &gt; * {
++button &gt; i {
+   margin-right: 0.3rem;
+ }
+-.button &gt; *:last-child {
++button &gt; i:last-child {
+   margin-right: 0;
+ }
+-.button:hover {
++button:hover {
+   filter: brightness(110%);
+ }
+-.button:active {
++button:active {
+   filter: brightness(90%);
+ }
+-.button:focus {
++button:focus {
+   box-shadow: 0 0 2px black;
+ }
+-.button.red {
++button.red {
+   background-color: var(--btn-red);
+   border-bottom: 4px solid var(--btn-red-bottom);
+ }
+-.button.green {
++button.green {
+   background-color: var(--btn-green);
+   border-bottom: 4px solid var(--btn-green-bottom);
+ }
+-.button.blue {
++button.blue {
+   background-color: var(--btn-blue);
+   border-bottom: 4px solid var(--btn-blue-bottom);
+ }
+-.button.gray {
+-  background-color: var(--btn-gray);
+-  border-bottom: 4px solid var(--btn-gray-bottom);
+-}
+-.button.disabled,
+-.button.disabled:hover,
+-.button.disabled:active {
++button[disabled],
++button[disabled]:hover,
++button[disabled]:active {
+   background-color: #aaa;
+   border-bottom: 4px solid #aaa;
+   filter: none;
+   cursor: default;
+   opacity: 0.5;
+ }
++a.touch-friendly {
++  background-color: white;
++  color: inherit;
++  border: 1px solid #aaa;
++  text-decoration: none;
++  border-bottom: 4px solid grey;
++}
++a.touch-friendly:hover {
++  background-color: #eee;
++}
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index a1db482..6fbb584 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -45,7 +45,6 @@ nav {
+ }
+ nav &gt; * {
+   margin: var(--body-padding) 0;
+-  flex: 1 auto 0;
+ }
+ .nav--logo {
+   width: 150px;
+@@ -68,6 +67,11 @@ .nav--greeting {
+   margin-left: auto;
+   margin-top: auto;
+   margin-bottom: auto;
++  display: flex;
++  padding: 0.5rem 0 0.5rem 0.5rem;
++}
++.nav--greeting &gt; button {
++  margin-left: 0.5rem;
+ }
+ .nav--link {
+   color: white;
+@@ -165,7 +169,6 @@ .auth--form--message-error {
+ .follows--title {
+   display: flex;
+   flex-direction: row;
+-  flex-wrap: wrap;
+   margin-bottom: var(--body-padding);
+   background-color: #efefef;
+ }
+@@ -221,6 +224,22 @@ .follows--more {
+   font-style: italic;
+ }
+ 
++@media (max-width: 399px) {
++  .follows--title {
++    flex-direction: column;
++  }
++  .follows--cover {
++    border: none;
++    margin: 0.5rem;
++    margin-bottom: 0;
++    max-width: 100%;
++    max-height: 250px;
++  }
++  .follows--chapters {
++    padding: 0.5rem;
++  }
++}
++
+ /* Search route */
+ .search--site-heading {
+   text-transform: capitalize;
+@@ -249,3 +268,31 @@ .search--result span {
+ .search--result-text {
+   margin-bottom: 1rem;
+ }
++
++/* Title route */
++.title--cover {
++  width: 400px;
++  border: 1px solid black;
++}
++
++.title--details {
++  margin: 1rem 0;
++}
++
++/* Components defined in utils */
++.utils--chapter {
++  margin-bottom: 0.5rem;
++}
++.utils--chapter &gt; a {
++  padding-left: 0.5rem;
++  padding-right: 0.5rem;
++}
++.utils--chapter--group {
++  font-size: 0.7rem;
++  line-height: 0.8rem;
++  padding: 0.2rem;
++  margin-left: 0.3rem;
++  border-radius: 2px;
++  border: 1px solid #aaa;
++  background-color: #eee;
++}
+</pre></body></html>

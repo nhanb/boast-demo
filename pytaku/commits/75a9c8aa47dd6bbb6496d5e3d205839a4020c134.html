@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[75a9c8aa47] mangasee title/follows view | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 75a9c8aa47</strong><hr><pre>commit 75a9c8aa47dd6bbb6496d5e3d205839a4020c134
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 9 17:04:06 2020 +0700
+
+    mangasee title/follows view
+
+diff --git a/src/mangoapi/base_site.py b/src/mangoapi/base_site.py
+index 79fa6d1..b7f6df2 100644
+--- a/src/mangoapi/base_site.py
++++ b/src/mangoapi/base_site.py
+@@ -20,6 +20,14 @@ def get_chapter(self, chapter_id):
+     def search_title(self, query):
+         pass
+ 
++    @abstractmethod
++    def title_cover(self, title_id, cover_ext):
++        pass
++
++    @abstractmethod
++    def title_source_url(self, title_id):
++        pass
++
+     # optional abstract method
+     def login(self, username, password):
+         raise NotImplementedError()
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index cb5c07b..3ba5cfe 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -95,6 +95,12 @@ def login(self, username, password):
+         assert md_resp.status_code == 200, md_resp.text
+         return dict(md_resp.cookies)
+ 
++    def title_cover(self, title_id, cover_ext):
++        return f&quot;https://mangadex.org/images/manga/{title_id}.{cover_ext}&quot;
++
++    def title_source_url(self, title_id):
++        return f&quot;https://mangadex.org/manga/{title_id}&quot;
++
+ 
+ # Titles regex slightly adapted from https://github.com/md-y/mangadex-full-api
+ # Thanks!
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+index 9fd25fe..36e5cae 100644
+--- a/src/mangoapi/mangasee.py
++++ b/src/mangoapi/mangasee.py
+@@ -1,10 +1,16 @@
+ import json
++import re
+ 
+ import apsw
+ import requests
+ 
+ from mangoapi.base_site import Site
+ 
++regexes = {
++    &quot;title_name&quot;: re.compile(r&quot;&lt;title&gt;\s*([^|]+) | MangaSee&lt;/title&gt;&quot;),
++    &quot;title_chapters&quot;: re.compile(r&quot;vm\.Chapters = (\[[^\]]+\])&quot;),
++}
++
+ 
+ class Mangasee(Site):
+     search_table = None
+@@ -13,7 +19,30 @@ def __init__(self, keyval_store=None):
+         self.keyval_store = keyval_store
+ 
+     def get_title(self, title_id):
+-        pass
++        resp = requests.get(f&quot;https://mangasee123.com/manga/{title_id}&quot;, timeout=3)
++        assert resp.status_code == 200
++        html = resp.text
++        name = regexes[&quot;title_name&quot;].search(html).group(1).strip()
++        chapters_str = regexes[&quot;title_chapters&quot;].search(html).group(1)
++        chapters = [
++            {
++                &quot;id&quot;: ch[&quot;Chapter&quot;],
++                &quot;name&quot;: ch[&quot;ChapterName&quot;],
++                &quot;volume&quot;: &quot;&quot;,
++                &quot;groups&quot;: [],
++                **_parse_chapter_number(ch[&quot;Chapter&quot;]),
++            }
++            for ch in json.loads(chapters_str)
++        ]
++        return {
++            &quot;id&quot;: title_id,
++            &quot;name&quot;: name,
++            &quot;site&quot;: &quot;mangasee&quot;,
++            &quot;cover_ext&quot;: &quot;jpg&quot;,
++            &quot;chapters&quot;: chapters,
++            &quot;alt_names&quot;: [],
++            &quot;descriptions&quot;: [],
++        }
+ 
+     def get_chapter(self, chapter_id):
+         pass
+@@ -60,6 +89,12 @@ def search_title(self, query):
+             for row in self.search_table.search(query)
+         ]
+ 
++    def title_cover(self, title_id, cover_ext):
++        return f&quot;https://cover.mangabeast01.com/cover/{title_id}.jpg&quot;
++
++    def title_source_url(self, title_id):
++        return f&quot;https://mangasee123.com/manga/{title_id}&quot;
++
+ 
+ class SearchTable:
+     def __init__(self, titles: list):
+@@ -84,3 +119,27 @@ def search(self, query):
+         return self.db.cursor().execute(
+             &quot;SELECT id, name FROM titles(?) ORDER BY rank;&quot;, (query,)
+         )
++
++
++def _parse_chapter_number(e):
++    &quot;&quot;&quot;
++    Mangasee author tries to be clever with obtuse chapter numbers that must be decoded
++    via javascript:
++
++        (vm.ChapterDisplay = function (e) {
++        var t = parseInt(e.slice(1, -1)),
++            n = e[e.length - 1];
++        return 0 == n ? t : t + &quot;.&quot; + n;
++        })
++
++        Example: vm.ChapterDisplay(&#39;100625&#39;) === &#39;62.5&#39;
++
++    No idea why tbh.
++    &quot;&quot;&quot;
++    major = int(e[1:-1])
++    minor = int(e[-1])
++    return {
++        &quot;num_major&quot;: major,
++        &quot;num_minor&quot;: minor,
++        &quot;number&quot;: str(major) if not minor else f&quot;{major}.{minor}&quot;,
++    }
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 2642a42..ade49d3 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -27,7 +27,13 @@
+     unfollow,
+     verify_username_password,
+ )
+-from .source_sites import get_chapter, get_title, search_title_all_sites
++from .source_sites import (
++    get_chapter,
++    get_title,
++    search_title_all_sites,
++    title_cover,
++    title_source_url,
++)
+ 
+ config.load()
+ 
+@@ -50,6 +56,8 @@ def home_view():
+ @require_login
+ def follows_view():
+     titles = get_followed_titles(session[&quot;user&quot;][&quot;id&quot;])
++    for title in titles:
++        title[&quot;cover&quot;] = title_cover(title[&quot;site&quot;], title[&quot;id&quot;], title[&quot;cover_ext&quot;])
+     return render_template(&quot;follows.html&quot;, titles=titles)
+ 
+ 
+@@ -169,12 +177,14 @@ def title_view(site, title_id):
+     title = load_title(site, title_id, user_id=user_id)
+     if not title:
+         print(&quot;Getting title&quot;, title_id)
+-        title = get_title(title_id)
++        title = get_title(site, title_id)
+         print(&quot;Saving title&quot;, title_id, &quot;to db&quot;)
+         save_title(title)
+     else:
+         print(&quot;Loading title&quot;, title_id, &quot;from db&quot;)
+     title[&quot;site&quot;] = site
++    title[&quot;cover&quot;] = title_cover(site, title_id, title[&quot;cover_ext&quot;])
++    title[&quot;source_url&quot;] = title_source_url(site, title_id)
+     return render_template(&quot;title.html&quot;, **title)
+ 
+ 
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index a97ae51..82f2df8 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -37,7 +37,7 @@ def save_title(title):
+         {
+             &quot;id&quot;: title[&quot;id&quot;],
+             &quot;name&quot;: title[&quot;name&quot;],
+-            &quot;site&quot;: &quot;mangadex&quot;,
++            &quot;site&quot;: title[&quot;site&quot;],
+             &quot;cover_ext&quot;: title[&quot;cover_ext&quot;],
+             &quot;chapters&quot;: json.dumps(title[&quot;chapters&quot;]),
+             &quot;alt_names&quot;: json.dumps(title[&quot;alt_names&quot;]),
+diff --git a/src/pytaku/source_sites.py b/src/pytaku/source_sites.py
+index d97f43b..44577b6 100644
+--- a/src/pytaku/source_sites.py
++++ b/src/pytaku/source_sites.py
+@@ -38,12 +38,17 @@ def search_title(site_name, query):
+     return _get_site(site_name).search_title(query)
+ 
+ 
++def title_cover(site_name, title_id, cover_ext):
++    return _get_site(site_name).title_cover(title_id, cover_ext)
++
++
++def title_source_url(site_name, title_id):
++    return _get_site(site_name).title_source_url(title_id)
++
++
+ def search_title_all_sites(query):
+     &quot;&quot;&quot;
+     Returns dict in the form of {site_name: List[Title]}
+     I should really look into proper type annotations huh.
+     &quot;&quot;&quot;
+-    return {
+-        site_name: search_title(site_name, query)
+-        for site_name in (&quot;mangasee&quot;, &quot;mangadex&quot;)
+-    }
++    return {site_name: search_title(site_name, query) for site_name in (&quot;mangasee&quot;,)}
+diff --git a/src/pytaku/templates/follows.html b/src/pytaku/templates/follows.html
+index ac6dda3..ee57dc9 100644
+--- a/src/pytaku/templates/follows.html
++++ b/src/pytaku/templates/follows.html
+@@ -23,6 +23,7 @@
+ .cover {
+   border: 1px solid #777;
+   margin-right: .5rem;
++  max-width: 150px;
+ }
+ .cover:hover {
+   box-shadow: 0 0 3px black;
+@@ -48,6 +49,7 @@
+ .chapter:last-child::after {
+   content: &#39;← resume here&#39;;
+   background-color: cornsilk;
++  white-space: nowrap;
+ }
+ 
+ .group {
+@@ -73,7 +75,7 @@
+   &lt;div&gt;
+     &lt;a href=&quot;{{ title_url }}&quot;&gt;
+       &lt;img class=&quot;cover&quot;
+-           src=&quot;https://mangadex.org/images/manga/{{ title[&#39;id&#39;] }}.large.jpg&quot;
++           src=&quot;{{ title[&#39;cover&#39;] }}&quot;
+            alt=&quot;{{ title[&#39;name&#39;] }}&quot; /&gt;
+     &lt;/a&gt;
+   &lt;/div&gt;
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index c18cae2..e39ea1d 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -37,10 +37,10 @@ &lt;h1&gt;{{ name }}&lt;/h1&gt;
+       {{ ibutton(left_icon=&#39;bookmark&#39;, text=ftext, color=fcolor, title=ftitle) }}
+     &lt;/form&gt;
+   {% endif %}
+-  {{ ibutton(href=&#39;https://mangadex.org/manga/&#39; + id, right_icon=&#39;arrow-up-right&#39;, text=&#39;Source site&#39;, color=&#39;blue&#39;, title=&#39;Go to source site&#39;) }}
++  {{ ibutton(href=source_url, right_icon=&#39;arrow-up-right&#39;, text=&#39;Source site&#39;, color=&#39;blue&#39;, title=&#39;Go to source site&#39;) }}
+ &lt;/div&gt;
+ 
+-&lt;img class=&quot;cover&quot; src=&quot;https://mangadex.org/images/manga/{{ id }}.{{ cover_ext }}&quot; alt=&quot;cover&quot; /&gt;
++&lt;img class=&quot;cover&quot; src=&quot;{{ cover }}&quot; alt=&quot;cover&quot; /&gt;
+ 
+ {% if chapters %}
+ &lt;table&gt;
+</pre></body></html>

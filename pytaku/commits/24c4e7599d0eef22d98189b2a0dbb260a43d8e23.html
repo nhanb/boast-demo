@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[24c4e7599d] allow reloading img on error | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 24c4e7599d</strong><hr><pre>commit 24c4e7599d0eef22d98189b2a0dbb260a43d8e23
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 23 19:23:14 2020 +0700
+
+    allow reloading img on error
+
+diff --git a/README.md b/README.md
+index a9814ee..45726ef 100644
+--- a/README.md
++++ b/README.md
+@@ -17,8 +17,8 @@ # Pytaku
+   architecture/tooling **F**etishi**S**ts! Oftentimes I have enough practice on
+   industrial grade power tools at work so at home I want a change of pace.
+   Flask + raw SQL has been surprisingly comfy. On the other side, mithril.js
+-  seems to be a no-frills, stable SPA lib made by a person who knows what
+-  they&#39;re doing so let&#39;s see how that goes.
++  provides a good baseline of SPA functionality without having to pull in the
++  Rube Goldberg machine that is &quot;&quot;&quot;modern&quot;&quot;&quot; JS devtools.
+ 
+ # Development
+ 
+diff --git a/src/pytaku/static/js/routes/chapter.js b/src/pytaku/static/js/routes/chapter.js
+index f336e9a..e188822 100644
+--- a/src/pytaku/static/js/routes/chapter.js
++++ b/src/pytaku/static/js/routes/chapter.js
+@@ -5,6 +5,32 @@ const LoadingPlaceholder = {
+   view: () =&gt; m(&quot;h2&quot;, [m(&quot;i.icon.icon-loader.spin&quot;)]),
+ };
+ 
++const RetryImgButton = {
++  view: (vnode) =&gt; {
++    return m(Button, {
++      text: &quot;Errored. Try again?&quot;,
++      color: &quot;red&quot;,
++      onclick: (ev) =&gt; {
++        const { page } = vnode.attrs;
++        page.status = ImgStatus.LOADING;
++        // Cheat: append to src so the element&#39;s key is
++        // different, forcing mithril to redraw.
++        // Chose `?` here because it will just be stripped by
++        // flask&#39;s path parser.
++        page.src = page.src.endsWith(&quot;?&quot;)
++          ? page.src.slice(0, -1)
++          : page.src + &quot;?&quot;;
++      },
++    });
++  },
++};
++
++const ImgStatus = {
++  LOADING: &quot;loading&quot;,
++  SUCCEEDED: &quot;succeeded&quot;,
++  FAILED: &quot;failed&quot;,
++};
++
+ function Chapter(initialVNode) {
+   let isLoading = false;
+   let chapter = {};
+@@ -12,10 +38,12 @@ function Chapter(initialVNode) {
+   let pendingPages = [];
+ 
+   function loadNextPage() {
+-    loadedPages.push({
+-      completed: false,
+-      src: pendingPages.splice(0, 1)[0],
+-    });
++    if (pendingPages.length &gt; 0) {
++      loadedPages.push({
++        status: ImgStatus.LOADING,
++        src: pendingPages.splice(0, 1)[0],
++      });
++    }
+   }
+ 
+   return {
+@@ -101,17 +129,35 @@ function Chapter(initialVNode) {
+               (chapter.is_webtoon ? &quot; chapter--webtoon&quot; : &quot;&quot;),
+           },
+           [
+-            loadedPages.map((page) =&gt; [
+-              m(&quot;img&quot;, {
+-                src: page.src,
+-                style: { display: page.completed ? &quot;block&quot; : &quot;none&quot; },
+-                onload: (ev) =&gt; {
+-                  page.completed = true;
+-                  loadNextPage();
+-                },
+-              }),
+-              page.completed ? &quot;&quot; : m(LoadingPlaceholder),
+-            ]),
++            loadedPages.map((page, pageIndex) =&gt;
++              m(&quot;div&quot;, { key: page.src }, [
++                m(&quot;img&quot;, {
++                  src: page.src,
++                  style: {
++                    display:
++                      page.status === ImgStatus.SUCCEEDED ? &quot;block&quot; : &quot;none&quot;,
++                  },
++                  onload: (ev) =&gt; {
++                    page.status = ImgStatus.SUCCEEDED;
++                    loadNextPage();
++                  },
++                  onerror: (ev) =&gt; {
++                    page.status = ImgStatus.FAILED;
++                    loadNextPage();
++                  },
++                }),
++                page.status === ImgStatus.LOADING
++                  ? m(LoadingPlaceholder)
++                  : null,
++                page.status === ImgStatus.FAILED
++                  ? m(
++                      &quot;div&quot;,
++                      { style: { &quot;margin-bottom&quot;: &quot;.5rem&quot; } },
++                      m(RetryImgButton, { page })
++                    )
++                  : null,
++              ])
++            ),
+             pendingPages.map((page) =&gt; m(LoadingPlaceholder)),
+           ]
+         ),
+</pre></body></html>

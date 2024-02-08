@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1117557226] anti-300ms-delay insurance | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 1117557226</strong><hr><pre>commit 111755722620d0a95c0a973143cc164ba4e3c66e
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 10 23:21:07 2020 +0700
+
+    anti-300ms-delay insurance
+    
+    Just in case the width=device-width meta tag didn&#39;t work.
+
+diff --git a/src/pytaku/static/base.css b/src/pytaku/static/base.css
+index 447e396..530babd 100644
+--- a/src/pytaku/static/base.css
++++ b/src/pytaku/static/base.css
+@@ -17,6 +17,10 @@ :root {
+   overflow-y: scroll;
+ }
+ 
++html {
++  touch-action: manipulation;
++}
++
+ h1 {
+   margin-top: 1rem;
+   margin-bottom: 0.5rem;
+</pre></body></html>

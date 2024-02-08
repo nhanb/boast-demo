@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b316a044c8] fix race condition when finishing title | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / b316a044c8</strong><hr><pre>commit b316a044c8228c3579789e64bc1dadcc06415f52
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 5 17:42:32 2021 +0700
+
+    fix race condition when finishing title
+    
+    When viewing latest chapter of a title, make sure to only transition to
+    next route (title details) after the &quot;mark chapter as read&quot; request is
+    done, so that we don&#39;t end up showing the last chapter as still unread
+    in the title details route.
+
+diff --git a/src/pytaku/js-src/routes/authentication.js b/src/pytaku/js-src/routes/authentication.js
+index ecdaa13..30cc850 100644
+--- a/src/pytaku/js-src/routes/authentication.js
++++ b/src/pytaku/js-src/routes/authentication.js
+@@ -64,7 +64,6 @@ function Authentication(initialVNode) {
+             m(&quot;input[placeholder=username][name=username][required]&quot;, {
+               value: loginUsername,
+               oninput: (e) =&gt; {
+-                console.log(&quot;username onInput:&quot;, e.target.value);
+                 loginUsername = e.target.value;
+               },
+             }),
+@@ -73,7 +72,6 @@ function Authentication(initialVNode) {
+               {
+                 value: loginPassword,
+                 oninput: (e) =&gt; {
+-                  console.log(&quot;password onInput: size&quot;, e.target.value.length);
+                   loginPassword = e.target.value;
+                 },
+               }
+diff --git a/src/pytaku/js-src/routes/chapter.js b/src/pytaku/js-src/routes/chapter.js
+index ea4d77a..fa150ec 100644
+--- a/src/pytaku/js-src/routes/chapter.js
++++ b/src/pytaku/js-src/routes/chapter.js
+@@ -60,6 +60,7 @@ function FallbackableImg(initialVNode) {
+ 
+ function Chapter(initialVNode) {
+   let isLoading = false;
++  let isMarkingLastChapterAsRead = false;
+   let chapter = {};
+   let loadedPages = [];
+   let pendingPages = [];
+@@ -112,6 +113,94 @@ function Chapter(initialVNode) {
+     }
+   }
+ 
++  function markChapterAsRead(site, titleId, chapterId) {
++    return Auth.request({
++      method: &quot;POST&quot;,
++      url: &quot;/api/read&quot;,
++      body: {
++        read: [
++          {
++            site,
++            title_id: titleId,
++            chapter_id: chapterId,
++          },
++        ],
++      },
++    });
++  }
++
++  function buttonsView(site, prev, next) {
++    const nextRoute = next
++      ? `/m/${site}/${titleId}/${next.id}`
++      : `/m/${site}/${titleId}`;
++
++    return m(&quot;div.chapter--buttons&quot;, [
++      prev
++        ? m(
++            m.route.Link,
++            {
++              class: &quot;touch-friendly&quot;,
++              href: `/m/${site}/${titleId}/${prev.id}`,
++            },
++            [m(&quot;i.icon.icon-chevrons-left&quot;), m(&quot;span&quot;, &quot;prev&quot;)]
++          )
++        : m(Button, {
++            text: &quot;prev&quot;,
++            icon: &quot;chevrons-left&quot;,
++            disabled: true,
++          }),
++      m(
++        m.route.Link,
++        {
++          class: &quot;touch-friendly&quot;,
++          href: `/m/${site}/${titleId}`,
++        },
++        [m(&quot;i.icon.icon-list&quot;), m(&quot;span&quot;, &quot; chapter list&quot;)]
++      ),
++      m(
++        m.route.Link,
++        {
++          class:
++            &quot;touch-friendly&quot; + (isMarkingLastChapterAsRead ? &quot; disabled&quot; : &quot;&quot;),
++          href: nextRoute,
++          disabled: isMarkingLastChapterAsRead,
++          onclick: (ev) =&gt; {
++            if (Auth.isLoggedIn()) {
++              if (next) {
++                markChapterAsRead(site, titleId, chapter.id);
++              } else {
++                // If this is the last chapter, make sure to only transition
++                // to next route (title details) after the &quot;mark chapter as
++                // read&quot; request is done, so that we don&#39;t end up showing the
++                // last chapter as still unread in the title details route.
++                ev.preventDefault();
++                isMarkingLastChapterAsRead = true;
++                m.redraw();
++                markChapterAsRead(site, titleId, chapter.id).finally(() =&gt; {
++                  isMarkingLastChapterAsRead = false; // proly unnecessary
++                  m.route.set(nextRoute);
++                });
++              }
++            }
++          },
++        },
++        [
++          m(
++            &quot;span&quot;,
++            next
++              ? &quot;next&quot;
++              : isMarkingLastChapterAsRead
++              ? &quot;finishing...&quot;
++              : &quot;finish&quot;
++          ),
++          isMarkingLastChapterAsRead
++            ? null
++            : m(&quot;i.icon.icon-&quot; + (next ? &quot;chevrons-right&quot; : &quot;check-circle&quot;)),
++        ]
++      ),
++    ]);
++  }
++
+   return {
+     oninit: (vnode) =&gt; {
+       document.title = &quot;Manga chapter&quot;;
+@@ -158,64 +247,10 @@ function Chapter(initialVNode) {
+       const { site, titleId } = vnode.attrs;
+       const prev = chapter.prev_chapter;
+       const next = chapter.next_chapter;
+-      const buttons = m(&quot;div.chapter--buttons&quot;, [
+-        prev
+-          ? m(
+-              m.route.Link,
+-              {
+-                class: &quot;touch-friendly&quot;,
+-                href: `/m/${site}/${titleId}/${prev.id}`,
+-              },
+-              [m(&quot;i.icon.icon-chevrons-left&quot;), m(&quot;span&quot;, &quot;prev&quot;)]
+-            )
+-          : m(Button, {
+-              text: &quot;prev&quot;,
+-              icon: &quot;chevrons-left&quot;,
+-              disabled: true,
+-            }),
+-        m(
+-          m.route.Link,
+-          {
+-            class: &quot;touch-friendly&quot;,
+-            href: `/m/${site}/${titleId}`,
+-          },
+-          [m(&quot;i.icon.icon-list&quot;), m(&quot;span&quot;, &quot; chapter list&quot;)]
+-        ),
+-        m(
+-          m.route.Link,
+-          {
+-            class: &quot;touch-friendly&quot;,
+-            href: next
+-              ? `/m/${site}/${titleId}/${next.id}`
+-              : `/m/${site}/${titleId}`,
+-            onclick: (ev) =&gt; {
+-              if (Auth.isLoggedIn()) {
+-                Auth.request({
+-                  method: &quot;POST&quot;,
+-                  url: &quot;/api/read&quot;,
+-                  body: {
+-                    read: [
+-                      {
+-                        site,
+-                        title_id: titleId,
+-                        chapter_id: chapter.id,
+-                      },
+-                    ],
+-                  },
+-                });
+-              }
+-              return true;
+-            },
+-          },
+-          [
+-            m(&quot;span&quot;, next ? &quot;next&quot; : &quot;finish&quot;),
+-            m(&quot;i.icon.icon-&quot; + (next ? &quot;chevrons-right&quot; : &quot;check-circle&quot;)),
+-          ]
+-        ),
+-      ]);
++
+       return m(&quot;div.chapter.content&quot;, [
+         m(&quot;h1&quot;, fullChapterName(chapter)),
+-        buttons,
++        buttonsView(site, prev, next),
+         m(
+           &quot;div&quot;,
+           {
+@@ -257,7 +292,7 @@ function Chapter(initialVNode) {
+             pendingPages.map(() =&gt; m(PendingPlaceholder)),
+           ]
+         ),
+-        buttons,
++        buttonsView(site, prev, next),
+         nextChapterLoadedPages.map((page) =&gt;
+           m(FallbackableImg, {
+             style: { display: &quot;none&quot; },
+diff --git a/src/pytaku/static/lookandfeel.css b/src/pytaku/static/lookandfeel.css
+index 5435d9f..a904c38 100644
+--- a/src/pytaku/static/lookandfeel.css
++++ b/src/pytaku/static/lookandfeel.css
+@@ -116,6 +116,9 @@ button.blue {
+   background-color: var(--btn-blue);
+   border-bottom: 4px solid var(--btn-blue-bottom);
+ }
++a.touch-friendly.disabled,
++a.touch-friendly.disabled:hover,
++a.touch-friendly.disabled:active,
+ button[disabled],
+ button[disabled]:hover,
+ button[disabled]:active {
+</pre></body></html>

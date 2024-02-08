@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e73ab45690] obligatory virus disclaimer | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / e73ab45690</strong><hr><pre>commit e73ab45690dd845a9aebb403418082a219007595
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jun 20 18:19:42 2023 +0700
+
+    obligatory virus disclaimer
+
+diff --git a/README.md b/README.md
+index 1d19a62..e019c39 100644
+--- a/README.md
++++ b/README.md
+@@ -42,7 +42,24 @@ ## macOS or any other unix-like
+ 
+ Unplanned but I&#39;m open to paid work.
+ 
+-# Build from source
++# I got a virus warning?
++
++GORTS is written in the Go programing language, which suffers from false
++positives more often than usual. See &lt;https://go.dev/doc/faq#virus&gt;:
++
++&gt; Why does my virus-scanning software think my Go distribution or compiled
++&gt; binary is infected?
++&gt;
++&gt; This is a common occurrence, especially on Windows machines, and is almost
++&gt; always a false positive. Commercial virus scanning programs are often
++&gt; confused by the structure of Go binaries, which they don&#39;t see as often as
++&gt; those compiled from other languages.
++
++So no, I&#39;m not trying to hackerman you. If you&#39;re really concerned, feel free
++to audit the code and compile GORTS yourself. There&#39;s really not that much
++code.
++
++# Compile from source
+ 
+ Can cross-compile from any unix-like. I&#39;m cheating a little though, by
+ downloading a prebuilt tcl executable for Windows, and just assume Linux users
+</pre></body></html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[35fa99fbe4] unlisted posts don&#39;t need dedicated dirs | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 35fa99fbe4</strong><hr><pre>commit 35fa99fbe424d532f60cea9667161d787312b03c
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 21 13:05:53 2023 +0700
+
+    unlisted posts don&#39;t need dedicated dirs
+
+diff --git a/.gitignore b/.gitignore
+deleted file mode 100644
+index 16be8f2..0000000
+--- a/.gitignore
++++ /dev/null
+@@ -1 +0,0 @@
+-/output/
+diff --git a/ideas/index.dj b/ideas.dj
+similarity index 100%
+rename from ideas/index.dj
+rename to ideas.dj
+diff --git a/ideas/index.html b/ideas.html
+similarity index 100%
+rename from ideas/index.html
+rename to ideas.html
+diff --git a/manifest.txt b/manifest.txt
+index 42362c0..e920bea 100644
+--- a/manifest.txt
++++ b/manifest.txt
+@@ -8,13 +8,13 @@ fightstick-1/index.html
+ fightstick-2/index.html
+ go-stack/index.html
+ hdviet/index.html
+-ideas/index.html
++ideas.html
+ index.html
+ linux-automation/index.html
+ manjaro-xfce/index.html
+ mcross/index.html
+ node-webkit/index.html
+-notes/index.html
++notes.html
+ pathogen-vs-vundle/index.html
+ petition-fraud/index.html
+ pippable-webapp/index.html
+@@ -58,4 +58,4 @@ video-streaming-2/index.html
+ video-streaming-3/index.html
+ vim-open-link/index.html
+ virtualenvwrapper/index.html
+-yaks/index.html
+\ No newline at end of file
++yaks.html
+\ No newline at end of file
+diff --git a/notes/index.dj b/notes.dj
+similarity index 100%
+rename from notes/index.dj
+rename to notes.dj
+diff --git a/notes/index.html b/notes.html
+similarity index 100%
+rename from notes/index.html
+rename to notes.html
+diff --git a/yaks/index.dj b/yaks.dj
+similarity index 100%
+rename from yaks/index.dj
+rename to yaks.dj
+diff --git a/yaks/index.html b/yaks.html
+similarity index 100%
+rename from yaks/index.html
+rename to yaks.html
+</pre></body></html>

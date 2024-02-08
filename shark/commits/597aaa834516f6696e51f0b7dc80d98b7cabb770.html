@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[597aaa8345] remove redundant runner.os check; add Apple guide | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 597aaa8345</strong><hr><pre>commit 597aaa834516f6696e51f0b7dc80d98b7cabb770
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jul 10 15:40:05 2022 +0700
+
+    remove redundant runner.os check; add Apple guide
+
+diff --git a/.github/workflows/main.yml b/.github/workflows/main.yml
+index a40ebb4..c8a5ab2 100644
+--- a/.github/workflows/main.yml
++++ b/.github/workflows/main.yml
+@@ -65,7 +65,6 @@ jobs:
+         go-version: 1.18
+ 
+     - name: Install ebiten linux deps
+-      if: runner.os == &#39;Linux&#39;
+       run: make deps-debian
+ 
+     - name: Cross-compile Windows build
+diff --git a/README.md b/README.md
+index 1cf7245..9089cd7 100644
+--- a/README.md
++++ b/README.md
+@@ -56,6 +56,8 @@ ## macOS
+ - From now on you can launch the Shark application just like any other app,
+   either from Spotlight or from the Applications folder.
+ 
++There&#39;s also Apple&#39;s official guide [here][apple-guide].
++
+ In the future I might pay the $99 if I end up writing more macOS apps and this
+ becomes enough of a nuisance. Maybe.
+ 
+@@ -116,3 +118,4 @@ # License
+ [srht]: https://builds.sr.ht/~nhanb/shark/commits/master
+ [gh]: https://github.com/nhanb/shark/actions/workflows/main.yml
+ [pr]: https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution
++[apple-guide]: https://support.apple.com/en-vn/guide/mac-help/mh40616/mac
+</pre></body></html>

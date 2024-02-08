@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[389a7cf776] mangasee descriptions | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 389a7cf776</strong><hr><pre>commit 389a7cf776e86f3839a180b2accb4620888ec720
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Aug 11 21:41:09 2020 +0700
+
+    mangasee descriptions
+
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+index ac96f69..0df9a00 100644
+--- a/src/mangoapi/mangasee.py
++++ b/src/mangoapi/mangasee.py
+@@ -9,6 +9,9 @@
+ regexes = {
+     &quot;title_name&quot;: re.compile(r&quot;&lt;title&gt;\s*([^|]+) | MangaSee&lt;/title&gt;&quot;),
+     &quot;title_chapters&quot;: re.compile(r&quot;vm\.Chapters = (\[[^\]]+\])&quot;),
++    &quot;title_desc&quot;: re.compile(
++        r&quot;&lt;span +class=\&quot;mlabel\&quot;&gt;Description:&lt;/span&gt;[^&lt;]+&lt;div[^&gt;]*&gt;([^&lt;]+)&lt;&quot;
++    ),
+     &quot;chapter_title_name&quot;: re.compile(r&#39;vm\.IndexName = &quot;([^&quot;]+)&quot;&#39;),
+     &quot;chapter_data&quot;: re.compile(r&quot;vm\.CurChapter = (\{[^\}]+\})&quot;),
+     &quot;chapter_img_server&quot;: re.compile(r&#39;vm\.CurPathName = &quot;([^&quot;]+)&quot;&#39;),
+@@ -26,6 +29,7 @@ def get_title(self, title_id):
+         assert resp.status_code == 200
+         html = resp.text
+         name = regexes[&quot;title_name&quot;].search(html).group(1).strip()
++        desc = regexes[&quot;title_desc&quot;].search(html).group(1).strip()
+         chapters_str = regexes[&quot;title_chapters&quot;].search(html).group(1)
+         chapters = []
+         for ch in json.loads(chapters_str):
+@@ -46,7 +50,7 @@ def get_title(self, title_id):
+             &quot;cover_ext&quot;: &quot;jpg&quot;,
+             &quot;chapters&quot;: chapters,
+             &quot;alt_names&quot;: [],
+-            &quot;descriptions&quot;: [],
++            &quot;descriptions&quot;: [desc],
+         }
+ 
+     def get_chapter(self, title_id, chapter_id):
+</pre></body></html>

@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[3d26dfeef1] make proper movie-streaming series | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 3d26dfeef1</strong><hr><pre>commit 3d26dfeef15c36b7ad170ff27ad4642c8fc407bd
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 23 20:48:04 2023 +0700
+
+    make proper movie-streaming series
+
+diff --git a/_s4g/manifest b/_s4g/manifest
+index e920bea..5d26b48 100644
+--- a/_s4g/manifest
++++ b/_s4g/manifest
+@@ -13,6 +13,10 @@ index.html
+ linux-automation/index.html
+ manjaro-xfce/index.html
+ mcross/index.html
++movie-streaming/gflick-fixed/index.html
++movie-streaming/gflick/index.html
++movie-streaming/index.html
++movie-streaming/put.io/index.html
+ node-webkit/index.html
+ notes.html
+ pathogen-vs-vundle/index.html
+@@ -53,9 +57,6 @@ sqlite-python/index.html
+ stepmania-pad/index.html
+ tmux-italics/index.html
+ ubuntu-programs/index.html
+-video-streaming-1/index.html
+-video-streaming-2/index.html
+-video-streaming-3/index.html
+ vim-open-link/index.html
+ virtualenvwrapper/index.html
+ yaks.html
+\ No newline at end of file
+diff --git a/_s4g/redirects.txt b/_s4g/redirects.txt
+index b5bb930..af8734f 100644
+--- a/_s4g/redirects.txt
++++ b/_s4g/redirects.txt
+@@ -18,9 +18,9 @@ posts/my-first-diy-fightstick-part-2/index.html -&gt; fightstick-2/
+ posts/opening-http-link-under-the-cursor-in-vim/index.html -&gt; vim-open-link/
+ posts/setting-up-your-development-environment-for-a-node-webkit-project/index.html -&gt; node-webkit/
+ posts/simplest-possible-stepmania-soft-to-hard-pad-mod/index.html -&gt; stepmania-pad/
+-posts/streaming-videos-from-google-drive-a-second-attempt/index.html -&gt; video-streaming-2/
+-posts/the-video-streaming-finale-or-why-putio-is-awesome/index.html -&gt; video-streaming-3/
+-posts/towards-an-acceptable-video-playing-experience/index.html -&gt; video-streaming-1/
++posts/streaming-videos-from-google-drive-a-second-attempt/index.html -&gt; movie-streaming/gflick-fixed/
++posts/the-video-streaming-finale-or-why-putio-is-awesome/index.html -&gt; movie-streaming/put.io/
++posts/towards-an-acceptable-video-playing-experience/index.html -&gt; movie-streaming/gflick/
+ posts/virtualenwrapper-python2-python3/index.html -&gt; virtualenvwrapper/
+ posts/what-i-did-after-installing-manjaro-xfce/index.html -&gt; manjaro-xfce/
+ posts/why-i-use-linux-automation/index.html -&gt; linux-automation/
+diff --git a/_s4g/theme/navbar.css b/_s4g/theme/navbar.css
+index 3a7107b..71bba65 100644
+--- a/_s4g/theme/navbar.css
++++ b/_s4g/theme/navbar.css
+@@ -5,6 +5,7 @@ nav &gt; a {
+ nav &gt; .posted-on {
+   float: right;
+   font-style: italic;
++  margin-bottom: 0.5rem;
+ }
+ 
+ .nav-hr {
+diff --git a/_s4g/theme/post.tmpl b/_s4g/theme/post.tmpl
+index 6878886..15fa7c6 100644
+--- a/_s4g/theme/post.tmpl
++++ b/_s4g/theme/post.tmpl
+@@ -5,8 +5,47 @@
+ {{- template &quot;navbar&quot; .}}
+ 
+ &lt;main&gt;
++
++{{- if .Post.Parent }}
++&lt;em&gt;
++  This post is part of
++  &lt;a href=&quot;{{.Post.Parent.WebPath}}&quot;&gt;{{.Post.Parent.Title}}&lt;/a&gt;
++&lt;/em&gt;
++&lt;hr&gt;
++{{- end }}
++
+ &lt;h1&gt;{{.Post.Title}}&lt;/h1&gt;
++
+ {{.Content}}
++{{if .Post.Parent }}
++  &lt;div class=&quot;series-container&quot;&gt;
++    &lt;p&gt;
++      Here&#39;s every post in
++      &lt;a href=&quot;{{.Post.Parent.WebPath}}&quot;&gt;{{.Post.Parent.Title}}&lt;/a&gt;,
++      in chronological order:
++    &lt;/p&gt;
++
++    &lt;ol&gt;
++    {{- range .Post.Parent.Children }}
++      {{ if not .IsDraft -}}
++      &lt;li&gt;&lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
++          {{- if eq $.Post.WebPath .WebPath }} (you are here) {{- end -}}
++      &lt;/li&gt;
++      {{- end -}}
++    {{ end }}
++    &lt;/ol&gt;
++  &lt;/div&gt;
++
++  &lt;style&gt;
++    .series-container {
++      margin: 2rem 0;
++      padding: 0 1rem;
++      border: 1px dashed #aaa;
++      background-color: #eee;
++    }
++  &lt;/style&gt;
++{{ end -}}
++
+ &lt;/main&gt;
+ 
+ {{template &quot;footer&quot; .}}
+diff --git a/_s4g/theme/series-index.tmpl b/_s4g/theme/series-index.tmpl
+new file mode 100644
+index 0000000..aee5b53
+--- /dev/null
++++ b/_s4g/theme/series-index.tmpl
+@@ -0,0 +1,27 @@
++{{- define &quot;head&quot;}}{{- end}}
++
++{{define &quot;body&quot;}}
++
++{{- template &quot;navbar&quot; .}}
++
++&lt;main&gt;
++
++&lt;h1&gt;{{.Post.Title}}&lt;/h1&gt;
++{{.Content}}
++
++&lt;ol&gt;
++{{ range .Post.Children }}
++{{- if not .IsDraft}}
++  &lt;li style=&quot;margin-bottom: 1rem;&quot;&gt;
++    &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
++    &lt;br&gt;
++    &lt;span&gt;{{.PostedAt.Local.Format &quot;January 1, 2006&quot;}}&lt;/span&gt;
++  &lt;/li&gt;
++{{- end}}
++{{ end }}
++&lt;/ol&gt;
++
++&lt;/main&gt;
++
++{{template &quot;footer&quot; .}}
++{{- end}}
+diff --git a/about/index.html b/about/index.html
+index 19a1616..56d71b9 100644
+--- a/about/index.html
++++ b/about/index.html
+@@ -27,7 +27,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;About&lt;/h1&gt;
++
+ &lt;p&gt;Hi, I’m Nhân. I make webstuff for a living.&lt;/p&gt;
+ &lt;p&gt;&lt;img alt=&quot;literally me&quot; src=&quot;keyboard-warrior.jpg&quot;&gt;&lt;/p&gt;
+ &lt;p&gt;My mind is a sad mess that cannot hold much information after a couple of
+diff --git a/chromebook/index.html b/chromebook/index.html
+index e223601..956b044 100644
+--- a/chromebook/index.html
++++ b/chromebook/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Acer Chromebook Spin 713 &amp;#34;Voxel&amp;#34;: an adequate Crostini device, a buggy Linux laptop&lt;/h1&gt;
++
+ &lt;p&gt;&lt;strong&gt;June 2023 update&lt;/strong&gt;: I &lt;a href=&quot;https://github.com/WeirdTreeThing/chromebook-linux-audio/issues/2#issuecomment-1578962117&quot;&gt;learned&lt;/a&gt; that using pulseaudio instead of
+ pipewire works around the audio issue. The following is the original article.&lt;/p&gt;
+ &lt;hr&gt;
+diff --git a/cool/index.html b/cool/index.html
+index afde9d7..b2f94ba 100644
+--- a/cool/index.html
++++ b/cool/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;&amp;#34;Have you built anything cool?&amp;#34;&lt;/h1&gt;
++
+ &lt;p&gt;So recently I went to a &lt;em&gt;networking event&lt;/em&gt;—something I have never liked or been good at. I’m
+ not sure if I’m one of those introverts or if I’m just socially awkward, but the very idea of
+ going around trying to converse with total strangers just to exchange business cards is not at all
+diff --git a/custom-theme/index.html b/custom-theme/index.html
+index fb8d1f5..432519d 100644
+--- a/custom-theme/index.html
++++ b/custom-theme/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Look ma, no stock theme!&lt;/h1&gt;
++
+ &lt;p&gt;&lt;strong&gt;2023 Update&lt;/strong&gt;: I just realized that em dashes in certain default sans-serif
+ fonts look terrible (no space around the dash), so I now explicitly use Source
+ Sans Pro and Ubuntu Mono. Using specific fonts allow me to fine-tune my
+diff --git a/fcitx/index.html b/fcitx/index.html
+index 98726cb..1cc38b6 100644
+--- a/fcitx/index.html
++++ b/fcitx/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Dẹp ibus-unikey đi, dùng fcitx-unikey nhé!&lt;/h1&gt;
++
+ &lt;p&gt;&lt;strong&gt;Cập nhật tháng 1/2021:&lt;/strong&gt; hiện tại mình dùng fcitx5 trên Arch + KDE, &lt;a href=&quot;https://wiki.archlinux.org/title/Fcitx5&quot;&gt;cài đặt
+ và config&lt;/a&gt; không thể đơn giản hơn:&lt;/p&gt;
+ &lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;sudo pacman -S fcitx5 fcitx5-qt fcitx5-gtk fcitx5-unikey kcm-fcitx5
+diff --git a/feed.xml b/feed.xml
+index d79b430..3544a2b 100644
+--- a/feed.xml
++++ b/feed.xml
+@@ -52,15 +52,15 @@
+   &lt;/entry&gt;
+   &lt;entry&gt;
+     &lt;title&gt;The video streaming finale, or why put.io is awesome&lt;/title&gt;
+-    &lt;id&gt;https://beta.imnhan.com/video-streaming-3/&lt;/id&gt;
+-    &lt;link href=&quot;https://beta.imnhan.com/video-streaming-3/&quot;&gt;&lt;/link&gt;
++    &lt;id&gt;https://beta.imnhan.com/movie-streaming/put.io/&lt;/id&gt;
++    &lt;link href=&quot;https://beta.imnhan.com/movie-streaming/put.io/&quot;&gt;&lt;/link&gt;
+     &lt;published&gt;2020-10-21T11:45:00+07:00&lt;/published&gt;
+     &lt;updated&gt;2020-10-21T11:45:00+07:00&lt;/updated&gt;
+   &lt;/entry&gt;
+   &lt;entry&gt;
+     &lt;title&gt;Streaming videos from Google Drive: a second attempt&lt;/title&gt;
+-    &lt;id&gt;https://beta.imnhan.com/video-streaming-2/&lt;/id&gt;
+-    &lt;link href=&quot;https://beta.imnhan.com/video-streaming-2/&quot;&gt;&lt;/link&gt;
++    &lt;id&gt;https://beta.imnhan.com/movie-streaming/gflick-fixed/&lt;/id&gt;
++    &lt;link href=&quot;https://beta.imnhan.com/movie-streaming/gflick-fixed/&quot;&gt;&lt;/link&gt;
+     &lt;published&gt;2020-06-10T08:25:00+07:00&lt;/published&gt;
+     &lt;updated&gt;2020-06-10T08:25:00+07:00&lt;/updated&gt;
+   &lt;/entry&gt;
+@@ -73,8 +73,8 @@
+   &lt;/entry&gt;
+   &lt;entry&gt;
+     &lt;title&gt;Towards an acceptable video playing experience&lt;/title&gt;
+-    &lt;id&gt;https://beta.imnhan.com/video-streaming-1/&lt;/id&gt;
+-    &lt;link href=&quot;https://beta.imnhan.com/video-streaming-1/&quot;&gt;&lt;/link&gt;
++    &lt;id&gt;https://beta.imnhan.com/movie-streaming/gflick/&lt;/id&gt;
++    &lt;link href=&quot;https://beta.imnhan.com/movie-streaming/gflick/&quot;&gt;&lt;/link&gt;
+     &lt;published&gt;2020-04-26T10:06:00+07:00&lt;/published&gt;
+     &lt;updated&gt;2020-04-26T10:06:00+07:00&lt;/updated&gt;
+   &lt;/entry&gt;
+diff --git a/fightstick-1/index.html b/fightstick-1/index.html
+index ca7ca6e..dc7ca3e 100644
+--- a/fightstick-1/index.html
++++ b/fightstick-1/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;My first DIY fightstick: Part 1&lt;/h1&gt;
++
+ &lt;p&gt;Ever since I started practicing Street Fighter seriously (albeit with modest results), I’ve
+ always wanted to make myself a custom fightstick. Now that I’m not working full-time for anyone,
+ there’s no better time to Just Do It.&lt;/p&gt;
+diff --git a/fightstick-2/index.html b/fightstick-2/index.html
+index ee92530..266ce77 100644
+--- a/fightstick-2/index.html
++++ b/fightstick-2/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;My first DIY fightstick: Part 2&lt;/h1&gt;
++
+ &lt;p&gt;It’s been a while since I &lt;a href=&quot;../fightstick-1/&quot;&gt;started&lt;/a&gt; my arcade stick project. To be honest I got lazy and paused
+ the whole thing for a while, but yesterday I needed a distraction so… everything came together
+ much more nicely than I thought!&lt;/p&gt;
+diff --git a/go-stack/index.html b/go-stack/index.html
+index 810702c..ef00615 100644
+--- a/go-stack/index.html
++++ b/go-stack/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Go, Postgres, Caddy, systemd: a simple, highly portable, Docker-free web stack&lt;/h1&gt;
++
+ &lt;p&gt;I’ve &lt;a href=&quot;../pippable-webapp/&quot;&gt;mentioned&lt;/a&gt; before that I’m not a fan of Docker as a deployment
+ strategy. In that same post I briefly mentioned that Go could simplify
+ deployment compared to Python. Today I’ll &lt;em&gt;go&lt;/em&gt; (haha get it?) into detail,
+diff --git a/hdviet/index.html b/hdviet/index.html
+index 17918ea..e9b4d39 100644
+--- a/hdviet/index.html
++++ b/hdviet/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;How I bypassed my university&amp;#39;s domain blocker to watch movies on hdviet.com&lt;/h1&gt;
++
+ &lt;p&gt;&lt;strong&gt;TL;DR&lt;/strong&gt;: Clone &lt;a href=&quot;https://github.com/nhanb/twisted-connect-proxy&quot;&gt;my script from GitHub&lt;/a&gt;, run it with &lt;code&gt;python2 server.py 8080&lt;/code&gt;, configure your
+ browser to use localhost:8080 as HTTP and HTTPS proxy, profit.&lt;/p&gt;
+ &lt;p&gt;&lt;strong&gt;Disclaimer&lt;/strong&gt;: The sole reason I came up with this trick and documented it was to satisfy my
+diff --git a/ideas.html b/ideas.html
+index e1ea6cf..c4ce17b 100644
+--- a/ideas.html
++++ b/ideas.html
+@@ -27,7 +27,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Potential project ideas&lt;/h1&gt;
++
+ &lt;section id=&quot;Self-hosted-RSS-reader-in-D&quot;&gt;
+ &lt;h2&gt;Self hosted RSS reader in D&lt;/h2&gt;
+ &lt;ul&gt;
+diff --git a/index.dj b/index.dj
+index d75a6e5..ea36263 100644
+--- a/index.dj
++++ b/index.dj
+@@ -1,4 +1,4 @@
+ Title: Home
+ ShowInFeed: false
+-Templates: $base.tmpl, $includes.tmpl, $home.tmpl
++PageType: home
+ ---
+diff --git a/index.html b/index.html
+index 092db4e..a488d81 100644
+--- a/index.html
++++ b/index.html
+@@ -70,12 +70,12 @@ &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
+     &lt;span&gt;February 2, 2021&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+-    &lt;a href=&quot;/video-streaming-3/&quot;&gt;The video streaming finale, or why put.io is awesome&lt;/a&gt;
++    &lt;a href=&quot;/movie-streaming/put.io/&quot;&gt;The video streaming finale, or why put.io is awesome&lt;/a&gt;
+     &lt;br&gt;
+     &lt;span&gt;October 10, 2020&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+-    &lt;a href=&quot;/video-streaming-2/&quot;&gt;Streaming videos from Google Drive: a second attempt&lt;/a&gt;
++    &lt;a href=&quot;/movie-streaming/gflick-fixed/&quot;&gt;Streaming videos from Google Drive: a second attempt&lt;/a&gt;
+     &lt;br&gt;
+     &lt;span&gt;June 6, 2020&lt;/span&gt;
+   &lt;/li&gt;
+@@ -85,7 +85,7 @@ &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
+     &lt;span&gt;May 5, 2020&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+-    &lt;a href=&quot;/video-streaming-1/&quot;&gt;Towards an acceptable video playing experience&lt;/a&gt;
++    &lt;a href=&quot;/movie-streaming/gflick/&quot;&gt;Towards an acceptable video playing experience&lt;/a&gt;
+     &lt;br&gt;
+     &lt;span&gt;April 4, 2020&lt;/span&gt;
+   &lt;/li&gt;
+diff --git a/linux-automation/index.html b/linux-automation/index.html
+index 9877b93..21741fc 100644
+--- a/linux-automation/index.html
++++ b/linux-automation/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Why I use Linux: Automation&lt;/h1&gt;
++
+ &lt;p&gt;(In this post, when I say Linux, I mean any popular GNU/Linux distribution. Hope this clarification
+ will keep the nitpickers away.)&lt;/p&gt;
+ &lt;p&gt;First let’s discuss &lt;em&gt;why&lt;/em&gt; automation rocks.&lt;/p&gt;
+diff --git a/manjaro-xfce/index.html b/manjaro-xfce/index.html
+index 16209a3..577a198 100644
+--- a/manjaro-xfce/index.html
++++ b/manjaro-xfce/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;What I did after installing Manjaro xfce&lt;/h1&gt;
++
+ &lt;p&gt;After about 2 months with elementary OS, I got sick of the guaranteed once-every-hour crashes of
+ its &lt;strong&gt;Files&lt;/strong&gt; file manager (yeah, I’m still hating their naming decisions with a passion), the
+ flickering when I play fullscreen OpenGL games, and the automatic collapsing of workspaces. I’ve
+diff --git a/mcross/index.html b/mcross/index.html
+index 9a8b94a..e74e4fa 100644
+--- a/mcross/index.html
++++ b/mcross/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Introducing McRoss—a minimal gemini browser&lt;/h1&gt;
++
+ &lt;p&gt;The last couple of months saw the first “PR” wave of &lt;a href=&quot;https://gemini.circumlunar.space/&quot;&gt;the gemini protocol&lt;/a&gt;
+ on the usual online &lt;a href=&quot;https://lobste.rs/s/79pu7o/gemini_protocol_inbetween_gopher_web&quot;&gt;tech&lt;/a&gt;&lt;a href=&quot;https://news.ycombinator.com/item?id=23042424&quot;&gt;(bro)&lt;/a&gt; forums. Its pitch is simple: the web
+ has gone out of hand, gopher is too barebones and insecure by default, here’s a
+diff --git a/video-streaming-2/gflick_01_mobile.png b/movie-streaming/gflick-fixed/gflick_01_mobile.png
+similarity index 100%
+rename from video-streaming-2/gflick_01_mobile.png
+rename to movie-streaming/gflick-fixed/gflick_01_mobile.png
+diff --git a/video-streaming-2/index.dj b/movie-streaming/gflick-fixed/index.dj
+similarity index 100%
+rename from video-streaming-2/index.dj
+rename to movie-streaming/gflick-fixed/index.dj
+diff --git a/video-streaming-2/index.html b/movie-streaming/gflick-fixed/index.html
+similarity index 90%
+rename from video-streaming-2/index.html
+rename to movie-streaming/gflick-fixed/index.html
+index 5ef539e..ed6ad3f 100644
+--- a/video-streaming-2/index.html
++++ b/movie-streaming/gflick-fixed/index.html
+@@ -33,7 +33,14 @@
+ 
+ 
+ &lt;main&gt;
++&lt;em&gt;
++  This post is part of
++  &lt;a href=&quot;/movie-streaming/&quot;&gt;The movie streaming saga&lt;/a&gt;
++&lt;/em&gt;
++&lt;hr&gt;
++
+ &lt;h1&gt;Streaming videos from Google Drive: a second attempt&lt;/h1&gt;
++
+ &lt;p&gt;&lt;strong&gt;TL;DR:&lt;/strong&gt; I improved the Google Drive video streaming experience mentioned in
+ an &lt;a href=&quot;/posts/towards-an-acceptable-video-playing-experience/&quot;&gt;earlier blog post&lt;/a&gt;. It now works like this on an Android phone with
+ mpv-android installed:&lt;/p&gt;
+@@ -130,6 +137,29 @@ &lt;h2&gt;In conclusion&lt;/h2&gt;
+ non-sanctioned devices. I probably need to upgrade to a beefier tablet though.&lt;/p&gt;
+ &lt;/section&gt;
+ 
++
++  &lt;div class=&quot;series-container&quot;&gt;
++    &lt;p&gt;
++      Here&#39;s every post in
++      &lt;a href=&quot;/movie-streaming/&quot;&gt;The movie streaming saga&lt;/a&gt;,
++      in chronological order:
++    &lt;/p&gt;
++
++    &lt;ol&gt;
++      &lt;li&gt;&lt;a href=&quot;/movie-streaming/gflick/&quot;&gt;Towards an acceptable video playing experience&lt;/a&gt;&lt;/li&gt;
++      &lt;li&gt;&lt;a href=&quot;/movie-streaming/gflick-fixed/&quot;&gt;Streaming videos from Google Drive: a second attempt&lt;/a&gt; (you are here)&lt;/li&gt;
++      &lt;li&gt;&lt;a href=&quot;/movie-streaming/put.io/&quot;&gt;The video streaming finale, or why put.io is awesome&lt;/a&gt;&lt;/li&gt;
++    &lt;/ol&gt;
++  &lt;/div&gt;
++
++  &lt;style&gt;
++    .series-container {
++      margin: 2rem 0;
++      padding: 0 1rem;
++      border: 1px dashed #aaa;
++      background-color: #eee;
++    }
++  &lt;/style&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+diff --git a/video-streaming-1/index.dj b/movie-streaming/gflick/index.dj
+similarity index 98%
+rename from video-streaming-1/index.dj
+rename to movie-streaming/gflick/index.dj
+index dd4f9e2..3be0372 100644
+--- a/video-streaming-1/index.dj
++++ b/movie-streaming/gflick/index.dj
+@@ -131,10 +131,6 @@ those Chinese Surface knock-offs or what.
+ 
+ Also both of those required setting up each client device. Not ideal.
+ 
+-### Update June 10, 2020
+-
+-The sequel is out: [Streaming videos from Google Drive - a second attempt][8]
+-
+ [1]: https://kipalog.com/posts/Cac-web-phim-da-giam-99-99--chi-phi-bang-google-drive-nhu-the-nao
+ [2]: https://help.netflix.com/en/node/23742
+ [3]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range
+diff --git a/video-streaming-1/index.html b/movie-streaming/gflick/index.html
+similarity index 91%
+rename from video-streaming-1/index.html
+rename to movie-streaming/gflick/index.html
+index 900ab9c..6c784e5 100644
+--- a/video-streaming-1/index.html
++++ b/movie-streaming/gflick/index.html
+@@ -33,7 +33,14 @@
+ 
+ 
+ &lt;main&gt;
++&lt;em&gt;
++  This post is part of
++  &lt;a href=&quot;/movie-streaming/&quot;&gt;The movie streaming saga&lt;/a&gt;
++&lt;/em&gt;
++&lt;hr&gt;
++
+ &lt;h1&gt;Towards an acceptable video playing experience&lt;/h1&gt;
++
+ &lt;p&gt;I watch movies and TV shows.
+ Naturally, I have some strong preferences on how to view them:&lt;/p&gt;
+ &lt;p&gt;&lt;strong&gt;English subtitles&lt;/strong&gt;. Most things I watch are in English.
+@@ -161,12 +168,31 @@ &lt;h2&gt;Other failed attempts&lt;/h2&gt;
+ &lt;/li&gt;
+ &lt;/ul&gt;
+ &lt;p&gt;Also both of those required setting up each client device. Not ideal.&lt;/p&gt;
+-&lt;section id=&quot;Update-June-10-2020&quot;&gt;
+-&lt;h3&gt;Update June 10, 2020&lt;/h3&gt;
+-&lt;p&gt;The sequel is out: &lt;a href=&quot;../video-streaming-2/&quot;&gt;Streaming videos from Google Drive - a second attempt&lt;/a&gt;&lt;/p&gt;
+-&lt;/section&gt;
+ &lt;/section&gt;
+ 
++
++  &lt;div class=&quot;series-container&quot;&gt;
++    &lt;p&gt;
++      Here&#39;s every post in
++      &lt;a href=&quot;/movie-streaming/&quot;&gt;The movie streaming saga&lt;/a&gt;,
++      in chronological order:
++    &lt;/p&gt;
++
++    &lt;ol&gt;
++      &lt;li&gt;&lt;a href=&quot;/movie-streaming/gflick/&quot;&gt;Towards an acceptable video playing experience&lt;/a&gt; (you are here)&lt;/li&gt;
++      &lt;li&gt;&lt;a href=&quot;/movie-streaming/gflick-fixed/&quot;&gt;Streaming videos from Google Drive: a second attempt&lt;/a&gt;&lt;/li&gt;
++      &lt;li&gt;&lt;a href=&quot;/movie-streaming/put.io/&quot;&gt;The video streaming finale, or why put.io is awesome&lt;/a&gt;&lt;/li&gt;
++    &lt;/ol&gt;
++  &lt;/div&gt;
++
++  &lt;style&gt;
++    .series-container {
++      margin: 2rem 0;
++      padding: 0 1rem;
++      border: 1px dashed #aaa;
++      background-color: #eee;
++    }
++  &lt;/style&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+diff --git a/movie-streaming/index.dj b/movie-streaming/index.dj
+new file mode 100644
+index 0000000..94f390a
+--- /dev/null
++++ b/movie-streaming/index.dj
+@@ -0,0 +1,8 @@
++Title: The movie streaming saga
++ShowInFeed: false
++PageType: series-index
++---
++
++It&#39;s the 2020s. Fiber-to-the-home bandwidth is plentiful.
++Follow me on this journey to find the best movie streaming experience for the
++ethically flexible. _ThE EnD mIgHT sHoCK yOu._
+diff --git a/movie-streaming/index.html b/movie-streaming/index.html
+new file mode 100644
+index 0000000..2cf66b9
+--- /dev/null
++++ b/movie-streaming/index.html
+@@ -0,0 +1,68 @@
++&lt;!DOCTYPE html&gt;
++&lt;html&gt;
++
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;The movie streaming saga | Hi, I&amp;#39;m Nhân&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
++
++  &lt;meta property=&quot;og:title&quot; content=&quot;The movie streaming saga&quot; /&gt;
++  &lt;meta name=&quot;twitter:title&quot; content=&quot;The movie streaming saga&quot; /&gt;
++  &lt;meta name=&quot;twitter:card&quot; content=&quot;summary&quot; /&gt;&lt;meta property=&quot;og:image&quot; content=&quot;https://beta.imnhan.com/about/keyboard-warrior.jpg&quot; /&gt;
++    &lt;meta name=&quot;twitter:image&quot; content=&quot;https://beta.imnhan.com/about/keyboard-warrior.jpg&quot; /&gt;&lt;meta name=&quot;twitter:site&quot; content=&quot;@nhanb&quot; /&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
++&lt;nav&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++
++&lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
++
++
++&lt;main&gt;
++
++&lt;h1&gt;The movie streaming saga&lt;/h1&gt;
++&lt;p&gt;It’s the 2020s. Fiber-to-the-home bandwidth is plentiful.
++Follow me on this journey to find the best movie streaming experience for the
++ethically flexible. &lt;em&gt;ThE EnD mIgHT sHoCK yOu.&lt;/em&gt;&lt;/p&gt;
++
++
++&lt;ol&gt;
++
++  &lt;li style=&quot;margin-bottom: 1rem;&quot;&gt;
++    &lt;a href=&quot;/movie-streaming/gflick/&quot;&gt;Towards an acceptable video playing experience&lt;/a&gt;
++    &lt;br&gt;
++    &lt;span&gt;April 4, 2020&lt;/span&gt;
++  &lt;/li&gt;
++
++  &lt;li style=&quot;margin-bottom: 1rem;&quot;&gt;
++    &lt;a href=&quot;/movie-streaming/gflick-fixed/&quot;&gt;Streaming videos from Google Drive: a second attempt&lt;/a&gt;
++    &lt;br&gt;
++    &lt;span&gt;June 6, 2020&lt;/span&gt;
++  &lt;/li&gt;
++
++  &lt;li style=&quot;margin-bottom: 1rem;&quot;&gt;
++    &lt;a href=&quot;/movie-streaming/put.io/&quot;&gt;The video streaming finale, or why put.io is awesome&lt;/a&gt;
++    &lt;br&gt;
++    &lt;span&gt;October 10, 2020&lt;/span&gt;
++  &lt;/li&gt;
++
++&lt;/ol&gt;
++
++&lt;/main&gt;
++
++&lt;footer&gt;
++© 2013–2023 nhanb&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++&lt;/footer&gt;
++
++&lt;/body&gt;
++
++&lt;/html&gt;
+diff --git a/video-streaming-3/index.dj b/movie-streaming/put.io/index.dj
+similarity index 94%
+rename from video-streaming-3/index.dj
+rename to movie-streaming/put.io/index.dj
+index e6d2651..0bae93d 100644
+--- a/video-streaming-3/index.dj
++++ b/movie-streaming/put.io/index.dj
+@@ -3,10 +3,6 @@ PostedAt: 2020-10-21 11:45
+ 
+ ---
+ 
+-[Previously](../video-streaming-2),
+-[previously](../video-streaming-1).
+-
+-
+ I ditched the whole self hosted mess and just bought a [put.io](https://put.io)
+ subscription instead. This has become the smoothest, most no-nonsense video
+ streaming experience I&#39;ve ever had.
+diff --git a/video-streaming-3/index.html b/movie-streaming/put.io/index.html
+similarity index 77%
+rename from video-streaming-3/index.html
+rename to movie-streaming/put.io/index.html
+index afdeccd..a736283 100644
+--- a/video-streaming-3/index.html
++++ b/movie-streaming/put.io/index.html
+@@ -33,9 +33,14 @@
+ 
+ 
+ &lt;main&gt;
++&lt;em&gt;
++  This post is part of
++  &lt;a href=&quot;/movie-streaming/&quot;&gt;The movie streaming saga&lt;/a&gt;
++&lt;/em&gt;
++&lt;hr&gt;
++
+ &lt;h1&gt;The video streaming finale, or why put.io is awesome&lt;/h1&gt;
+-&lt;p&gt;&lt;a href=&quot;../video-streaming-2&quot;&gt;Previously&lt;/a&gt;,
+-&lt;a href=&quot;../video-streaming-1&quot;&gt;previously&lt;/a&gt;.&lt;/p&gt;
++
+ &lt;p&gt;I ditched the whole self hosted mess and just bought a &lt;a href=&quot;https://put.io&quot;&gt;put.io&lt;/a&gt;
+ subscription instead. This has become the smoothest, most no-nonsense video
+ streaming experience I’ve ever had.&lt;/p&gt;
+@@ -60,6 +65,29 @@ &lt;h1&gt;The video streaming finale, or why put.io is awesome&lt;/h1&gt;
+ &lt;p&gt;It’s refreshing to find software that works &lt;em&gt;for&lt;/em&gt; instead of &lt;em&gt;against&lt;/em&gt; its
+ users these days.&lt;/p&gt;
+ 
++
++  &lt;div class=&quot;series-container&quot;&gt;
++    &lt;p&gt;
++      Here&#39;s every post in
++      &lt;a href=&quot;/movie-streaming/&quot;&gt;The movie streaming saga&lt;/a&gt;,
++      in chronological order:
++    &lt;/p&gt;
++
++    &lt;ol&gt;
++      &lt;li&gt;&lt;a href=&quot;/movie-streaming/gflick/&quot;&gt;Towards an acceptable video playing experience&lt;/a&gt;&lt;/li&gt;
++      &lt;li&gt;&lt;a href=&quot;/movie-streaming/gflick-fixed/&quot;&gt;Streaming videos from Google Drive: a second attempt&lt;/a&gt;&lt;/li&gt;
++      &lt;li&gt;&lt;a href=&quot;/movie-streaming/put.io/&quot;&gt;The video streaming finale, or why put.io is awesome&lt;/a&gt; (you are here)&lt;/li&gt;
++    &lt;/ol&gt;
++  &lt;/div&gt;
++
++  &lt;style&gt;
++    .series-container {
++      margin: 2rem 0;
++      padding: 0 1rem;
++      border: 1px dashed #aaa;
++      background-color: #eee;
++    }
++  &lt;/style&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+diff --git a/video-streaming-3/put.io-drag-n-drop.mp4 b/movie-streaming/put.io/put.io-drag-n-drop.mp4
+similarity index 100%
+rename from video-streaming-3/put.io-drag-n-drop.mp4
+rename to movie-streaming/put.io/put.io-drag-n-drop.mp4
+diff --git a/node-webkit/index.html b/node-webkit/index.html
+index 30dcfe5..c011a3c 100644
+--- a/node-webkit/index.html
++++ b/node-webkit/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Setting up your development environment for a node-webkit project&lt;/h1&gt;
++
+ &lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;nw_xp.png&quot;&gt;&lt;/p&gt;
+ &lt;p&gt;&lt;a href=&quot;https://github.com/rogerwang/node-webkit&quot;&gt;Node-webkit&lt;/a&gt; lets you write cross-platform (Mac + Linux + Winbloze) desktop applications using
+ HTML5 and nodejs. That’s a fancy way of saying “a webkit wrapper that also gives you filesystem
+diff --git a/notes.html b/notes.html
+index a8d432a..8dd3f4b 100644
+--- a/notes.html
++++ b/notes.html
+@@ -27,7 +27,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Random notes&lt;/h1&gt;
++
+ &lt;p&gt;In which I jot down scattered tidbits on various topics.&lt;/p&gt;
+ &lt;section id=&quot;SRE&quot;&gt;
+ &lt;h2&gt;SRE&lt;/h2&gt;
+diff --git a/pathogen-vs-vundle/index.html b/pathogen-vs-vundle/index.html
+index 769759c..8507780 100644
+--- a/pathogen-vs-vundle/index.html
++++ b/pathogen-vs-vundle/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Modern vim plugin management: Pathogen vs Vundle&lt;/h1&gt;
++
+ &lt;p&gt;For the impatient ones: Vundle is better than pathogen, use it.&lt;/p&gt;
+ &lt;p&gt;This post will explain how vim plugins work and how to easily manage your plugins with
+ third-party tools: Pathogen or Vundle. I assume you are using a Linux distro and have git
+diff --git a/petition-fraud/index.html b/petition-fraud/index.html
+index 74c63d0..56b1bf6 100644
+--- a/petition-fraud/index.html
++++ b/petition-fraud/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;I did NOT sign that online petition!&lt;/h1&gt;
++
+ &lt;p&gt;This evening I received a rather strange email:&lt;/p&gt;
+ &lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;rmitsc_01_wtf.png&quot;&gt;&lt;/p&gt;
+ &lt;p&gt;Um… I don’t remember signing any petition recently (or ever, for that matter)?&lt;/p&gt;
+diff --git a/pippable-webapp/index.html b/pippable-webapp/index.html
+index e585d31..10af212 100644
+--- a/pippable-webapp/index.html
++++ b/pippable-webapp/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;I made my python webapp installable via pip&lt;/h1&gt;
++
+ &lt;p&gt;Running &lt;code&gt;pip3 install pytaku&lt;/code&gt; now gives you all the tools you need &lt;a id=&quot;fnref1&quot; href=&quot;#fn1&quot; role=&quot;doc-noteref&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/a&gt; &lt;a id=&quot;fnref2&quot; href=&quot;#fn2&quot; role=&quot;doc-noteref&quot;&gt;&lt;sup&gt;2&lt;/sup&gt;&lt;/a&gt; to
+ deploy &lt;a href=&quot;https://sr.ht/~nhanb/pytaku/&quot;&gt;pytaku&lt;/a&gt; - a hobby webapp of mine - on a fresh Debian 11 server:&lt;/p&gt;
+ &lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;pytaku-generate-config &amp;gt; pytaku.conf.json  # generate config file
+diff --git a/posts/streaming-videos-from-google-drive-a-second-attempt/index.html b/posts/streaming-videos-from-google-drive-a-second-attempt/index.html
+index 8dfc14a..03a31e6 100644
+--- a/posts/streaming-videos-from-google-drive-a-second-attempt/index.html
++++ b/posts/streaming-videos-from-google-drive-a-second-attempt/index.html
+@@ -1,10 +1,10 @@
+ &lt;!DOCTYPE html&gt;
+ &lt;html lang=&quot;en&quot;&gt;
+   &lt;head&gt;
+-    &lt;title&gt;Redirecting to /video-streaming-2/&lt;/title&gt;
+-    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/video-streaming-2/&quot; /&gt;
++    &lt;title&gt;Redirecting to /movie-streaming/gflick-fixed/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/movie-streaming/gflick-fixed/&quot; /&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+-    The page you&#39;re looking for has been moved to &lt;a href=&quot;/video-streaming-2/&quot;&gt;/video-streaming-2/&lt;/a&gt;.
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/movie-streaming/gflick-fixed/&quot;&gt;/movie-streaming/gflick-fixed/&lt;/a&gt;.
+   &lt;/body&gt;
+ &lt;/html&gt;
+diff --git a/posts/the-video-streaming-finale-or-why-putio-is-awesome/index.html b/posts/the-video-streaming-finale-or-why-putio-is-awesome/index.html
+index 289cabf..83a40af 100644
+--- a/posts/the-video-streaming-finale-or-why-putio-is-awesome/index.html
++++ b/posts/the-video-streaming-finale-or-why-putio-is-awesome/index.html
+@@ -1,10 +1,10 @@
+ &lt;!DOCTYPE html&gt;
+ &lt;html lang=&quot;en&quot;&gt;
+   &lt;head&gt;
+-    &lt;title&gt;Redirecting to /video-streaming-3/&lt;/title&gt;
+-    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/video-streaming-3/&quot; /&gt;
++    &lt;title&gt;Redirecting to /movie-streaming/put.io/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/movie-streaming/put.io/&quot; /&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+-    The page you&#39;re looking for has been moved to &lt;a href=&quot;/video-streaming-3/&quot;&gt;/video-streaming-3/&lt;/a&gt;.
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/movie-streaming/put.io/&quot;&gt;/movie-streaming/put.io/&lt;/a&gt;.
+   &lt;/body&gt;
+ &lt;/html&gt;
+diff --git a/posts/towards-an-acceptable-video-playing-experience/index.html b/posts/towards-an-acceptable-video-playing-experience/index.html
+index 904703c..834db22 100644
+--- a/posts/towards-an-acceptable-video-playing-experience/index.html
++++ b/posts/towards-an-acceptable-video-playing-experience/index.html
+@@ -1,10 +1,10 @@
+ &lt;!DOCTYPE html&gt;
+ &lt;html lang=&quot;en&quot;&gt;
+   &lt;head&gt;
+-    &lt;title&gt;Redirecting to /video-streaming-1/&lt;/title&gt;
+-    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/video-streaming-1/&quot; /&gt;
++    &lt;title&gt;Redirecting to /movie-streaming/gflick/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/movie-streaming/gflick/&quot; /&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+-    The page you&#39;re looking for has been moved to &lt;a href=&quot;/video-streaming-1/&quot;&gt;/video-streaming-1/&lt;/a&gt;.
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/movie-streaming/gflick/&quot;&gt;/movie-streaming/gflick/&lt;/a&gt;.
+   &lt;/body&gt;
+ &lt;/html&gt;
+diff --git a/projects/index.html b/projects/index.html
+index 9ef47dc..2ff315f 100644
+--- a/projects/index.html
++++ b/projects/index.html
+@@ -27,7 +27,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Projects&lt;/h1&gt;
++
+ &lt;p&gt;I’ve written some open source software in my free time.
+ In some cases I even maintain them! Shocking, I know.&lt;/p&gt;
+ &lt;section id=&quot;Shark&quot;&gt;
+diff --git a/pyqt5/index.html b/pyqt5/index.html
+index f3a953d..959e1e0 100644
+--- a/pyqt5/index.html
++++ b/pyqt5/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;How to install PyQt5 on a virtualenv on Ubuntu 14.04&lt;/h1&gt;
++
+ &lt;p&gt;The official way to install PyQt5 for development is to download and compile SIP + PyQt5 from
+ source, which is painstakingly slow (compiling PyQt5 took like 10 minutes on my PC). If you’re
+ &lt;a href=&quot;https://michalcodes4life.wordpress.com/2014/03/16/pyqt5-python-3-3-in-virtualenv-on-ubuntu/&quot;&gt;compiling it against a virtualenv&lt;/a&gt;, rinse and repeat for each new virtualenv you create.
+diff --git a/pytaku-old/index.html b/pytaku-old/index.html
+index e7df6e8..fff0ad2 100644
+--- a/pytaku-old/index.html
++++ b/pytaku-old/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Introducing Pytaku—the only online manga reader you&amp;#39;ll ever need&lt;/h1&gt;
++
+ &lt;p&gt;&lt;strong&gt;Heads up from 2021!&lt;/strong&gt; This post describes a previous incarnation of Pytaku
+ which is no longer alive.  The new Pytaku is a slightly different thing which
+ is being (relatively) actively developed &lt;a href=&quot;https://sr.ht/~nhanb/pytaku/&quot;&gt;on
+diff --git a/rmit-wifi/index.html b/rmit-wifi/index.html
+index 54635ca..5877d75 100644
+--- a/rmit-wifi/index.html
++++ b/rmit-wifi/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Fix RMIT wi-fi issue in Ubuntu 13.04 and variants&lt;/h1&gt;
++
+ &lt;section id=&quot;The-issue&quot;&gt;
+ &lt;h2&gt;The issue&lt;/h2&gt;
+ &lt;p&gt;When I upgraded to Xubuntu 13.04, although I could connect to any other wi-fi network painlessly,
+diff --git a/sqlite-python/index.html b/sqlite-python/index.html
+index 304c15e..30cf3ee 100644
+--- a/sqlite-python/index.html
++++ b/sqlite-python/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Working with SQLite in Python without an ORM or migration framework&lt;/h1&gt;
++
+ &lt;p&gt;&lt;img alt=&quot;byte-magazine-databases&quot; src=&quot;byte_databases.jpg&quot;&gt;&lt;br&gt;
+ &lt;em&gt;&lt;a href=&quot;https://archive.org/details/byte-magazine&quot;&gt;(seriously though, BYTE covers are the best)&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
+ &lt;p&gt;I learned about SQLite’s &lt;code&gt;user_version&lt;/code&gt; pragma some time ago from a comment on
+diff --git a/stepmania-pad/index.html b/stepmania-pad/index.html
+index 2993624..7099b5d 100644
+--- a/stepmania-pad/index.html
++++ b/stepmania-pad/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Simplest possible stepmania soft-to-hard pad mod&lt;/h1&gt;
++
+ &lt;p&gt;I’ve been playing Stepmania on and off for years now, but only recently tried
+ taping the soft dancepad to the floor. It blew my mind how much better it
+ felt, since I no longer had to worry about the pad sliding or curling up:&lt;/p&gt;
+diff --git a/tmux-italics/index.html b/tmux-italics/index.html
+index e5f28fd..affeeba 100644
+--- a/tmux-italics/index.html
++++ b/tmux-italics/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Enable italic text inside vim inside tmux inside gnome-terminal&lt;/h1&gt;
++
+ &lt;p&gt;&lt;strong&gt;2023 Update&lt;/strong&gt;: I now use &lt;a href=&quot;https://sw.kovidgoyal.net/kitty/&quot;&gt;kitty&lt;/a&gt; terminal
+ which has powerful tab &amp;amp; split functionalities so tmux is no longer necessary
+ for my “unix IDE” use case. Removing tmux also means removing a whole class of
+diff --git a/ubuntu-programs/index.html b/ubuntu-programs/index.html
+index 4cc63c2..96811ae 100644
+--- a/ubuntu-programs/index.html
++++ b/ubuntu-programs/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Installing programs in Ubuntu&lt;/h1&gt;
++
+ &lt;p&gt;This article will not only explain how to install stuff, but it will (hopefully) also give readers
+ a better understanding about Linux’s structure for storing and executing programs, ultimately
+ appreciate the usefulness of package managers in general.&lt;/p&gt;
+diff --git a/vim-open-link/index.html b/vim-open-link/index.html
+index 5bd8e83..3563a53 100644
+--- a/vim-open-link/index.html
++++ b/vim-open-link/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Opening http link under the cursor in vim&lt;/h1&gt;
++
+ &lt;p&gt;Mr. &lt;a href=&quot;https://www.walterbright.com/&quot;&gt;Walter Bright&lt;/a&gt;, creator of the D
+ programming language, recently
+ &lt;a href=&quot;https://news.ycombinator.com/item?id=28090272&quot;&gt;commented&lt;/a&gt; on Hacker News:&lt;/p&gt;
+diff --git a/virtualenvwrapper/index.html b/virtualenvwrapper/index.html
+index ceda48c..05eba0f 100644
+--- a/virtualenvwrapper/index.html
++++ b/virtualenvwrapper/index.html
+@@ -33,7 +33,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Virtualenv(wrapper), python2 and python3&lt;/h1&gt;
++
+ &lt;p&gt;Virtualenv and virtualenvwrapper make it super easy to have a sandboxed python environment for each
+ of your projects, no doubt about it (if you’re not using them already, feel free to google how to
+ get started).&lt;/p&gt;
+diff --git a/yaks.html b/yaks.html
+index e63f699..9f1fcc1 100644
+--- a/yaks.html
++++ b/yaks.html
+@@ -27,7 +27,9 @@
+ 
+ 
+ &lt;main&gt;
++
+ &lt;h1&gt;Yak shaving&lt;/h1&gt;
++
+ &lt;p&gt;Basically my TODOs, in pursuit of the ever-pervasive &lt;em&gt;pleasant workflow&lt;/em&gt;.&lt;/p&gt;
+ &lt;section id=&quot;Replacing-tmux-with-kitty&quot;&gt;
+ &lt;h2&gt;Replacing tmux with kitty&lt;/h2&gt;
+</pre></body></html>

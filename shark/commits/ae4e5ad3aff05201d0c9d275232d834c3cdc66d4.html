@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ae4e5ad3af] readme: update list of args; go run command | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / ae4e5ad3af</strong><hr><pre>commit ae4e5ad3aff05201d0c9d275232d834c3cdc66d4
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jul 31 13:50:15 2022 +0700
+
+    readme: update list of args; go run command
+
+diff --git a/README.md b/README.md
+index e60fee9..49b834f 100644
+--- a/README.md
++++ b/README.md
+@@ -70,22 +70,32 @@ ## Options
+ Here are the currently supported options:
+ 
+ ```
+--hungry int
+-      The number of seconds it takes for Gura to go hungry (default 3600)
+--size int
+-      Size multiplier: make Gura as big as you want (default 1)
+--x int
+-      X position on screen (default 9999)
+--y int
+-      Y position on screen (default 9999)
++  -hungry int
++        The number of seconds it takes for Gura to go hungry (default 3600)
++  -size int
++        Size multiplier: make Gura as big as you want (default 1)
++  -stop int
++        chance to stop walking, in % (default 40)
++  -walk int
++        chance to start walking, in % (default 5)
++  -x int
++        X position on screen (default 9999)
++  -y int
++        Y position on screen (default 9999)
+ ```
+ 
+ # Compile from source
+ 
++- Clone this repo
+ - Follow [ebitengine&#39;s install guide][6]
+ - Run: `go build -tags ebitensinglethread -o dist/`
+ - Your compiled binary should now be in `./dist/`
+ 
++Alternatively, if you already have Go, you can run `go run
++go.imnhan.com/shark@latest` to compile and run the latest version without
++manually cloning the repo. You still need to install ebiten&#39;s dependencies
++first though.
++
+ Apparently it should compile on FreeBSD too but I haven&#39;t tried that.
+ Do let me know if it works on your FreeBSD desktop!
+ 
+</pre></body></html>

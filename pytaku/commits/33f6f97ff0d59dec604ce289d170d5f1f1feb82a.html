@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[33f6f97ff0] dark mode: make link buttons dark | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 33f6f97ff0</strong><hr><pre>commit 33f6f97ff0d59dec604ce289d170d5f1f1feb82a
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jan 7 11:48:31 2024 +0700
+
+    dark mode: make link buttons dark
+    
+    Latest version of `prettier` auto-inserts trailing comma in arg list,
+    which is an ES8 feature so jshintrc needed a config update too.
+    
+    Removed unnecessary `.follows--chapter` class and the unused `::after`
+    rule.
+
+diff --git a/.jshintrc b/.jshintrc
+index d46f595..d969b63 100644
+--- a/.jshintrc
++++ b/.jshintrc
+@@ -1,6 +1,6 @@
+ {
+   &quot;laxbreak&quot;: true,
+-  &quot;esversion&quot;: 6,
++  &quot;esversion&quot;: 8,
+   &quot;strict&quot;: &quot;implied&quot;,
+   &quot;browser&quot;: true,
+   &quot;globals&quot;: {
+diff --git a/src/pytaku/js-src/routes/follows.js b/src/pytaku/js-src/routes/follows.js
+index 1e39485..8663319 100644
+--- a/src/pytaku/js-src/routes/follows.js
++++ b/src/pytaku/js-src/routes/follows.js
+@@ -17,27 +17,37 @@ const Title = {
+               href: `/m/${title.site}/${title.id}`,
+               title: `${title.name} - ${title.site}`,
+             },
+-            [m(&quot;img.follows--cover&quot;, { src: title.thumbnail, alt: title.name })]
++            [
++              m(&quot;img.follows--cover&quot;, {
++                src: title.thumbnail,
++                alt: title.name,
++              }),
++            ],
+           ),
+         ]),
+         m(&quot;div.follows--chapters&quot;, [
+           title.chapters.length &gt; numChaptersToDisplay
+-            ? m(
+-                m.route.Link,
+-                {
+-                  href: `/m/${title.site}/${title.id}`,
+-                  class: &quot;follows--chapter follows--more&quot;,
+-                },
+-                `and ${title.chapters.length - numChaptersToDisplay} more...`
+-              )
++            ? m(&quot;div.utils--chapter&quot;, [
++                m(
++                  m.route.Link,
++                  {
++                    href: `/m/${title.site}/${title.id}`,
++                    style: {
++                      &quot;font-style&quot;: &quot;italic&quot;,
++                    },
++                    class: &quot;touch-friendly&quot;,
++                  },
++                  `and ${title.chapters.length - numChaptersToDisplay} more...`,
++                ),
++              ])
+             : &quot;&quot;,
+           title.chapters
+             .slice(-numChaptersToDisplay)
+             .map((chapter) =&gt;
+-              m(Chapter, { site: title.site, titleId: title.id, chapter })
++              m(Chapter, { site: title.site, titleId: title.id, chapter }),
+             ),
+         ]),
+-      ]
++      ],
+     );
+   },
+ };
+diff --git a/src/pytaku/static/darkmode.css b/src/pytaku/static/darkmode.css
+index 1af0e15..bb94d4e 100644
+--- a/src/pytaku/static/darkmode.css
++++ b/src/pytaku/static/darkmode.css
+@@ -14,4 +14,8 @@ @media (prefers-color-scheme: dark) {
+   .title--descriptions {
+     background-color: #555;
+   }
++
++  a.touch-friendly {
++    background-color: silver;
++  }
+ }
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index 808fe1e..e385799 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -256,25 +256,6 @@ .follows--chapters {
+   padding: 0.5rem 0.5rem 0.5rem 0;
+ }
+ 
+-.follows--chapter {
+-  display: block;
+-  margin-bottom: 0.5rem;
+-  background-color: white;
+-  border: 1px solid #999;
+-  padding: 6px;
+-  border-radius: 5px;
+-  text-decoration: none;
+-  color: black;
+-}
+-.follows--chapter:hover {
+-  background-color: #eee;
+-}
+-.follows--chapter:last-child::after {
+-  content: &quot;← resume here&quot;;
+-  background-color: cornsilk;
+-  white-space: nowrap;
+-}
+-
+ .follows--group {
+   font-size: 0.9em;
+   background-color: #ddd;
+@@ -283,11 +264,6 @@ .follows--group {
+   padding: 2px 5px;
+ }
+ 
+-.follows--more {
+-  display: inline-block;
+-  font-style: italic;
+-}
+-
+ @media (max-width: 399px) {
+   .follows--title {
+     flex-direction: column;
+</pre></body></html>

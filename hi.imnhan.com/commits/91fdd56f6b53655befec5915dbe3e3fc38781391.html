@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[91fdd56f6b] fix article link clickable area; grammar | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 91fdd56f6b</strong><hr><pre>commit 91fdd56f6b53655befec5915dbe3e3fc38781391
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Dec 5 14:55:43 2020 +0700
+
+    fix article link clickable area; grammar
+
+diff --git a/content/posts/video-streaming-finale-or-why-put-io-is-awesome.md b/content/posts/video-streaming-finale-or-why-put-io-is-awesome.md
+index 5f6b6c6..a1bf7ba 100644
+--- a/content/posts/video-streaming-finale-or-why-put-io-is-awesome.md
++++ b/content/posts/video-streaming-finale-or-why-put-io-is-awesome.md
+@@ -18,7 +18,7 @@
+ 
+ It has a web-based video player that lets me pick subtitles.
+ 
+-In cases when the subtitles aren&#39;t recognized, or I want to switch between
++In cases when the subtitles aren&#39;t recognized, or when I want to switch between
+ audio tracks, I can always drag-n-drop the original file&#39;s streaming URL from
+ the browser straight to an mpv launcher like this:
+ 
+diff --git a/nhanb-theme/static/css/index.css b/nhanb-theme/static/css/index.css
+index 81d75b9..de0329d 100644
+--- a/nhanb-theme/static/css/index.css
++++ b/nhanb-theme/static/css/index.css
+@@ -9,10 +9,11 @@ .article-list li {
+ }
+ 
+ .article-list a {
+-  display: block;
+   font-weight: bold;
+ }
+ 
+-time {
++.article-list time {
+   font-size: 0.9em;
++  display: block;
++  margin-top: 0.1rem;
+ }
+</pre></body></html>

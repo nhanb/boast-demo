@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[042ce23468] border radius autism | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 042ce23468</strong><hr><pre>commit 042ce23468460b9eea7ebf3841c245e449ffe4ee
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 23 20:58:56 2020 +0700
+
+    border radius autism
+
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index f772a66..71978df 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -60,6 +60,10 @@ .nav--search-form {
+ }
+ .nav--search-form &gt; input {
+   width: 15rem;
++  border-radius: var(--border-radius) 0 0 var(--border-radius);
++}
++.nav--search-form &gt; button {
++  border-radius: 0 var(--border-radius) var(--border-radius) 0;
+ }
+ .nav--greeting {
+   color: white;
+</pre></body></html>

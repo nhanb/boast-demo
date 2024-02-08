@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[2300766f50] fix mangadex get_chapter | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 2300766f50</strong><hr><pre>commit 2300766f50b1f6fe993b13352b40bc622d694a34
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jan 8 22:48:55 2022 +0700
+
+    fix mangadex get_chapter
+    
+    They moved chapter data (hash, file names) from the normal `chapter` API
+    to the `at-home` one for some reason.
+
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index 62d6973..e56ba61 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -102,14 +102,17 @@ def get_chapter(self, title_id, chapter_id):
+             if rel[&quot;type&quot;] == &quot;manga&quot;:
+                 title_id = rel[&quot;id&quot;]
+                 break
+-
+-        chapter_hash = data[&quot;attributes&quot;][&quot;hash&quot;]
+-        filenames = data[&quot;attributes&quot;][&quot;data&quot;]
++        # chapter_hash = data[&quot;attributes&quot;][&quot;hash&quot;]
++        # filenames = data[&quot;attributes&quot;][&quot;data&quot;]
+         md_server = &quot;https://uploads.mangadex.org&quot;
+ 
+-        mdah_server = self._get_md_at_home_server(chapter_id)
+-        if mdah_server != md_server:
+-            print(&quot;&gt;&gt; MDAH-server:&quot;, mdah_server)
++        mdah_api_url = f&quot;https://api.mangadex.org/at-home/server/{chapter_id}&quot;
++        mdah_resp = self.http_get(mdah_api_url)
++        assert mdah_resp.status_code == 200, f&quot;Failed request to {mdah_api_url}&quot;
++        mdah_data = mdah_resp.json()
++        mdah_server = mdah_data[&quot;baseUrl&quot;]
++        chapter_hash = mdah_data[&quot;chapter&quot;][&quot;hash&quot;]
++        filenames = mdah_data[&quot;chapter&quot;][&quot;data&quot;]
+ 
+         chapter = {
+             &quot;id&quot;: chapter_id,
+@@ -130,10 +133,6 @@ def get_chapter(self, title_id, chapter_id):
+         }
+         return chapter
+ 
+-    def _get_md_at_home_server(self, chapter_id):
+-        resp = self.http_get(f&quot;https://api.mangadex.org/at-home/server/{chapter_id}&quot;)
+-        return resp.json()[&quot;baseUrl&quot;] if resp.status_code == 200 else None
+-
+     def search_title(self, query):
+         params = {
+             &quot;limit&quot;: 100,
+</pre></body></html>

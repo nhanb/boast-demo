@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[291d138b05] deal with longer usernames | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 291d138b05</strong><hr><pre>commit 291d138b0547f4416d8e8032fbf228a64617b35d
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 30 20:48:12 2020 +0700
+
+    deal with longer usernames
+    
+    I&#39;ll probably need to lay down username rules soon...
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 47d030f..a6a01d1 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.16&quot;
++version = &quot;0.3.17&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/static/js/layout.js b/src/pytaku/static/js/layout.js
+index aeca911..e2894fb 100644
+--- a/src/pytaku/static/js/layout.js
++++ b/src/pytaku/static/js/layout.js
+@@ -9,7 +9,7 @@ function Navbar(initialVNode) {
+       let userLink;
+       if (Auth.isLoggedIn()) {
+         userLink = m(&quot;span.nav--greeting&quot;, [
+-          m(&quot;span&quot;, [&quot;Hi &quot;, m(&quot;b&quot;, Auth.username)]),
++          m(&quot;span&quot;, [&quot;Welcome, &quot;, m(&quot;b&quot;, Auth.username)]),
+           m(Button, {
+             text: isLoggingOut ? &quot; logging out&quot; : &quot; logout&quot;,
+             icon: &quot;log-out&quot;,
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index 0b81337..ddce3da 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -48,6 +48,8 @@ nav &gt; * {
+ .nav--logo {
+   margin-right: var(--body-padding);
+   flex: 0 0 150px;
++  display: flex;
++  align-items: center;
+ }
+ .nav--logo--img,
+ .nav--logo--favicon {
+@@ -101,9 +103,24 @@ .nav--link i {
+   margin-right: 0.3rem;
+ }
+ 
+-@media (max-width: 679px) {
++@media (max-width: 749px) {
++  .nav--search-form {
++    flex-basis: 100%;
++  }
+   .nav--search-form &gt; input {
+-    width: 10rem;
++    width: 5rem;
++    flex-grow: 1;
++    flex-shrink: 1;
++  }
++  .nav--greeting &gt; span b {
++    display: inline-block;
++    white-space: nowrap;
++    overflow: hidden;
++    text-overflow: ellipsis;
++    max-width: 70px;
++  }
++  .nav--link:last-child {
++    margin-left: 0.5rem;
+   }
+ }
+ 
+@@ -125,17 +142,6 @@ @media (max-width: 539px) {
+     margin-top: auto;
+     margin-bottom: auto;
+   }
+-  .nav--search-form {
+-    flex-basis: 100%;
+-  }
+-  .nav--search-form &gt; input {
+-    width: 5rem;
+-    flex-grow: 1;
+-    flex-shrink: 1;
+-  }
+-  .nav--link:last-child {
+-    margin-left: 0.5rem;
+-  }
+ }
+ 
+ /* Route content common styling */
+</pre></body></html>

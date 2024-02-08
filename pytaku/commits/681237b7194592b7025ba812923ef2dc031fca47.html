@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[681237b719] fix tag detection | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 681237b719</strong><hr><pre>commit 681237b7194592b7025ba812923ef2dc031fca47
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 8 21:11:22 2020 +0700
+
+    fix tag detection
+
+diff --git a/.builds/ubuntu.yml b/.builds/ubuntu.yml
+index c7b3b8e..fbfd28c 100644
+--- a/.builds/ubuntu.yml
++++ b/.builds/ubuntu.yml
+@@ -42,17 +42,10 @@ tasks:
+ 
+   # Builds.sr.ht doesn&#39;t support tag or even branch detection yet:
+   # &gt; https://todo.sr.ht/~sircmpwn/builds.sr.ht/170
+-  # Also the yaml gets mangled badly whenever I try to use a pipe
+-  # operator, so I&#39;m moving the whole tag detection thing into a
+-  # bash script.
++  # So here I manually check if current commit has an annotated tag.
+   - check-publish: |
+-      if [[ &quot;$GITHUB_EVENT&quot; == &quot;push&quot; ]] &amp;&amp; [[ &quot;$GITHUB_REF&quot; =~ ^refs/tags/ ]]
+-      then
+-          echo &quot;This is a tag push. Proceeding to publish...&quot;
+-      else
+-          echo &quot;Not deploying.&quot;
+-          complete-build  # stop build with a &quot;success&quot; status
+-      fi
++      cd pytaku
++      git describe --exact-match HEAD || complete-build
+ 
+   - publish: |
+       cd pytaku
+diff --git a/pyproject.toml b/pyproject.toml
+index 93383b8..b0cb2c4 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.2.7&quot;
++version = &quot;0.2.8&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+</pre></body></html>

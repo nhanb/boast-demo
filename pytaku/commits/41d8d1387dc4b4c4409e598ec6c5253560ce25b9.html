@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[41d8d1387d] mangadex breaking update: /manga/ --&gt; /title/ | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 41d8d1387d</strong><hr><pre>commit 41d8d1387dc4b4c4409e598ec6c5253560ce25b9
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Feb 12 21:33:36 2023 +0700
+
+    mangadex breaking update: /manga/ --&gt; /title/
+
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index 876b5c1..f765078 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -173,7 +173,7 @@ def title_thumbnail(self, title_id, cover_ext):
+         return f&quot;https://uploads.mangadex.org/covers/{title_id}/{cover_ext}.256.jpg&quot;
+ 
+     def title_source_url(self, title_id):
+-        return f&quot;https://mangadex.org/manga/{title_id}&quot;
++        return f&quot;https://mangadex.org/title/{title_id}&quot;
+ 
+ 
+ # Titles regex slightly adapted from https://github.com/md-y/mangadex-full-api
+</pre></body></html>

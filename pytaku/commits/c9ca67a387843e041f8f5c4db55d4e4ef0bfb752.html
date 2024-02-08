@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[c9ca67a387] cache chapter data; preload next chapter&#39;s pages | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / c9ca67a387</strong><hr><pre>commit c9ca67a387843e041f8f5c4db55d4e4ef0bfb752
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 30 13:59:04 2020 +0700
+
+    cache chapter data; preload next chapter&#39;s pages
+
+diff --git a/src/pytaku/static/js/models.js b/src/pytaku/static/js/models.js
+index e28f991..221681f 100644
+--- a/src/pytaku/static/js/models.js
++++ b/src/pytaku/static/js/models.js
+@@ -120,4 +120,37 @@ const SearchModel = {
+   },
+ };
+ 
+-export { Auth, SearchModel };
++const ChapterModel = {
++  cache: {},
++
++  cacheGet: (site, titleId, chapterId) =&gt; {
++    const key = [site, titleId, chapterId].join(&quot;,&quot;);
++    return ChapterModel.cache[key] || null;
++  },
++  cacheSet: (site, titleId, chapterId, value) =&gt; {
++    const key = [site, titleId, chapterId].join(&quot;,&quot;);
++    ChapterModel.cache[key] = value;
++  },
++
++  get: ({ site, titleId, chapterId }) =&gt; {
++    // Returns a promise.
++    // Tries to return cached data first, if that fails then send http request
++    // and save cache on success.
++
++    const cached = ChapterModel.cacheGet(site, titleId, chapterId);
++    if (cached) {
++      return Promise.resolve(cached);
++    }
++
++    return Auth.request({
++      method: &quot;GET&quot;,
++      url: &quot;/api/chapter/:site/:titleId/:chapterId&quot;,
++      params: { site, titleId, chapterId },
++    }).then((chapter) =&gt; {
++      ChapterModel.cacheSet(site, titleId, chapterId, chapter);
++      return chapter;
++    });
++  },
++};
++
++export { Auth, SearchModel, ChapterModel };
+diff --git a/src/pytaku/static/js/routes/chapter.js b/src/pytaku/static/js/routes/chapter.js
+index a5782f6..987086e 100644
+--- a/src/pytaku/static/js/routes/chapter.js
++++ b/src/pytaku/static/js/routes/chapter.js
+@@ -1,4 +1,4 @@
+-import { Auth } from &quot;../models.js&quot;;
++import { Auth, ChapterModel } from &quot;../models.js&quot;;
+ import { LoadingMessage, fullChapterName, Button } from &quot;../utils.js&quot;;
+ 
+ const LoadingPlaceholder = {
+@@ -41,35 +41,64 @@ function Chapter(initialVNode) {
+   let loadedPages = [];
+   let pendingPages = [];
+ 
++  let site, titleId; // these are written on init
++  let nextChapterPromise = null;
++  let nextChapterPendingPages = null;
++  let nextChapterLoadedPage = &quot;&quot;;
++
+   function loadNextPage() {
+     if (pendingPages.length &gt; 0) {
+       loadedPages.push({
+         status: ImgStatus.LOADING,
+         src: pendingPages.splice(0, 1)[0],
+       });
++    } else if (chapter.next_chapter &amp;&amp; nextChapterPromise === null) {
++      /* Once all pages of this chapter have been loaded,
++       * preload the next chapter one page at a time
++       */
++      nextChapterPromise = ChapterModel.get({
++        site,
++        titleId,
++        chapterId: chapter.next_chapter.id,
++      }).then((nextChapter) =&gt; {
++        console.log(&quot;Preloading next chapter:&quot;, fullChapterName(nextChapter));
++        nextChapterPendingPages = nextChapter.pages.slice();
++        preloadNextChapterPage();
++      });
++    }
++  }
++
++  function preloadNextChapterPage() {
++    if (nextChapterPendingPages !== null) {
++      if (nextChapterPendingPages.length &gt; 0) {
++        nextChapterLoadedPage = nextChapterPendingPages.splice(0, 1)[0];
++      } else {
++        console.log(&quot;Completely preloaded next chapter.&quot;);
++      }
+     }
+   }
+ 
+   return {
+     oninit: (vnode) =&gt; {
+       document.title = &quot;Manga chapter&quot;;
++      site = vnode.attrs.site;
++      titleId = vnode.attrs.titleId;
+ 
+       isLoading = true;
+       m.redraw();
+ 
+-      Auth.request({
+-        method: &quot;GET&quot;,
+-        url: &quot;/api/chapter/:site/:titleId/:chapterId&quot;,
+-        params: {
+-          site: vnode.attrs.site,
+-          titleId: vnode.attrs.titleId,
+-          chapterId: vnode.attrs.chapterId,
+-        },
++      ChapterModel.get({
++        site: vnode.attrs.site,
++        titleId: vnode.attrs.titleId,
++        chapterId: vnode.attrs.chapterId,
+       })
+         .then((resp) =&gt; {
+           chapter = resp;
+           document.title = fullChapterName(chapter);
+-          pendingPages = chapter.pages;
++
++          // Clone array here to avoid mutating the model
++          pendingPages = chapter.pages.slice();
++
+           // start loading pages, 3 at a time:
+           loadNextPage();
+           loadNextPage();
+@@ -186,6 +215,12 @@ function Chapter(initialVNode) {
+           ]
+         ),
+         buttons,
++        m(&quot;img.chapter--preloader&quot;, {
++          style: { display: &quot;none&quot; },
++          onload: preloadNextChapterPage,
++          onerror: preloadNextChapterPage,
++          src: nextChapterLoadedPage,
++        }),
+       ]);
+     },
+   };
+</pre></body></html>

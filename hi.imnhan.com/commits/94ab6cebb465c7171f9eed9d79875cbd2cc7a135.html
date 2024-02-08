@@ -1,0 +1,1804 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[94ab6cebb4] WIP s4g transition: generate redirects | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 94ab6cebb4</strong><hr><pre>commit 94ab6cebb465c7171f9eed9d79875cbd2cc7a135
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 19 17:09:57 2023 +0700
+
+    WIP s4g transition: generate redirects
+
+diff --git a/.gitignore b/.gitignore
+index a764eca..16be8f2 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,5 +1 @@
+-output/
+-*.pid
+-__pycache__/
+-cache/
+-*.pyc
++/output/
+diff --git a/.gitmodules b/.gitmodules
+deleted file mode 100644
+index 3c7855d..0000000
+--- a/.gitmodules
++++ /dev/null
+@@ -1,3 +0,0 @@
+-[submodule &quot;motherfucking-pelican-theme&quot;]
+-	path = motherfucking-pelican-theme
+-	url = git@github.com:nhanb/motherfucking-pelican-theme.git
+diff --git a/.rgignore b/.rgignore
+deleted file mode 100644
+index 1f57b97..0000000
+--- a/.rgignore
++++ /dev/null
+@@ -1 +0,0 @@
+-/output
+diff --git a/content/extra/404.html b/404.html
+similarity index 100%
+rename from content/extra/404.html
+rename to 404.html
+diff --git a/content/extra/CNAME b/CNAME
+similarity index 100%
+rename from content/extra/CNAME
+rename to CNAME
+diff --git a/Makefile b/Makefile
+deleted file mode 100644
+index f55c243..0000000
+--- a/Makefile
++++ /dev/null
+@@ -1,110 +0,0 @@
+-PY?=python3
+-PELICAN?=pelican
+-PELICANOPTS=
+-
+-BASEDIR=$(CURDIR)
+-INPUTDIR=$(BASEDIR)/content
+-OUTPUTDIR=$(BASEDIR)/output
+-CONFFILE=$(BASEDIR)/pelicanconf.py
+-PUBLISHCONF=$(BASEDIR)/publishconf.py
+-
+-FTP_HOST=localhost
+-FTP_USER=anonymous
+-FTP_TARGET_DIR=/
+-
+-SSH_HOST=localhost
+-SSH_PORT=22
+-SSH_USER=root
+-SSH_TARGET_DIR=/var/www
+-
+-S3_BUCKET=my_s3_bucket
+-
+-CLOUDFILES_USERNAME=my_rackspace_username
+-CLOUDFILES_API_KEY=my_rackspace_api_key
+-CLOUDFILES_CONTAINER=my_cloudfiles_container
+-
+-DROPBOX_DIR=~/Dropbox/Public/
+-
+-GITHUB_PAGES_BRANCH=master
+-
+-DEBUG ?= 0
+-ifeq ($(DEBUG), 1)
+-	PELICANOPTS += -D
+-endif
+-
+-help:
+-	@echo &#39;Makefile for a pelican Web site                                        &#39;
+-	@echo &#39;                                                                       &#39;
+-	@echo &#39;Usage:                                                                 &#39;
+-	@echo &#39;   make html                        (re)generate the web site          &#39;
+-	@echo &#39;   make clean                       remove the generated files         &#39;
+-	@echo &#39;   make regenerate                  regenerate files upon modification &#39;
+-	@echo &#39;   make publish                     generate using production settings &#39;
+-	@echo &#39;   make serve [PORT=8000]           serve site at http://localhost:8000&#39;
+-	@echo &#39;   make devserver [PORT=8000]       start/restart develop_server.sh    &#39;
+-	@echo &#39;   make stopserver                  stop local server                  &#39;
+-	@echo &#39;   make ssh_upload                  upload the web site via SSH        &#39;
+-	@echo &#39;   make rsync_upload                upload the web site via rsync+ssh  &#39;
+-	@echo &#39;   make dropbox_upload              upload the web site via Dropbox    &#39;
+-	@echo &#39;   make ftp_upload                  upload the web site via FTP        &#39;
+-	@echo &#39;   make s3_upload                   upload the web site via S3         &#39;
+-	@echo &#39;   make cf_upload                   upload the web site via Cloud Files&#39;
+-	@echo &#39;   make github                      upload the web site via gh-pages   &#39;
+-	@echo &#39;                                                                       &#39;
+-	@echo &#39;Set the DEBUG variable to 1 to enable debugging, e.g. make DEBUG=1 html&#39;
+-	@echo &#39;                                                                       &#39;
+-
+-html:
+-	$(PELICAN) $(INPUTDIR) -o $(OUTPUTDIR) -s $(CONFFILE) $(PELICANOPTS)
+-
+-clean:
+-	[ ! -d $(OUTPUTDIR) ] || rm -rf $(OUTPUTDIR)
+-
+-regenerate:
+-	$(PELICAN) -r $(INPUTDIR) -o $(OUTPUTDIR) -s $(CONFFILE) $(PELICANOPTS)
+-
+-serve:
+-ifdef PORT
+-	cd $(OUTPUTDIR) &amp;&amp; $(PY) -m pelican.server $(PORT)
+-else
+-	cd $(OUTPUTDIR) &amp;&amp; $(PY) -m pelican.server
+-endif
+-
+-devserver:
+-ifdef PORT
+-	$(BASEDIR)/develop_server.sh restart $(PORT)
+-else
+-	$(BASEDIR)/develop_server.sh restart
+-endif
+-
+-stopserver:
+-	kill -9 `cat pelican.pid`
+-	kill -9 `cat srv.pid`
+-	@echo &#39;Stopped Pelican and SimpleHTTPServer processes running in background.&#39;
+-
+-publish:
+-	$(PELICAN) $(INPUTDIR) -o $(OUTPUTDIR) -s $(PUBLISHCONF) $(PELICANOPTS)
+-
+-ssh_upload: publish
+-	scp -P $(SSH_PORT) -r $(OUTPUTDIR)/* $(SSH_USER)@$(SSH_HOST):$(SSH_TARGET_DIR)
+-
+-rsync_upload: publish
+-	rsync -e &quot;ssh -p $(SSH_PORT)&quot; -P -rvzc --delete $(OUTPUTDIR)/ $(SSH_USER)@$(SSH_HOST):$(SSH_TARGET_DIR) --cvs-exclude
+-
+-dropbox_upload: publish
+-	cp -r $(OUTPUTDIR)/* $(DROPBOX_DIR)
+-
+-ftp_upload: publish
+-	lftp ftp://$(FTP_USER)@$(FTP_HOST) -e &quot;mirror -R $(OUTPUTDIR) $(FTP_TARGET_DIR) ; quit&quot;
+-
+-s3_upload: publish
+-        s3cmd sync $(OUTPUTDIR)/ s3://$(S3_BUCKET) --acl-public --delete-removed --guess-mime-type
+-
+-cf_upload: publish
+-	cd $(OUTPUTDIR) &amp;&amp; swift -v -A https://auth.api.rackspacecloud.com/v1.0 -U $(CLOUDFILES_USERNAME) -K $(CLOUDFILES_API_KEY) upload -c $(CLOUDFILES_CONTAINER) .
+-
+-github: publish
+-	ghp-import $(OUTPUTDIR)
+-	git push origin gh-pages:gh-pages -f
+-
+-.PHONY: html help clean regenerate serve devserver publish ssh_upload rsync_upload dropbox_upload ftp_upload s3_upload cf_upload github
+diff --git a/README.md b/README.md
+deleted file mode 100644
+index 40989a0..0000000
+--- a/README.md
++++ /dev/null
+@@ -1,46 +0,0 @@
+-# My blog
+-
+-This is the source code for https://hi.imnhan.com using
+-[Pelican](http://github.com/getpelican/pelican)
+-
+-# Dev environment
+-
+-- `make devserver` / `make stopserver` for local dev at port 8000
+-- `make github` to publish to hi.imnhan.com
+-
+-Alternatively, if you find the `make dev/stopserver` workflow clumsy, manually run `pelican -r` and
+-simple python http server to keep everything in the foreground:
+-
+-```sh
+-pelican -r content  # in 1 terminal
+-cd output &amp;&amp; python3 -m http.server 8000  # in another terminal
+-```
+-
+-
+-# License
+-
+-All code and content within this repository is licensed under the terms of the MIT license:
+-
+-```
+-The MIT License (MIT)
+-
+-Copyright (c) 2013-2023 Bùi Thành Nhân
+-
+-Permission is hereby granted, free of charge, to any person obtaining a copy
+-of this software and associated documentation files (the &quot;Software&quot;), to deal
+-in the Software without restriction, including without limitation the rights
+-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+-copies of the Software, and to permit persons to whom the Software is
+-furnished to do so, subject to the following conditions:
+-
+-The above copyright notice and this permission notice shall be included in all
+-copies or substantial portions of the Software.
+-
+-THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+-SOFTWARE.
+-```
+diff --git a/_theme/base.css b/_theme/base.css
+new file mode 100644
+index 0000000..813e870
+--- /dev/null
++++ b/_theme/base.css
+@@ -0,0 +1,21 @@
++html {
++  font-family: serif;
++  max-width: 50rem;
++  margin: auto;
++}
++
++p,
++ul,
++ol {
++  line-height: 1.35rem;
++}
++
++main img {
++  max-width: 100%;
++}
++
++footer {
++  margin-top: 2rem;
++  text-align: right;
++  font-size: 0.8rem;
++}
+diff --git a/_theme/base.tmpl b/_theme/base.tmpl
+new file mode 100644
+index 0000000..22971ce
+--- /dev/null
++++ b/_theme/base.tmpl
+@@ -0,0 +1,18 @@
++&lt;!DOCTYPE html&gt;
++&lt;html&gt;
++
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;{{if .Title}}{{.Title}} | {{end}}{{ .Site.Name -}}&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;{{.Feed}}&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.Site.Root}}_theme/base.css&quot;&gt;
++  {{- template &quot;head&quot; .}}
++&lt;/head&gt;
++
++&lt;body&gt;
++{{template &quot;body&quot; .}}
++
++&lt;/body&gt;
++
++&lt;/html&gt;
+diff --git a/_theme/feed.svg b/_theme/feed.svg
+new file mode 100644
+index 0000000..1a44b51
+--- /dev/null
++++ b/_theme/feed.svg
+@@ -0,0 +1,16 @@
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
++&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; id=&quot;RSSicon&quot; viewBox=&quot;0 0 8 8&quot; width=&quot;256&quot; height=&quot;256&quot;&gt;
++
++  &lt;title&gt;RSS feed icon&lt;/title&gt;
++
++  &lt;style type=&quot;text/css&quot;&gt;
++    .button {stroke: none; fill: orange;}
++    .symbol {stroke: none; fill: white;}
++  &lt;/style&gt;
++
++  &lt;rect class=&quot;button&quot; width=&quot;8&quot; height=&quot;8&quot; rx=&quot;1.5&quot;/&gt;
++  &lt;circle class=&quot;symbol&quot; cx=&quot;2&quot; cy=&quot;6&quot; r=&quot;1&quot;/&gt;
++  &lt;path class=&quot;symbol&quot; d=&quot;m 1,4 a 3,3 0 0 1 3,3 h 1 a 4,4 0 0 0 -4,-4 z&quot;/&gt;
++  &lt;path class=&quot;symbol&quot; d=&quot;m 1,2 a 5,5 0 0 1 5,5 h 1 a 6,6 0 0 0 -6,-6 z&quot;/&gt;
++
++&lt;/svg&gt;
+diff --git a/_theme/home.tmpl b/_theme/home.tmpl
+new file mode 100644
+index 0000000..d85797f
+--- /dev/null
++++ b/_theme/home.tmpl
+@@ -0,0 +1,91 @@
++{{define &quot;head&quot;}}{{end}}
++
++{{define &quot;body&quot;}}
++&lt;header&gt;
++  &lt;h1 class=&quot;site-title&quot;&gt;{{.Site.Name}}&lt;/h1&gt;
++  &lt;p class=&quot;tagline&quot;&gt;{{.Site.Tagline}}&lt;/p&gt;
++&lt;/header&gt;
++
++&lt;hr&gt;
++
++&lt;div class=&quot;pages&quot;&gt;
++{{- range .ArticlesInNav}}
++  &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
++{{- end}}
++  &lt;a class=&quot;feed-link&quot; href=&quot;{{.Feed}}&quot;&gt;
++    &lt;img src=&quot;{{.Site.Root}}_theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
++  &lt;/a&gt;
++&lt;/div&gt;
++
++&lt;hr&gt;
++
++{{.Content}}
++
++{{if .ArticlesInFeed -}}
++&lt;p&gt;All posts, newest first:&lt;/p&gt;
++
++&lt;ul&gt;
++  {{- range .ArticlesInFeed}}
++  {{- if not .IsDraft}}
++  &lt;li&gt;
++    &lt;span class=&quot;time-prefix&quot;&gt;{{.PostedAt.Local.Format &quot;2006-01-02&quot;}} — &lt;/span&gt;
++    &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
++    &lt;span class=&quot;time-suffix&quot;&gt;({{.PostedAt.Local.Format &quot;2006-01-02&quot;}})&lt;/span&gt;
++  &lt;/li&gt;
++  {{- end}}
++  {{- end}}
++&lt;/ul&gt;
++{{else}}
++&lt;p&gt;No posts yet.&lt;/p&gt;
++{{end}}
++
++&lt;style&gt;
++.site-title {
++  margin-bottom: 0;
++}
++.tagline {
++  margin-top: 0;
++}
++
++.feed-link img {
++  height: 1rem;
++}
++.feed-link {
++  float: right;
++}
++hr {
++  clear: both;
++}
++
++.pages a {
++  margin-right: 0.5rem;
++}
++
++ul {
++  padding: 0;
++  list-style: none;
++  /*font-size: 1.1rem;*/
++}
++
++.time-suffix {
++  display: none;
++}
++
++@media (max-width: 30rem) {
++  .time-suffix {
++    display: inline;
++  }
++  .time-prefix {
++    display: none;
++  }
++  li {
++    margin-bottom: 0.5rem;
++  }
++  li::before {
++    content: &#39;❖&#39;;
++  }
++}
++&lt;/style&gt;
++
++{{template &quot;footer&quot; .}}
++{{end}}
+diff --git a/_theme/includes.tmpl b/_theme/includes.tmpl
+new file mode 100644
+index 0000000..aa3130b
+--- /dev/null
++++ b/_theme/includes.tmpl
+@@ -0,0 +1,29 @@
++{{define &quot;navbar&quot;}}
++&lt;link rel=&quot;stylesheet&quot; href=&quot;{{.Site.Root}}_theme/navbar.css&quot;&gt;
++&lt;nav&gt;
++  {{- range .ArticlesInNav}}
++  &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
++  {{- end}}
++
++  {{- if not .Post.PostedAt.IsZero}}
++  &lt;span class=&quot;posted-on&quot;&gt;
++    Posted on
++    &lt;time datetime=&quot;{{.Post.PostedAt.Local.Format &quot;2006-01-02&quot;}}&quot;&gt;
++        {{.Post.PostedAt.Local.Format &quot;Monday, 02 Jan 2006&quot;}}
++    &lt;/time&gt;
++  &lt;/span&gt;
++  {{- end}}
++
++&lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
++{{end}}
++
++
++{{define &quot;footer&quot;}}
++{{- if .Site.ShowFooter -}}
++&lt;footer&gt;
++© {{if eq .StartYear .Now.Year}}{{.StartYear}}{{else}}{{.StartYear}}–{{.Now.Year}}{{end}} {{.Site.AuthorName}}&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++&lt;/footer&gt;
++{{- end -}}
++{{- end}}
+diff --git a/_theme/navbar.css b/_theme/navbar.css
+new file mode 100644
+index 0000000..3a7107b
+--- /dev/null
++++ b/_theme/navbar.css
+@@ -0,0 +1,12 @@
++nav &gt; a {
++  margin-right: 0.5rem;
++}
++
++nav &gt; .posted-on {
++  float: right;
++  font-style: italic;
++}
++
++.nav-hr {
++  clear: both;
++}
+diff --git a/_theme/post.tmpl b/_theme/post.tmpl
+new file mode 100644
+index 0000000..6878886
+--- /dev/null
++++ b/_theme/post.tmpl
+@@ -0,0 +1,13 @@
++{{- define &quot;head&quot;}}{{- end}}
++
++{{define &quot;body&quot;}}
++
++{{- template &quot;navbar&quot; .}}
++
++&lt;main&gt;
++&lt;h1&gt;{{.Post.Title}}&lt;/h1&gt;
++{{.Content}}
++&lt;/main&gt;
++
++{{template &quot;footer&quot; .}}
++{{- end}}
+diff --git a/develop_server.sh b/develop_server.sh
+deleted file mode 100755
+index e295a8d..0000000
+--- a/develop_server.sh
++++ /dev/null
+@@ -1,103 +0,0 @@
+-#!/usr/bin/env bash
+-##
+-# This section should match your Makefile
+-##
+-PY=${PY:-python3}
+-PELICAN=${PELICAN:-pelican}
+-PELICANOPTS=
+-
+-BASEDIR=$(pwd)
+-INPUTDIR=$BASEDIR/content
+-OUTPUTDIR=$BASEDIR/output
+-CONFFILE=$BASEDIR/pelicanconf.py
+-
+-###
+-# Don&#39;t change stuff below here unless you are sure
+-###
+-
+-SRV_PID=$BASEDIR/srv.pid
+-PELICAN_PID=$BASEDIR/pelican.pid
+-
+-function usage(){
+-  echo &quot;usage: $0 (stop) (start) (restart) [port]&quot;
+-  echo &quot;This starts Pelican in debug and reload mode and then launches&quot;
+-  echo &quot;an HTTP server to help site development. It doesn&#39;t read&quot;
+-  echo &quot;your Pelican settings, so if you edit any paths in your Makefile&quot;
+-  echo &quot;you will need to edit your settings as well.&quot;
+-  exit 3
+-}
+-
+-function alive() {
+-  kill -0 $1 &gt;/dev/null 2&gt;&amp;1
+-}
+-
+-function shut_down(){
+-  PID=$(cat $SRV_PID)
+-  if [[ $? -eq 0 ]]; then
+-    if alive $PID; then
+-      echo &quot;Stopping HTTP server&quot;
+-      kill $PID
+-    else
+-      echo &quot;Stale PID, deleting&quot;
+-    fi
+-    rm $SRV_PID
+-  else
+-    echo &quot;HTTP server PIDFile not found&quot;
+-  fi
+-
+-  PID=$(cat $PELICAN_PID)
+-  if [[ $? -eq 0 ]]; then
+-    if alive $PID; then
+-      echo &quot;Killing Pelican&quot;
+-      kill $PID
+-    else
+-      echo &quot;Stale PID, deleting&quot;
+-    fi
+-    rm $PELICAN_PID
+-  else
+-    echo &quot;Pelican PIDFile not found&quot;
+-  fi
+-}
+-
+-function start_up(){
+-  local port=$1
+-  echo &quot;Starting up Pelican and HTTP server&quot;
+-  shift
+-  $PELICAN --debug --autoreload -r $INPUTDIR -o $OUTPUTDIR -s $CONFFILE $PELICANOPTS &amp;
+-  pelican_pid=$!
+-  echo $pelican_pid &gt; $PELICAN_PID
+-  cd $OUTPUTDIR
+-  $PY -m pelican.server $port &amp;
+-  srv_pid=$!
+-  echo $srv_pid &gt; $SRV_PID
+-  cd $BASEDIR
+-  sleep 1
+-  if ! alive $pelican_pid ; then
+-    echo &quot;Pelican didn&#39;t start. Is the Pelican package installed?&quot;
+-    return 1
+-  elif ! alive $srv_pid ; then
+-    echo &quot;The HTTP server didn&#39;t start. Is there another service using port 8000?&quot;
+-    return 1
+-  fi
+-  echo &#39;Pelican and HTTP server processes now running in background.&#39;
+-}
+-
+-###
+-#  MAIN
+-###
+-[[ ($# -eq 0) || ($# -gt 2) ]] &amp;&amp; usage
+-port=&#39;&#39;
+-[[ $# -eq 2 ]] &amp;&amp; port=$2
+-
+-if [[ $1 == &quot;stop&quot; ]]; then
+-  shut_down
+-elif [[ $1 == &quot;restart&quot; ]]; then
+-  shut_down
+-  start_up $port
+-elif [[ $1 == &quot;start&quot; ]]; then
+-  if ! start_up $port; then
+-    shut_down
+-  fi
+-else
+-  usage
+-fi
+diff --git a/fabfile.py b/fabfile.py
+deleted file mode 100644
+index 39dd7aa..0000000
+--- a/fabfile.py
++++ /dev/null
+@@ -1,73 +0,0 @@
+-from fabric.api import *
+-import fabric.contrib.project as project
+-import os
+-import sys
+-import SimpleHTTPServer
+-import SocketServer
+-
+-# Local path configuration (can be absolute or relative to fabfile)
+-env.deploy_path = &#39;output&#39;
+-DEPLOY_PATH = env.deploy_path
+-
+-# Remote server configuration
+-production = &#39;root@localhost:22&#39;
+-dest_path = &#39;/var/www&#39;
+-
+-# Rackspace Cloud Files configuration settings
+-env.cloudfiles_username = &#39;my_rackspace_username&#39;
+-env.cloudfiles_api_key = &#39;my_rackspace_api_key&#39;
+-env.cloudfiles_container = &#39;my_cloudfiles_container&#39;
+-
+-
+-def clean():
+-    if os.path.isdir(DEPLOY_PATH):
+-        local(&#39;rm -rf {deploy_path}&#39;.format(**env))
+-        local(&#39;mkdir {deploy_path}&#39;.format(**env))
+-
+-def build():
+-    local(&#39;pelican -s pelicanconf.py&#39;)
+-
+-def rebuild():
+-    clean()
+-    build()
+-
+-def regenerate():
+-    local(&#39;pelican -r -s pelicanconf.py&#39;)
+-
+-def serve():
+-    os.chdir(env.deploy_path)
+-
+-    PORT = 8000
+-    class AddressReuseTCPServer(SocketServer.TCPServer):
+-        allow_reuse_address = True
+-
+-    server = AddressReuseTCPServer((&#39;&#39;, PORT), SimpleHTTPServer.SimpleHTTPRequestHandler)
+-
+-    sys.stderr.write(&#39;Serving on port {0} ...\n&#39;.format(PORT))
+-    server.serve_forever()
+-
+-def reserve():
+-    build()
+-    serve()
+-
+-def preview():
+-    local(&#39;pelican -s publishconf.py&#39;)
+-
+-def cf_upload():
+-    rebuild()
+-    local(&#39;cd {deploy_path} &amp;&amp; &#39;
+-          &#39;swift -v -A https://auth.api.rackspacecloud.com/v1.0 &#39;
+-          &#39;-U {cloudfiles_username} &#39;
+-          &#39;-K {cloudfiles_api_key} &#39;
+-          &#39;upload -c {cloudfiles_container} .&#39;.format(**env))
+-
+-@hosts(production)
+-def publish():
+-    local(&#39;pelican -s publishconf.py&#39;)
+-    project.rsync_project(
+-        remote_dir=dest_path,
+-        exclude=&quot;.DS_Store&quot;,
+-        local_dir=DEPLOY_PATH.rstrip(&#39;/&#39;) + &#39;/&#39;,
+-        delete=True,
+-        extra_opts=&#39;-c&#39;,
+-    )
+diff --git a/content/extra/favicon.ico b/favicon.ico
+similarity index 100%
+rename from content/extra/favicon.ico
+rename to favicon.ico
+diff --git a/content/extra/favicon.png b/favicon.png
+similarity index 100%
+rename from content/extra/favicon.png
+rename to favicon.png
+diff --git a/index.dj b/index.dj
+new file mode 100644
+index 0000000..6ce56a8
+--- /dev/null
++++ b/index.dj
+@@ -0,0 +1,4 @@
++Title: Home
++ShowInFeed: false
++Templates: $_theme/base.tmpl, $_theme/includes.tmpl, $_theme/home.tmpl
++---
+diff --git a/index.html b/index.html
+new file mode 100644
+index 0000000..052cf5f
+--- /dev/null
++++ b/index.html
+@@ -0,0 +1,92 @@
++&lt;!DOCTYPE html&gt;
++&lt;html&gt;
++
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;Home | Hi, I&amp;#39;m Nhân&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++
++&lt;header&gt;
++  &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
++  &lt;p class=&quot;tagline&quot;&gt;and welcome to my humble corner on the interwebs&lt;/p&gt;
++&lt;/header&gt;
++
++&lt;hr&gt;
++
++&lt;div class=&quot;pages&quot;&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;
++    &lt;img src=&quot;/_theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
++  &lt;/a&gt;
++&lt;/div&gt;
++
++&lt;hr&gt;
++
++
++
++
++&lt;p&gt;No posts yet.&lt;/p&gt;
++
++
++&lt;style&gt;
++.site-title {
++  margin-bottom: 0;
++}
++.tagline {
++  margin-top: 0;
++}
++
++.feed-link img {
++  height: 1rem;
++}
++.feed-link {
++  float: right;
++}
++hr {
++  clear: both;
++}
++
++.pages a {
++  margin-right: 0.5rem;
++}
++
++ul {
++  padding: 0;
++  list-style: none;
++   
++}
++
++.time-suffix {
++  display: none;
++}
++
++@media (max-width: 30rem) {
++  .time-suffix {
++    display: inline;
++  }
++  .time-prefix {
++    display: none;
++  }
++  li {
++    margin-bottom: 0.5rem;
++  }
++  li::before {
++    content: &#39;❖&#39;;
++  }
++}
++&lt;/style&gt;
++
++&lt;footer&gt;
++© 2023 nhanb&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++&lt;/footer&gt;
++
++
++&lt;/body&gt;
++
++&lt;/html&gt;
+diff --git a/manifest.txt b/manifest.txt
+new file mode 100644
+index 0000000..6553aff
+--- /dev/null
++++ b/manifest.txt
+@@ -0,0 +1,28 @@
++index.html
++posts/acer-chromebook-spin/index.html
++posts/enable-italic-text-vim-tmux-gnome-terminal/index.html
++posts/fix-rmit-wifi-issue-in-ubuntu-13-04-and-variants/index.html
++posts/go-postgres-caddy-systemd-stack/index.html
++posts/have-you-built-anything-cool/index.html
++posts/how-i-bypassed-my-university-domain-blocker-to-access-hdviet/index.html
++posts/how-to-install-pyqt5-on-virtualenv-on-ubuntu-14.04/index.html
++posts/i-did-not-sign-that-rmit-sc-petition/index.html
++posts/i-made-my-python-webapp-pip-installable/index.html
++posts/ibus-is-dead-to-me-use-fcitx-instead-vi/index.html
++posts/installing-programs-in-ubuntu/index.html
++posts/introducing-mcross-a-minimal-gemini-browser/index.html
++posts/introducing-pytaku-the-only-online-manga-reader-youll-ever-need/index.html
++posts/look-ma-no-stock-theme/index.html
++posts/modern-vim-plugin-management-pathogen-vs-vundle/index.html
++posts/my-first-diy-fightstick-part-1/index.html
++posts/my-first-diy-fightstick-part-2/index.html
++posts/opening-http-link-under-the-cursor-in-vim/index.html
++posts/setting-up-your-development-environment-for-a-node-webkit-project/index.html
++posts/simplest-possible-stepmania-soft-to-hard-pad-mod/index.html
++posts/streaming-videos-from-google-drive-a-second-attempt/index.html
++posts/the-video-streaming-finale-or-why-putio-is-awesome/index.html
++posts/towards-an-acceptable-video-playing-experience/index.html
++posts/virtualenwrapper-python2-python3/index.html
++posts/what-i-did-after-installing-manjaro-xfce/index.html
++posts/why-i-use-linux-automation/index.html
++posts/working-with-sqlite-in-python-without-an-orm-or-migration-framework/index.html
+\ No newline at end of file
+diff --git a/pelicanconf.py b/pelicanconf.py
+deleted file mode 100644
+index e15c691..0000000
+--- a/pelicanconf.py
++++ /dev/null
+@@ -1,124 +0,0 @@
+-#!/usr/bin/env python
+-from datetime import date
+-
+-AUTHOR = &quot;Bùi Thành Nhân&quot;
+-SITENAME = &quot;Hi, I&#39;m Nhân&quot;
+-SITESUBTITLE = &quot;and this is my humble corner on the intertubes.&quot;
+-SITEURL = &quot;&quot;
+-
+-THEME = &quot;./nhanb-theme&quot;
+-
+-TIMEZONE = &quot;Asia/Ho_Chi_Minh&quot;
+-
+-DEFAULT_LANG = &quot;en&quot;
+-TYPOGRIFY = True
+-
+-MARKDOWN = {
+-    &quot;extension_configs&quot;: {
+-        &quot;markdown.extensions.codehilite&quot;: {&quot;css_class&quot;: &quot;highlight&quot;},
+-        &quot;markdown.extensions.extra&quot;: {},
+-        &quot;markdown.extensions.meta&quot;: {},
+-        &quot;smarty&quot;: {},
+-        &quot;toc&quot;: {&quot;permalink&quot;: &quot;#&quot;},
+-    },
+-    &quot;output_format&quot;: &quot;html5&quot;,
+-}
+-
+-# Feed generation is usually not desired when developing
+-FEED_ALL_ATOM = None
+-CATEGORY_FEED_ATOM = None
+-TRANSLATION_FEED_ATOM = None
+-
+-STATIC_PATHS = [&quot;images&quot;, &quot;extra&quot;]
+-
+-EXTRA_PATH_METADATA = {
+-    &quot;extra/CNAME&quot;: {&quot;path&quot;: &quot;CNAME&quot;},
+-    &quot;extra/favicon.ico&quot;: {&quot;path&quot;: &quot;favicon.ico&quot;},
+-    &quot;extra/favicon.png&quot;: {&quot;path&quot;: &quot;favicon.png&quot;},
+-    &quot;extra/404.html&quot;: {&quot;path&quot;: &quot;404.html&quot;},
+-    &quot;extra/ping.html&quot;: {&quot;path&quot;: &quot;ping.html&quot;},
+-}
+-
+-ARTICLE_PATHS = [&quot;posts&quot;]
+-ARTICLE_URL = &quot;posts/{slug}/&quot;
+-ARTICLE_SAVE_AS = &quot;posts/{slug}/index.html&quot;
+-ARTICLE_LANG_URL = &quot;posts/{slug}-{lang}/&quot;
+-ARTICLE_LANG_SAVE_AS = &quot;posts/{slug}-{lang}/index.html&quot;
+-
+-PAGE_PATHS = [&quot;pages&quot;]
+-PAGE_URL = &quot;{slug}/&quot;
+-PAGE_SAVE_AS = &quot;{slug}/index.html&quot;
+-PAGE_LANG_URL = &quot;{slug}-{lang}/&quot;
+-PAGE_LANG_SAVE_AS = &quot;{slug}-{lang}/index.html&quot;
+-
+-AUTHOR_URL = &quot;author/{slug}/&quot;
+-AUTHOR_SAVE_AS = &quot;author/{slug}/index.html&quot;
+-
+-CATEGORY_URL = &quot;category/{slug}/&quot;
+-CATEGORY_SAVE_AS = &quot;category/{slug}/index.html&quot;
+-
+-TAG_URL = &quot;tag/{slug}/&quot;
+-TAG_SAVE_AS = &quot;tag/{slug}/index.html&quot;
+-
+-DEFAULT_PAGINATION = False
+-
+-AUTHOR_NAME = &quot;Bùi Thành Nhân&quot;
+-AUTHOR_SLUG = &quot;nhanb&quot;
+-
+-THEME_STATIC_PATHS = [&quot;static&quot;]
+-
+-MENUITEMS = ((&quot;Blog&quot;, &quot;/&quot;),)
+-
+-PLUGINS = [&quot;minify&quot;]
+-
+-MINIFY = {
+-    &quot;remove_comments&quot;: False,
+-    &quot;remove_all_empty_space&quot;: False,
+-    &quot;remove_optional_attribute_quotes&quot;: False,
+-}
+-
+-FEED_DOMAIN = SITEURL
+-FEED_ALL_ATOM = &quot;feeds/all.atom.xml&quot;
+-FEED_ATOM = &quot;feeds/atom.xml&quot;
+-CATEGORY_FEED_ATOM = &quot;feeds/{slug}.atom.xml&quot;
+-
+-# ========= Theme-specific settings follow =============
+-
+-MOTHERFUCKING_DEFAULT_THUMB = &quot;images/keyboard-warrior.jpg&quot;
+-MOTHERFUCKING_GREETINGS = &quot;&quot;&quot;
+-Why hello there, source viewer. Here&#39;s a dragon for no particular reason:
+-
+-       ^                       ^
+-       |\   \        /        /|
+-      /  \  |\__  __/|       /  \_
+-     / /\ \ \ _ \/ _ /      /    \_
+-    / / /\ \ {*}\/{*}      /  / \ \_
+-    | | | \ \( (00) )     /  // |\ \_
+-    | | | |\ \(V&quot;&quot;V)\    /  / | || \|
+-    | | | | \ |^--^| \  /  / || || ||
+-   / / /  | |( WWWW__ \/  /| || || ||
+-  | | | | | |  \______\  / / || || ||
+-  | | | / | | )|______\ ) | / | || ||
+-  / / /  / /  /______/   /| \ \ || ||
+- / / /  / /  /\_____/  |/ /__\ \ \ \ \_
+- | | | / /  /\______/    \   \__| \ \ \_
+- | | | | | |\______ __    \_    \__|_| \_
+- | | ,___ /\______ _  _     \_       \  |
+- | |/    /\_____  /    \      \__     \ |    /\_
+- |/ |   |\______ |      |        \___  \ |__/  \_
+- v  |   |\______ |      |            \___/     |
+-    |   |\______ |      |                    __/
+-     \   \________\_    _\               ____/
+-   __/   /\_____ __/   /   )\_,      _____/
+-  /  ___/  \____/  ___/___)    \______/
+-  VVV  V        VVV  V
+-
+-(ripped off from http://www.retrojunkie.com/asciiart/myth/dragons.htm)
+-&quot;&quot;&quot;
+-
+-CURRENT_YEAR = date.today().year
+-
+-FOOTER_TEXT = &quot;&quot;&quot;
+-Built with &amp;#9829; and probably too much
+-&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://www.alambe.vn/products/ca-phe-rang-xay-alambe-sai-gon&quot;&gt;cà phê sữa đá&lt;/a&gt;.
+-&quot;&quot;&quot;
+diff --git a/content/extra/ping.html b/ping.html
+similarity index 100%
+rename from content/extra/ping.html
+rename to ping.html
+diff --git a/poetry.lock b/poetry.lock
+deleted file mode 100644
+index e0167f7..0000000
+--- a/poetry.lock
++++ /dev/null
+@@ -1,342 +0,0 @@
+-# This file is automatically @generated by Poetry 1.5.1 and should not be changed by hand.
+-
+-[[package]]
+-name = &quot;blinker&quot;
+-version = &quot;1.6.2&quot;
+-description = &quot;Fast, simple object-to-object and broadcast signaling&quot;
+-optional = false
+-python-versions = &quot;&gt;=3.7&quot;
+-files = [
+-    {file = &quot;blinker-1.6.2-py3-none-any.whl&quot;, hash = &quot;sha256:c3d739772abb7bc2860abf5f2ec284223d9ad5c76da018234f6f50d6f31ab1f0&quot;},
+-    {file = &quot;blinker-1.6.2.tar.gz&quot;, hash = &quot;sha256:4afd3de66ef3a9f8067559fb7a1cbe555c17dcbe15971b05d1b625c3e7abe213&quot;},
+-]
+-
+-[[package]]
+-name = &quot;docutils&quot;
+-version = &quot;0.20.1&quot;
+-description = &quot;Docutils -- Python Documentation Utilities&quot;
+-optional = false
+-python-versions = &quot;&gt;=3.7&quot;
+-files = [
+-    {file = &quot;docutils-0.20.1-py3-none-any.whl&quot;, hash = &quot;sha256:96f387a2c5562db4476f09f13bbab2192e764cac08ebbf3a34a95d9b1e4a59d6&quot;},
+-    {file = &quot;docutils-0.20.1.tar.gz&quot;, hash = &quot;sha256:f08a4e276c3a1583a86dce3e34aba3fe04d02bba2dd51ed16106244e8a923e3b&quot;},
+-]
+-
+-[[package]]
+-name = &quot;feedgenerator&quot;
+-version = &quot;2.1.0&quot;
+-description = &quot;Standalone version of django.utils.feedgenerator&quot;
+-optional = false
+-python-versions = &quot;&gt;=3.7&quot;
+-files = [
+-    {file = &quot;feedgenerator-2.1.0-py3-none-any.whl&quot;, hash = &quot;sha256:93b7ce1c5a86195cafd6a8e9baf6a2a863ebd6d9905e840ce5778f73efd9a8d5&quot;},
+-    {file = &quot;feedgenerator-2.1.0.tar.gz&quot;, hash = &quot;sha256:f075f23f28fd227f097c36b212161c6cf012e1c6caaf7ff53d5d6bb02cd42b9d&quot;},
+-]
+-
+-[package.dependencies]
+-pytz = &quot;&gt;=0a&quot;
+-
+-[[package]]
+-name = &quot;ghp-import&quot;
+-version = &quot;0.5.5&quot;
+-description = &quot;Copy your docs directly to the gh-pages branch.&quot;
+-optional = false
+-python-versions = &quot;*&quot;
+-files = [
+-    {file = &quot;ghp-import-0.5.5.tar.gz&quot;, hash = &quot;sha256:3e924ea720e4e1f82d56753db2154bfb86067472c5830732159c3a4c4fbc75d7&quot;},
+-]
+-
+-[[package]]
+-name = &quot;htmlmin&quot;
+-version = &quot;0.1.12&quot;
+-description = &quot;An HTML Minifier&quot;
+-optional = false
+-python-versions = &quot;*&quot;
+-files = [
+-    {file = &quot;htmlmin-0.1.12.tar.gz&quot;, hash = &quot;sha256:50c1ef4630374a5d723900096a961cff426dff46b48f34d194a81bbe14eca178&quot;},
+-]
+-
+-[[package]]
+-name = &quot;jinja2&quot;
+-version = &quot;3.1.2&quot;
+-description = &quot;A very fast and expressive template engine.&quot;
+-optional = false
+-python-versions = &quot;&gt;=3.7&quot;
+-files = [
+-    {file = &quot;Jinja2-3.1.2-py3-none-any.whl&quot;, hash = &quot;sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61&quot;},
+-    {file = &quot;Jinja2-3.1.2.tar.gz&quot;, hash = &quot;sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852&quot;},
+-]
+-
+-[package.dependencies]
+-MarkupSafe = &quot;&gt;=2.0&quot;
+-
+-[package.extras]
+-i18n = [&quot;Babel (&gt;=2.7)&quot;]
+-
+-[[package]]
+-name = &quot;joblib&quot;
+-version = &quot;1.3.1&quot;
+-description = &quot;Lightweight pipelining with Python functions&quot;
+-optional = false
+-python-versions = &quot;&gt;=3.7&quot;
+-files = [
+-    {file = &quot;joblib-1.3.1-py3-none-any.whl&quot;, hash = &quot;sha256:89cf0529520e01b3de7ac7b74a8102c90d16d54c64b5dd98cafcd14307fdf915&quot;},
+-    {file = &quot;joblib-1.3.1.tar.gz&quot;, hash = &quot;sha256:1f937906df65329ba98013dc9692fe22a4c5e4a648112de500508b18a21b41e3&quot;},
+-]
+-
+-[[package]]
+-name = &quot;markdown&quot;
+-version = &quot;3.4.3&quot;
+-description = &quot;Python implementation of John Gruber&#39;s Markdown.&quot;
+-optional = false
+-python-versions = &quot;&gt;=3.7&quot;
+-files = [
+-    {file = &quot;Markdown-3.4.3-py3-none-any.whl&quot;, hash = &quot;sha256:065fd4df22da73a625f14890dd77eb8040edcbd68794bcd35943be14490608b2&quot;},
+-    {file = &quot;Markdown-3.4.3.tar.gz&quot;, hash = &quot;sha256:8bf101198e004dc93e84a12a7395e31aac6a9c9942848ae1d99b9d72cf9b3520&quot;},
+-]
+-
+-[package.extras]
+-testing = [&quot;coverage&quot;, &quot;pyyaml&quot;]
+-
+-[[package]]
+-name = &quot;markdown-it-py&quot;
+-version = &quot;3.0.0&quot;
+-description = &quot;Python port of markdown-it. Markdown parsing, done right!&quot;
+-optional = false
+-python-versions = &quot;&gt;=3.8&quot;
+-files = [
+-    {file = &quot;markdown-it-py-3.0.0.tar.gz&quot;, hash = &quot;sha256:e3f60a94fa066dc52ec76661e37c851cb232d92f9886b15cb560aaada2df8feb&quot;},
+-    {file = &quot;markdown_it_py-3.0.0-py3-none-any.whl&quot;, hash = &quot;sha256:355216845c60bd96232cd8d8c40e8f9765cc86f46880e43a8fd22dc1a1a8cab1&quot;},
+-]
+-
+-[package.dependencies]
+-mdurl = &quot;&gt;=0.1,&lt;1.0&quot;
+-
+-[package.extras]
+-benchmarking = [&quot;psutil&quot;, &quot;pytest&quot;, &quot;pytest-benchmark&quot;]
+-code-style = [&quot;pre-commit (&gt;=3.0,&lt;4.0)&quot;]
+-compare = [&quot;commonmark (&gt;=0.9,&lt;1.0)&quot;, &quot;markdown (&gt;=3.4,&lt;4.0)&quot;, &quot;mistletoe (&gt;=1.0,&lt;2.0)&quot;, &quot;mistune (&gt;=2.0,&lt;3.0)&quot;, &quot;panflute (&gt;=2.3,&lt;3.0)&quot;]
+-linkify = [&quot;linkify-it-py (&gt;=1,&lt;3)&quot;]
+-plugins = [&quot;mdit-py-plugins&quot;]
+-profiling = [&quot;gprof2dot&quot;]
+-rtd = [&quot;jupyter_sphinx&quot;, &quot;mdit-py-plugins&quot;, &quot;myst-parser&quot;, &quot;pyyaml&quot;, &quot;sphinx&quot;, &quot;sphinx-copybutton&quot;, &quot;sphinx-design&quot;, &quot;sphinx_book_theme&quot;]
+-testing = [&quot;coverage&quot;, &quot;pytest&quot;, &quot;pytest-cov&quot;, &quot;pytest-regressions&quot;]
+-
+-[[package]]
+-name = &quot;markupsafe&quot;
+-version = &quot;2.1.3&quot;
+-description = &quot;Safely add untrusted strings to HTML/XML markup.&quot;
+-optional = false
+-python-versions = &quot;&gt;=3.7&quot;
+-files = [
+-    {file = &quot;MarkupSafe-2.1.3-cp310-cp310-macosx_10_9_universal2.whl&quot;, hash = &quot;sha256:cd0f502fe016460680cd20aaa5a76d241d6f35a1c3350c474bac1273803893fa&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp310-cp310-macosx_10_9_x86_64.whl&quot;, hash = &quot;sha256:e09031c87a1e51556fdcb46e5bd4f59dfb743061cf93c4d6831bf894f125eb57&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl&quot;, hash = &quot;sha256:68e78619a61ecf91e76aa3e6e8e33fc4894a2bebe93410754bd28fce0a8a4f9f&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl&quot;, hash = &quot;sha256:65c1a9bcdadc6c28eecee2c119465aebff8f7a584dd719facdd9e825ec61ab52&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl&quot;, hash = &quot;sha256:525808b8019e36eb524b8c68acdd63a37e75714eac50e988180b169d64480a00&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp310-cp310-musllinux_1_1_aarch64.whl&quot;, hash = &quot;sha256:962f82a3086483f5e5f64dbad880d31038b698494799b097bc59c2edf392fce6&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp310-cp310-musllinux_1_1_i686.whl&quot;, hash = &quot;sha256:aa7bd130efab1c280bed0f45501b7c8795f9fdbeb02e965371bbef3523627779&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp310-cp310-musllinux_1_1_x86_64.whl&quot;, hash = &quot;sha256:c9c804664ebe8f83a211cace637506669e7890fec1b4195b505c214e50dd4eb7&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp310-cp310-win32.whl&quot;, hash = &quot;sha256:10bbfe99883db80bdbaff2dcf681dfc6533a614f700da1287707e8a5d78a8431&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp310-cp310-win_amd64.whl&quot;, hash = &quot;sha256:1577735524cdad32f9f694208aa75e422adba74f1baee7551620e43a3141f559&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp311-cp311-macosx_10_9_universal2.whl&quot;, hash = &quot;sha256:ad9e82fb8f09ade1c3e1b996a6337afac2b8b9e365f926f5a61aacc71adc5b3c&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp311-cp311-macosx_10_9_x86_64.whl&quot;, hash = &quot;sha256:3c0fae6c3be832a0a0473ac912810b2877c8cb9d76ca48de1ed31e1c68386575&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl&quot;, hash = &quot;sha256:b076b6226fb84157e3f7c971a47ff3a679d837cf338547532ab866c57930dbee&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl&quot;, hash = &quot;sha256:bfce63a9e7834b12b87c64d6b155fdd9b3b96191b6bd334bf37db7ff1fe457f2&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl&quot;, hash = &quot;sha256:338ae27d6b8745585f87218a3f23f1512dbf52c26c28e322dbe54bcede54ccb9&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp311-cp311-musllinux_1_1_aarch64.whl&quot;, hash = &quot;sha256:e4dd52d80b8c83fdce44e12478ad2e85c64ea965e75d66dbeafb0a3e77308fcc&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp311-cp311-musllinux_1_1_i686.whl&quot;, hash = &quot;sha256:df0be2b576a7abbf737b1575f048c23fb1d769f267ec4358296f31c2479db8f9&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp311-cp311-musllinux_1_1_x86_64.whl&quot;, hash = &quot;sha256:5bbe06f8eeafd38e5d0a4894ffec89378b6c6a625ff57e3028921f8ff59318ac&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp311-cp311-win32.whl&quot;, hash = &quot;sha256:dd15ff04ffd7e05ffcb7fe79f1b98041b8ea30ae9234aed2a9168b5797c3effb&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp311-cp311-win_amd64.whl&quot;, hash = &quot;sha256:134da1eca9ec0ae528110ccc9e48041e0828d79f24121a1a146161103c76e686&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp37-cp37m-macosx_10_9_x86_64.whl&quot;, hash = &quot;sha256:8e254ae696c88d98da6555f5ace2279cf7cd5b3f52be2b5cf97feafe883b58d2&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl&quot;, hash = &quot;sha256:cb0932dc158471523c9637e807d9bfb93e06a95cbf010f1a38b98623b929ef2b&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl&quot;, hash = &quot;sha256:9402b03f1a1b4dc4c19845e5c749e3ab82d5078d16a2a4c2cd2df62d57bb0707&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp37-cp37m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl&quot;, hash = &quot;sha256:ca379055a47383d02a5400cb0d110cef0a776fc644cda797db0c5696cfd7e18e&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp37-cp37m-musllinux_1_1_aarch64.whl&quot;, hash = &quot;sha256:b7ff0f54cb4ff66dd38bebd335a38e2c22c41a8ee45aa608efc890ac3e3931bc&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp37-cp37m-musllinux_1_1_i686.whl&quot;, hash = &quot;sha256:c011a4149cfbcf9f03994ec2edffcb8b1dc2d2aede7ca243746df97a5d41ce48&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp37-cp37m-musllinux_1_1_x86_64.whl&quot;, hash = &quot;sha256:56d9f2ecac662ca1611d183feb03a3fa4406469dafe241673d521dd5ae92a155&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp37-cp37m-win32.whl&quot;, hash = &quot;sha256:8758846a7e80910096950b67071243da3e5a20ed2546e6392603c096778d48e0&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp37-cp37m-win_amd64.whl&quot;, hash = &quot;sha256:787003c0ddb00500e49a10f2844fac87aa6ce977b90b0feaaf9de23c22508b24&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp38-cp38-macosx_10_9_universal2.whl&quot;, hash = &quot;sha256:2ef12179d3a291be237280175b542c07a36e7f60718296278d8593d21ca937d4&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp38-cp38-macosx_10_9_x86_64.whl&quot;, hash = &quot;sha256:2c1b19b3aaacc6e57b7e25710ff571c24d6c3613a45e905b1fde04d691b98ee0&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl&quot;, hash = &quot;sha256:8afafd99945ead6e075b973fefa56379c5b5c53fd8937dad92c662da5d8fd5ee&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl&quot;, hash = &quot;sha256:8c41976a29d078bb235fea9b2ecd3da465df42a562910f9022f1a03107bd02be&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl&quot;, hash = &quot;sha256:d080e0a5eb2529460b30190fcfcc4199bd7f827663f858a226a81bc27beaa97e&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp38-cp38-musllinux_1_1_aarch64.whl&quot;, hash = &quot;sha256:69c0f17e9f5a7afdf2cc9fb2d1ce6aabdb3bafb7f38017c0b77862bcec2bbad8&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp38-cp38-musllinux_1_1_i686.whl&quot;, hash = &quot;sha256:504b320cd4b7eff6f968eddf81127112db685e81f7e36e75f9f84f0df46041c3&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp38-cp38-musllinux_1_1_x86_64.whl&quot;, hash = &quot;sha256:42de32b22b6b804f42c5d98be4f7e5e977ecdd9ee9b660fda1a3edf03b11792d&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp38-cp38-win32.whl&quot;, hash = &quot;sha256:ceb01949af7121f9fc39f7d27f91be8546f3fb112c608bc4029aef0bab86a2a5&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp38-cp38-win_amd64.whl&quot;, hash = &quot;sha256:1b40069d487e7edb2676d3fbdb2b0829ffa2cd63a2ec26c4938b2d34391b4ecc&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp39-cp39-macosx_10_9_universal2.whl&quot;, hash = &quot;sha256:8023faf4e01efadfa183e863fefde0046de576c6f14659e8782065bcece22198&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp39-cp39-macosx_10_9_x86_64.whl&quot;, hash = &quot;sha256:6b2b56950d93e41f33b4223ead100ea0fe11f8e6ee5f641eb753ce4b77a7042b&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl&quot;, hash = &quot;sha256:9dcdfd0eaf283af041973bff14a2e143b8bd64e069f4c383416ecd79a81aab58&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl&quot;, hash = &quot;sha256:05fb21170423db021895e1ea1e1f3ab3adb85d1c2333cbc2310f2a26bc77272e&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl&quot;, hash = &quot;sha256:282c2cb35b5b673bbcadb33a585408104df04f14b2d9b01d4c345a3b92861c2c&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp39-cp39-musllinux_1_1_aarch64.whl&quot;, hash = &quot;sha256:ab4a0df41e7c16a1392727727e7998a467472d0ad65f3ad5e6e765015df08636&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp39-cp39-musllinux_1_1_i686.whl&quot;, hash = &quot;sha256:7ef3cb2ebbf91e330e3bb937efada0edd9003683db6b57bb108c4001f37a02ea&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp39-cp39-musllinux_1_1_x86_64.whl&quot;, hash = &quot;sha256:0a4e4a1aff6c7ac4cd55792abf96c915634c2b97e3cc1c7129578aa68ebd754e&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp39-cp39-win32.whl&quot;, hash = &quot;sha256:fec21693218efe39aa7f8599346e90c705afa52c5b31ae019b2e57e8f6542bb2&quot;},
+-    {file = &quot;MarkupSafe-2.1.3-cp39-cp39-win_amd64.whl&quot;, hash = &quot;sha256:3fd4abcb888d15a94f32b75d8fd18ee162ca0c064f35b11134be77050296d6ba&quot;},
+-    {file = &quot;MarkupSafe-2.1.3.tar.gz&quot;, hash = &quot;sha256:af598ed32d6ae86f1b747b82783958b1a4ab8f617b06fe68795c7f026abbdcad&quot;},
+-]
+-
+-[[package]]
+-name = &quot;mdurl&quot;
+-version = &quot;0.1.2&quot;
+-description = &quot;Markdown URL utilities&quot;
+-optional = false
+-python-versions = &quot;&gt;=3.7&quot;
+-files = [
+-    {file = &quot;mdurl-0.1.2-py3-none-any.whl&quot;, hash = &quot;sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8&quot;},
+-    {file = &quot;mdurl-0.1.2.tar.gz&quot;, hash = &quot;sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba&quot;},
+-]
+-
+-[[package]]
+-name = &quot;pelican&quot;
+-version = &quot;4.8.0&quot;
+-description = &quot;Static site generator supporting Markdown and reStructuredText&quot;
+-optional = false
+-python-versions = &quot;&gt;=3.6,&lt;4.0&quot;
+-files = [
+-    {file = &quot;pelican-4.8.0-py3-none-any.whl&quot;, hash = &quot;sha256:c80a81930f57f9b1a11c9ab5894ce1465dcda2028c9e4e3993cf9cbf2061a57d&quot;},
+-    {file = &quot;pelican-4.8.0.tar.gz&quot;, hash = &quot;sha256:6445c00cff2142a30592a2de046e5647b84a36c5a0cfafc0eba75abbabb2b4b1&quot;},
+-]
+-
+-[package.dependencies]
+-blinker = &quot;&gt;=1.4&quot;
+-docutils = &quot;&gt;=0.16&quot;
+-feedgenerator = &quot;&gt;=1.9&quot;
+-jinja2 = &quot;&gt;=2.7&quot;
+-markdown = {version = &quot;&gt;=3.1&quot;, optional = true, markers = &quot;extra == \&quot;markdown\&quot;&quot;}
+-pygments = &quot;&gt;=2.6&quot;
+-python-dateutil = &quot;&gt;=2.8&quot;
+-pytz = &quot;&gt;=2020.1&quot;
+-rich = &quot;&gt;=10.1&quot;
+-unidecode = &quot;&gt;=1.1&quot;
+-
+-[package.extras]
+-markdown = [&quot;markdown (&gt;=3.1)&quot;]
+-
+-[[package]]
+-name = &quot;pelican-minify&quot;
+-version = &quot;0.9&quot;
+-description = &quot;An HTML minification plugin for Pelican, the static site generator.&quot;
+-optional = false
+-python-versions = &quot;*&quot;
+-files = [
+-    {file = &quot;pelican-minify-0.9.tar.gz&quot;, hash = &quot;sha256:a0ffa9b1f15089bc4aec4692c5feba87356d427a7946ffd8b6222ac4c7758773&quot;},
+-    {file = &quot;pelican_minify-0.9-py2.py3-none-any.whl&quot;, hash = &quot;sha256:fcefce477d4a24c8972ec8871738100f144e329201ab2b45aab8b5d3b7ba8e65&quot;},
+-]
+-
+-[package.dependencies]
+-htmlmin = &quot;&gt;=0.1.5&quot;
+-joblib = &quot;&gt;=0.9&quot;
+-pelican = &quot;&gt;=3.1.1&quot;
+-
+-[[package]]
+-name = &quot;pygments&quot;
+-version = &quot;2.15.1&quot;
+-description = &quot;Pygments is a syntax highlighting package written in Python.&quot;
+-optional = false
+-python-versions = &quot;&gt;=3.7&quot;
+-files = [
+-    {file = &quot;Pygments-2.15.1-py3-none-any.whl&quot;, hash = &quot;sha256:db2db3deb4b4179f399a09054b023b6a586b76499d36965813c71aa8ed7b5fd1&quot;},
+-    {file = &quot;Pygments-2.15.1.tar.gz&quot;, hash = &quot;sha256:8ace4d3c1dd481894b2005f560ead0f9f19ee64fe983366be1a21e171d12775c&quot;},
+-]
+-
+-[package.extras]
+-plugins = [&quot;importlib-metadata&quot;]
+-
+-[[package]]
+-name = &quot;python-dateutil&quot;
+-version = &quot;2.8.2&quot;
+-description = &quot;Extensions to the standard Python datetime module&quot;
+-optional = false
+-python-versions = &quot;!=3.0.*,!=3.1.*,!=3.2.*,&gt;=2.7&quot;
+-files = [
+-    {file = &quot;python-dateutil-2.8.2.tar.gz&quot;, hash = &quot;sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86&quot;},
+-    {file = &quot;python_dateutil-2.8.2-py2.py3-none-any.whl&quot;, hash = &quot;sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9&quot;},
+-]
+-
+-[package.dependencies]
+-six = &quot;&gt;=1.5&quot;
+-
+-[[package]]
+-name = &quot;pytz&quot;
+-version = &quot;2023.3&quot;
+-description = &quot;World timezone definitions, modern and historical&quot;
+-optional = false
+-python-versions = &quot;*&quot;
+-files = [
+-    {file = &quot;pytz-2023.3-py2.py3-none-any.whl&quot;, hash = &quot;sha256:a151b3abb88eda1d4e34a9814df37de2a80e301e68ba0fd856fb9b46bfbbbffb&quot;},
+-    {file = &quot;pytz-2023.3.tar.gz&quot;, hash = &quot;sha256:1d8ce29db189191fb55338ee6d0387d82ab59f3d00eac103412d64e0ebd0c588&quot;},
+-]
+-
+-[[package]]
+-name = &quot;rich&quot;
+-version = &quot;13.4.2&quot;
+-description = &quot;Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal&quot;
+-optional = false
+-python-versions = &quot;&gt;=3.7.0&quot;
+-files = [
+-    {file = &quot;rich-13.4.2-py3-none-any.whl&quot;, hash = &quot;sha256:8f87bc7ee54675732fa66a05ebfe489e27264caeeff3728c945d25971b6485ec&quot;},
+-    {file = &quot;rich-13.4.2.tar.gz&quot;, hash = &quot;sha256:d653d6bccede5844304c605d5aac802c7cf9621efd700b46c7ec2b51ea914898&quot;},
+-]
+-
+-[package.dependencies]
+-markdown-it-py = &quot;&gt;=2.2.0&quot;
+-pygments = &quot;&gt;=2.13.0,&lt;3.0.0&quot;
+-
+-[package.extras]
+-jupyter = [&quot;ipywidgets (&gt;=7.5.1,&lt;9)&quot;]
+-
+-[[package]]
+-name = &quot;six&quot;
+-version = &quot;1.16.0&quot;
+-description = &quot;Python 2 and 3 compatibility utilities&quot;
+-optional = false
+-python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*&quot;
+-files = [
+-    {file = &quot;six-1.16.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254&quot;},
+-    {file = &quot;six-1.16.0.tar.gz&quot;, hash = &quot;sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926&quot;},
+-]
+-
+-[[package]]
+-name = &quot;smartypants&quot;
+-version = &quot;2.0.1&quot;
+-description = &quot;Python with the SmartyPants&quot;
+-optional = false
+-python-versions = &quot;*&quot;
+-files = [
+-    {file = &quot;smartypants-2.0.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:8db97f7cbdf08d15b158a86037cd9e116b4cf37703d24e0419a0d64ca5808f0d&quot;},
+-]
+-
+-[[package]]
+-name = &quot;typogrify&quot;
+-version = &quot;2.0.7&quot;
+-description = &quot;Filters to enhance web typography, including support for Django &amp; Jinja templates&quot;
+-optional = false
+-python-versions = &quot;*&quot;
+-files = [
+-    {file = &quot;typogrify-2.0.7.tar.gz&quot;, hash = &quot;sha256:8be4668cda434163ce229d87ca273a11922cb1614cb359970b7dc96eed13cb38&quot;},
+-]
+-
+-[package.dependencies]
+-smartypants = &quot;&gt;=1.8.3&quot;
+-
+-[[package]]
+-name = &quot;unidecode&quot;
+-version = &quot;1.3.6&quot;
+-description = &quot;ASCII transliterations of Unicode text&quot;
+-optional = false
+-python-versions = &quot;&gt;=3.5&quot;
+-files = [
+-    {file = &quot;Unidecode-1.3.6-py3-none-any.whl&quot;, hash = &quot;sha256:547d7c479e4f377b430dd91ac1275d593308dce0fc464fb2ab7d41f82ec653be&quot;},
+-    {file = &quot;Unidecode-1.3.6.tar.gz&quot;, hash = &quot;sha256:fed09cf0be8cf415b391642c2a5addfc72194407caee4f98719e40ec2a72b830&quot;},
+-]
+-
+-[metadata]
+-lock-version = &quot;2.0&quot;
+-python-versions = &quot;^3.10&quot;
+-content-hash = &quot;ddedd6f9d94db8a55cde57c4e3ad6c212dd5370b10fd3ff392558c4850c3cb60&quot;
+diff --git a/posts/acer-chromebook-spin/index.html b/posts/acer-chromebook-spin/index.html
+new file mode 100644
+index 0000000..6887b77
+--- /dev/null
++++ b/posts/acer-chromebook-spin/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /chromebook/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/chromebook/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/chromebook/&quot;&gt;/chromebook/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/enable-italic-text-vim-tmux-gnome-terminal/index.html b/posts/enable-italic-text-vim-tmux-gnome-terminal/index.html
+new file mode 100644
+index 0000000..5747bf5
+--- /dev/null
++++ b/posts/enable-italic-text-vim-tmux-gnome-terminal/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /tmux-italics/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/tmux-italics/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/tmux-italics/&quot;&gt;/tmux-italics/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/fix-rmit-wifi-issue-in-ubuntu-13-04-and-variants/index.html b/posts/fix-rmit-wifi-issue-in-ubuntu-13-04-and-variants/index.html
+new file mode 100644
+index 0000000..c1d908f
+--- /dev/null
++++ b/posts/fix-rmit-wifi-issue-in-ubuntu-13-04-and-variants/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /rmit-wifi/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/rmit-wifi/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/rmit-wifi/&quot;&gt;/rmit-wifi/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/go-postgres-caddy-systemd-stack/index.html b/posts/go-postgres-caddy-systemd-stack/index.html
+new file mode 100644
+index 0000000..4f62062
+--- /dev/null
++++ b/posts/go-postgres-caddy-systemd-stack/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /go-stack/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/go-stack/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/go-stack/&quot;&gt;/go-stack/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/have-you-built-anything-cool/index.html b/posts/have-you-built-anything-cool/index.html
+new file mode 100644
+index 0000000..171e8f1
+--- /dev/null
++++ b/posts/have-you-built-anything-cool/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /cool/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/cool/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/cool/&quot;&gt;/cool/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/how-i-bypassed-my-university-domain-blocker-to-access-hdviet/index.html b/posts/how-i-bypassed-my-university-domain-blocker-to-access-hdviet/index.html
+new file mode 100644
+index 0000000..c156712
+--- /dev/null
++++ b/posts/how-i-bypassed-my-university-domain-blocker-to-access-hdviet/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /hdviet/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/hdviet/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/hdviet/&quot;&gt;/hdviet/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/how-to-install-pyqt5-on-virtualenv-on-ubuntu-14.04/index.html b/posts/how-to-install-pyqt5-on-virtualenv-on-ubuntu-14.04/index.html
+new file mode 100644
+index 0000000..34ecdc4
+--- /dev/null
++++ b/posts/how-to-install-pyqt5-on-virtualenv-on-ubuntu-14.04/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /pyqt5/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/pyqt5/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/pyqt5/&quot;&gt;/pyqt5/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/i-did-not-sign-that-rmit-sc-petition/index.html b/posts/i-did-not-sign-that-rmit-sc-petition/index.html
+new file mode 100644
+index 0000000..f3dcad7
+--- /dev/null
++++ b/posts/i-did-not-sign-that-rmit-sc-petition/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /petition-fraud/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/petition-fraud/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/petition-fraud/&quot;&gt;/petition-fraud/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/i-made-my-python-webapp-pip-installable/index.html b/posts/i-made-my-python-webapp-pip-installable/index.html
+new file mode 100644
+index 0000000..d87727d
+--- /dev/null
++++ b/posts/i-made-my-python-webapp-pip-installable/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /pippable-webapp/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/pippable-webapp/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/pippable-webapp/&quot;&gt;/pippable-webapp/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/ibus-is-dead-to-me-use-fcitx-instead-vi/index.html b/posts/ibus-is-dead-to-me-use-fcitx-instead-vi/index.html
+new file mode 100644
+index 0000000..41089d7
+--- /dev/null
++++ b/posts/ibus-is-dead-to-me-use-fcitx-instead-vi/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /fcitx/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/fcitx/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/fcitx/&quot;&gt;/fcitx/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/installing-programs-in-ubuntu/index.html b/posts/installing-programs-in-ubuntu/index.html
+new file mode 100644
+index 0000000..a5335c0
+--- /dev/null
++++ b/posts/installing-programs-in-ubuntu/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /ubuntu-programs/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/ubuntu-programs/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/ubuntu-programs/&quot;&gt;/ubuntu-programs/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/introducing-mcross-a-minimal-gemini-browser/index.html b/posts/introducing-mcross-a-minimal-gemini-browser/index.html
+new file mode 100644
+index 0000000..614b162
+--- /dev/null
++++ b/posts/introducing-mcross-a-minimal-gemini-browser/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /mcross/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/mcross/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/mcross/&quot;&gt;/mcross/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/introducing-pytaku-the-only-online-manga-reader-youll-ever-need/index.html b/posts/introducing-pytaku-the-only-online-manga-reader-youll-ever-need/index.html
+new file mode 100644
+index 0000000..e18d119
+--- /dev/null
++++ b/posts/introducing-pytaku-the-only-online-manga-reader-youll-ever-need/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /pytaku/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/pytaku/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/pytaku/&quot;&gt;/pytaku/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/look-ma-no-stock-theme/index.html b/posts/look-ma-no-stock-theme/index.html
+new file mode 100644
+index 0000000..4bac5d5
+--- /dev/null
++++ b/posts/look-ma-no-stock-theme/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /custom-theme/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/custom-theme/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/custom-theme/&quot;&gt;/custom-theme/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/modern-vim-plugin-management-pathogen-vs-vundle/index.html b/posts/modern-vim-plugin-management-pathogen-vs-vundle/index.html
+new file mode 100644
+index 0000000..3b704f4
+--- /dev/null
++++ b/posts/modern-vim-plugin-management-pathogen-vs-vundle/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /pathogen-vs-vundle/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/pathogen-vs-vundle/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/pathogen-vs-vundle/&quot;&gt;/pathogen-vs-vundle/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/my-first-diy-fightstick-part-1/index.html b/posts/my-first-diy-fightstick-part-1/index.html
+new file mode 100644
+index 0000000..cbf2a05
+--- /dev/null
++++ b/posts/my-first-diy-fightstick-part-1/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /fightstick-1/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/fightstick-1/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/fightstick-1/&quot;&gt;/fightstick-1/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/my-first-diy-fightstick-part-2/index.html b/posts/my-first-diy-fightstick-part-2/index.html
+new file mode 100644
+index 0000000..9e3aa1a
+--- /dev/null
++++ b/posts/my-first-diy-fightstick-part-2/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /fightstick-2/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/fightstick-2/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/fightstick-2/&quot;&gt;/fightstick-2/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/opening-http-link-under-the-cursor-in-vim/index.html b/posts/opening-http-link-under-the-cursor-in-vim/index.html
+new file mode 100644
+index 0000000..0a3ee92
+--- /dev/null
++++ b/posts/opening-http-link-under-the-cursor-in-vim/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /vim-open-link/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/vim-open-link/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/vim-open-link/&quot;&gt;/vim-open-link/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/setting-up-your-development-environment-for-a-node-webkit-project/index.html b/posts/setting-up-your-development-environment-for-a-node-webkit-project/index.html
+new file mode 100644
+index 0000000..23f01e0
+--- /dev/null
++++ b/posts/setting-up-your-development-environment-for-a-node-webkit-project/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /node-webkit/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/node-webkit/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/node-webkit/&quot;&gt;/node-webkit/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/simplest-possible-stepmania-soft-to-hard-pad-mod/index.html b/posts/simplest-possible-stepmania-soft-to-hard-pad-mod/index.html
+new file mode 100644
+index 0000000..4e9dd35
+--- /dev/null
++++ b/posts/simplest-possible-stepmania-soft-to-hard-pad-mod/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /stepmania-pad/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/stepmania-pad/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/stepmania-pad/&quot;&gt;/stepmania-pad/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/streaming-videos-from-google-drive-a-second-attempt/index.html b/posts/streaming-videos-from-google-drive-a-second-attempt/index.html
+new file mode 100644
+index 0000000..8dfc14a
+--- /dev/null
++++ b/posts/streaming-videos-from-google-drive-a-second-attempt/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /video-streaming-2/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/video-streaming-2/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/video-streaming-2/&quot;&gt;/video-streaming-2/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/the-video-streaming-finale-or-why-putio-is-awesome/index.html b/posts/the-video-streaming-finale-or-why-putio-is-awesome/index.html
+new file mode 100644
+index 0000000..289cabf
+--- /dev/null
++++ b/posts/the-video-streaming-finale-or-why-putio-is-awesome/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /video-streaming-3/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/video-streaming-3/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/video-streaming-3/&quot;&gt;/video-streaming-3/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/towards-an-acceptable-video-playing-experience/index.html b/posts/towards-an-acceptable-video-playing-experience/index.html
+new file mode 100644
+index 0000000..904703c
+--- /dev/null
++++ b/posts/towards-an-acceptable-video-playing-experience/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /video-streaming-1/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/video-streaming-1/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/video-streaming-1/&quot;&gt;/video-streaming-1/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/virtualenwrapper-python2-python3/index.html b/posts/virtualenwrapper-python2-python3/index.html
+new file mode 100644
+index 0000000..986820b
+--- /dev/null
++++ b/posts/virtualenwrapper-python2-python3/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /virtualenvwrapper/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/virtualenvwrapper/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/virtualenvwrapper/&quot;&gt;/virtualenvwrapper/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/what-i-did-after-installing-manjaro-xfce/index.html b/posts/what-i-did-after-installing-manjaro-xfce/index.html
+new file mode 100644
+index 0000000..b8cf232
+--- /dev/null
++++ b/posts/what-i-did-after-installing-manjaro-xfce/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /manjaro-xfce/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/manjaro-xfce/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/manjaro-xfce/&quot;&gt;/manjaro-xfce/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/why-i-use-linux-automation/index.html b/posts/why-i-use-linux-automation/index.html
+new file mode 100644
+index 0000000..5e2e8e9
+--- /dev/null
++++ b/posts/why-i-use-linux-automation/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /linux-automation/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/linux-automation/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/linux-automation/&quot;&gt;/linux-automation/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/posts/working-with-sqlite-in-python-without-an-orm-or-migration-framework/index.html b/posts/working-with-sqlite-in-python-without-an-orm-or-migration-framework/index.html
+new file mode 100644
+index 0000000..ebdf692
+--- /dev/null
++++ b/posts/working-with-sqlite-in-python-without-an-orm-or-migration-framework/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /sqlite-python/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/sqlite-python/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/sqlite-python/&quot;&gt;/sqlite-python/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/publishconf.py b/publishconf.py
+deleted file mode 100644
+index fc11395..0000000
+--- a/publishconf.py
++++ /dev/null
+@@ -1,20 +0,0 @@
+-#!/usr/bin/env python
+-# -*- coding: utf-8 -*- #
+-import os
+-import sys
+-
+-sys.path.append(os.curdir)
+-
+-from pelicanconf import *  # noqa
+-
+-# This file is only used if you use `make publish` or
+-# explicitly specify it as your config file.
+-
+-SITEURL = &quot;https://hi.imnhan.com&quot;
+-RELATIVE_URLS = True
+-
+-DELETE_OUTPUT_DIRECTORY = True
+-
+-# Following items are often useful when publishing
+-
+-DISQUS_SITENAME = &quot;nerdyweekly&quot;
+diff --git a/pyproject.toml b/pyproject.toml
+deleted file mode 100644
+index ee88336..0000000
+--- a/pyproject.toml
++++ /dev/null
+@@ -1,18 +0,0 @@
+-[tool.poetry]
+-name = &quot;imnhan.com&quot;
+-version = &quot;0.1.0&quot;
+-description = &quot;&quot;
+-authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+-
+-[tool.poetry.dependencies]
+-python = &quot;^3.10&quot;
+-typogrify = &quot;^2.0&quot;
+-pelican-minify = &quot;^0.9.0&quot;
+-pelican = {extras = [&quot;markdown&quot;], version = &quot;^4.8.0&quot;}
+-
+-[tool.poetry.dev-dependencies]
+-ghp-import = &quot;^0.5.5&quot;
+-
+-[build-system]
+-requires = [&quot;poetry&gt;=0.12&quot;]
+-build-backend = &quot;poetry.masonry.api&quot;
+diff --git a/redirects.txt b/redirects.txt
+new file mode 100644
+index 0000000..b5bb930
+--- /dev/null
++++ b/redirects.txt
+@@ -0,0 +1,27 @@
++posts/acer-chromebook-spin/index.html -&gt; chromebook/
++posts/enable-italic-text-vim-tmux-gnome-terminal/index.html -&gt; tmux-italics/
++posts/fix-rmit-wifi-issue-in-ubuntu-13-04-and-variants/index.html -&gt; rmit-wifi/
++posts/go-postgres-caddy-systemd-stack/index.html -&gt; go-stack/
++posts/have-you-built-anything-cool/index.html -&gt; cool/
++posts/how-i-bypassed-my-university-domain-blocker-to-access-hdviet/index.html -&gt; hdviet/
++posts/how-to-install-pyqt5-on-virtualenv-on-ubuntu-14.04/index.html -&gt; pyqt5/
++posts/ibus-is-dead-to-me-use-fcitx-instead-vi/index.html -&gt; fcitx/
++posts/i-did-not-sign-that-rmit-sc-petition/index.html -&gt; petition-fraud/
++posts/i-made-my-python-webapp-pip-installable/index.html -&gt; pippable-webapp/
++posts/installing-programs-in-ubuntu/index.html -&gt; ubuntu-programs/
++posts/introducing-mcross-a-minimal-gemini-browser/index.html -&gt; mcross/
++posts/introducing-pytaku-the-only-online-manga-reader-youll-ever-need/index.html -&gt; pytaku/
++posts/look-ma-no-stock-theme/index.html -&gt; custom-theme/
++posts/modern-vim-plugin-management-pathogen-vs-vundle/index.html -&gt; pathogen-vs-vundle/
++posts/my-first-diy-fightstick-part-1/index.html -&gt; fightstick-1/
++posts/my-first-diy-fightstick-part-2/index.html -&gt; fightstick-2/
++posts/opening-http-link-under-the-cursor-in-vim/index.html -&gt; vim-open-link/
++posts/setting-up-your-development-environment-for-a-node-webkit-project/index.html -&gt; node-webkit/
++posts/simplest-possible-stepmania-soft-to-hard-pad-mod/index.html -&gt; stepmania-pad/
++posts/streaming-videos-from-google-drive-a-second-attempt/index.html -&gt; video-streaming-2/
++posts/the-video-streaming-finale-or-why-putio-is-awesome/index.html -&gt; video-streaming-3/
++posts/towards-an-acceptable-video-playing-experience/index.html -&gt; video-streaming-1/
++posts/virtualenwrapper-python2-python3/index.html -&gt; virtualenvwrapper/
++posts/what-i-did-after-installing-manjaro-xfce/index.html -&gt; manjaro-xfce/
++posts/why-i-use-linux-automation/index.html -&gt; linux-automation/
++posts/working-with-sqlite-in-python-without-an-orm-or-migration-framework/index.html -&gt; sqlite-python/
+diff --git a/website.s4g b/website.s4g
+new file mode 100644
+index 0000000..9e971de
+--- /dev/null
++++ b/website.s4g
+@@ -0,0 +1,9 @@
++Address: https://hi.imnhan.com
++Name: Hi, I&#39;m Nhân
++Tagline: and welcome to my humble corner on the interwebs
++Root: /
++ShowFooter: true
++NavbarLinks: index.dj
++AuthorName: nhanb
++AuthorURI: https://hi.imnhan.com
++AuthorEmail: hi@imnhan.com
+</pre></body></html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[526da28ed3] implement alt-shortcuts for buttons | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 526da28ed3</strong><hr><pre>commit 526da28ed3db85ceb5664dacba584876a3cdab5c
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun May 31 16:40:36 2020 +0700
+
+    implement alt-shortcuts for buttons
+
+diff --git a/src/mcross/gui/controller.py b/src/mcross/gui/controller.py
+index dfaccea..7a6662c 100644
+--- a/src/mcross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -21,6 +21,7 @@
+ class Controller:
+     def __init__(self):
+         self.root = Tk()
++        self.root.alt_shortcuts = set()
+         self.model = Model()
+         self.view = View(self.root, self.model)
+         self.root.title(&quot;McRoss Browser&quot;)
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index d4a8a5a..0bc57da 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -13,7 +13,7 @@
+     TextNode,
+ )
+ from .model import Model
+-from .widgets import McEntry, ReadOnlyText
++from .widgets import AltButton, McEntry, ReadOnlyText
+ 
+ # OS-specific values
+ if sys.platform == &quot;win32&quot;:
+@@ -58,9 +58,9 @@ def emit(self, record):
+ class View:
+     model: Model
+     address_bar: ttk.Entry
+-    go_btn: ttk.Button
+-    back_btn: ttk.Button
+-    forward_btn: ttk.Button
++    go_btn: AltButton
++    back_btn: AltButton
++    forward_btn: AltButton
+     text: Text
+     status_bar: ttk.Label
+ 
+@@ -90,11 +90,23 @@ def __init__(self, root: Tk, model: Model):
+         register_status_bar_log_handler(status_bar)
+ 
+         # Back/Forward buttons
+-        back_btn = ttk.Button(
+-            row1, text=&quot;◀&quot;, width=3, command=lambda: self.back_callback()
++        back_btn = AltButton(
++            row1,
++            text=&quot;◀&quot;,
++            width=3,
++            command=lambda: self.back_callback(),
++            root=root,
++            alt_char_index=0,
++            alt_key=&quot;Left&quot;,
+         )
+-        forward_btn = ttk.Button(
+-            row1, text=&quot;▶&quot;, width=3, command=lambda: self.forward_callback()
++        forward_btn = AltButton(
++            row1,
++            text=&quot;▶&quot;,
++            width=3,
++            command=lambda: self.forward_callback(),
++            root=root,
++            alt_char_index=0,
++            alt_key=&quot;Right&quot;,
+         )
+         back_btn.pack(side=&quot;left&quot;, padx=2)
+         forward_btn.pack(side=&quot;left&quot;, padx=2)
+@@ -108,7 +120,7 @@ def __init__(self, root: Tk, model: Model):
+         # Address bar
+         address_bar = McEntry(row1)
+         self.address_bar = address_bar
+-        address_bar.pack(side=&quot;left&quot;, fill=&quot;both&quot;, expand=True, padx=3, pady=3)
++        address_bar.pack(side=&quot;left&quot;, fill=&quot;both&quot;, expand=True, pady=3)
+         address_bar.bind(&quot;&lt;Return&gt;&quot;, self._on_go)
+         address_bar.bind(&quot;&lt;KP_Enter&gt;&quot;, self._on_go)
+         address_bar.focus_set()
+@@ -120,9 +132,11 @@ def on_ctrl_l(ev):
+         root.bind(&quot;&lt;Control-l&gt;&quot;, on_ctrl_l)
+ 
+         # Go button
+-        go_btn = ttk.Button(row1, text=&quot;三三ᕕ( ᐛ )ᕗ&quot;, command=self._on_go, width=10)
++        go_btn = AltButton(
++            row1, text=&quot;Go&quot;, root=root, alt_char_index=0, command=self._on_go, width=5
++        )
+         self.go_btn = go_btn
+-        go_btn.pack(side=&quot;left&quot;, pady=3)
++        go_btn.pack(side=&quot;left&quot;, padx=2, pady=3)
+ 
+         # Main viewport implemented as a Text widget.
+         text = ReadOnlyText(row2, wrap=&quot;word&quot;)
+diff --git a/src/mcross/gui/widgets.py b/src/mcross/gui/widgets.py
+index 846bd54..e04cbc6 100644
+--- a/src/mcross/gui/widgets.py
++++ b/src/mcross/gui/widgets.py
+@@ -34,3 +34,43 @@ def select_all(self, ev=None):
+         self.select_range(0, &quot;end&quot;)
+         self.icursor(&quot;end&quot;)
+         return &quot;break&quot;
++
++
++class AltButton(ttk.Button):
++    &quot;&quot;&quot;
++    Like Button but also supports Alt-&lt;Key&gt; shortcut (like Qt&#39;s Accelerator Keys).
++    Accepts 3 extra args:
++    - root: The root tk instance.
++    - alt_char_index: Character index to be underlined when Alt is held down.
++    - alt_key (optional): Explicit key name to pass to bind().
++      If alt_key is not provided then it will be inferred from alt_char_index.
++    &quot;&quot;&quot;
++
++    def __init__(self, *args, root, alt_char_index, alt_key=None, **kwargs):
++        super().__init__(*args, **kwargs)
++        self.root = root
++
++        alt_key = alt_key or self[&quot;text&quot;][alt_char_index].lower()
++        assert alt_key not in root.alt_shortcuts, f&quot;Duplicate shortcut for {alt_key}&quot;
++        root.alt_shortcuts.add(alt_key)
++
++        root.bind(&quot;&lt;Alt_L&gt;&quot;, self._alt_down, add=&quot;+&quot;)
++        root.bind(&quot;&lt;KeyRelease-Alt_L&gt;&quot;, self._alt_up, add=&quot;+&quot;)
++        root.bind(f&quot;&lt;Alt-{alt_key}&gt;&quot;, self._alt_button_down)
++        root.bind(f&quot;&lt;Alt-KeyRelease-{alt_key}&gt;&quot;, self._alt_button_up)
++
++        self.alt_char_index = alt_char_index
++        self.alt_key = alt_key
++
++    def _alt_down(self, event):
++        self.config(underline=self.alt_char_index)
++
++    def _alt_up(self, event):
++        self.config(underline=-1)
++
++    def _alt_button_down(self, event):
++        self.state([&quot;pressed&quot;])
++
++    def _alt_button_up(self, event):
++        self.invoke()
++        self.state([&quot;!pressed&quot;])
+</pre></body></html>

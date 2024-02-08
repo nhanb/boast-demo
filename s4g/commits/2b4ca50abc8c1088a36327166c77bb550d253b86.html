@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[2b4ca50abc] local server: redirect to correct Root dir | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 2b4ca50abc</strong><hr><pre>commit 2b4ca50abc8c1088a36327166c77bb550d253b86
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jul 12 17:22:54 2023 +0700
+
+    local server: redirect to correct Root dir
+
+diff --git a/main.go b/main.go
+index 3e36f1e..d718617 100644
+--- a/main.go
++++ b/main.go
+@@ -107,6 +107,11 @@ func handleServeCmd(folder, port string) {
+ 			http.StripPrefix(site.Root, http.FileServer(http.FS(fsys))),
+ 		),
+ 	)
++
++	if site.Root != &quot;/&quot; {
++		http.Handle(&quot;/&quot;, http.RedirectHandler(site.Root, http.StatusTemporaryRedirect))
++	}
++
+ 	err = http.ListenAndServe(&quot;127.0.0.1:&quot;+port, nil)
+ 	if err != nil {
+ 		panic(err)
+</pre></body></html>

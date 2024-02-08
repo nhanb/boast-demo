@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[0d22e2e4af] fix mangadex | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 0d22e2e4af</strong><hr><pre>commit 0d22e2e4afc98b3beadfc12d33f666a56d9b415b
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Sep 18 23:59:26 2021 +0700
+
+    fix mangadex
+
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index 9a2df2d..62d6973 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -31,7 +31,7 @@ def get_title(self, title_id):
+                 break
+ 
+         cover = None
+-        for rel in md_json[&quot;relationships&quot;]:
++        for rel in md_json[&quot;data&quot;][&quot;relationships&quot;]:
+             if rel[&quot;type&quot;] == &quot;cover_art&quot;:
+                 cover = rel[&quot;attributes&quot;][&quot;fileName&quot;]
+ 
+@@ -143,11 +143,11 @@ def search_title(self, query):
+         }
+         md_resp = self.http_get(&quot;https://api.mangadex.org/manga&quot;, params=params)
+         assert md_resp.status_code == 200
+-        results = md_resp.json()[&quot;results&quot;]
++        results = md_resp.json()[&quot;data&quot;]
+ 
+         titles = []
+         for result in results:
+-            data = result[&quot;data&quot;]
++            data = result
+             cover = None
+             for rel in result[&quot;relationships&quot;]:
+                 if rel[&quot;type&quot;] == &quot;cover_art&quot;:
+diff --git a/tests/mangoapi/test_mangadex.py b/tests/mangoapi/test_mangadex.py
+index 886a20e..aff99b9 100644
+--- a/tests/mangoapi/test_mangadex.py
++++ b/tests/mangoapi/test_mangadex.py
+@@ -4,6 +4,8 @@
+ def test_get_title():
+     title = Mangadex().get_title(&quot;8af3ad21-3e7e-4fb5-b344-d0044ec154fc&quot;)
+     chapters = title.pop(&quot;chapters&quot;)
++    descriptions = title.pop(&quot;descriptions&quot;)
++    assert descriptions[0]
+     assert title == {
+         &quot;id&quot;: &quot;8af3ad21-3e7e-4fb5-b344-d0044ec154fc&quot;,
+         &quot;name&quot;: &quot;Beelzebub&quot;,
+@@ -18,27 +20,6 @@ def test_get_title():
+             &quot;惡魔奶爸&quot;,
+             &quot;바알세불&quot;,
+         ],
+-        &quot;descriptions&quot;: [
+-            &quot;Ishiyama High is a school populated entirely by &quot;
+-            &quot;delinquents, where nonstop violence and lawlessness are the &quot;
+-            &quot;norm. However, there is one universally acknowledged &quot;
+-            &quot;rule—don&amp;#39;t cross first year student Tatsumi Oga, &quot;
+-            &quot;Ishiyama&amp;#39;s most vicious fighter.&lt;br /&gt;&lt;br /&gt;One day, &quot;
+-            &quot;Oga is by a riverbed when he encounters a man floating down &quot;
+-            &quot;the river. After being retrieved by Oga, the man splits &quot;
+-            &quot;down the middle to reveal a baby, which crawls onto &quot;
+-            &quot;Oga&amp;#39;s back and immediately forms an attachment to him. &quot;
+-            &quot;Though he doesn&amp;#39;t know it yet, this baby is named &quot;
+-            &quot;Kaiser de Emperana Beelzebub IV, or &amp;quot;Baby Beel&amp;quot; &quot;
+-            &quot;for short—the son of the Demon Lord!&lt;br /&gt;&lt;br /&gt;As if &quot;
+-            &quot;finding the future Lord of the Underworld isn&amp;#39;t enough, &quot;
+-            &quot;Oga is also confronted by Hildegard, Beel&amp;#39;s demon maid &quot;
+-            &quot;who insists he take responsibility as Beel&amp;#39;s guardian. &quot;
+-            &quot;Together they attempt to raise Baby Beel—although &quot;
+-            &quot;surrounded by juvenile delinquents and demonic powers, the &quot;
+-            &quot;two of them may be in for more of a challenge than they can &quot;
+-            &quot;imagine.&lt;br /&gt;&lt;hr /&gt;&quot;
+-        ],
+         &quot;descriptions_format&quot;: &quot;html&quot;,
+         &quot;is_webtoon&quot;: False,
+     }
+@@ -47,7 +28,7 @@ def test_get_title():
+     assert chapters[1] == {
+         &quot;id&quot;: &quot;dfd3fd5a-a20f-460f-b726-e9cb168bfe3d&quot;,
+         &quot;name&quot;: &quot;&quot;,
+-        &quot;volume&quot;: 28,
++        &quot;volume&quot;: &quot;28&quot;,
+         &quot;groups&quot;: [],
+         &quot;number&quot;: &quot;245&quot;,
+         &quot;num_major&quot;: 245,
+@@ -87,6 +68,12 @@ def test_search():
+             &quot;site&quot;: &quot;mangadex&quot;,
+             &quot;thumbnail&quot;: &quot;https://uploads.mangadex.org/covers/8af3ad21-3e7e-4fb5-b344-d0044ec154fc/bab3ccbf-7479-4117-ad92-4dedced54ceb.jpg.256.jpg&quot;,
+         },
++        {
++            &quot;id&quot;: &quot;72378871-9afc-47bd-902f-0d8116adb390&quot;,
++            &quot;name&quot;: &quot;Beelzebub - Digital Colored Comics&quot;,
++            &quot;site&quot;: &quot;mangadex&quot;,
++            &quot;thumbnail&quot;: &quot;https://uploads.mangadex.org/covers/72378871-9afc-47bd-902f-0d8116adb390/c8b9b385-b7b9-4101-bf71-4f0d66fc35ff.jpg.256.jpg&quot;,
++        },
+         {
+             &quot;id&quot;: &quot;b4320039-9b91-44a7-a60d-c7ba8c0684e7&quot;,
+             &quot;name&quot;: &quot;Beelzebub-jou no Oki ni Mesu mama.&quot;,
+@@ -99,10 +86,4 @@ def test_search():
+             &quot;site&quot;: &quot;mangadex&quot;,
+             &quot;thumbnail&quot;: &quot;https://uploads.mangadex.org/covers/a453af66-0dac-4966-b246-b37c96b27245/7e50b22d-b027-4ee1-bd15-94f05fa6cecb.jpg.256.jpg&quot;,
+         },
+-        {
+-            &quot;id&quot;: &quot;72378871-9afc-47bd-902f-0d8116adb390&quot;,
+-            &quot;name&quot;: &quot;Beelzebub - Digital Colored Comics&quot;,
+-            &quot;site&quot;: &quot;mangadex&quot;,
+-            &quot;thumbnail&quot;: &quot;https://uploads.mangadex.org/covers/72378871-9afc-47bd-902f-0d8116adb390/c8b9b385-b7b9-4101-bf71-4f0d66fc35ff.jpg.256.jpg&quot;,
+-        },
+     ]
+</pre></body></html>

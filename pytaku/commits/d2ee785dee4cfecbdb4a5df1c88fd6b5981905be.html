@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[d2ee785dee] login form debug message | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / d2ee785dee</strong><hr><pre>commit d2ee785dee4cfecbdb4a5df1c88fd6b5981905be
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jan 21 19:39:25 2021 +0700
+
+    login form debug message
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 23e9315..d79d58c 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.32&quot;
++version = &quot;0.3.33&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/js-src/routes/authentication.js b/src/pytaku/js-src/routes/authentication.js
+index 30cc850..ecdaa13 100644
+--- a/src/pytaku/js-src/routes/authentication.js
++++ b/src/pytaku/js-src/routes/authentication.js
+@@ -64,6 +64,7 @@ function Authentication(initialVNode) {
+             m(&quot;input[placeholder=username][name=username][required]&quot;, {
+               value: loginUsername,
+               oninput: (e) =&gt; {
++                console.log(&quot;username onInput:&quot;, e.target.value);
+                 loginUsername = e.target.value;
+               },
+             }),
+@@ -72,6 +73,7 @@ function Authentication(initialVNode) {
+               {
+                 value: loginPassword,
+                 oninput: (e) =&gt; {
++                  console.log(&quot;password onInput: size&quot;, e.target.value.length);
+                   loginPassword = e.target.value;
+                 },
+               }
+</pre></body></html>

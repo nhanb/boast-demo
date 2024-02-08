@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[288363c875] hide &quot;done&quot; column if not logged in | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 288363c875</strong><hr><pre>commit 288363c8756956ede1d7595c2ccdbdf7add4040c
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 8 09:19:26 2020 +0700
+
+    hide &quot;done&quot; column if not logged in
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 0b6e855..d1b7809 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.2.0&quot;
++version = &quot;0.2.1&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index 97151c8..ce2f380 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -44,17 +44,19 @@ &lt;h1&gt;{{ name }}&lt;/h1&gt;
+ 
+ &lt;table&gt;
+   &lt;tr&gt;
+-    &lt;th&gt;Done&lt;/th&gt;
++    {% if session[&#39;user&#39;] %}&lt;th&gt;Done&lt;/th&gt;{% endif %}
+     &lt;th&gt;Name&lt;/th&gt;
+     &lt;th&gt;Group&lt;/th&gt;
+   &lt;/tr&gt;
+   {% for chapter in chapters %}
+   &lt;tr&gt;
++    {% if session[&#39;user&#39;] %}
+     &lt;td&gt;
+       {% if chapter[&#39;is_read&#39;] %}
+       {{ ibutton(href=&#39;?unread=&#39; + chapter[&#39;id&#39;], text=&#39;✓&#39;, color=&#39;green&#39;, title=&#39;Click to unread&#39;) }}
+       {% endif %}
+     &lt;/td&gt;
++    {% endif %}
+     &lt;td&gt;
+       &lt;a href=&quot;{{ url_for(&#39;chapter_view&#39;, chapter_id=chapter[&#39;id&#39;], site=site) }}&quot;&gt;
+         Chapter {{ chapter[&#39;number&#39;] }}
+</pre></body></html>

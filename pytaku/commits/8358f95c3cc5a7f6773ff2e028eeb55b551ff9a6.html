@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[8358f95c3c] update chapter if older than a day too | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 8358f95c3c</strong><hr><pre>commit 8358f95c3cc5a7f6773ff2e028eeb55b551ff9a6
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Aug 11 23:43:01 2020 +0700
+
+    update chapter if older than a day too
+
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 8c38967..5c49f17 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -195,7 +195,6 @@ def chapter_view(site, title_id, chapter_id):
+     if not chapter:
+         print(&quot;Getting chapter&quot;, chapter_id)
+         chapter = get_chapter(site, title_id, chapter_id)
+-        chapter[&quot;site&quot;] = site
+         save_chapter(chapter)
+     else:
+         print(&quot;Loading chapter&quot;, chapter_id, &quot;from db&quot;)
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 2a636ab..5158069 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -1,8 +1,7 @@
+ import json
+ 
+-import argon2
+-
+ import apsw
++import argon2
+ 
+ from .database.common import run_sql, run_sql_on_demand
+ 
+@@ -117,7 +116,15 @@ def save_chapter(chapter):
+         :pages,
+         :groups,
+         :is_webtoon
+-    );
++    ) ON CONFLICT (id, title_id, site) DO UPDATE SET
++        num_major=excluded.num_major,
++        num_minor=excluded.num_minor,
++        name=excluded.name,
++        pages=excluded.pages,
++        groups=excluded.groups,
++        is_webtoon=excluded.is_webtoon,
++        updated_at=datetime(&#39;now&#39;)
++    ;
+     &quot;&quot;&quot;,
+         {
+             &quot;id&quot;: chapter[&quot;id&quot;],
+@@ -133,12 +140,13 @@ def save_chapter(chapter):
+     )
+ 
+ 
+-def load_chapter(site, title_id, chapter_id):
++def load_chapter(site, title_id, chapter_id, ignore_old=True):
++    updated_at = &quot;datetime(&#39;now&#39;, &#39;-1 days&#39;)&quot; if ignore_old else &quot;&#39;1980-01-01&#39;&quot;
+     result = run_sql(
+-        &quot;&quot;&quot;
++        f&quot;&quot;&quot;
+         SELECT id, title_id, site, num_major, num_minor, name, pages, groups, is_webtoon
+         FROM chapter
+-        WHERE site=? AND title_id=? AND id=?;
++        WHERE site=? AND title_id=? AND id=? AND updated_at &gt; {updated_at};
+         &quot;&quot;&quot;,
+         (site, title_id, chapter_id),
+     )
+diff --git a/src/pytaku/scheduler.py b/src/pytaku/scheduler.py
+index aeea366..742b341 100644
+--- a/src/pytaku/scheduler.py
++++ b/src/pytaku/scheduler.py
+@@ -8,7 +8,7 @@
+ 
+ 
+ def main_loop():
+-    workers = [UpdateOutdatedSeries()]
++    workers = [UpdateOutdatedTitles()]
+ 
+     while True:
+         for worker in workers:
+@@ -35,7 +35,7 @@ def after_run(self):
+         self.last_run = now()
+ 
+ 
+-class UpdateOutdatedSeries(Worker):
++class UpdateOutdatedTitles(Worker):
+     interval = timedelta(hours=2)
+ 
+     def run(self):
+</pre></body></html>

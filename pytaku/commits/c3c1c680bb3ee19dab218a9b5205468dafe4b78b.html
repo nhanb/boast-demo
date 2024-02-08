@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[c3c1c680bb] visual tweaks | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / c3c1c680bb</strong><hr><pre>commit c3c1c680bb3ee19dab218a9b5205468dafe4b78b
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 12 00:02:49 2020 +0700
+
+    visual tweaks
+
+diff --git a/src/pytaku/templates/chapter.html b/src/pytaku/templates/chapter.html
+index d2061b2..0ba18f8 100644
+--- a/src/pytaku/templates/chapter.html
++++ b/src/pytaku/templates/chapter.html
+@@ -5,7 +5,7 @@
+ {% endblock %}
+ 
+ {% block head %}
+-&lt;meta property=&quot;og:title&quot; content=&quot;{{ title[&#39;name&#39;] }} {{ self.title() }} - Pytaku&quot; /&gt;
++&lt;meta property=&quot;og:title&quot; content=&quot;{{ title[&#39;name&#39;] }} {{ self.title() }}&quot; /&gt;
+ &lt;meta property=&quot;og:image&quot; content=&quot;{{ title[&#39;cover&#39;] }}&quot; /&gt;
+ &lt;meta property=&quot;og:description&quot; content=&quot;{{ title[&#39;descriptions&#39;] | join(&#39;\n&#39;) or &#39;(no description)&#39; }}&quot; /&gt;
+ 
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index ce0095e..d751de7 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -1,7 +1,7 @@
+ {% extends &#39;base.html&#39; %}
+ 
+ {% block head %}
+-&lt;meta property=&quot;og:title&quot; content=&quot;{{ name }} - Pytaku&quot; /&gt;
++&lt;meta property=&quot;og:title&quot; content=&quot;{{ name }}&quot; /&gt;
+ &lt;meta property=&quot;og:image&quot; content=&quot;{{ cover }}&quot; /&gt;
+ &lt;meta property=&quot;og:description&quot; content=&quot;{{ descriptions | join(&#39;\n&#39;) or &#39;(no description)&#39; }}&quot; /&gt;
+ 
+@@ -45,7 +45,9 @@ &lt;h1&gt;{{ name }}&lt;/h1&gt;
+ &lt;/div&gt;
+ 
+ &lt;img class=&quot;cover&quot; src=&quot;{{ cover }}&quot; alt=&quot;cover&quot; /&gt;
+-&lt;p class=&quot;description&quot;&gt;{{ descriptions | join(&#39;\n&#39;) }}&lt;/p&gt;
++{% for desc in descriptions %}
++&lt;p class=&quot;description&quot;&gt;{{ desc }}&lt;/p&gt;
++{% endfor %}
+ 
+ {% if chapters %}
+ &lt;table&gt;
+</pre></body></html>

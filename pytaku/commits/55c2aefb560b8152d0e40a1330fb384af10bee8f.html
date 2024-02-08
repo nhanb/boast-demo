@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[55c2aefb56] add sample caddyfile | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 55c2aefb56</strong><hr><pre>commit 55c2aefb560b8152d0e40a1330fb384af10bee8f
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 13 17:49:36 2020 +0700
+
+    add sample caddyfile
+
+diff --git a/contrib/caddy/pytaku.caddy b/contrib/caddy/pytaku.caddy
+new file mode 100644
+index 0000000..b8c547a
+--- /dev/null
++++ b/contrib/caddy/pytaku.caddy
+@@ -0,0 +1,12 @@
++dev.pytaku.com
++
++route {
++    # Assumes static dir has been synced to /home/pytaku/pytaku/static
++    # and the caddy user has permission to read it
++    file_server /static/* {
++        root /home/pytaku/pytaku
++        #browse
++    }
++    reverse_proxy /* localhost:5001
++    encode zstd gzip
++}
+</pre></body></html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[76de1230d0] print regeneration time | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 76de1230d0</strong><hr><pre>commit 76de1230d0c90458c627c60726db6bb62a338300
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Jul 7 22:20:44 2023 +0700
+
+    print regeneration time
+
+diff --git a/main.go b/main.go
+index ba6daf7..6ff70fc 100644
+--- a/main.go
++++ b/main.go
+@@ -57,6 +57,7 @@ func main() {
+ }
+ 
+ func regenerate(fsys WritableFS) {
++	defer timer(&quot;Took %s&quot;)()
+ 	site := readSiteMetadata(fsys)
+ 	articles := findArticles(fsys)
+ 
+diff --git a/utils.go b/utils.go
+new file mode 100644
+index 0000000..32dec8f
+--- /dev/null
++++ b/utils.go
+@@ -0,0 +1,22 @@
++package main
++
++import (
++	&quot;fmt&quot;
++	&quot;time&quot;
++)
++
++func timer(format string) func() {
++	start := time.Now()
++	return func() {
++		fmt.Printf(format+&quot;\n&quot;, time.Since(start))
++	}
++}
++
++func contains(s []string, e string) bool {
++	for _, a := range s {
++		if a == e {
++			return true
++		}
++	}
++	return false
++}
+diff --git a/watcher.go b/watcher.go
+index 33acb06..36d9dc9 100644
+--- a/watcher.go
++++ b/watcher.go
+@@ -100,12 +100,3 @@ func printWatchList(w *fsnotify.Watcher) {
+ 		fmt.Println(&quot;  &quot; + path)
+ 	}
+ }
+-
+-func contains(s []string, e string) bool {
+-	for _, a := range s {
+-		if a == e {
+-			return true
+-		}
+-	}
+-	return false
+-}
+</pre></body></html>

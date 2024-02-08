@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[2f5e288c11] read players list from csv file | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 2f5e288c11</strong><hr><pre>commit 2f5e288c110e70ec88339daf846281323c15be47
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jun 20 13:30:03 2023 +0700
+
+    read players list from csv file
+    
+    TODO: filter values as user types
+
+diff --git a/main.go b/main.go
+index e079c2f..e273d15 100644
+--- a/main.go
++++ b/main.go
+@@ -16,12 +16,14 @@
+ 	&quot;strconv&quot;
+ 	&quot;strings&quot;
+ 
++	&quot;go.imnhan.com/gorts/players&quot;
+ 	&quot;go.imnhan.com/gorts/startgg&quot;
+ )
+ 
+ const WebPort = &quot;1337&quot;
+ const WebDir = &quot;web&quot;
+ const StateFile = WebDir + &quot;/state.json&quot;
++const PlayersFile = &quot;players.csv&quot;
+ 
+ //go:embed tcl/main.tcl
+ var mainTcl string
+@@ -84,7 +86,6 @@ func startGUI() {
+ 	println(&quot;Loaded main tcl script.&quot;)
+ 
+ 	state := initState()
+-
+ 	b64icon := base64.StdEncoding.EncodeToString(gortsPngIcon)
+ 
+ 	fmt.Fprintf(
+@@ -123,6 +124,7 @@ func startGUI() {
+ 			respond(state.P2country)
+ 			respond(strconv.Itoa(state.P2score))
+ 			respond(state.P2team)
++
+ 		case &quot;applystate&quot;:
+ 			state.Description = next()
+ 			state.Subtitle = next()
+@@ -135,6 +137,14 @@ func startGUI() {
+ 			state.P2score, _ = strconv.Atoi(next())
+ 			state.P2team = next()
+ 			state.Write()
++
++		case &quot;readplayernames&quot;:
++			players := players.FromFile(PlayersFile)
++			for _, player := range players {
++				respond(player.Name)
++			}
++			respond(&quot;end&quot;)
++
+ 		}
+ 	}
+ 
+diff --git a/players/players.go b/players/players.go
+new file mode 100644
+index 0000000..efa601a
+--- /dev/null
++++ b/players/players.go
+@@ -0,0 +1,43 @@
++package players
++
++import (
++	&quot;encoding/csv&quot;
++	&quot;log&quot;
++	&quot;os&quot;
++)
++
++type Player struct {
++	Name    string
++	Country string
++	Team    string
++}
++
++// FromFile attempts to read players from csv file.
++// If file does not exist, it returns an empty slice.
++func FromFile(filepath string) []Player {
++	players := make([]Player, 0)
++
++	f, err := os.Open(filepath)
++	if err != nil {
++		return players
++	}
++	defer f.Close()
++
++	reader := csv.NewReader(f)
++	reader.FieldsPerRecord = 3
++	records, err := reader.ReadAll()
++	if err != nil {
++		log.Fatalf(&quot;csv parse error for %s: %s&quot;, filepath, err)
++	}
++
++	for _, record := range records {
++		p := Player{
++			Name:    record[0],
++			Country: record[1],
++			Team:    record[2],
++		}
++		players = append(players, p)
++	}
++
++	return players
++}
+diff --git a/startgg/startgg.go b/startgg/startgg.go
+index 6220586..d1e94d4 100644
+--- a/startgg/startgg.go
++++ b/startgg/startgg.go
+@@ -7,21 +7,18 @@
+ 	&quot;fmt&quot;
+ 	&quot;io/ioutil&quot;
+ 	&quot;net/http&quot;
++
++	&quot;go.imnhan.com/gorts/players&quot;
+ )
+ 
+ const STARTGG_URL = &quot;https://api.start.gg/gql/alpha&quot;
+ 
+-type Player struct {
+-	GamerTag string
+-	Prefix   string
+-}
+-
+ type GraphQL struct {
+ 	Query     string   `json:&quot;query&quot;`
+ 	Variables struct{} `json:&quot;variables&quot;`
+ }
+ 
+-func FetchPlayers(token string, tourneySlug string) ([]Player, error) {
++func FetchPlayers(token string, tourneySlug string) ([]players.Player, error) {
+ 	query := `
+ {
+   tournament(slug: &quot;%s&quot;) {
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index 2be2888..0539600 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -143,6 +143,8 @@ proc initialize {b64icon webport countrycodes} {
+ 
+     .c.players.p1country configure -values $countrycodes
+     .c.players.p2country configure -values $countrycodes
++
++    readplayernames
+ }
+ 
+ proc seticon {b64data} {
+@@ -182,6 +184,17 @@ proc applystate {} {
+     update_applied_state
+ }
+ 
++proc readplayernames {} {
++    set playernames {}
++    puts &quot;readplayernames&quot;
++    set line [gets stdin]
++    while {$line != &quot;end&quot;} {
++        lappend playernames $line
++        set line [gets stdin]
++    }
++    .c.players.p1name configure -values $playernames
++    .c.players.p2name configure -values $playernames
++}
+ 
+ proc discardstate {} {
+     foreach key [array names ::scoreboard] {
+</pre></body></html>

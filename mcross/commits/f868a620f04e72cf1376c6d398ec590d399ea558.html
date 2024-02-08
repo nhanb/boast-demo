@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[f868a620f0] block user interactions during controller callback | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / f868a620f0</strong><hr><pre>commit f868a620f04e72cf1376c6d398ec590d399ea558
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu May 28 18:27:25 2020 +0700
+
+    block user interactions during controller callback
+
+diff --git a/src/mcross/gui/controller.py b/src/mcross/gui/controller.py
+index 598d315..dfaccea 100644
+--- a/src/mcross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -32,9 +32,14 @@ def __init__(self):
+         # Set up event handler for queued GUI updates
+         self.root.createfilehandler(self.gui_ops, READABLE, self.process_gui_ops)
+ 
++        # When in the middle of an action, this flag is set to False to prevent user
++        # from clicking other random stuff:
++        self.allow_user_interaction = True
++
+         def put_coro_op(func):
+             def inner(*args):
+-                self.coro_ops.put(self.show_waiting_cursor_during_task(func, *args))
++                if self.allow_user_interaction:
++                    self.coro_ops.put(self.show_waiting_cursor_during_task(func, *args))
+ 
+             return inner
+ 
+@@ -72,6 +77,7 @@ async def hide():
+             self.view.allow_changing_cursor = True
+ 
+         await show()
++        self.allow_user_interaction = False
+ 
+         try:
+             await func(*args)
+@@ -79,6 +85,7 @@ async def hide():
+             # a catch-all here so that our show_waiting...() coroutine can be yielded
+             traceback.print_exc()
+ 
++        self.allow_user_interaction = True
+         await hide()
+ 
+     async def go_callback(self, url: str):
+</pre></body></html>

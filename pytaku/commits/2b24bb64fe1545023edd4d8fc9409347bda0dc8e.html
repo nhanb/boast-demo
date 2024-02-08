@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[2b24bb64fe] yet another mangasee domain | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 2b24bb64fe</strong><hr><pre>commit 2b24bb64fe1545023edd4d8fc9409347bda0dc8e
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jan 3 22:34:40 2021 +0700
+
+    yet another mangasee domain
+    
+    This might not be sustainable...
+    Guess I&#39;ll rethink the check if another case appears.
+
+diff --git a/pyproject.toml b/pyproject.toml
+index d6265a7..05d43d6 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.28&quot;
++version = &quot;0.3.29&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 5efdd11..dd50161 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -75,7 +75,7 @@ def _is_manga_img_url(
+     url,
+     pattern=re.compile(
+         r&quot;^https://(&quot;
+-        r&quot;([\w-]+\.)?(mangadex\.org/(data|images)|(mangabeast\d{0,4}.com|hot\.granpulse\.us|fan-official\.eorzea\.us)/manga)/&quot;
++        r&quot;([\w-]+\.)?(mangadex\.org/(data|images)|(mangabeast\d{0,4}.com|hot\.granpulse\.us|fan-official\.eorzea\.us|fan-complete\.ivalice\.us)/manga)/&quot;
+         r&quot;|&quot;
+         r&quot;([\w-]+\.)+mangadex\.network:\d{2,6}/[\w-]+/data/&quot;
+         r&quot;)&quot;
+</pre></body></html>

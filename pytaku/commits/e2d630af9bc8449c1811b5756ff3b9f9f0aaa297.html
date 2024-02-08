@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e2d630af9b] use latest poetry minor version too | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / e2d630af9b</strong><hr><pre>commit e2d630af9bc8449c1811b5756ff3b9f9f0aaa297
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Feb 12 23:45:03 2023 +0700
+
+    use latest poetry minor version too
+    
+    Pinning the minor version just to be safe.
+
+diff --git a/.builds/debian.yml b/.builds/debian.yml
+index 44b6f2c..c9b1736 100644
+--- a/.builds/debian.yml
++++ b/.builds/debian.yml
+@@ -24,7 +24,7 @@ packages:
+ tasks:
+   - setup: |
+       pip3 install pipx
+-      python3 -m pipx install poetry==1.1.10
++      python3 -m pipx install poetry~=1.3
+       #cd pytaku
+       #poetry install --no-dev
+ 
+diff --git a/pyproject.toml b/pyproject.toml
+index 1c93909..3558a56 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.7.0&quot;
++version = &quot;0.7.1&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+</pre></body></html>

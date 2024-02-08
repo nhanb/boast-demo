@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[701c862061] run curio in a separate thread | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 701c862061</strong><hr><pre>commit 701c862061ada0373b1d027e8861843e249b779b
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu May 28 16:03:34 2020 +0700
+
+    run curio in a separate thread
+    
+    So that tkinter&#39;s mainloop() can take full control of the main thread
+    and we don&#39;t need to repeatedly run the heavy update() method anymore.
+
+diff --git a/README.md b/README.md
+index 4393e55..59d310d 100644
+--- a/README.md
++++ b/README.md
+@@ -81,12 +81,7 @@ ## Responsive &amp; pleasant to use
+ ## Lightweight
+ 
+ In terms of both disk space &amp; memory/cpu usage.
+-It&#39;s completely unoptimized at the moment.
+-Actually the way I&#39;m hooking up tkinter and curio is... not ideal. See comments
+-in controller.py for more info. TL;DR I&#39;m prioritizing gui responsiveness and
+-code simplicity, sacrificing a non-negligible amount of CPU cycles even at
+-idle.
+-
++The python/tkinter combo already puts us at a pretty good starting point.
+ 
+ # Server bugs/surprises
+ 
+diff --git a/pyproject.toml b/pyproject.toml
+index 566be1e..cc302fe 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;mcross&quot;
+-version = &quot;0.5.5&quot;
++version = &quot;0.5.6&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+diff --git a/src/mcross/gui/controller.py b/src/mcross/gui/controller.py
+index d7da00a..fea0ab5 100644
+--- a/src/mcross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -1,7 +1,8 @@
+ import logging
++import threading
+ import traceback
+ from ssl import SSLCertVerificationError
+-from tkinter import TclError, Tk, messagebox
++from tkinter import READABLE, Tk, messagebox
+ 
+ import curio
+ 
+@@ -25,57 +26,52 @@ def __init__(self):
+         self.root.title(&quot;McRoss Browser&quot;)
+         self.root.geometry(&quot;800x600&quot;)
+ 
+-        # Coroutine magic follows:
++        self.gui_ops = curio.UniversalQueue(withfd=True)
++        self.coro_ops = curio.UniversalQueue()
+ 
+-        self.pending_coros = []
++        # Set up event handler for queued GUI updates
++        self.root.createfilehandler(self.gui_ops, READABLE, self.process_gui_ops)
+ 
+-        def schedule_as_coro(func):
+-            def do_schedule(*args):
+-                task = curio.spawn(
+-                    self.show_waiting_cursor_during_task(func, *args), daemon=True
+-                )
+-                self.pending_coros.append(task)
++        def put_coro_op(func):
++            def inner(*args):
++                self.coro_ops.put(self.show_waiting_cursor_during_task(func, *args))
+ 
+-            return do_schedule
++            return inner
+ 
+-        self.view.go_callback = schedule_as_coro(self.go_callback)
+-        self.view.link_click_callback = schedule_as_coro(self.link_click_callback)
+-        self.view.back_callback = schedule_as_coro(self.back_callback)
+-        self.view.forward_callback = schedule_as_coro(self.forward_callback)
++        self.view.go_callback = put_coro_op(self.go_callback)
++        self.view.link_click_callback = put_coro_op(self.link_click_callback)
++        self.view.back_callback = put_coro_op(self.back_callback)
++        self.view.forward_callback = put_coro_op(self.forward_callback)
++
++    async def main(self):
++        while True:
++            coro = await self.coro_ops.get()
++            await coro
+ 
+     def run(self):
+-        # Instead of running tkinter&#39;s root.mainloop() directly,
+-        # we rely on curio&#39;s event loop instead.
+-        # The main() coroutine does these things in an infinite loop:
+-        #   - do tk&#39;s necessary GUI with root.update()
+-        #   - run pending coroutines if there&#39;s any. This is used to run callbacks
+-        #     triggered by the view.
+-        #   - sleep a little so we don&#39;t loop root.update() too quickly.
+-        async def main():
+-            try:
+-                while True:
+-                    self.root.update()
+-                    for coroutine in self.pending_coros:
+-                        await coroutine
+-                    self.pending_coros = []
+-                    await curio.sleep(0.016)
+-                    # 16ms = 1/60 - we&#39;re targeting around 60fps
+-                    # Yes it&#39;s wasteful to call root.update() that fast.
+-                    # In practice CPU usage idles around 4% on my i5 but hey it&#39;s not
+-                    # spinning up my laptop fans yet.
+-                    # Doesn&#39;t seem like there&#39;s a better way atm. The alternative
+-                    # described at [1] is multithreading which I&#39;m not a fan of.
+-                    # [1] https://github.com/dabeaz/curio/issues/111
+-            except TclError as e:
+-                if &quot;application has been destroyed&quot; not in str(e):
+-                    raise
+-
+-        curio.run(main)
++        threading.Thread(target=curio.run, args=(self.main,), daemon=True).start()
++        self.root.mainloop()
++
++    async def put_gui_op(self, func, *args, **kwargs):
++        await self.gui_ops.put((func, args, kwargs))
++
++    def process_gui_ops(self, file, mask):
++        while not self.gui_ops.empty():
++            func, args, kwargs = self.gui_ops.get()
++            func(*args, **kwargs)
+ 
+     async def show_waiting_cursor_during_task(self, func, *args):
+-        self.view.text.config(cursor=WAITING_CURSOR)
+-        self.root.config(cursor=WAITING_CURSOR)
+-        self.view.allow_changing_cursor = False
++        async def show():
++            self.view.text.config(cursor=WAITING_CURSOR)
++            self.root.config(cursor=WAITING_CURSOR)
++            self.view.allow_changing_cursor = False
++
++        async def hide():
++            self.view.text.config(cursor=&quot;xterm&quot;)
++            self.root.config(cursor=&quot;arrow&quot;)
++            self.view.allow_changing_cursor = True
++
++        await show()
+ 
+         try:
+             await func(*args)
+@@ -83,10 +79,7 @@ async def show_waiting_cursor_during_task(self, func, *args):
+             # a catch-all here so that our show_waiting...() coroutine can be yielded
+             traceback.print_exc()
+ 
+-        # reset cursor to default values
+-        self.view.text.config(cursor=&quot;xterm&quot;)
+-        self.root.config(cursor=&quot;arrow&quot;)
+-        self.view.allow_changing_cursor = True
++        await hide()
+ 
+     async def go_callback(self, url: str):
+         url = GeminiUrl.parse_absolute_url(url)
+@@ -97,16 +90,20 @@ async def link_click_callback(self, raw_url):
+             url = GeminiUrl.parse(raw_url, self.model.history.get_current_url())
+             await self.visit_link(url)
+         except NonAbsoluteUrlWithoutContextError:
+-            messagebox.showwarning(
++            await self.put_gui_op(
++                messagebox.showwarning,
+                 &quot;Ambiguous link&quot;,
+                 &quot;Cannot visit relative urls without a current_url context&quot;,
+             )
+         except UnsupportedProtocolError as e:
+-            messagebox.showinfo(
+-                &quot;Unsupported protocol&quot;, f&quot;{e} links are unsupported (yet?)&quot;
++            await self.put_gui_op(
++                messagebox.showinfo,
++                &quot;Unsupported protocol&quot;,
++                f&quot;{e} links are unsupported (yet?)&quot;,
+             )
+         except SSLCertVerificationError:
+-            messagebox.showerror(
++            await self.put_gui_op(
++                messagebox.showerror,
+                 &quot;Invalid server certificate&quot;,
+                 &quot;Server is NOT using a valid CA-approved TLS certificate.&quot;,
+             )
+@@ -115,15 +112,16 @@ async def visit_link(self, url: GeminiUrl):
+         try:
+             resp = await self.load_page(url)
+             self.model.history.visit(resp.url)
+-            self.view.render_page()
++            await self.put_gui_op(self.view.render_page)
++
+         except ConnectionError as e:
+-            statusbar_logger.info(str(e))
++            await self.put_gui_op(statusbar_logger.info, str(e))
+             raise
+ 
+     async def back_callback(self):
+         self.model.history.go_back()
+         await self.load_page(self.model.history.get_current_url())
+-        self.view.render_page()
++        await self.put_gui_op(self.view.render_page)
+ 
+     async def forward_callback(self):
+         self.model.history.go_forward()
+@@ -131,26 +129,27 @@ async def forward_callback(self):
+         self.view.render_page()
+ 
+     async def load_page(self, url: GeminiUrl):
+-        statusbar_logger.info(f&quot;Requesting {url}...&quot;)
++        await self.put_gui_op(statusbar_logger.info, f&quot;Requesting {url}...&quot;)
+         resp = await get(url)
+-        statusbar_logger.info(f&quot;{resp.status} {resp.meta}&quot;)
++        await self.put_gui_op(statusbar_logger.info, f&quot;{resp.status} {resp.meta}&quot;)
+ 
+         async def clear_status_bar_later():
+             await curio.sleep(2)
+-            statusbar_logger.info(&quot;&quot;)
++            await self.put_gui_op(statusbar_logger.info, &quot;&quot;)
+ 
+         await curio.spawn(clear_status_bar_later(), daemon=True)
+ 
+         if resp.status.startswith(&quot;2&quot;):
+-            self.model.update_content(resp.body.decode())
++            await self.put_gui_op(self.model.update_content, resp.body.decode())
+         else:
+-            self.model.update_content(
++            await self.put_gui_op(
++                self.model.update_content,
+                 &quot;\n&quot;.join(
+                     [
+                         &quot;Error:&quot;,
+                         f&quot;{resp.status} {resp.meta}&quot;,
+                         resp.body.decode() if resp.body else &quot;&quot;,
+                     ]
+-                )
++                ),
+             )
+         return resp
+</pre></body></html>

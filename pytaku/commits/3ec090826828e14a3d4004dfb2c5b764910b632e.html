@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[3ec0908268] implement chapter route | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 3ec0908268</strong><hr><pre>commit 3ec090826828e14a3d4004dfb2c5b764910b632e
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 23 16:58:01 2020 +0700
+
+    implement chapter route
+
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 5ebcdfe..c155e13 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -19,7 +19,7 @@
+ )
+ 
+ from .conf import config
+-from .decorators import process_token, require_login, toggle_has_read
++from .decorators import process_token, require_login
+ from .persistence import (
+     create_token,
+     delete_token,
+@@ -55,6 +55,20 @@
+ )
+ 
+ 
++def _chapter_name(chapter: dict):
++    result = &quot;&quot;
++    if chapter.get(&quot;num_major&quot;) is not None:
++        result += &quot;Ch. &quot; if chapter.get(&quot;volume&quot;) else &quot;Chapter &quot;
++        result += str(chapter[&quot;num_major&quot;])
++    if chapter.get(&quot;num_minor&quot;):
++        result += &#39;.{chapter[&quot;num_minor&quot;]}&#39;
++    if chapter.get(&quot;volume&quot;):
++        result += f&quot;Vol. {chapter[&#39;volume&#39;]}&quot;
++    if chapter.get(&quot;name&quot;):
++        result += f&quot; - {chapter[&#39;name&#39;]}&quot;
++    return result
++
++
+ @app.route(&quot;/following&quot;, methods=[&quot;GET&quot;])
+ @require_login
+ def follows_view():
+@@ -71,14 +85,14 @@ def follows_view():
+ @require_login
+ def follow_view(site, title_id):
+     follow(session[&quot;user&quot;][&quot;id&quot;], site, title_id)
+-    return redirect(url_for(&quot;title_view&quot;, site=site, title_id=title_id))
++    return redirect(url_for(&quot;spa_title_view&quot;, site=site, title_id=title_id))
+ 
+ 
+ @app.route(&quot;/unfollow/&lt;site&gt;/&lt;title_id&gt;&quot;, methods=[&quot;POST&quot;])
+ @require_login
+ def unfollow_view(site, title_id):
+     unfollow(session[&quot;user&quot;][&quot;id&quot;], site, title_id)
+-    return redirect(url_for(&quot;title_view&quot;, site=site, title_id=title_id))
++    return redirect(url_for(&quot;spa_title_view&quot;, site=site, title_id=title_id))
+ 
+ 
+ @app.route(&quot;/logout&quot;, methods=[&quot;POST&quot;])
+@@ -170,38 +184,6 @@ def auth_view():
+     return render_template(&quot;old/auth.html&quot;)
+ 
+ 
+-@app.route(&quot;/m/&lt;site&gt;/&lt;title_id&gt;/&lt;chapter_id&gt;&quot;)
+-@toggle_has_read
+-def chapter_view(site, title_id, chapter_id):
+-    chapter = load_chapter(site, title_id, chapter_id)
+-    if not chapter:
+-        print(&quot;Getting chapter&quot;, chapter_id)
+-        chapter = get_chapter(site, title_id, chapter_id)
+-        save_chapter(chapter)
+-    else:
+-        print(&quot;Loading chapter&quot;, chapter_id, &quot;from db&quot;)
+-
+-    if site in (&quot;mangadex&quot;, &quot;mangasee&quot;):
+-        chapter[&quot;pages&quot;] = [
+-            url_for(&quot;proxy_view&quot;, b64_url=_encode_proxy_url(p))
+-            for p in chapter[&quot;pages&quot;]
+-        ]
+-
+-    # YIIIIKES
+-    title = load_title(site, title_id)
+-    title[&quot;cover&quot;] = title_cover(site, title_id, title[&quot;cover_ext&quot;])
+-    if site == &quot;mangadex&quot;:
+-        title[&quot;cover&quot;] = url_for(
+-            &quot;proxy_view&quot;, b64_url=_encode_proxy_url(title[&quot;cover&quot;])
+-        )
+-    prev_chapter, next_chapter = get_prev_next_chapters(title, chapter)
+-    chapter[&quot;prev_chapter&quot;] = prev_chapter
+-    chapter[&quot;next_chapter&quot;] = next_chapter
+-
+-    chapter[&quot;site&quot;] = site
+-    return render_template(&quot;old/chapter.html&quot;, title=title, **chapter)
+-
+-
+ @app.route(&quot;/search&quot;)
+ def search_view():
+     query = request.args.get(&quot;q&quot;, &quot;&quot;).strip()
+@@ -381,6 +363,35 @@ def spa_title_view(site, title_id):
+     )
+ 
+ 
++@app.route(&quot;/m/&lt;site&gt;/&lt;title_id&gt;/&lt;chapter_id&gt;&quot;)
++def spa_chapter_view(site, title_id, chapter_id):
++    chapter = load_chapter(site, title_id, chapter_id)
++    if not chapter:
++        print(&quot;Getting chapter&quot;, chapter_id)
++        chapter = get_chapter(site, title_id, chapter_id)
++        save_chapter(chapter)
++    else:
++        print(&quot;Loading chapter&quot;, chapter_id, &quot;from db&quot;)
++
++    # YIIIIKES
++    title = load_title(site, title_id)
++    title[&quot;cover&quot;] = title_cover(site, title_id, title[&quot;cover_ext&quot;])
++    if site == &quot;mangadex&quot;:
++        title[&quot;cover&quot;] = url_for(
++            &quot;proxy_view&quot;, b64_url=_encode_proxy_url(title[&quot;cover&quot;])
++        )
++
++    chapter[&quot;site&quot;] = site
++    return render_template(
++        &quot;spa.html&quot;,
++        open_graph={
++            &quot;title&quot;: f&#39;{_chapter_name(chapter)} - {title[&quot;name&quot;]}&#39;,
++            &quot;image&quot;: title[&quot;cover&quot;],
++            &quot;description&quot;: &quot;\n&quot;.join(title[&quot;descriptions&quot;]),
++        },
++    )
++
++
+ @app.route(&quot;/api/title/&lt;site&gt;/&lt;title_id&gt;&quot;, methods=[&quot;GET&quot;])
+ @process_token(required=False)
+ def api_title(site, title_id):
+@@ -388,6 +399,37 @@ def api_title(site, title_id):
+     return title
+ 
+ 
++@app.route(&quot;/api/chapter/&lt;site&gt;/&lt;title_id&gt;/&lt;chapter_id&gt;&quot;, methods=[&quot;GET&quot;])
++@process_token(required=False)
++def api_chapter(site, title_id, chapter_id):
++    chapter = load_chapter(site, title_id, chapter_id)
++    if not chapter:
++        print(&quot;Getting chapter&quot;, chapter_id)
++        chapter = get_chapter(site, title_id, chapter_id)
++        save_chapter(chapter)
++    else:
++        print(&quot;Loading chapter&quot;, chapter_id, &quot;from db&quot;)
++
++    if site in (&quot;mangadex&quot;, &quot;mangasee&quot;):
++        chapter[&quot;pages&quot;] = [
++            url_for(&quot;proxy_view&quot;, b64_url=_encode_proxy_url(p))
++            for p in chapter[&quot;pages&quot;]
++        ]
++
++    # YIIIIKES
++    title = load_title(site, title_id)
++    title[&quot;cover&quot;] = title_cover(site, title_id, title[&quot;cover_ext&quot;])
++    if site == &quot;mangadex&quot;:
++        title[&quot;cover&quot;] = url_for(
++            &quot;proxy_view&quot;, b64_url=_encode_proxy_url(title[&quot;cover&quot;])
++        )
++    prev_chapter, next_chapter = get_prev_next_chapters(title, chapter)
++    chapter[&quot;prev_chapter&quot;] = prev_chapter
++    chapter[&quot;next_chapter&quot;] = next_chapter
++    chapter[&quot;site&quot;] = site
++    return chapter
++
++
+ @app.route(&quot;/api/register&quot;, methods=[&quot;POST&quot;])
+ def api_register():
+     username = request.json[&quot;username&quot;].strip()
+diff --git a/src/pytaku/static/js/layout.js b/src/pytaku/static/js/layout.js
+index cbd56db..7a566e5 100644
+--- a/src/pytaku/static/js/layout.js
++++ b/src/pytaku/static/js/layout.js
+@@ -72,7 +72,7 @@ function Navbar(initialVNode) {
+ 
+ const Layout = {
+   view: (vnode) =&gt; {
+-    return m(&quot;div.main&quot;, [m(Navbar), vnode.children]);
++    return [m(Navbar), vnode.children];
+   },
+ };
+ 
+diff --git a/src/pytaku/static/js/main.js b/src/pytaku/static/js/main.js
+index 68e84ef..427f052 100644
+--- a/src/pytaku/static/js/main.js
++++ b/src/pytaku/static/js/main.js
+@@ -5,6 +5,7 @@ import Home from &quot;./routes/home.js&quot;;
+ import Follows from &quot;./routes/follows.js&quot;;
+ import Search from &quot;./routes/search.js&quot;;
+ import Title from &quot;./routes/title.js&quot;;
++import Chapter from &quot;./routes/chapter.js&quot;;
+ 
+ Auth.init().then(() =&gt; {
+   const root = document.getElementById(&quot;spa-root&quot;);
+@@ -63,5 +64,17 @@ Auth.init().then(() =&gt; {
+           })
+         ),
+     },
++    &quot;/m/:site/:titleId/:chapterId&quot;: {
++      render: (vnode) =&gt;
++        m(
++          Layout,
++          m(Chapter, {
++            site: vnode.attrs.site,
++            titleId: vnode.attrs.titleId,
++            chapterId: vnode.attrs.chapterId,
++            key: vnode.attrs.chapterId,
++          })
++        ),
++    },
+   });
+ });
+diff --git a/src/pytaku/static/js/routes/chapter.js b/src/pytaku/static/js/routes/chapter.js
+new file mode 100644
+index 0000000..b48fbcd
+--- /dev/null
++++ b/src/pytaku/static/js/routes/chapter.js
+@@ -0,0 +1,95 @@
++import { Auth } from &quot;../models.js&quot;;
++import { LoadingMessage, fullChapterName, Button } from &quot;../utils.js&quot;;
++
++function Chapter(initialVNode) {
++  let isLoading = false;
++  let chapter = {};
++
++  return {
++    oninit: (vnode) =&gt; {
++      document.title = &quot;Manga chapter&quot;;
++
++      isLoading = true;
++      m.redraw();
++
++      Auth.request({
++        method: &quot;GET&quot;,
++        url: &quot;/api/chapter/:site/:titleId/:chapterId&quot;,
++        params: {
++          site: vnode.attrs.site,
++          titleId: vnode.attrs.titleId,
++          chapterId: vnode.attrs.chapterId,
++        },
++      })
++        .then((resp) =&gt; {
++          chapter = resp;
++          document.title = fullChapterName(chapter);
++        })
++        .finally(() =&gt; {
++          isLoading = false;
++        });
++    },
++    view: (vnode) =&gt; {
++      if (isLoading) {
++        return m(&quot;div.chapter.content&quot;, m(LoadingMessage));
++      }
++
++      const { site, titleId } = vnode.attrs;
++      const prev = chapter.prev_chapter;
++      const next = chapter.next_chapter;
++      const buttons = m(&quot;div.chapter--buttons&quot;, [
++        prev
++          ? m(
++              m.route.Link,
++              {
++                class: &quot;touch-friendly&quot;,
++                href: `/m/${site}/${titleId}/${prev.id}`,
++              },
++              [m(&quot;i.icon.icon-chevrons-left&quot;), m(&quot;span&quot;, &quot;prev&quot;)]
++            )
++          : m(Button, {
++              text: &quot;prev&quot;,
++              icon: &quot;chevrons-left&quot;,
++              disabled: true,
++            }),
++        m(
++          m.route.Link,
++          {
++            class: &quot;touch-friendly&quot;,
++            href: `/m/${site}/${titleId}`,
++          },
++          [m(&quot;i.icon.icon-list&quot;), m(&quot;span&quot;, &quot; chapter list&quot;)]
++        ),
++        next
++          ? m(
++              m.route.Link,
++              {
++                class: &quot;touch-friendly&quot;,
++                href: `/m/${site}/${titleId}/${next.id}`,
++              },
++              [m(&quot;span&quot;, &quot;next&quot;), m(&quot;i.icon.icon-chevrons-right&quot;)]
++            )
++          : m(Button, {
++              text: &quot;next&quot;,
++              icon: &quot;chevrons-right&quot;,
++              disabled: true,
++            }),
++      ]);
++      return m(&quot;div.chapter.content&quot;, [
++        m(&quot;h1&quot;, fullChapterName(chapter)),
++        buttons,
++        m(
++          &quot;div&quot;,
++          {
++            class:
++              &quot;chapter--pages&quot; + chapter.is_webtoon ? &quot; chapter--webtoon&quot; : &quot;&quot;,
++          },
++          [chapter.pages.map((page) =&gt; m(&quot;img&quot;, { src: page }))]
++        ),
++        buttons,
++      ]);
++    },
++  };
++}
++
++export default Chapter;
+diff --git a/src/pytaku/static/lookandfeel.css b/src/pytaku/static/lookandfeel.css
+index 018294e..b874b45 100644
+--- a/src/pytaku/static/lookandfeel.css
++++ b/src/pytaku/static/lookandfeel.css
+@@ -28,6 +28,7 @@ h4 {
+ 
+ h1 {
+   font-size: 2rem;
++  line-height: 2rem;
+ }
+ 
+ h2 {
+@@ -60,7 +61,6 @@ p {
+ 
+ button,
+ a.touch-friendly {
+-  display: inline-block;
+   user-select: none;
+   margin: 0;
+   display: inline-flex;
+@@ -77,10 +77,12 @@ button {
+   background-color: var(--btn-gray);
+   border-bottom: 4px solid var(--btn-gray-bottom);
+ }
+-button &gt; i {
++button &gt; *,
++a.touch-friendly &gt; * {
+   margin-right: 0.3rem;
+ }
+-button &gt; i:last-child {
++button &gt; *:last-child,
++a.touch-friendly &gt; *:last-child {
+   margin-right: 0;
+ }
+ button:hover {
+@@ -115,7 +117,7 @@ button[disabled]:active {
+ }
+ a.touch-friendly {
+   background-color: white;
+-  color: inherit;
++  color: black;
+   border: 1px solid #aaa;
+   text-decoration: none;
+   border-bottom: 4px solid grey;
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index 6fbb584..f772a66 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -94,8 +94,13 @@ .nav--link i {
+ }
+ 
+ /* Route content common styling */
++#spa-root {
++  display: flex;
++  flex-direction: column;
++}
+ .content {
+   padding: var(--body-padding);
++  flex-grow: 1;
+ }
+ .content &gt; * {
+   display: block;
+@@ -279,6 +284,38 @@ .title--details {
+   margin: 1rem 0;
+ }
+ 
++/* Chapter route */
++.chapter.content {
++  padding: var(--body-padding) 0;
++  text-align: center;
++  background-color: #444;
++  color: white;
++}
++
++.chapter--pages img {
++  display: block;
++  margin: 0 auto 0.7rem auto;
++}
++.chapter--pages.chapter--webtoon img {
++  margin: 0 auto;
++}
++
++.chapter--buttons {
++  display: flex;
++  flex-direction: row;
++  justify-content: center;
++}
++.chapter--buttons &gt; a,
++.chapter--buttons &gt; button {
++  margin-right: 0.5rem;
++  margin-top: 0.2rem;
++  margin-bottom: 0.2rem;
++}
++.chapter--buttons &gt; a:last-child,
++.chapter--buttons &gt; button:last-child {
++  margin-right: 0;
++}
++
+ /* Components defined in utils */
+ .utils--chapter {
+   margin-bottom: 0.5rem;
+</pre></body></html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a0a8735a4f] use unique file extension for site metadata | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / a0a8735a4f</strong><hr><pre>commit a0a8735a4fbeea533ef66e11ecfba769212d3ee4
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jul 6 17:28:42 2023 +0700
+
+    use unique file extension for site metadata
+    
+    So I can do &quot;double click to open&quot; like a normal person.
+    At least that&#39;s the plan though. GUI is not implemented yet.
+
+diff --git a/main.go b/main.go
+index 3b84b8b..db6a151 100644
+--- a/main.go
++++ b/main.go
+@@ -18,6 +18,7 @@
+ 
+ const DJOT_EXT = &quot;.dj&quot;
+ const FEED_PATH = &quot;feed.xml&quot;
++const SITE_FILENAME = &quot;website.wbmkr2k&quot;
+ 
+ func main() {
+ 	var port, folder string
+@@ -102,7 +103,7 @@ func readSiteMetadata(fsys WritableFS) SiteMetadata {
+ 		ShowFooter:   true,
+ 		GenerateHome: true,
+ 	}
+-	_, err := toml.DecodeFS(fsys, &quot;website.toml&quot;, &amp;sm)
++	_, err := toml.DecodeFS(fsys, SITE_FILENAME, &amp;sm)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+diff --git a/www/website.toml b/www/website.wbmkr2k
+similarity index 83%
+rename from www/website.toml
+rename to www/website.wbmkr2k
+index 18cf5d1..947a0f1 100644
+--- a/www/website.toml
++++ b/www/website.wbmkr2k
+@@ -1,3 +1,6 @@
++# vim: ft=toml
++# -*- mode: toml; -*-
++
+ Address = &quot;https://coolzone.example.com&quot;
+ Name = &quot;CoolZone&quot;
+ Tagline = &quot;Cool people only.&quot;
+</pre></body></html>

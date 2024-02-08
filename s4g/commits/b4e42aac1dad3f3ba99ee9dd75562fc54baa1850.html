@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b4e42aac1d] error message in html | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / b4e42aac1d</strong><hr><pre>commit b4e42aac1dad3f3ba99ee9dd75562fc54baa1850
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jul 16 23:19:43 2023 +0700
+
+    error message in html
+
+diff --git a/Makefile b/Makefile
+index 1171c44..6f30ab5 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,8 +2,7 @@ build:
+ 	go build -o dist/
+ 
+ watch:
+-	find . -name &#39;*.go&#39; -or -name &#39;*.js&#39; -or -name &#39;livereload.html&#39; \
+-	| entr -rc go run .
++	fd -E docs -E theme | entr -rc go run .
+ 
+ watch-theme:
+ 	find theme/* | entr -c rsync -av theme/ docs/_theme/
+diff --git a/errors.go b/errors.go
+new file mode 100644
+index 0000000..8999864
+--- /dev/null
++++ b/errors.go
+@@ -0,0 +1,22 @@
++package main
++
++import (
++	&quot;fmt&quot;
++	&quot;html/template&quot;
++)
++
++type SiteMetadataErr struct {
++	Field string
++	Msg   string
++}
++
++func (e *SiteMetadataErr) Error() string {
++	return fmt.Sprintf(&quot;SiteMetadataErr - %s: %s&quot;, e.Field, e.Msg)
++}
++
++func (e *SiteMetadataErr) Html() template.HTML {
++	return template.HTML(fmt.Sprintf(
++		&quot;&lt;p&gt;In file &lt;b&gt;%s&lt;/b&gt;, field &lt;b&gt;%s&lt;/b&gt;: %s &lt;/p&gt;&quot;,
++		SiteFileName, e.Field, e.Msg,
++	))
++}
+diff --git a/livereload/error.go b/livereload/error.go
+new file mode 100644
+index 0000000..b8ed95d
+--- /dev/null
++++ b/livereload/error.go
+@@ -0,0 +1,26 @@
++package livereload
++
++import (
++	&quot;bytes&quot;
++	_ &quot;embed&quot;
++	&quot;html/template&quot;
++	&quot;net/http&quot;
++)
++
++//go:embed error.html
++var errorTmpl string
++
++var errTmpl = template.Must(template.New(&quot;error&quot;).Parse(errorTmpl))
++
++// Error that has a user-friendly HTML representation.
++type htmlErr interface {
++	error
++	Html() template.HTML
++}
++
++func serveError(w http.ResponseWriter, r *http.Request, err htmlErr) {
++	var buf bytes.Buffer
++	errTmpl.Execute(&amp;buf, err)
++	body := withLiveReload(buf.Bytes())
++	w.Write(body)
++}
+diff --git a/livereload/error.html b/livereload/error.html
+index c2d392e..e59eb99 100644
+--- a/livereload/error.html
++++ b/livereload/error.html
+@@ -1,15 +1,15 @@
+-&lt;!DOCTYPE html&gt;
++&lt;!doctype html&gt;
+ &lt;html lang=&quot;en&quot;&gt;
+   &lt;head&gt;
+     &lt;meta charset=&quot;utf-8&quot; /&gt;
+-    &lt;title&gt;Error&lt;/title&gt;
++    &lt;title&gt;{{.Error}}&lt;/title&gt;
+     &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+-    &lt;b&gt;Error:&lt;/b&gt; {{.}}
++    &lt;h1&gt;Error&lt;/h1&gt;
++    {{.Html}}
+     &lt;style&gt;
+-      body {
+-        background-color: pink;
++      h1 {
+         color: red;
+       }
+     &lt;/style&gt;
+diff --git a/livereload/livereload.go b/livereload/livereload.go
+index 898e6dd..b51105a 100644
+--- a/livereload/livereload.go
++++ b/livereload/livereload.go
+@@ -7,7 +7,6 @@
+ 	&quot;net/http&quot;
+ 	&quot;strings&quot;
+ 	&quot;sync&quot;
+-	&quot;text/template&quot;
+ 
+ 	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
+ )
+@@ -18,9 +17,6 @@
+ //go:embed livereload.html
+ var lrScript []byte
+ 
+-//go:embed error.html
+-var errorTmpl string
+-
+ var pleaseReload = []byte(&quot;1&quot;)
+ var dontReload = []byte(&quot;0&quot;)
+ 
+@@ -90,7 +86,7 @@ func Middleware(mux *http.ServeMux, root string, fsys writablefs.FS, f http.Hand
+ 		err = state.err
+ 		state.errMut.RUnlock()
+ 		if err != nil {
+-			serveError(w, r, err)
++			serveError(w, r, err.(htmlErr))
+ 			return
+ 		}
+ 
+@@ -152,12 +148,3 @@ func withLiveReload(original []byte) []byte {
+ 	copy(result[bodyEndPos+len(lrScript):], original[bodyEndPos:])
+ 	return result
+ }
+-
+-var errTmpl = template.Must(template.New(&quot;error&quot;).Parse(errorTmpl))
+-
+-func serveError(w http.ResponseWriter, r *http.Request, err error) {
+-	var buf bytes.Buffer
+-	errTmpl.Execute(&amp;buf, err.Error())
+-	body := withLiveReload(buf.Bytes())
+-	w.Write(body)
+-}
+diff --git a/main.go b/main.go
+index 7eb15a6..6060cef 100644
+--- a/main.go
++++ b/main.go
+@@ -190,8 +190,10 @@ func regenerate(fsys writablefs.FS) (site *SiteMetadata, err error) {
+ 	for _, link := range site.NavbarLinks {
+ 		a, ok := articles[link]
+ 		if !ok {
+-			return nil,
+-				fmt.Errorf(&quot;%s: NavbarLinks: %s not found&quot;, FeedPath, link)
++			return nil, &amp;SiteMetadataErr{
++				Field: &quot;NavbarLinks&quot;,
++				Msg:   fmt.Sprintf(`&quot;%s&quot; does not exist`, link),
++			}
+ 		}
+ 		articlesInNav = append(articlesInNav, a)
+ 	}
+@@ -214,7 +216,10 @@ func regenerate(fsys writablefs.FS) (site *SiteMetadata, err error) {
+ 
+ 	for _, a := range articles {
+ 		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Title)
+-		a.WriteHtmlFile(site, articlesInNav, articlesInFeed, startYear)
++		err := a.WriteHtmlFile(site, articlesInNav, articlesInFeed, startYear)
++		if err != nil {
++			return nil, fmt.Errorf(&quot;Article %s: %w&quot;, a.Path, err)
++		}
+ 		generatedFiles[a.OutputPath] = true
+ 	}
+ 	fmt.Printf(&quot;Processed %d articles\n&quot;, len(articles))
+@@ -282,15 +287,19 @@ func (a *Article) WriteHtmlFile(
+ 	articlesInNav []Article,
+ 	articlesInFeed []Article,
+ 	startYear int,
+-) {
+-	// First generate the main content in html
++) error {
+ 	contentHtml := djot.ToHtml(a.DjotBody)
+ 
+-	// Then insert that content into the main template
+-	var buf bytes.Buffer
++	tmpl, err := template.ParseFS(a.Fs, a.TemplatePaths...)
+ 	// TODO: should probably reuse the template object for common cases
+-	tmpl := template.Must(template.ParseFS(a.Fs, a.TemplatePaths...))
+-	err := tmpl.Execute(&amp;buf, struct {
++	if err != nil {
++		return fmt.Errorf(
++			&quot;Failed to parse templates (%v): %w&quot;, a.Templates, err,
++		)
++	}
++
++	var buf bytes.Buffer
++	err = tmpl.Execute(&amp;buf, struct {
+ 		Site           *SiteMetadata
+ 		Content        template.HTML
+ 		Title          string
+@@ -312,16 +321,17 @@ func (a *Article) WriteHtmlFile(
+ 		StartYear:      startYear,
+ 	})
+ 	if err != nil {
+-		fmt.Println(&quot;Error in WriteHtmlFile:&quot;, err)
+-		return
++		return fmt.Errorf(&quot;Failed to execute templates (%v): %w&quot;, a.Templates, err)
+ 	}
+ 	fullHtml := buf.Bytes()
+ 
+ 	// Now write into an html with the same name as the original djot file
+ 	err = a.Fs.WriteFile(a.OutputPath, fullHtml)
+ 	if err != nil {
+-		panic(err)
++		return fmt.Errorf(&quot;Failed to write to %s: %w&quot;, a.OutputPath, err)
+ 	}
++
++	return nil
+ }
+ 
+ func findArticles(fsys writablefs.FS, site *SiteMetadata) map[string]Article {
+</pre></body></html>

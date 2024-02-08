@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[d2ca0d6d3e] better infinite loop workaround | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / d2ca0d6d3e</strong><hr><pre>commit d2ca0d6d3e3212b710073c49c122dc7ba35b7921
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 30 17:44:46 2023 +0700
+
+    better infinite loop workaround
+
+diff --git a/watcher.go b/watcher.go
+index 4f3d8bd..cf90dfd 100644
+--- a/watcher.go
++++ b/watcher.go
+@@ -12,8 +12,6 @@
+ 	&quot;go.imnhan.com/s4g/writablefs&quot;
+ )
+ 
+-var WatchedExts = []string{DjotExt, &quot;.tmpl&quot;, &quot;.txt&quot;}
+-
+ const debounceInterval = 500 * time.Millisecond
+ 
+ // Watches for relevant changes in FS, debounces by debounceInterval,
+@@ -54,22 +52,24 @@ func WatchLocalFS(fsys writablefs.FS, callback func()) (Close func() error) {
+ 					return
+ 				}
+ 
+-				//relPath, err := filepath.Rel(fsysPath, event.Name)
+-				//if err != nil {
+-				//panic(err)
+-				//}
+-				//fmt.Println(&quot;EVENT:&quot;, event.Op, relPath)
+-
+ 				if shouldIgnore(event.Name) {
+ 					break
+ 				}
+ 
++				relPath, err := filepath.Rel(fsysPath, event.Name)
++				if err != nil {
++					panic(err)
++				}
++
+ 				// Avoid infinite loop
+-				if event.Has(fsnotify.Write) &amp;&amp;
+-					!contains(WatchedExts, filepath.Ext(event.Name)) {
++				if filepath.Ext(relPath) == &quot;.html&quot; ||
++					relPath == FeedPath ||
++					relPath == ManifestPath {
+ 					break
+ 				}
+ 
++				//fmt.Println(&quot;EVENT:&quot;, event.Op, relPath)
++
+ 				// Dynamically watch new/renamed folders
+ 				if event.Has(fsnotify.Create) || event.Has(fsnotify.Rename) {
+ 					stat, err := os.Stat(event.Name)
+</pre></body></html>

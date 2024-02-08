@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[2688ad52cc] show my follows | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 2688ad52cc</strong><hr><pre>commit 2688ad52ccc8e3966f49a5914496e7fbaf21b285
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 5 20:25:45 2020 +0700
+
+    show my follows
+    
+    next: implement reading history/progress
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 0ec75e8..0726a55 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.1.3&quot;
++version = &quot;0.1.4&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/database/common.py b/src/pytaku/database/common.py
+index 6d51c1f..6701431 100644
+--- a/src/pytaku/database/common.py
++++ b/src/pytaku/database/common.py
+@@ -12,3 +12,9 @@ def get_conn():
+         # Apparently you need to enable this pragma _per connection_
+         _conn.cursor().execute(&quot;PRAGMA foreign_keys = ON;&quot;)
+     return _conn
++
++
++def run_sql(*args, **kwargs):
++    cursor = get_conn().cursor()
++    results = cursor.execute(*args, **kwargs)
++    return list(results)
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 61b98c0..170d40a 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -17,13 +17,17 @@
+ 
+ from . import mangadex
+ from .conf import config
++from .decorators import require_login
+ from .persistence import (
++    follow,
++    get_followed_titles,
+     get_prev_next_chapters,
+     load_chapter,
+     load_title,
+     register_user,
+     save_chapter,
+     save_title,
++    unfollow,
+     verify_username_password,
+ )
+ 
+@@ -35,14 +39,30 @@
+ 
+ @app.route(&quot;/&quot;)
+ def home_view():
++    if session.get(&quot;user&quot;):
++        return redirect(url_for(&quot;follows_view&quot;))
+     return render_template(&quot;home.html&quot;)
+ 
+ 
+-@app.route(&quot;/follow&quot;, methods=[&quot;POST&quot;])
+-def follow_view():
+-    title_id = request.form.get(&quot;title_id&quot;)
+-    site = request.form.get(&quot;site&quot;, &quot;mangadex&quot;)
+-    return redirect(url_for(&quot;&quot;))
++@app.route(&quot;/me&quot;, methods=[&quot;GET&quot;])
++@require_login
++def follows_view():
++    titles = get_followed_titles(session[&quot;user&quot;][&quot;id&quot;])
++    return render_template(&quot;follows.html&quot;, titles=titles)
++
++
++@app.route(&quot;/follow/&lt;site&gt;/&lt;title_id&gt;&quot;, methods=[&quot;POST&quot;])
++@require_login
++def follow_view(site, title_id):
++    follow(session[&quot;user&quot;][&quot;id&quot;], site, title_id)
++    return redirect(url_for(&quot;title_view&quot;, site=site, title_id=title_id))
++
++
++@app.route(&quot;/unfollow/&lt;site&gt;/&lt;title_id&gt;&quot;, methods=[&quot;POST&quot;])
++@require_login
++def unfollow_view(site, title_id):
++    unfollow(session[&quot;user&quot;][&quot;id&quot;], site, title_id)
++    return redirect(url_for(&quot;title_view&quot;, site=site, title_id=title_id))
+ 
+ 
+ @app.route(&quot;/logout&quot;, methods=[&quot;POST&quot;])
+@@ -107,14 +127,16 @@ def auth_view():
+             if not (username and password):
+                 message = &quot;Empty field(s) spotted. Protip: spaces don&#39;t count.&quot;
+                 status_code = 400
+-            elif not verify_username_password(username, password):
+-                message = &quot;Wrong username/password combination.&quot;
+-                status_code = 400
+-            else:  # success!
+-                resp = redirect(request.args.get(&quot;next&quot;, url_for(&quot;home_view&quot;)))
+-                session.permanent = remember
+-                session[&quot;user&quot;] = {&quot;username&quot;: username}
+-                return resp
++            else:
++                user_id = verify_username_password(username, password)
++                if user_id is None:
++                    message = &quot;Wrong username/password combination.&quot;
++                    status_code = 400
++                else:  # success!
++                    resp = redirect(request.args.get(&quot;next&quot;, url_for(&quot;home_view&quot;)))
++                    session.permanent = remember
++                    session[&quot;user&quot;] = {&quot;username&quot;: username, &quot;id&quot;: user_id}
++                    return resp
+ 
+             return (
+                 render_template(
+@@ -134,7 +156,9 @@ def auth_view():
+ 
+ @app.route(&quot;/title/&lt;site&gt;/&lt;title_id&gt;&quot;)
+ def title_view(site, title_id):
+-    title = load_title(site, title_id)
++    user = session.get(&quot;user&quot;, None)
++    user_id = user[&quot;id&quot;] if user else None
++    title = load_title(site, title_id, user_id=user_id)
+     if not title:
+         print(&quot;Getting title&quot;, title_id)
+         title = get_title(title_id)
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index f8c81ee..41e0a00 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -3,7 +3,7 @@
+ import apsw
+ import argon2
+ 
+-from .database.common import get_conn
++from .database.common import get_conn, run_sql
+ 
+ 
+ def save_title(title):
+@@ -47,7 +47,7 @@ def save_title(title):
+     )
+ 
+ 
+-def load_title(site, title_id):
++def load_title(site, title_id, user_id=None):
+     conn = get_conn()
+     result = list(
+         conn.cursor().execute(
+@@ -67,7 +67,8 @@ def load_title(site, title_id):
+         raise Exception(f&quot;Found multiple results for title_id {title_id} on {site}!&quot;)
+     else:
+         title = result[0]
+-        return {
++
++        return_val = {
+             &quot;id&quot;: title[0],
+             &quot;name&quot;: title[1],
+             &quot;site&quot;: title[2],
+@@ -77,6 +78,15 @@ def load_title(site, title_id):
+             &quot;descriptions&quot;: json.loads(title[6]),
+         }
+ 
++        if user_id is not None:
++            return_val[&quot;is_following&quot;] = bool(
++                run_sql(
++                    &quot;SELECT 1 FROM follow WHERE user_id=? AND site=? AND title_id=?;&quot;,
++                    (user_id, site, return_val[&quot;id&quot;]),
++                )
++            )
++        return return_val
++
+ 
+ def save_chapter(chapter):
+     conn = get_conn()
+@@ -186,17 +196,54 @@ def verify_username_password(username, password):
+     data = list(
+         get_conn()
+         .cursor()
+-        .execute(&quot;SELECT password FROM user WHERE username = ?;&quot;, (username,))
++        .execute(&quot;SELECT id, password FROM user WHERE username = ?;&quot;, (username,))
+     )
+     if len(data) != 1:
+         print(f&quot;User {username} doesn&#39;t exist.&quot;)
+-        return False
++        return None
++
++    user_id = data[0][0]
++    hashed_password = data[0][1]
+ 
+     hasher = argon2.PasswordHasher()
+-    hash = data[0][0]
+     try:
+-        hasher.verify(hash, password)
+-        return True
++        hasher.verify(hashed_password, password)
++        return user_id
+     except argon2.exceptions.VerifyMismatchError:
+         print(f&quot;User {username} exists but password doesn&#39;t match.&quot;)
+-        return False
++        return None
++
++
++def follow(user_id, site, title_id):
++    get_conn().cursor().execute(
++        &quot;INSERT INTO follow (user_id, site, title_id) VALUES (?, ?, ?);&quot;,
++        (user_id, site, title_id),
++    )
++
++
++def unfollow(user_id, site, title_id):
++    get_conn().cursor().execute(
++        &quot;DELETE FROM follow WHERE user_id=? AND site=? AND title_id=?;&quot;,
++        (user_id, site, title_id),
++    )
++
++
++def get_followed_titles(user_id):
++    titles = run_sql(
++        &quot;&quot;&quot;
++        SELECT t.id, t.site, t.name, t.cover_ext, t.chapters
++        FROM title t
++          INNER JOIN follow f ON f.title_id = t.id AND f.site = t.site
++          INNER JOIN user u ON u.id = f.user_id
++        WHERE user_id=?;
++        &quot;&quot;&quot;,
++        (user_id,),
++    )
++    keys = (&quot;id&quot;, &quot;site&quot;, &quot;name&quot;, &quot;cover_ext&quot;, &quot;chapters&quot;)
++    title_dicts = []
++    for t in titles:
++        title = {key: t[i] for i, key in enumerate(keys)}
++        title[&quot;chapters&quot;] = json.loads(title[&quot;chapters&quot;])
++        title_dicts.append(title)
++
++    return title_dicts
+diff --git a/src/pytaku/templates/base.html b/src/pytaku/templates/base.html
+index 6fef79e..a917622 100644
+--- a/src/pytaku/templates/base.html
++++ b/src/pytaku/templates/base.html
+@@ -1,9 +1,9 @@
+ {# vim: ft=htmldjango
+ #}
+ 
+-{% macro ibutton(href=&#39;&#39;, left_icon=&#39;&#39;, right_icon=&#39;&#39;, text=&#39;&#39;, color=&#39;red&#39;, disabled=False) -%}
++{% macro ibutton(href=&#39;&#39;, left_icon=&#39;&#39;, right_icon=&#39;&#39;, text=&#39;&#39;, color=&#39;red&#39;, title=&#39;&#39;, disabled=False) -%}
+ {% set element = &#39;a&#39; if href else &#39;button&#39; %}
+-&lt;{{ element }} class=&quot;{{ color }} button {% if disabled %}disabled{% endif %}&quot;
++&lt;{{ element }} class=&quot;{{ color }} button {% if disabled %}disabled{% endif %}&quot; title=&quot;{{title}}&quot;
+         {% if href %}href=&quot;{{ href }}&quot;{% endif %}
+         {% if disabled %}disabled{% endif %} &gt;
+   {% if left_icon %}
+diff --git a/src/pytaku/templates/chapter.html b/src/pytaku/templates/chapter.html
+index 04aa572..d506c62 100644
+--- a/src/pytaku/templates/chapter.html
++++ b/src/pytaku/templates/chapter.html
+@@ -1,8 +1,7 @@
+ {% extends &#39;base.html&#39; %}
+ 
+ {% block title %}
+-Ch. {{ num_major }}
+-{% if num_minor %}.{{ num_minor }}{% endif %}
++Ch.{{ num_major }}{% if num_minor %}.{{ num_minor }}{% endif %}
+ {% if name %} - {{ name }}{% endif %}
+ {% endblock %}
+ 
+diff --git a/src/pytaku/templates/follows.html b/src/pytaku/templates/follows.html
+new file mode 100644
+index 0000000..906df62
+--- /dev/null
++++ b/src/pytaku/templates/follows.html
+@@ -0,0 +1,89 @@
++{% extends &#39;base.html&#39; %}
++
++{% block title %}
++Stuff I follow
++{% endblock %}
++
++{% block head %}
++&lt;style&gt;
++.title {
++  display: flex;
++  flex-direction: row;
++  flex-wrap: wrap;
++  margin-bottom: var(--body-padding);
++  background-color: #efefef;
++}
++
++.cover {
++  border: 1px solid #777;
++  margin-right: .5rem;
++}
++.cover:hover {
++  box-shadow: 0 0 3px black;
++}
++
++.chapters {
++  padding: .5rem .5rem .5rem 0;
++}
++
++.chapter {
++  display: block;
++  margin-bottom: .5rem;
++  background-color: white;
++  border: 1px solid #999;
++  padding: 6px;
++  border-radius: 5px;
++  text-decoration: none;
++  color: black;
++}
++.chapter:hover {
++  background-color: #eee;
++}
++
++.group {
++  font-size: .9em;
++  background-color: #ddd;
++  border-radius: 3px;
++  white-space: nowrap;
++  padding: 2px 5px;
++}
++
++.more {
++  display: inline-block;
++  font-style: italic;
++}
++&lt;/style&gt;
++{% endblock %}
++
++{% block content %}
++
++
++{% for title in titles %}
++{% set title_url = url_for(&#39;title_view&#39;, site=title[&#39;site&#39;], title_id=title[&#39;id&#39;]) %}
++&lt;div class=&quot;title&quot;&gt;
++  &lt;div&gt;
++    &lt;a href=&quot;{{ title_url }}&quot;&gt;
++      &lt;img class=&quot;cover&quot;
++           src=&quot;https://mangadex.org/images/manga/{{ title[&#39;id&#39;] }}.large.{{ title[&#39;cover_ext&#39;] }}&quot;
++           alt=&quot;{{ title[&#39;name&#39;] }}&quot; /&gt;
++    &lt;/a&gt;
++  &lt;/div&gt;
++  &lt;div class=&quot;chapters&quot;&gt;
++    {% for ch in title[&#39;chapters&#39;][:6] %}
++    &lt;a class=&quot;chapter&quot; href=&quot;{{ url_for(&#39;chapter_view&#39;, site=title[&#39;site&#39;], chapter_id=ch[&#39;id&#39;]) }}&quot;&gt;
++      Chapter {{ ch[&#39;num_major&#39;] }}{% if ch[&#39;num_minor&#39;] %}.{{ ch[&#39;num_minor&#39;] }}{% endif %}
++              {% if ch[&#39;volume&#39;] %}Volume {{ ch[&#39;volume&#39;] }} {% endif %}
++              {% if ch[&#39;name&#39;] %} - {{ ch[&#39;name&#39;] }}{% endif %}
++        {% for group in ch[&#39;groups&#39;] %}
++        &lt;span class=&quot;group&quot;&gt;{{ group | truncate(20) }}&lt;/span&gt;
++        {% endfor %}
++    &lt;/a&gt;
++    {% endfor %}
++    {% if title[&#39;chapters&#39;]|length &gt; 6 %}
++    &lt;a class=&quot;more chapter&quot; href=&quot;{{ title_url }}&quot;&gt;and more...&lt;/a&gt;
++    {% endif %}
++  &lt;/div&gt;
++&lt;/div&gt;
++{% endfor %}
++
++{% endblock %}
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index 5c52ef3..3ed3462 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -6,6 +6,10 @@
+     width: 400px;
+     border: 1px solid black;
+   }
++
++  .details &gt; form {
++    display: inline-block;
++  }
+ &lt;/style&gt;
+ {% endblock %}
+ 
+@@ -15,9 +19,25 @@
+ 
+ {% block content %}
+ 
+-&lt;div&gt;
+-&lt;h1&gt;{{ name }}&lt;/h1&gt;
+-{{ ibutton(href=&#39;https://mangadex.org/manga/&#39; + id, right_icon=&#39;arrow-up-right&#39;, text=&#39;Source site&#39;, color=&#39;blue&#39;) }}
++&lt;div class=&quot;details&quot;&gt;
++  &lt;h1&gt;{{ name }}&lt;/h1&gt;
++  {% if session[&#39;user&#39;] %}
++    {% if is_following %}
++      {% set fview = &#39;unfollow_view&#39; %}
++      {% set ftext = &#39;Following&#39; %}
++      {% set fcolor = &#39;red&#39; %}
++      {% set ftitle = &#39;Click to unfollow&#39; %}
++    {% else %}
++      {% set fview = &#39;follow_view&#39; %}
++      {% set ftext = &#39;Follow&#39; %}
++      {% set fcolor = &#39;green&#39; %}
++      {% set ftitle = &#39;Click to follow&#39; %}
++    {% endif %}
++    &lt;form action=&quot;{{ url_for(fview, site=site, title_id=id) }}&quot; method=&quot;POST&quot;&gt;
++      {{ ibutton(left_icon=&#39;bookmark&#39;, text=ftext, color=fcolor, title=ftitle) }}
++    &lt;/form&gt;
++  {% endif %}
++  {{ ibutton(href=&#39;https://mangadex.org/manga/&#39; + id, right_icon=&#39;arrow-up-right&#39;, text=&#39;Source site&#39;, color=&#39;blue&#39;, title=&#39;Go to source site&#39;) }}
+ &lt;/div&gt;
+ 
+ &lt;img class=&quot;cover&quot; src=&quot;https://mangadex.org/images/manga/{{ id }}.{{ cover_ext }}&quot; alt=&quot;cover&quot; /&gt;
+</pre></body></html>

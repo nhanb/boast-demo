@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[01969f7e4c] serve: allow custom host | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 01969f7e4c</strong><hr><pre>commit 01969f7e4cf9a826d60e359f1efe75b68da1b1e9
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 21 21:44:23 2023 +0700
+
+    serve: allow custom host
+
+diff --git a/Makefile b/Makefile
+index 4291a2d..1f406a3 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@ build:
+ 	go build -o dist/
+ 
+ watch:
+-	fd -E docs -E theme | entr -rc go run . serve
++	fd -E docs -E theme | entr -rc go run . serve -f docs -p 8000
+ 
+ watch-theme:
+ 	find theme/* | entr -c rsync -av theme/ docs/_s4g/theme/
+diff --git a/main.go b/main.go
+index cf34c67..1209e75 100644
+--- a/main.go
++++ b/main.go
+@@ -53,10 +53,11 @@ func main() {
+ 	newCmd := flag.NewFlagSet(&quot;new&quot;, flag.ExitOnError)
+ 	newCmd.StringVar(&amp;newFolder, &quot;f&quot;, &quot;site1&quot;, &quot;Folder for new website&quot;)
+ 
+-	var serveFolder, servePort string
++	var serveFolder, servePort, serveHost string
+ 	serveCmd := flag.NewFlagSet(&quot;serve&quot;, flag.ExitOnError)
+-	serveCmd.StringVar(&amp;serveFolder, &quot;f&quot;, &quot;docs&quot;, &quot;Folder for existing website&quot;)
+-	serveCmd.StringVar(&amp;servePort, &quot;p&quot;, &quot;3338&quot;, &quot;Port for local preview server&quot;)
++	serveCmd.StringVar(&amp;serveFolder, &quot;f&quot;, &quot;.&quot;, &quot;Website&#39;s root folder&quot;)
++	serveCmd.StringVar(&amp;serveHost, &quot;h&quot;, &quot;127.0.0.1&quot;, &quot;Local server host&quot;)
++	serveCmd.StringVar(&amp;servePort, &quot;p&quot;, &quot;3338&quot;, &quot;Local server port&quot;)
+ 
+ 	switch cmd {
+ 	case &quot;new&quot;:
+@@ -64,7 +65,7 @@ func main() {
+ 		handleNewCmd(newFolder)
+ 	case &quot;serve&quot;:
+ 		serveCmd.Parse(args)
+-		handleServeCmd(serveFolder, servePort)
++		handleServeCmd(serveFolder, serveHost+&quot;:&quot;+servePort)
+ 	default:
+ 		invalidCommand()
+ 	}
+@@ -78,7 +79,7 @@ func handleNewCmd(folder string) {
+ 	}
+ }
+ 
+-func handleServeCmd(folder, port string) {
++func handleServeCmd(folder, addr string) {
+ 	djot.StartService()
+ 	fmt.Println(&quot;Started djot.js service&quot;)
+ 
+@@ -100,7 +101,7 @@ func handleServeCmd(folder, port string) {
+ 	go func(webRoot string) {
+ 		defer wg.Done()
+ 
+-		srv := runServer(fsys, webRoot, port)
++		srv := runServer(fsys, webRoot, addr)
+ 
+ 		for {
+ 			newRoot := &lt;-webRootUpdates
+@@ -113,7 +114,7 @@ func handleServeCmd(folder, port string) {
+ 			if err != nil {
+ 				panic(err)
+ 			}
+-			srv = runServer(fsys, webRoot, port)
++			srv = runServer(fsys, webRoot, addr)
+ 		}
+ 	}(site.Root)
+ 
+@@ -141,8 +142,8 @@ func handleServeCmd(folder, port string) {
+ }
+ 
+ // Non-blocking. Returns srv handle to allow calling Shutdown() later.
+-func runServer(fsys writablefs.FS, webRoot string, port string) *http.Server {
+-	println(&quot;Serving local website at http://localhost:&quot; + port + webRoot)
++func runServer(fsys writablefs.FS, webRoot, addr string) *http.Server {
++	fmt.Printf(&quot;Serving local website at %s%s\n&quot;, addr, webRoot)
+ 	mux := http.NewServeMux()
+ 	mux.Handle(
+ 		webRoot,
+@@ -159,7 +160,7 @@ func runServer(fsys writablefs.FS, webRoot string, port string) *http.Server {
+ 	}
+ 
+ 	srv := &amp;http.Server{
+-		Addr:    &quot;127.0.0.1:&quot; + port,
++		Addr:    addr,
+ 		Handler: mux,
+ 	}
+ 
+</pre></body></html>

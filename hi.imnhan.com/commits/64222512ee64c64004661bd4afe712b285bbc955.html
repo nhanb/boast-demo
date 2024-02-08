@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[64222512ee] more robust default font size | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 64222512ee</strong><hr><pre>commit 64222512ee64c64004661bd4afe712b285bbc955
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Apr 14 16:40:35 2023 +0700
+
+    more robust default font size
+
+diff --git a/nhanb-theme/static/css/main.css b/nhanb-theme/static/css/main.css
+index 2220e36..1ee6585 100644
+--- a/nhanb-theme/static/css/main.css
++++ b/nhanb-theme/static/css/main.css
+@@ -11,10 +11,23 @@ html {
+   /* always show vertical scrollbar to avoid content shifting: */
+   overflow-y: scroll;
+ 
+-  font-size: 20px;
+   font-family: &quot;Source Sans Pro&quot;, sans-serif;
++  font-size: 20px;
++  /* Smart trick stolen from exoticsilicon.com:
++   * https://research.exoticsilicon.com/articles/replying_to_comments
++   * &gt; uses the browser default font size, smoothly scaled up to 130% on
++   * &gt; higher-resolution displays
++   *
++   * I&#39;ve seen people use vw on font sizes before but max()-ing it against the
++   * default font size then capping it with a fixed em size is new to me.
++   * How elegant!
++   *
++   * Still keeping the 20px above as a fallback for... less fortunate browsers.
++   */
++  font-size: min(max(1em, 1.3vw), 1.3em);
+ }
+-code, pre {
++code,
++pre {
+   font-family: &quot;Ubuntu Mono&quot;;
+ }
+ * {
+@@ -135,32 +148,30 @@ pre {
+   font-size: 0.9rem;
+ }
+ 
+-
+ /* Python markdown&#39;s &quot;toc&quot; extension creates an &lt;a class=&quot;headerlink&quot;&gt; inside
+  * each heading. The following styling makes the anchor only visible on hover
+  * and highlights the currently targeted heading.
+  */
+ a.headerlink {
+-    margin-left: 0.5rem;
+-    text-decoration: none;
+-    visibility: hidden;
++  margin-left: 0.5rem;
++  text-decoration: none;
++  visibility: hidden;
+ }
+ :hover &gt; a.headerlink {
+-    visibility: visible;
++  visibility: visible;
+ }
+ h1:target,
+ h2:target,
+ h3:target,
+ h4:target {
+-    background-color: moccasin;
+-    margin-left: -1rem;
+-    padding-left: 1rem;
++  background-color: moccasin;
++  margin-left: -1rem;
++  padding-left: 1rem;
+ }
+ :target &gt; a.headerlink:hover {
+-    color: moccasin;
++  color: moccasin;
+ }
+ 
+-
+ /* Pygments tweaks */
+ .highlight {
+   background-color: transparent;
+</pre></body></html>

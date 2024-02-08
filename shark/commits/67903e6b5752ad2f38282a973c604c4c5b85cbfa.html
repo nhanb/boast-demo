@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[67903e6b57] use `must` | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 67903e6b57</strong><hr><pre>commit 67903e6b5752ad2f38282a973c604c4c5b85cbfa
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 17 11:23:52 2023 +0700
+
+    use `must`
+
+diff --git a/main.go b/main.go
+index d03848e..51dcdf5 100644
+--- a/main.go
++++ b/main.go
+@@ -6,13 +6,13 @@
+ 	&quot;flag&quot;
+ 	&quot;image&quot;
+ 	_ &quot;image/png&quot;
+-	&quot;log&quot;
+ 	&quot;math/rand&quot;
+ 	&quot;time&quot;
+ 
+ 	&quot;github.com/hajimehoshi/ebiten/v2&quot;
+ 	&quot;github.com/hajimehoshi/ebiten/v2/ebitenutil&quot;
+ 	&quot;github.com/hajimehoshi/ebiten/v2/inpututil&quot;
++	&quot;go.imnhan.com/shark/must&quot;
+ )
+ 
+ const SPRITE_X = 100
+@@ -221,15 +221,12 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (w, h int) {
+ }
+ 
+ func NewAnim(sprites embed.FS, subdir string) *Anim {
+-	files, err := sprites.ReadDir(&quot;sprites/&quot; + subdir)
+-	PanicIfErr(err)
++	files := must.One(sprites.ReadDir(&quot;sprites/&quot; + subdir))
+ 	var frames []*ebiten.Image
+ 	for _, direntry := range files {
+ 		fname := direntry.Name()
+-		frame, err := sprites.ReadFile(&quot;sprites/&quot; + subdir + &quot;/&quot; + fname)
+-		PanicIfErr(err)
+-		img, _, err := ebitenutil.NewImageFromReader(bytes.NewReader(frame))
+-		PanicIfErr(err)
++		frame := must.One(sprites.ReadFile(&quot;sprites/&quot; + subdir + &quot;/&quot; + fname))
++		img, _ := must.Two(ebitenutil.NewImageFromReader(bytes.NewReader(frame)))
+ 		frames = append(frames, img)
+ 	}
+ 	return &amp;Anim{frames}
+@@ -284,19 +281,11 @@ func main() {
+ 	ebiten.SetWindowDecorated(false)
+ 	ebiten.SetWindowFloating(true)
+ 
+-	AppIcon, _, iconerr := image.Decode(bytes.NewReader(IconFile))
+-	PanicIfErr(iconerr)
++	AppIcon, _ := must.Two(image.Decode(bytes.NewReader(IconFile)))
+ 	ebiten.SetWindowIcon([]image.Image{AppIcon})
+ 
+-	err := ebiten.RunGameWithOptions(
++	must.Zero(ebiten.RunGameWithOptions(
+ 		&amp;game,
+ 		&amp;ebiten.RunGameOptions{ScreenTransparent: true},
+-	)
+-	PanicIfErr(err)
+-}
+-
+-func PanicIfErr(err error) {
+-	if err != nil {
+-		log.Fatal(err)
+-	}
++	))
+ }
+diff --git a/must/must.go b/must/must.go
+new file mode 100644
+index 0000000..6fc1354
+--- /dev/null
++++ b/must/must.go
+@@ -0,0 +1,34 @@
++// A.k.a &quot;I just wanna write python&quot;
++// Good for irrecoverable cases we absolutely want to fail fast with a
++// stacktrace.
++// Possibly useful for quick prototyping too, but ofc please treat every usage
++// of this package as a FIXME item and clean it up before running in
++// production.
++package must
++
++func Zero(err error) {
++	if err != nil {
++		panic(err)
++	}
++}
++
++func One[T any](val T, err error) T {
++	if err != nil {
++		panic(err)
++	}
++	return val
++}
++
++func Two[T any, U any](v1 T, v2 U, err error) (T, U) {
++	if err != nil {
++		panic(err)
++	}
++	return v1, v2
++}
++
++func Ok[T any](v T, ok bool) T {
++	if !ok {
++		panic(&quot;not ok&quot;)
++	}
++	return v
++}
+</pre></body></html>

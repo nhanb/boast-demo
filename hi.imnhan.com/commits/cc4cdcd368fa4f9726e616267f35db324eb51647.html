@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[cc4cdcd368] tweak stuff | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / cc4cdcd368</strong><hr><pre>commit cc4cdcd368fa4f9726e616267f35db324eb51647
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Nov 17 22:28:36 2023 +0700
+
+    tweak stuff
+
+diff --git a/_s4g/settings.txt b/_s4g/settings.txt
+index c1c1d25..feb0299 100644
+--- a/_s4g/settings.txt
++++ b/_s4g/settings.txt
+@@ -1,6 +1,6 @@
+ Address: https://hi.imnhan.com
+ Name: Hi, I&#39;m Nhân
+-Tagline: and this is my humble corner on the intertubes
++Tagline: and welcome to my humble corner on the intertubes
+ Root: /
+ ShowFooter: true
+ FooterText: Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà&amp;nbsp;phê&amp;nbsp;sữa&amp;nbsp;đá&lt;/a&gt;
+diff --git a/_s4g/theme/base.css b/_s4g/theme/base.css
+index f7a796c..0f7cf0f 100644
+--- a/_s4g/theme/base.css
++++ b/_s4g/theme/base.css
+@@ -61,6 +61,10 @@ main video {
+   max-width: 100%;
+ }
+ 
++main hr {
++  margin: 2rem 0;
++}
++
+ footer {
+   margin-top: 2rem;
+   text-align: right;
+@@ -69,8 +73,11 @@ footer {
+ 
+ pre,
+ .sidenote {
+-  border: 1px solid black;
++  border: 1px solid #ddd;
++  border-radius: 0.3rem;
++  background-color: #eee;
+   padding: 0.5rem;
++  margin: 1.7rem 0;
+ }
+ pre {
+   overflow-x: auto;
+diff --git a/index.html b/index.html
+index 8f79908..fb4c171 100644
+--- a/index.html
++++ b/index.html
+@@ -21,7 +21,7 @@
+ 
+ &lt;header&gt;
+   &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
+-  &lt;p class=&quot;tagline&quot;&gt;and this is my humble corner on the intertubes&lt;/p&gt;
++  &lt;p class=&quot;tagline&quot;&gt;and welcome to my humble corner on the intertubes&lt;/p&gt;
+ &lt;/header&gt;
+ 
+ &lt;hr&gt;
+</pre></body></html>

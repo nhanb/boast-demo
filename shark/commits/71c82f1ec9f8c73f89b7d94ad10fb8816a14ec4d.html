@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[71c82f1ec9] add compilation guide; static image | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 71c82f1ec9</strong><hr><pre>commit 71c82f1ec9f8c73f89b7d94ad10fb8816a14ec4d
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jul 2 00:03:01 2022 +0700
+
+    add compilation guide; static image
+
+diff --git a/README.md b/README.md
+index 09509cc..93c4287 100644
+--- a/README.md
++++ b/README.md
+@@ -1,11 +1,13 @@
+ # What
+ 
+-https://user-images.githubusercontent.com/1446315/176439983-091dec3d-bc36-4ae3-8b78-2a2a7f11e90d.mp4
++![](https://user-images.githubusercontent.com/1446315/176945811-18387e27-df3e-4303-ad17-e1637e547f04.jpg)
+ 
+ This is a PoC &quot;desktop pet&quot; à la [shimeji][1] using [ebitengine][2] that runs
+ on Windows, Linux, and macOS. It currently has only 3 animations: idle
+ (default), left-click dragging, and right-click.
+ 
++Go [here][7] for a demo video.
++
+ Fair warning: I&#39;m a Go noob who mostly has no idea what he&#39;s doing.
+ Read the source code at your own peril.
+ 
+@@ -21,6 +23,15 @@ # Download
+ 
+ Sourcehut doesn&#39;t have macOS builds though.
+ 
++# Compile from source
++
++- Follow [ebitengine&#39;s install guide][6]
++- Run: `go build -tags ebitensinglethread -o dist/`
++- Your compiled binary should now be in `./dist/`
++
++Apparently it should compile on FreeBSD too but I haven&#39;t tried that.
++Do let me know if it works on your FreeBSD desktop!
++
+ # Artist
+ 
+ The sprites were graciously provided by Mee Way:
+@@ -45,6 +56,8 @@ # License
+ [3]: https://www.behance.net/meeway/projects
+ [4]: https://www.facebook.com/meexway
+ [5]: https://github.com/nhanb/shark/releases/latest
++[6]: https://ebiten.org/documents/install.html
++[7]: https://user-images.githubusercontent.com/1446315/176439983-091dec3d-bc36-4ae3-8b78-2a2a7f11e90d.mp4
+ 
+ [srht]: https://builds.sr.ht/~nhanb/shark/commits/master
+ [gh]: https://github.com/nhanb/shark/actions/workflows/main.yml
+</pre></body></html>

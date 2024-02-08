@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[bc1ebed452] more README | iwpick | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">iwpick</a> / bc1ebed452</strong><hr><pre>commit bc1ebed4525146af7547221cd28633618e9083b8
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 28 20:11:10 2022 +0700
+
+    more README
+
+diff --git a/README.md b/README.md
+index 7cebd1f..775d1be 100644
+--- a/README.md
++++ b/README.md
+@@ -7,5 +7,20 @@
+ I made this for my [GPD MicroPC][2], which has a very nice qwerty keyboard for
+ thumb typing but no touch screen.
+ 
++# Install
++
++```sh
++go install go.imnhan.com/iwpick@latest
++```
++
++It makes a couple of assumptions:
++
++- You have the `iwctl` executable in your $PATH and the necessary permission to
++  run it. For Arch that means being in the appropriate usergroup(s).
++- Your wireless device is `wlan0`. Otherwise, pull this repo, update the
++  WIFI_DEVICE const and run `make` to recompile. Bonus points if you make it a
++  [flag][3] and send me a pull request :^)
++
+ [1]: https://wiki.archlinux.org/title/iwd
+ [2]: https://twitter.com/nhanbt/status/1551734935471284226
++[3]: https://pkg.go.dev/flag
+diff --git a/main.go b/main.go
+index f4308c6..0116ce5 100644
+--- a/main.go
++++ b/main.go
+@@ -13,6 +13,8 @@
+ 	&quot;github.com/rivo/tview&quot;
+ )
+ 
++const WIFI_DEVICE = &quot;wlan0&quot;
++
+ type Network struct {
+ 	SSID        string
+ 	Security    string
+@@ -22,12 +24,12 @@ type Network struct {
+ }
+ 
+ func GetNetworks() (networks []Network) {
+-	scanCmd := exec.Command(&quot;iwctl&quot;, &quot;station&quot;, &quot;wlan0&quot;, &quot;scan&quot;)
++	scanCmd := exec.Command(&quot;iwctl&quot;, &quot;station&quot;, WIFI_DEVICE, &quot;scan&quot;)
+ 	if err := scanCmd.Run(); err != nil {
+ 		log.Fatal(err)
+ 	}
+ 
+-	listCmd := exec.Command(&quot;iwctl&quot;, &quot;station&quot;, &quot;wlan0&quot;, &quot;get-networks&quot;)
++	listCmd := exec.Command(&quot;iwctl&quot;, &quot;station&quot;, WIFI_DEVICE, &quot;get-networks&quot;)
+ 	var out bytes.Buffer
+ 	listCmd.Stdout = &amp;out
+ 	if err := listCmd.Run(); err != nil {
+@@ -128,7 +130,7 @@ func main() {
+ 		case tcell.KeyEnter:
+ 			_, ssid := list.GetItemText(list.GetCurrentItem())
+ 			app.Suspend(func() {
+-				cmd := exec.Command(&quot;iwctl&quot;, &quot;station&quot;, &quot;wlan0&quot;, &quot;connect&quot;, ssid)
++				cmd := exec.Command(&quot;iwctl&quot;, &quot;station&quot;, WIFI_DEVICE, &quot;connect&quot;, ssid)
+ 				cmd.Stdout = os.Stdout
+ 				cmd.Stdin = os.Stdin
+ 				cmd.Stderr = os.Stderr
+</pre></body></html>

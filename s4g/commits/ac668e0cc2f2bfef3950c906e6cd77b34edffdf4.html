@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ac668e0cc2] cleaner copyright notice with start-end years | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / ac668e0cc2</strong><hr><pre>commit ac668e0cc2f2bfef3950c906e6cd77b34edffdf4
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jul 4 14:52:04 2023 +0700
+
+    cleaner copyright notice with start-end years
+
+diff --git a/main.go b/main.go
+index 99596a2..fa79a7b 100644
+--- a/main.go
++++ b/main.go
+@@ -40,17 +40,19 @@ func main() {
+ 		return posts[i].Meta.PostedAt.Compare(posts[j].Meta.PostedAt) &gt; 0
+ 	})
+ 
++	startYear := posts[len(posts)-1].Meta.PostedAt.Year()
++
+ 	fmt.Printf(&quot;Found %d posts, %d pages:\n&quot;, len(posts), len(pages))
+ 	for _, a := range posts {
+ 		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Meta.Title)
+-		a.WriteHtmlFile(&amp;site, pages)
++		a.WriteHtmlFile(&amp;site, pages, startYear)
+ 	}
+ 	for _, a := range pages {
+ 		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Meta.Title)
+-		a.WriteHtmlFile(&amp;site, pages)
++		a.WriteHtmlFile(&amp;site, pages, startYear)
+ 	}
+ 
+-	WriteHomePage(fsys, site, posts, pages)
++	WriteHomePage(fsys, site, posts, pages, startYear)
+ 
+ 	fsys.WriteFile(FEED_PATH, generateFeed(site, posts, site.HomePath+FEED_PATH))
+ 
+@@ -101,7 +103,7 @@ type ArticleMetadata struct {
+ 	PostedAt time.Time
+ }
+ 
+-func (a *Article) WriteHtmlFile(site *SiteMetadata, pages []Article) {
++func (a *Article) WriteHtmlFile(site *SiteMetadata, pages []Article, startYear int) {
+ 	// First generate the main content in html
+ 	contentHtml := djot.ToHtml(a.DjotBody)
+ 
+@@ -115,21 +117,23 @@ func (a *Article) WriteHtmlFile(site *SiteMetadata, pages []Article) {
+ 		),
+ 	)
+ 	err := tmpl.Execute(&amp;buf, struct {
+-		Site    *SiteMetadata
+-		Content template.HTML
+-		Title   string
+-		Post    *Article
+-		Pages   []Article
+-		Feed    string
+-		Now     time.Time
++		Site      *SiteMetadata
++		Content   template.HTML
++		Title     string
++		Post      *Article
++		Pages     []Article
++		Feed      string
++		Now       time.Time
++		StartYear int
+ 	}{
+-		Site:    site,
+-		Content: template.HTML(contentHtml),
+-		Title:   fmt.Sprintf(&quot;%s | %s&quot;, a.Meta.Title, site.Name),
+-		Post:    a,
+-		Pages:   pages,
+-		Feed:    site.HomePath + FEED_PATH,
+-		Now:     time.Now(),
++		Site:      site,
++		Content:   template.HTML(contentHtml),
++		Title:     fmt.Sprintf(&quot;%s | %s&quot;, a.Meta.Title, site.Name),
++		Post:      a,
++		Pages:     pages,
++		Feed:      site.HomePath + FEED_PATH,
++		Now:       time.Now(),
++		StartYear: startYear,
+ 	})
+ 	if err != nil {
+ 		fmt.Println(&quot;Error in WriteHtmlFile:&quot;, err)
+@@ -144,7 +148,12 @@ func (a *Article) WriteHtmlFile(site *SiteMetadata, pages []Article) {
+ 	}
+ }
+ 
+-func WriteHomePage(fsys WritableFS, site SiteMetadata, posts, pages []Article) {
++func WriteHomePage(
++	fsys WritableFS,
++	site SiteMetadata,
++	posts, pages []Article,
++	startYear int,
++) {
+ 	var buf bytes.Buffer
+ 	tmpl := template.Must(
+ 		template.ParseFS(
+@@ -154,19 +163,21 @@ func WriteHomePage(fsys WritableFS, site SiteMetadata, posts, pages []Article) {
+ 		),
+ 	)
+ 	err := tmpl.Execute(&amp;buf, struct {
+-		Site  *SiteMetadata
+-		Title string
+-		Posts []Article
+-		Pages []Article
+-		Feed  string
+-		Now   time.Time
++		Site      *SiteMetadata
++		Title     string
++		Posts     []Article
++		Pages     []Article
++		Feed      string
++		Now       time.Time
++		StartYear int
+ 	}{
+-		Site:  &amp;site,
+-		Title: fmt.Sprintf(&quot;%s - %s&quot;, site.Name, site.Tagline),
+-		Posts: posts,
+-		Pages: pages,
+-		Feed:  site.HomePath + FEED_PATH,
+-		Now:   time.Now(),
++		Site:      &amp;site,
++		Title:     fmt.Sprintf(&quot;%s - %s&quot;, site.Name, site.Tagline),
++		Posts:     posts,
++		Pages:     pages,
++		Feed:      site.HomePath + FEED_PATH,
++		Now:       time.Now(),
++		StartYear: startYear,
+ 	})
+ 	if err != nil {
+ 		fmt.Println(&quot;Error in WriteHtmlFile:&quot;, err)
+diff --git a/www/_theme/base.tmpl b/www/_theme/base.tmpl
+index 499adcc..703f97f 100644
+--- a/www/_theme/base.tmpl
++++ b/www/_theme/base.tmpl
+@@ -20,8 +20,8 @@
+ 
+ {{if not .Site.DisableFooter}}
+ &lt;footer&gt;
+-Copyright {{.Now.Year}} {{.Site.Author.Name}}. All rights reserved.&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;.
++© {{if eq .StartYear .Now.Year}}{{.StartYear}}{{else}}{{.StartYear}}–{{.Now.Year}}{{end}} {{.Site.Author.Name}}&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
+ &lt;style&gt;
+ footer {
+diff --git a/www/about/index.html b/www/about/index.html
+index ce31568..8ae1104 100644
+--- a/www/about/index.html
++++ b/www/about/index.html
+@@ -53,8 +53,8 @@ &lt;h2&gt;No really&lt;/h2&gt;
+ 
+ 
+ &lt;footer&gt;
+-Copyright 2023 Coolio McCool. All rights reserved.&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;.
++© 2022–2023 Coolio McCool&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
+ &lt;style&gt;
+ footer {
+diff --git a/www/hello/index.html b/www/hello/index.html
+index 839d5b1..e64369e 100644
+--- a/www/hello/index.html
++++ b/www/hello/index.html
+@@ -52,8 +52,8 @@ &lt;h1 class=&quot;post-title&quot;&gt;Hello&lt;/h1&gt;
+ 
+ 
+ &lt;footer&gt;
+-Copyright 2023 Coolio McCool. All rights reserved.&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;.
++© 2022–2023 Coolio McCool&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
+ &lt;style&gt;
+ footer {
+diff --git a/www/index.html b/www/index.html
+index 4b4b344..61c0688 100644
+--- a/www/index.html
++++ b/www/index.html
+@@ -88,8 +88,8 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ 
+ 
+ &lt;footer&gt;
+-Copyright 2023 Coolio McCool. All rights reserved.&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;.
++© 2022–2023 Coolio McCool&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
+ &lt;style&gt;
+ footer {
+diff --git a/www/mfws.html b/www/mfws.html
+index 8c7eee6..1bfcdf6 100644
+--- a/www/mfws.html
++++ b/www/mfws.html
+@@ -141,8 +141,8 @@ &lt;h2&gt;Epilogue&lt;/h2&gt;
+ 
+ 
+ &lt;footer&gt;
+-Copyright 2023 Coolio McCool. All rights reserved.&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;.
++© 2022–2023 Coolio McCool&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
+ &lt;style&gt;
+ footer {
+</pre></body></html>

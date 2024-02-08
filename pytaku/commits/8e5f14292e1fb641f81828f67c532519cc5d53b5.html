@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[8e5f14292e] proxied GET requests | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 8e5f14292e</strong><hr><pre>commit 8e5f14292e1fb641f81828f67c532519cc5d53b5
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun May 24 23:08:45 2020 +0700
+
+    proxied GET requests
+
+diff --git a/src/pytaku/conf.py b/src/pytaku/conf.py
+index 6db70cc..ebe84b7 100644
+--- a/src/pytaku/conf.py
++++ b/src/pytaku/conf.py
+@@ -17,7 +17,23 @@ class Config(GoodConf):
+     AWS_SECRET_ACCESS_KEY = Value()
+     AWS_STORAGE_BUCKET_NAME = Value(default=&quot;pytaku&quot;)
+     AWS_DEFAULT_ACL = Value(default=&quot;public-read&quot;)
+-    AWS_S3_ENDPOINT_URL = Value(default=&quot;&quot;)
++    AWS_S3_ENDPOINT_URL = Value()
++
++    # Makeshift https &quot;proxy&quot; running on google cloud functions:
++    GCF_PROXY_PROJECT_NAME = Value()
++    GCF_PROXY_FUNCTION_NAME = Value()
++    GCF_PROXY_PASSWORD = Value()
++    GCF_PROXY_REGIONS = Value(
++        default=[
++            &quot;asia-east2&quot;,
++            &quot;asia-northeast1&quot;,
++            &quot;europe-west1&quot;,
++            &quot;europe-west2&quot;,
++            &quot;us-central1&quot;,
++            &quot;us-east1&quot;,
++            &quot;us-east4&quot;,
++        ]
++    )
+ 
+ 
+ config = Config(default_files=[&quot;pytaku.conf.json&quot;])
+diff --git a/src/pytaku/settings.py b/src/pytaku/settings.py
+index 3795e7d..3d3a2fc 100644
+--- a/src/pytaku/settings.py
++++ b/src/pytaku/settings.py
+@@ -131,3 +131,9 @@
+ AWS_STORAGE_BUCKET_NAME = config.AWS_STORAGE_BUCKET_NAME
+ AWS_S3_ENDPOINT_URL = config.AWS_S3_ENDPOINT_URL or None
+ AWS_DEFAULT_ACL = None  # use bucket&#39;s default policy
++
++
++GCF_PROXY_PROJECT_NAME = config.GCF_PROXY_PROJECT_NAME
++GCF_PROXY_FUNCTION_NAME = config.GCF_PROXY_FUNCTION_NAME
++GCF_PROXY_PASSWORD = config.GCF_PROXY_PASSWORD
++GCF_PROXY_REGIONS = config.GCF_PROXY_REGIONS
+diff --git a/src/pytaku_scraper/commands.py b/src/pytaku_scraper/commands.py
+index b992209..3b4d0fa 100644
+--- a/src/pytaku_scraper/commands.py
++++ b/src/pytaku_scraper/commands.py
+@@ -1,7 +1,7 @@
+-import requests
+ from django.db import transaction
+ from django.utils import timezone
+ 
++from .httpclient import HttpClient
+ from .models import DownloadResult, TaskQueue
+ from .sites.mangadex import get_latest_id
+ 
+@@ -20,14 +20,15 @@ def put_download_tasks():
+     print(f&#39;Successfully put {len(result)} &quot;download&quot; tasks.&#39;)
+ 
+ 
+-def download_worker():
++def download_worker(proxy_index):
++    http = HttpClient(proxy_index)
+     while True:
+         with transaction.atomic():
+             task = TaskQueue.pop(&quot;download&quot;)
+             task_id = task.id
+             print(f&quot;Processing task {task_id}: {task.payload}&quot;)
+-            resp = requests.get(task.payload[&quot;url&quot;], timeout=30)
+-            assert resp.status_code in (200, 404), f&quot;Unexpected error: {resp.text}&quot;
++            resp = http.proxied_get(task.payload[&quot;url&quot;])
++            assert resp.status_code in (200, 404), f&quot;Unexpected DL error: {resp.text}&quot;
+ 
+             DownloadResult.objects.update_or_create(
+                 url=task.payload[&quot;url&quot;],
+diff --git a/src/pytaku_scraper/httpclient.py b/src/pytaku_scraper/httpclient.py
+new file mode 100644
+index 0000000..bf9f2d7
+--- /dev/null
++++ b/src/pytaku_scraper/httpclient.py
+@@ -0,0 +1,30 @@
++import requests
++from django.conf import settings
++
++HEADERS = {
++    &quot;User-Agent&quot;: &quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36&quot;
++}
++
++
++class HttpClient:
++    def __init__(self, proxy_index=0):
++        proxy_region = settings.GCF_PROXY_REGIONS[proxy_index]
++        self.proxy_url = &quot;https://{}-{}.cloudfunctions.net/{}&quot;.format(
++            proxy_region,
++            settings.GCF_PROXY_PROJECT_NAME,
++            settings.GCF_PROXY_FUNCTION_NAME,
++        )
++        print(&quot;HttpClient proxy region:&quot;, proxy_region)
++
++    def proxied_get(self, url, timeout=10):
++        return requests.post(
++            self.proxy_url,
++            json={
++                &quot;url&quot;: url,
++                &quot;method&quot;: &quot;get&quot;,
++                &quot;body&quot;: None,
++                &quot;headers&quot;: HEADERS,
++                &quot;password&quot;: settings.GCF_PROXY_PASSWORD,
++            },
++            timeout=timeout,
++        )
+diff --git a/src/pytaku_scraper/management/commands/download_worker.py b/src/pytaku_scraper/management/commands/download_worker.py
+index 87f3f75..bf357b0 100644
+--- a/src/pytaku_scraper/management/commands/download_worker.py
++++ b/src/pytaku_scraper/management/commands/download_worker.py
+@@ -6,5 +6,8 @@
+ class Command(BaseCommand):
+     help = &quot;Download worker. Run as many as needed.&quot;
+ 
++    def add_arguments(self, parser):
++        parser.add_argument(&quot;proxy_index&quot;, type=int)
++
+     def handle(self, *args, **options):
+-        download_worker()
++        download_worker(options[&quot;proxy_index&quot;])
+</pre></body></html>

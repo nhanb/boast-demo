@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[714c49f315] bundle js code with esbuild | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 714c49f315</strong><hr><pre>commit 714c49f315df1b667b083f0d83f6badf568a5cf3
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 13 13:47:18 2020 +0700
+
+    bundle js code with esbuild
+    
+    Source files are moved to `src/pytaku/js-src/`,
+    while minified js bundle will go to `src/pytaku/static/js/`.
+
+diff --git a/.builds/ubuntu.yml b/.builds/ubuntu.yml
+index 2cf7517..5949d7c 100644
+--- a/.builds/ubuntu.yml
++++ b/.builds/ubuntu.yml
+@@ -21,6 +21,7 @@ packages:
+   - python3.7-dev
+   - python3.7-venv
+   - python3-pip
++  - npm
+ 
+ tasks:
+   - mirror-to-github: |
+@@ -52,6 +53,11 @@ tasks:
+       cd pytaku
+       source ~/venv/bin/activate
+       poetry build
++      npm install -g --prefix ~/.node_modules esbuild
++      ~/.node_modules/bin/esbuild \
++        src/pytaku/js-src/main.js \
++        --bundle --sourcemap --minify \
++        --outfile=src/pytaku/static/js/main.min.js
+ 
+   # Builds.sr.ht doesn&#39;t support tag or even branch detection yet:
+   # &gt; https://todo.sr.ht/~sircmpwn/builds.sr.ht/170
+diff --git a/.gitignore b/.gitignore
+index 6d9a6c8..8a05ea8 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -7,3 +7,4 @@ __pycache__
+ *.sqlite3*
+ *.egg-info
+ /dist/
++/src/pytaku/static/js/
+diff --git a/README.md b/README.md
+index 45726ef..28a5153 100644
+--- a/README.md
++++ b/README.md
+@@ -23,6 +23,8 @@ # Pytaku
+ # Development
+ 
+ ```sh
++## Backend ##
++
+ poetry install
+ pip install --upgrade pip
+ pip install https://github.com/rogerbinns/apsw/releases/download/3.32.2-r1/apsw-3.32.2-r1.zip \
+@@ -38,6 +40,18 @@ # run migration script once
+ # run 2 processes:
+ pytaku-dev -p 8000  # development webserver
+ pytaku-scheduler  # scheduled tasks e.g. update titles
++
++
++## Frontend ##
++
++sudo pacman -S entr  # to watch source files
++npm install -g --prefix ~/.node_modules esbuild # to bundle js
++
++# Listen for changes in js-src dir, automatically build minified bundle:
++find src/pytaku/js-src -name &#39;*.js&#39; | entr -r \
++     esbuild src/pytaku/js-src/main.js \
++     --bundle --sourcemap --minify \
++     --outfile=src/pytaku/static/js/main.min.js
+ ```
+ 
+ ## Tests
+diff --git a/pyproject.toml b/pyproject.toml
+index 74d273a..6fb9b85 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.18&quot;
++version = &quot;0.3.19&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/static/js/layout.js b/src/pytaku/js-src/layout.js
+similarity index 100%
+rename from src/pytaku/static/js/layout.js
+rename to src/pytaku/js-src/layout.js
+diff --git a/src/pytaku/static/js/main.js b/src/pytaku/js-src/main.js
+similarity index 100%
+rename from src/pytaku/static/js/main.js
+rename to src/pytaku/js-src/main.js
+diff --git a/src/pytaku/static/js/models.js b/src/pytaku/js-src/models.js
+similarity index 100%
+rename from src/pytaku/static/js/models.js
+rename to src/pytaku/js-src/models.js
+diff --git a/src/pytaku/static/js/routes/authentication.js b/src/pytaku/js-src/routes/authentication.js
+similarity index 100%
+rename from src/pytaku/static/js/routes/authentication.js
+rename to src/pytaku/js-src/routes/authentication.js
+diff --git a/src/pytaku/static/js/routes/chapter.js b/src/pytaku/js-src/routes/chapter.js
+similarity index 100%
+rename from src/pytaku/static/js/routes/chapter.js
+rename to src/pytaku/js-src/routes/chapter.js
+diff --git a/src/pytaku/static/js/routes/follows.js b/src/pytaku/js-src/routes/follows.js
+similarity index 100%
+rename from src/pytaku/static/js/routes/follows.js
+rename to src/pytaku/js-src/routes/follows.js
+diff --git a/src/pytaku/static/js/routes/home.js b/src/pytaku/js-src/routes/home.js
+similarity index 100%
+rename from src/pytaku/static/js/routes/home.js
+rename to src/pytaku/js-src/routes/home.js
+diff --git a/src/pytaku/static/js/routes/importer.js b/src/pytaku/js-src/routes/importer.js
+similarity index 100%
+rename from src/pytaku/static/js/routes/importer.js
+rename to src/pytaku/js-src/routes/importer.js
+diff --git a/src/pytaku/static/js/routes/search.js b/src/pytaku/js-src/routes/search.js
+similarity index 100%
+rename from src/pytaku/static/js/routes/search.js
+rename to src/pytaku/js-src/routes/search.js
+diff --git a/src/pytaku/static/js/routes/title.js b/src/pytaku/js-src/routes/title.js
+similarity index 100%
+rename from src/pytaku/static/js/routes/title.js
+rename to src/pytaku/js-src/routes/title.js
+diff --git a/src/pytaku/static/js/utils.js b/src/pytaku/js-src/utils.js
+similarity index 100%
+rename from src/pytaku/static/js/utils.js
+rename to src/pytaku/js-src/utils.js
+diff --git a/src/pytaku/templates/spa.html b/src/pytaku/templates/spa.html
+index cc61dc2..be5f0a0 100644
+--- a/src/pytaku/templates/spa.html
++++ b/src/pytaku/templates/spa.html
+@@ -46,7 +46,7 @@
+ 
+     &lt;script&gt;const initialState = &quot;{{ initial_state }}&quot;;&lt;/script&gt;
+     &lt;script src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;vendored/mithril.min.js&#39;) }}&quot;&gt;&lt;/script&gt;
+-    &lt;script src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;js/main.js&#39;) }}&quot; type=&quot;module&quot;&gt;&lt;/script&gt;
++    &lt;script src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;js/main.min.js&#39;) }}&quot;&gt;&lt;/script&gt;
+ 
+     {% endblock %}
+   &lt;/body&gt;
+</pre></body></html>

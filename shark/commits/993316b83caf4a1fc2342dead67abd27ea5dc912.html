@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[993316b83c] add sourcehut builds | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 993316b83c</strong><hr><pre>commit 993316b83caf4a1fc2342dead67abd27ea5dc912
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jun 29 22:22:34 2022 +0700
+
+    add sourcehut builds
+
+diff --git a/.builds/debian.yml b/.builds/debian.yml
+new file mode 100644
+index 0000000..e8d4f65
+--- /dev/null
++++ b/.builds/debian.yml
+@@ -0,0 +1,30 @@
++image: debian/bullseye
++
++packages:
++  - golang-1.18
++  # The following copied as-is from https://ebiten.org/documents/install.html
++  - libc6-dev
++  - libglu1-mesa-dev
++  - libgl1-mesa-dev
++  - libxcursor-dev
++  - libxi-dev
++  - libxinerama-dev
++  - libxrandr-dev
++  - libxxf86vm-dev
++  - libasound2-dev
++  - pkg-config
++
++repositories:
++  backports: http://deb.debian.org/debian bullseye-backports main
++
++tasks:
++  - build: |
++      cd shark
++      export PATH=&quot;$PATH:/usr/lib/go-1.18/bin&quot;
++      go version
++      go build -o shark-linux
++      GOOS=windows GOARCH=amd64 go build -o shark-win.exe
++
++artifacts:
++  - shark/shark-linux
++  - shark/shark-win.exe
+</pre></body></html>

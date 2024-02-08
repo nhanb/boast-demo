@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[8aa223e8bc] enable smartypants to get em dashes from --- | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 8aa223e8bc</strong><hr><pre>commit 8aa223e8bc6e3d1440b4de451fc191a54a2a8ae1
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Feb 13 20:18:08 2023 +0700
+
+    enable smartypants to get em dashes from ---
+
+diff --git a/content/pages/about.md b/content/pages/about.md
+index 4de1355..16e935d 100644
+--- a/content/pages/about.md
++++ b/content/pages/about.md
+@@ -14,7 +14,7 @@
+ Its source code can be found on my [github repo][2].
+ 
+ I make a point not to include 3rd-party javascript on the page, with the
+-exception of [Disqus][3], which is not loaded by default—you&#39;ll need to
++exception of [Disqus][3], which is not loaded by default---you&#39;ll need to
+ explicitly click on the &quot;show comments&quot; button below each post if you want to
+ view or write comments. I think that&#39;s a reasonable compromise.
+ 
+diff --git a/content/posts/go-postgres-caddy-systemd-stack.md b/content/posts/go-postgres-caddy-systemd-stack.md
+index 9cdf5c9..a3ba04c 100644
+--- a/content/posts/go-postgres-caddy-systemd-stack.md
++++ b/content/posts/go-postgres-caddy-systemd-stack.md
+@@ -63,9 +63,9 @@ #  not stripped
+ 
+ See also:
+ 
+-- [cgo is not Go][11]—a more exhaustive argument for staying in pure
++- [cgo is not Go][11]: a more exhaustive argument for staying in pure
+   Go-land.
+-- [Statically compile Go programs][16]—a deep dive into static Go compilation
++- [Statically compile Go programs][16]: a deep dive into static Go compilation
+   and its quirks, complete with examples on how to statically link against
+   SQLite with musl libc, if you must.
+ 
+@@ -208,7 +208,7 @@ ## Caddy
+ 2 lines of config to:
+ 
+ - Serve HTTPS at port 443, with a valid cert provided by Let&#39;s Encrypt, using
+-  reasonable default cryptographic settings—I just ran my site through the
++  reasonable default cryptographic settings---I just ran my site through the
+   [ssllabs.com test][18] and it handily scored an A.
+ - Serve HTTP at port 80 that simply redirects to the HTTPS port
+ 
+diff --git a/content/posts/my-first-diy-fightstick-2.md b/content/posts/my-first-diy-fightstick-2.md
+index a4ae4f7..51b4899 100644
+--- a/content/posts/my-first-diy-fightstick-2.md
++++ b/content/posts/my-first-diy-fightstick-2.md
+@@ -1,4 +1,4 @@
+-Title: My first DIY fightstick—Part 2
++Title: My first DIY fightstick: Part 2
+ Slug: my-first-diy-fightstick-part-2
+ Date: 2016-01-23 17:10
+ Thumb: /images/fightstick2_02_top.jpg
+diff --git a/content/posts/my-first-diy-fightstick.md b/content/posts/my-first-diy-fightstick.md
+index db826ff..b4e5933 100644
+--- a/content/posts/my-first-diy-fightstick.md
++++ b/content/posts/my-first-diy-fightstick.md
+@@ -1,4 +1,4 @@
+-Title: My first DIY fightstick—Part 1
++Title: My first DIY fightstick: Part 1
+ Slug: my-first-diy-fightstick-part-1
+ Date: 2015-12-08 12:50
+ Thumb: images/fightstick_17_top_panel.jpg
+diff --git a/content/posts/streaming-videos-from-google-drive.md b/content/posts/streaming-videos-from-google-drive.md
+index d46acf0..f96b495 100644
+--- a/content/posts/streaming-videos-from-google-drive.md
++++ b/content/posts/streaming-videos-from-google-drive.md
+@@ -1,4 +1,4 @@
+-Title: Streaming videos from Google Drive—a second attempt
++Title: Streaming videos from Google Drive: a second attempt
+ Date: 2020-06-10 08:25
+ Category: side projects
+ 
+diff --git a/content/posts/working-with-sqlite-without-an-orm.md b/content/posts/working-with-sqlite-without-an-orm.md
+index 343a94f..2aa396f 100644
+--- a/content/posts/working-with-sqlite-without-an-orm.md
++++ b/content/posts/working-with-sqlite-without-an-orm.md
+@@ -64,7 +64,7 @@ ## A minimum viable DB migration scheme
+ 
+ - Finds migration files in the form of `./migrations/mXXXX.sql`
+ - Uses `user_version` pragma to figure out what migrations are pending
+-- Is forward-only—I did say that this is minimally viable didn&#39;t I ;)
++- Is forward-only---I did say that this is minimally viable didn&#39;t I ;)
+ 
+ Coming from Django, I missed a definitive place to see the latest definition of
+ the whole db (which, in Django, is the models file). That&#39;s why I set up the
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 8d9e7e6..2a65605 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -13,6 +13,16 @@
+ DEFAULT_LANG = &quot;en&quot;
+ TYPOGRIFY = True
+ 
++MARKDOWN = {
++    &quot;extension_configs&quot;: {
++        &quot;markdown.extensions.codehilite&quot;: {&quot;css_class&quot;: &quot;highlight&quot;},
++        &quot;markdown.extensions.extra&quot;: {},
++        &quot;markdown.extensions.meta&quot;: {},
++        &quot;smarty&quot;: {},
++    },
++    &quot;output_format&quot;: &quot;html5&quot;,
++}
++
+ # Feed generation is usually not desired when developing
+ FEED_ALL_ATOM = None
+ CATEGORY_FEED_ATOM = None
+</pre></body></html>

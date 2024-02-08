@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1089970831] watch for changes in web dir | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 1089970831</strong><hr><pre>commit 1089970831f543b407d307e787e674950085af6b
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Jul 7 17:10:35 2023 +0700
+
+    watch for changes in web dir
+
+diff --git a/Makefile b/Makefile
+index 19126c2..83c5cf1 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@ build:
+ 	go build -o dist/
+ 
+ watch:
+-	find . -name &#39;*.go&#39; -or -name &#39;*.js&#39; -or -name &#39;*.tmpl&#39; -or -name &#39;*.dj&#39; \
++	find . -name &#39;*.go&#39; -or -name &#39;*.js&#39; \
+ 	| entr -rc go run .
+ 
+ # Cheating a little because the djot.js repo on github does not provide builds
+diff --git a/go.mod b/go.mod
+index 829ab3e..432d81d 100644
+--- a/go.mod
++++ b/go.mod
+@@ -4,4 +4,9 @@ go 1.20
+ 
+ require github.com/BurntSushi/toml v1.3.2
+ 
+-require golang.org/x/tools v0.10.0
++require (
++	github.com/fsnotify/fsnotify v1.6.0
++	golang.org/x/tools v0.10.0
++)
++
++require golang.org/x/sys v0.9.0 // indirect
+diff --git a/go.sum b/go.sum
+index d4d0018..27f5e0e 100644
+--- a/go.sum
++++ b/go.sum
+@@ -1,4 +1,9 @@
+ github.com/BurntSushi/toml v1.3.2 h1:o7IhLm0Msx3BaB+n3Ag7L8EVlByGnpq14C4YWiu/gL8=
+ github.com/BurntSushi/toml v1.3.2/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
++github.com/fsnotify/fsnotify v1.6.0 h1:n+5WquG0fcWoWp6xPWfHdbskMCQaFnG6PfBrh1Ky4HY=
++github.com/fsnotify/fsnotify v1.6.0/go.mod h1:sl3t1tCWJFWoRz9R8WJCbQihKKwmorjAbSClcnxKAGw=
++golang.org/x/sys v0.0.0-20220908164124-27713097b956/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
++golang.org/x/sys v0.9.0 h1:KS/R3tvhPqvJvwcKfnBHJwwthS11LRhmM5D59eEXa0s=
++golang.org/x/sys v0.9.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+ golang.org/x/tools v0.10.0 h1:tvDr/iQoUqNdohiYm0LmmKcBk+q86lb9EprIUFhHHGg=
+ golang.org/x/tools v0.10.0/go.mod h1:UJwyiVBsOA2uwvK/e5OY3GTpDUJriEd+/YlqAwLPmyM=
+diff --git a/main.go b/main.go
+index db6a151..ba6daf7 100644
+--- a/main.go
++++ b/main.go
+@@ -17,8 +17,9 @@
+ )
+ 
+ const DJOT_EXT = &quot;.dj&quot;
++const SITE_EXT = &quot;.wbmkr2k&quot;
++const SITE_FILENAME = &quot;website&quot; + SITE_EXT
+ const FEED_PATH = &quot;feed.xml&quot;
+-const SITE_FILENAME = &quot;website.wbmkr2k&quot;
+ 
+ func main() {
+ 	var port, folder string
+@@ -32,8 +33,31 @@ func main() {
+ 	}
+ 
+ 	fsys := WriteDirFS(absolutePath)
+-	site := readSiteMetadata(fsys)
+ 
++	regenerate(fsys)
++
++	// TODO: only rebuild necessary bits instead of regenerating
++	// the whole thing. To do that I&#39;ll probably need to:
++	// - Devise some sort of dependency graph
++	// - Filter out relevant FS events: this seems daunting considering the
++	// differences between OSes and applications (e.g. vim writes to temp file
++	// then renames)
++	closeWatcher := WatchLocalFS(fsys, func() {
++		fmt.Println(&quot;Change detected. Regenerating...&quot;)
++		regenerate(fsys)
++	})
++	defer closeWatcher()
++
++	println(&quot;Serving local website at http://localhost:&quot; + port)
++	http.Handle(&quot;/&quot;, http.FileServer(http.FS(fsys)))
++	err = http.ListenAndServe(&quot;127.0.0.1:&quot;+port, nil)
++	if err != nil {
++		panic(err)
++	}
++}
++
++func regenerate(fsys WritableFS) {
++	site := readSiteMetadata(fsys)
+ 	articles := findArticles(fsys)
+ 
+ 	// Sort articles, newest first
+@@ -74,13 +98,6 @@ func main() {
+ 		FEED_PATH,
+ 		generateFeed(site, articlesInFeed, site.HomePath+FEED_PATH),
+ 	)
+-
+-	println(&quot;Serving local website at http://localhost:&quot; + port)
+-	http.Handle(&quot;/&quot;, http.FileServer(http.FS(fsys)))
+-	err = http.ListenAndServe(&quot;127.0.0.1:&quot;+port, nil)
+-	if err != nil {
+-		panic(err)
+-	}
+ }
+ 
+ type SiteMetadata struct {
+@@ -236,7 +253,7 @@ func findArticles(fsys WritableFS) (result []Article) {
+ 		}
+ 		_, err = toml.Decode(metaText, &amp;meta)
+ 		if err != nil {
+-			fmt.Printf(&quot;FIXME: Malformed article metadata in %s: %s&quot;, path, err)
++			fmt.Printf(&quot;FIXME: Malformed article metadata in %s: %s\n&quot;, path, err)
+ 			return nil
+ 		}
+ 
+diff --git a/watcher.go b/watcher.go
+new file mode 100644
+index 0000000..33acb06
+--- /dev/null
++++ b/watcher.go
+@@ -0,0 +1,111 @@
++package main
++
++import (
++	&quot;fmt&quot;
++	&quot;io/fs&quot;
++	&quot;os&quot;
++	&quot;path/filepath&quot;
++	&quot;time&quot;
++
++	&quot;github.com/fsnotify/fsnotify&quot;
++)
++
++var WATCHED_EXTS = []string{DJOT_EXT, SITE_EXT, &quot;.tmpl&quot;}
++
++const debounceInterval = 500 * time.Millisecond
++
++// Watches for relevant changes in FS, debounces by debounceInterval,
++// then executes callback.
++// Returns cleanup function.
++func WatchLocalFS(fsys WritableFS, callback func()) (Close func() error) {
++	watcher, err := fsnotify.NewWatcher()
++	if err != nil {
++		panic(err)
++	}
++
++	fs.WalkDir(fsys, &quot;.&quot;, func(path string, d fs.DirEntry, err error) error {
++		if !d.IsDir() {
++			return nil
++		}
++
++		fullPath := filepath.Join(fsys.Path(), path)
++
++		err = watcher.Add(fullPath)
++		if err != nil {
++			panic(err)
++		}
++
++		return nil
++	})
++
++	//printWatchList(watcher)
++
++	// Start listening for events.
++	events := make(chan struct{})
++	go func() {
++		for {
++			select {
++			case event, ok := &lt;-watcher.Events:
++				if !ok {
++					return
++				}
++
++				// Avoid infinite loop
++				if event.Has(fsnotify.Write) &amp;&amp;
++					!contains(WATCHED_EXTS, filepath.Ext(event.Name)) {
++					break
++				}
++
++				//fmt.Println(&quot;EVENT:&quot;, event.Op, event.Name)
++
++				// Dynamically watch new/renamed folders
++				if event.Has(fsnotify.Create) || event.Has(fsnotify.Rename) {
++					stat, err := os.Stat(event.Name)
++					if err == nil &amp;&amp; stat.IsDir() {
++						watcher.Add(event.Name)
++					}
++				}
++
++				events &lt;- struct{}{}
++
++			case err, ok := &lt;-watcher.Errors:
++				if !ok {
++					return
++				}
++				fmt.Println(&quot;error:&quot;, err)
++			}
++		}
++	}()
++
++	// Debounce
++	go func() {
++		timer := time.NewTimer(debounceInterval)
++		&lt;-timer.C // drain once so callback isn&#39;t executed on startup
++		for {
++			select {
++			case &lt;-events:
++				timer.Reset(debounceInterval)
++			case &lt;-timer.C:
++				callback()
++			}
++		}
++	}()
++
++	return watcher.Close
++}
++
++func printWatchList(w *fsnotify.Watcher) {
++	fmt.Println(&quot;WatchList:&quot;)
++	for _, path := range w.WatchList() {
++		fmt.Println(&quot;  &quot; + path)
++	}
++}
++
++func contains(s []string, e string) bool {
++	for _, a := range s {
++		if a == e {
++			return true
++		}
++	}
++	return false
++}
+diff --git a/writablefs.go b/writablefs.go
+index bf1624e..3930b1b 100644
+--- a/writablefs.go
++++ b/writablefs.go
+@@ -9,6 +9,7 @@
+ type WritableFS interface {
+ 	fs.FS
+ 	WriteFile(path string, content []byte) error
++	Path() string
+ }
+ 
+ // Like os.DirFS but is writable
+@@ -26,3 +27,7 @@ func (w writeDirFS) WriteFile(path string, content []byte) error {
+ 	fullPath := filepath.Join(string(w), path)
+ 	return os.WriteFile(fullPath, content, 0644)
+ }
++
++func (w writeDirFS) Path() string {
++	return string(w)
++}
+</pre></body></html>

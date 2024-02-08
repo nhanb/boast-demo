@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[082892645b] what i did after installing manjaro | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 082892645b</strong><hr><pre>commit 082892645b039d79780f268e14f51a3871eac7fc
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Wed Feb 5 10:14:18 2014 +0700
+
+    what i did after installing manjaro
+
+diff --git a/content/images/jap_font_done.png b/content/images/jap_font_done.png
+new file mode 100644
+index 0000000..1ad93a2
+Binary files /dev/null and b/content/images/jap_font_done.png differ
+diff --git a/content/images/jap_font_none.png b/content/images/jap_font_none.png
+new file mode 100644
+index 0000000..a3413ab
+Binary files /dev/null and b/content/images/jap_font_none.png differ
+diff --git a/content/images/xfce_default.jpg b/content/images/xfce_default.jpg
+new file mode 100644
+index 0000000..c2d379a
+Binary files /dev/null and b/content/images/xfce_default.jpg differ
+diff --git a/content/what-i-did-after-installing-manjaro.md b/content/what-i-did-after-installing-manjaro.md
+index 167a6c0..3122e44 100644
+--- a/content/what-i-did-after-installing-manjaro.md
++++ b/content/what-i-did-after-installing-manjaro.md
+@@ -13,6 +13,24 @@
+ Although Manjaro comes packed with most of the apps that I would install on any other distro
+ anyway: GIMP, LibreOffice, Steam, etc., here are some additional steps I took to make it rock.
+ 
++## If you get a default xfce environment after setup...
++
++It happened to me when I tried to mount my existing `/home` partition. Instead of the beautiful
++screenshot featured on Manjaro&#39;s home page, I got something like this (image courtesy of Xfce
++project website):
++
++![](/images/xfce_default.jpg)
++
++I guess it was because of some weird bug that the partition ended up being owned by `root` so the
++installer could not copy Manjaro-specific settings at the end. Make it your own again then copy the
++default Manjaro files:
++
++    :::bash
++    sudo chown $USER /home
++    cp -a /etc/skel/. ~/
++
++Then restart your computer and see if it worked (it should).
++
+ ## Get Mirosoft fonts
+ 
+ Getting Micro$oft fonts is like the first thing to do after any Linux distro installation. The Arch
+@@ -20,13 +38,34 @@ ## Get Mirosoft fonts
+ *legally* install those packages without the actual fonts already on your computer. Assuming you
+ have an installed copy of Windows 7, go to its `Fonts` folder and put the necessary fonts in the
+ same folder of the extracted package downloaded from the AUR page. For some instant copy-and-paste
+-commands: (**warning**: this script assumes you already have all your Windows 7 fonts in
++shell commands: (**warning**: this script assumes you already have all your Windows 7 fonts in
+ `~/win_fonts/`. Put them there before running the following commands)
+ 
+     :::bash
+     curl -O &#39;https://gist.github.com/nhanb/8804875/raw/arch-ms-fonts.sh&#39;
+     bash arch-ms-fonts.sh
+ 
+-For 
++## Proper font smoothing
++
++I won&#39;t try to reinvent the wheels here. Head to Manjaro&#39;s [wiki page on font smoothing][2].
++They&#39;ve got everything you need.
++
++## Install international fonts
++
++Even if you&#39;re not Japanese or Korean, you&#39;ll occasionally come across content that contains
++characters from these languages. With the default installation, all those characters will be shown
++as rectangles, which bugs me a lot.
++
++![](/images/jap_font_none.png)
++
++The solution? Simple. Just install the `ttf-droid` package:
++
++    :::bash
++    sudo pacman -S ttf-droid
++
++![](/images/jap_font_done.png)
++
++Now that&#39;s better!
+ 
+ [1]: https://wiki.archlinux.org/index.php/MS_Fonts
++[2]: http://wiki.manjaro.org/index.php?title=Improve_Font_Rendering
+</pre></body></html>

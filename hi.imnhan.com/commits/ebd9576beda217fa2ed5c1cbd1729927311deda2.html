@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ebd9576bed] add random-notes page | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / ebd9576bed</strong><hr><pre>commit ebd9576beda217fa2ed5c1cbd1729927311deda2
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Oct 18 15:49:32 2019 +0700
+
+    add random-notes page
+    
+    I should probably move the theme into this repo too.
+
+diff --git a/README.md b/README.md
+index a04de8b..9527895 100644
+--- a/README.md
++++ b/README.md
+@@ -9,8 +9,8 @@ # Dev environment
+ `pyenv-virtualenv` and `poetry` looks something like this:
+ 
+ ```sh
+-pyenv install 3.7.4
+-pyenv virtualenv 3.7.4 imnhan.com
++pyenv install 3.7.5
++pyenv virtualenv 3.7.5 imnhan.com
+ pyenv activate imnhan.com
+ poetry install
+ ```
+diff --git a/content/pages/notes.md b/content/pages/notes.md
+new file mode 100644
+index 0000000..b3b002c
+--- /dev/null
++++ b/content/pages/notes.md
+@@ -0,0 +1,23 @@
++Title: Random notes
++Hidden: True
++
++
++In which I jot down scattered tidbits on various topics.
++
++## SRE
++
++There&#39;s a good [checklist](http://rachelbythebay.com/w/2019/07/21/reliability/)
++on Rachel By The Bay, the gist is:
++
++- Rollbacks should work. On every deployment.
++- A to AB to B (a.k.a. make before break):
++    + v2 code/data should not break v1 code/data
++- Strict(er than JSON) schema-ing when you fling data across places
++    + Protobuf, etc.
++    + You should only _begin_ to consider JSON if you need to talk to browsers
++- Please fix 500s.
++    + Also you should only get 400s when talking to external things out of your control
++
++Her [follow-up](http://rachelbythebay.com/w/2019/10/05/nxdomain/) is a nice
++scary story too. Also reminder that &quot;infra-as-code&quot; abstractions isn&#39;t an
++excuse _not_ to learn the underlying infra properly.
+diff --git a/motherfucking-pelican-theme b/motherfucking-pelican-theme
+index 13d4780..97c99d7 160000
+--- a/motherfucking-pelican-theme
++++ b/motherfucking-pelican-theme
+@@ -1 +1 @@
+-Subproject commit 13d4780b1eb4f87de13aa9072ca6213ac3c4365f
++Subproject commit 97c99d71528bbb981cd8865ff56c3cc4bead5a31
+diff --git a/pelicanconf.py b/pelicanconf.py
+index f030595..b83e853 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -35,10 +35,10 @@
+ ARTICLE_LANG_SAVE_AS = &quot;posts/{slug}-{lang}/index.html&quot;
+ 
+ PAGE_PATHS = [&quot;pages&quot;]
+-PAGE_URL = &quot;pages/{slug}/&quot;
+-PAGE_SAVE_AS = &quot;pages/{slug}/index.html&quot;
+-PAGE_LANG_URL = &quot;pages/{slug}-{lang}/&quot;
+-PAGE_LANG_SAVE_AS = &quot;pages/{slug}-{lang}/index.html&quot;
++PAGE_URL = &quot;{slug}/&quot;
++PAGE_SAVE_AS = &quot;{slug}/index.html&quot;
++PAGE_LANG_URL = &quot;{slug}-{lang}/&quot;
++PAGE_LANG_SAVE_AS = &quot;{slug}-{lang}/index.html&quot;
+ 
+ AUTHOR_URL = &quot;author/{slug}/&quot;
+ AUTHOR_SAVE_AS = &quot;author/{slug}/index.html&quot;
+</pre></body></html>

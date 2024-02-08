@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ab26b6fbb5] update README | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / ab26b6fbb5</strong><hr><pre>commit ab26b6fbb5cbcd9f3c72a16877cbfca413adf7e3
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 23 23:45:52 2023 +0700
+
+    update README
+
+diff --git a/README.md b/README.md
+index 4b204c1..adec526 100644
+--- a/README.md
++++ b/README.md
+@@ -1,5 +1,3 @@
+-![2-men-building-a-website](website-builder.jpg)
+-
+ `s4g` (Stupidly Simple Static Site Generator) is an in-place static site
+ generator, meaning processed files are stored right next to their sources.
+ This simplifies composing (source dir layout _is_ finished website layout;
+@@ -24,17 +22,19 @@
+ - [x] Shows user error messages on the livereloaded web page
+ 
+ There&#39;s a sample site up at &lt;https://nhanb.github.io/s4g/about/&gt;.
++I&#39;m also using s4g to generate my own blog: &lt;https://hi.imnhan.com/&gt;.
+ 
+ The markup language of choice is [Djot](https://djot.net/) because it&#39;s the
+ only Markdown derivative that actually tries to be both unambiguous _and_
+-useful.
++extensible.
+ 
+-Currently works on Linux. The plan is to package for Windows &amp; macOS too.
++Currently works on Linux. It should also work on macOS and Windows (probably
++with a tweak to how it calls nodejs), but I&#39;m not testing that.
+ 
+ Requirements: `go` (build), `node` (runtime).
+ 
+ ```sh
+-# Install
++sudo pacman -Syu go nodejs
+ go install go.imnhan.com/s4g@latest
+ 
+ # Create new site
+@@ -43,12 +43,17 @@ # Create new site
+ # Run program, which:
+ # - listens to changes and automatically re-generates
+ # - starts a local HTTP server for preview, also livereloads on changes
+-s4g serve -f ~/my-blog
++cd ~/my-blog
++s4g
+ ```
+ 
+-# TODOs
++# Documentation
++
++Distant TODO. Maybe I&#39;ll write a blog post and call it a day.
++
++# Potential nice-to-haves
+ 
+-- When cleaning up outdated files from manifest, delete empty dirs too.
++- When cleaning up outdated files from manifest, delete empty dirs too
+ - Checked internal links (link to other article, to other article&#39;s asset)
+ - Warn when linking to redirected content
+-- Minify/prettify HTML (optional?)
++- Minify/prettify HTML
+diff --git a/website-builder.jpg b/website-builder.jpg
+deleted file mode 100644
+index 45828d0..0000000
+Binary files a/website-builder.jpg and /dev/null differ
+</pre></body></html>

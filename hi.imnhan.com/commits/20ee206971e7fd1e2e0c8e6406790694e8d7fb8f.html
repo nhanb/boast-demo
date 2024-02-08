@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[20ee206971] update CNAME | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 20ee206971</strong><hr><pre>commit 20ee206971e7fd1e2e0c8e6406790694e8d7fb8f
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Mon May 13 11:17:49 2013 +0700
+
+    update CNAME
+
+diff --git a/CNAME b/CNAME
+new file mode 100644
+index 0000000..4ecd023
+--- /dev/null
++++ b/CNAME
+@@ -0,0 +1 @@
++blog.nerdyweekly.com
+diff --git a/content/modern-vim-plugin-management-pathogen-vs-vundle.md b/content/modern-vim-plugin-management-pathogen-vs-vundle.md
+index 1bcc8da..b9f38f0 100644
+--- a/content/modern-vim-plugin-management-pathogen-vs-vundle.md
++++ b/content/modern-vim-plugin-management-pathogen-vs-vundle.md
+@@ -26,9 +26,8 @@ ### ~/.vimrc (file)
+ inside 1 folder. I will create `~/.vim/vimrc` then create a symlink pointing to it. Open a
+ terminal and type:
+ 
+-```bash
+-ln -s ~/.vim/vimrc ~/.vimrc
+-```
++    :::bash
++    ln -s ~/.vim/vimrc ~/.vimrc
+ 
+ ### ~/.vim (directory)
+ 
+@@ -46,59 +45,56 @@ ### ~/.vim (directory)
+ a plugin called [tagbar](https://github.com/majutsushi/tagbar), and I&#39;ve installed it by
+ copying its content into my `~/.vim` folder:
+ 
+-```
+-~/.vim
+-├── autoload
+-│   └── tagbar.vim
+-├── doc
+-│   ├── tagbar.txt
+-│   └── tags
+-├── plugin
+-│   └── tagbar.vim
+-├── README
+-└── syntax
+-    └── tagbar.vim
+-```
++    :::bash
++    ~/.vim
++    ├── autoload
++    │   └── tagbar.vim
++    ├── doc
++    │   ├── tagbar.txt
++    │   └── tags
++    ├── plugin
++    │   └── tagbar.vim
++    ├── README
++    └── syntax
++        └── tagbar.vim
+ 
+ Everything looks good. Just copy and paste the whole thing, nice and simple. How about adding a
+ decent colorscheme? Let&#39;s install [solarized](https://github.com/altercation/vim-colors-solarized):
+ 
+-```
+-├── autoload
+-│   └── togglebg.vim
+-├── bitmaps
+-│   └── togglebg.png
+-├── colors
+-│   └── solarized.vim
+-├── doc
+-│   ├── solarized.txt
+-│   └── tags
+-└── README.mkd
+-```
++    :::bash
++    ├── autoload
++    │   └── togglebg.vim
++    ├── bitmaps
++    │   └── togglebg.png
++    ├── colors
++    │   └── solarized.vim
++    ├── doc
++    │   ├── solarized.txt
++    │   └── tags
++    └── README.mkd
+ 
+ Wait, `doc/tags` is already there. Ok, no problem! Let&#39;s just copy the content of solarized&#39;s
+ tags file and paste it into the existing one. Now we have:
+ 
+-```
+-~/.vim
+-├── autoload
+-│   ├── tagbar.vim
+-│   └── togglebg.vim
+-├── bitmaps
+-│   └── togglebg.png
+-├── colors
+-│   └── solarized.vim
+-├── doc
+-│   ├── solarized.txt
+-│   ├── tagbar.txt
+-│   └── tags
+-├── plugin
+-│   └── tagbar.vim
+-├── README
+-├── README.mkd
+-└── syntax
+-    └── tagbar.vim
+-```
++    :::bash
++    ~/.vim
++    ├── autoload
++    │   ├── tagbar.vim
++    │   └── togglebg.vim
++    ├── bitmaps
++    │   └── togglebg.png
++    ├── colors
++    │   └── solarized.vim
++    ├── doc
++    │   ├── solarized.txt
++    │   ├── tagbar.txt
++    │   └── tags
++    ├── plugin
++    │   └── tagbar.vim
++    ├── README
++    ├── README.mkd
++    └── syntax
++        └── tagbar.vim
+ 
+ Now what if you you decide that solarized sucks and want to get rid of it? Good luck finding
+ which file belongs to which plugin. Oh, don&#39;t forget the merged `doc/tags` file!
+@@ -111,49 +107,46 @@ ## Pathogen to the rescue!
+ [pathogen](https://github.com/tpope/vim-pathogen).
+ Now let&#39;s install it like any regular plugin (I&#39;ve omitted the README):
+ 
+-```
+-~/.vim
+-└── autoload
+-    └── pathogen.vim
+-```
++    :::bash
++    ~/.vim
++    └── autoload
++        └── pathogen.vim
+ 
+ Put this at the beginning of your `~/.vimrc`:
+ 
+-```
+-execute pathogen#infect()
+-```
++    :::vim
++    execute pathogen#infect()
+ 
+ Create this directory: `~/.vim/bundle`. To install tagbar and solarized, just create their own
+ directories here:
+ 
+-```
+-path
+-├── autoload
+-│   └── pathogen.vim
+-└── bundle
+-    ├── tagbar
+-    │   ├── autoload
+-    │   │   └── tagbar.vim
+-    │   ├── doc
+-    │   │   ├── tagbar.txt
+-    │   │   └── tags
+-    │   ├── plugin
+-    │   │   └── tagbar.vim
+-    │   ├── README
+-    │   └── syntax
+-    │       └── tagbar.vim
+-    └── vim-colors-solarized
+-        ├── autoload
+-        │   └── togglebg.vim
+-        ├── bitmaps
+-        │   └── togglebg.png
+-        ├── colors
+-        │   └── solarized.vim
+-        ├── doc
+-        │   ├── solarized.txt
+-        │   └── tags
+-        └── README.mkd
+-```
++    :::bash
++    path
++    ├── autoload
++    │   └── pathogen.vim
++    └── bundle
++        ├── tagbar
++        │   ├── autoload
++        │   │   └── tagbar.vim
++        │   ├── doc
++        │   │   ├── tagbar.txt
++        │   │   └── tags
++        │   ├── plugin
++        │   │   └── tagbar.vim
++        │   ├── README
++        │   └── syntax
++        │       └── tagbar.vim
++        └── vim-colors-solarized
++            ├── autoload
++            │   └── togglebg.vim
++            ├── bitmaps
++            │   └── togglebg.png
++            ├── colors
++            │   └── solarized.vim
++            ├── doc
++            │   ├── solarized.txt
++            │   └── tags
++            └── README.mkd
+ 
+ What Pathogen does is that it adds every directory inside `bundle` into vim&#39;s &quot;runtimepath&quot;.
+ It means that each folder here can be considered a new `.vim` folder where vim looks for
+@@ -167,10 +160,9 @@ ## Pathogen + Git
+ with any name you want (mine is `.vim`). Don&#39;t commit yet. Create a file: `~/.vim/.gitignore`,
+ add these lines to its content:
+ 
+-```
+-bundle/
+-.netrwhist
+-```
++    :::bash
++    bundle/
++    .netrwhist
+ 
+ .netrwhist is a local file generated by vim that is better off ignored. We also ignore bundle
+ directory because the plugins will be included as git submodules (google *git submodule*
+@@ -180,35 +172,32 @@ ## Pathogen + Git
+ Git init, commit and push to your github repo: (on the *git remote add...* line, replace `nhanb`
+ with your github username, `.vim` with your repo name)
+ 
+-```bash
+-cd ~/.vim
+-git init
+-git add .
+-git commit -m &#39;init&#39;
++    :::bash
++    cd ~/.vim
++    git init
++    git add .
++    git commit -m &#39;init&#39;
+ 
+-git remote add origin https://github.com/nhanb/.vim.git
+-git push -u origin master
+-```
++    git remote add origin https://github.com/nhanb/.vim.git
++    git push -u origin master
+ 
+ Everytime you edit anything in your .vim directory, remember to commit the changes and push to
+ github:
+ 
+-```bash
+-git add . 
+-git commit -m &#39;some message here&#39;
+-git push
+-```
++    :::bash
++    git add . 
++    git commit -m &#39;some message here&#39;
++    git push
+ 
+ If you want to install a plugin, see if it has a git repo (9 out of 10 times it has a
+ github repo). Find its git url and add to your .vim as a submodule:
+ 
+-```bash
+-cd ~/.vim
+-git add submodule https://github.com/majutsushi/tagbar.git bundle/tagbar
+-git add submodule https://github.com/altercation/vim-colors-solarized.git bundle/solarized
+-git submodule update --init
+-git submodule foreach git pull origin master
+-```
++    :::bash
++    cd ~/.vim
++    git add submodule https://github.com/majutsushi/tagbar.git bundle/tagbar
++    git add submodule https://github.com/altercation/vim-colors-solarized.git bundle/solarized
++    git submodule update --init
++    git submodule foreach git pull origin master
+ 
+ When you need to update your plugins, just run the last line to make git pull updates for all
+ plugins. 
+@@ -216,6 +205,7 @@ ## Pathogen + Git
+ Here&#39;s the awesome part: when you&#39;re using a whole new computer and want to get all your vim settings
+ from the cloud, simply clone your github repo, make a symlink for .vimrc and pull all plugins:
+ 
++    :::bash
+     cd ~
+     git clone https://github.com/nhanb/.vim.git .vim
+     ln -s ~/.vim/vimrc ~/.vimrc
+@@ -236,10 +226,12 @@ ## Vundle, the new cool kid
+ This time let&#39;s start fresh: remove all submodules and pathogen. Your bundle folder should be
+ now empty. Clone [Vundle](https://github.com/gmarik/vundle):
+ 
++    :::bash
+     git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
+ 
+ Put this in your .vimrc (preferably at the beginning):
+ 
++    :::vim
+     set nocompatible               &quot; be iMproved
+     filetype off                   &quot; required!
+ 
+diff --git a/publishconf.py b/publishconf.py
+index 02313c0..9e705ca 100644
+--- a/publishconf.py
++++ b/publishconf.py
+@@ -18,6 +18,9 @@
+ 
+ DELETE_OUTPUT_DIRECTORY = True
+ 
++# Copy CNAME file to output
++FILES_TO_COPY = ((&#39;extra/CNAME&#39;, &#39;CNAME&#39;),)
++
+ # Following items are often useful when publishing
+ 
+ #DISQUS_SITENAME = &quot;&quot;
+</pre></body></html>

@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[18bf3eea7b] add simple tests | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 18bf3eea7b</strong><hr><pre>commit 18bf3eea7b8f262dfa21cb6a6a21499b15629536
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 12 19:57:16 2020 +0700
+
+    add simple tests
+
+diff --git a/.builds/ubuntu.yml b/.builds/ubuntu.yml
+index f30e4ef..effecf0 100644
+--- a/.builds/ubuntu.yml
++++ b/.builds/ubuntu.yml
+@@ -7,6 +7,8 @@ secrets:
+   - 8c42b8a6-d1b7-4af7-82f2-b8f1b6e085e2
+   # ssh key for dev.pytaku.com:
+   - 2d6e3246-5adc-41c2-bebe-01dacda9d0c8
++  # ~/pytaku.conf.json:
++  - d18b6657-ac13-4413-8349-8ef262142545
+ 
+ environment:
+   # Ugly hack to prepend to PATH:
+@@ -34,6 +36,17 @@ tasks:
+       source ~/venv/bin/activate
+       curl https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py
+       python get-poetry.py -y
++      cd pytaku
++      poetry install
++      pip install https://github.com/rogerbinns/apsw/releases/download/3.32.2-r1/apsw-3.32.2-r1.zip \
++            --global-option=fetch --global-option=--version --global-option=3.32.2 --global-option=--all \
++            --global-option=build --global-option=--enable-all-extensions
++
++  - test: |
++      cd pytaku
++      source ~/venv/bin/activate
++      mv ~/pytaku.conf.json ./
++      pytest
+ 
+   - build: |
+       cd pytaku
+diff --git a/.gitignore b/.gitignore
+index fd80dcd..5a972bb 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,4 +1,5 @@
+ /debug.py
++/test_secrets.json
+ __pycache__
+ *.pyc
+ *.json
+diff --git a/README.md b/README.md
+index b7669df..8d993ff 100644
+--- a/README.md
++++ b/README.md
+@@ -41,6 +41,10 @@ # run 2 processes:
+ pytaku-scheduler  # scheduled tasks e.g. update titles
+ ```
+ 
++## Tests
++
++Can be run with just `pytest`. It needs a pytaku.conf.json as well.
++
+ # Production
+ 
+ ```sh
+diff --git a/conftest.py b/conftest.py
+new file mode 100644
+index 0000000..fce0f6c
+--- /dev/null
++++ b/conftest.py
+@@ -0,0 +1,3 @@
++from pytaku.conf import config
++
++config.load()
+diff --git a/poetry.lock b/poetry.lock
+index 76c4725..6264af2 100644
+--- a/poetry.lock
++++ b/poetry.lock
+@@ -1,3 +1,12 @@
++[[package]]
++name = &quot;appnope&quot;
++version = &quot;0.1.0&quot;
++description = &quot;Disable App Nap on OS X 10.9&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;*&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot; and sys_platform == \&quot;darwin\&quot;&quot;
++
+ [[package]]
+ name = &quot;argon2-cffi&quot;
+ version = &quot;20.1.0&quot;
+@@ -15,6 +24,38 @@ tests = [&quot;coverage (&gt;=5.0.2)&quot;, &quot;hypothesis&quot;, &quot;pytest&quot;]
+ cffi = &quot;&gt;=1.0.0&quot;
+ six = &quot;*&quot;
+ 
++[[package]]
++name = &quot;atomicwrites&quot;
++version = &quot;1.4.0&quot;
++description = &quot;Atomic file writes.&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++marker = &quot;sys_platform == \&quot;win32\&quot;&quot;
++
++[[package]]
++name = &quot;attrs&quot;
++version = &quot;19.3.0&quot;
++description = &quot;Classes Without Boilerplate&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++
++[package.extras]
++azure-pipelines = [&quot;coverage&quot;, &quot;hypothesis&quot;, &quot;pympler&quot;, &quot;pytest (&gt;=4.3.0)&quot;, &quot;six&quot;, &quot;zope.interface&quot;, &quot;pytest-azurepipelines&quot;]
++dev = [&quot;coverage&quot;, &quot;hypothesis&quot;, &quot;pympler&quot;, &quot;pytest (&gt;=4.3.0)&quot;, &quot;six&quot;, &quot;zope.interface&quot;, &quot;sphinx&quot;, &quot;pre-commit&quot;]
++docs = [&quot;sphinx&quot;, &quot;zope.interface&quot;]
++tests = [&quot;coverage&quot;, &quot;hypothesis&quot;, &quot;pympler&quot;, &quot;pytest (&gt;=4.3.0)&quot;, &quot;six&quot;, &quot;zope.interface&quot;]
++
++[[package]]
++name = &quot;backcall&quot;
++version = &quot;0.2.0&quot;
++description = &quot;Specifications for callback functions passed in to an API&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;*&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++
+ [[package]]
+ name = &quot;certifi&quot;
+ version = &quot;2020.6.20&quot;
+@@ -50,6 +91,24 @@ category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
+ 
++[[package]]
++name = &quot;colorama&quot;
++version = &quot;0.4.3&quot;
++description = &quot;Cross-platform colored terminal text.&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot; and sys_platform == \&quot;win32\&quot; or sys_platform == \&quot;win32\&quot;&quot;
++
++[[package]]
++name = &quot;decorator&quot;
++version = &quot;4.4.2&quot;
++description = &quot;Decorators for Humans&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;&gt;=2.6, !=3.0.*, !=3.1.*&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++
+ [[package]]
+ name = &quot;flask&quot;
+ version = &quot;1.1.2&quot;
+@@ -107,6 +166,87 @@ category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
+ 
++[[package]]
++name = &quot;importlib-metadata&quot;
++version = &quot;1.7.0&quot;
++description = &quot;Read metadata from Python packages&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,&gt;=2.7&quot;
++marker = &quot;python_version &lt; \&quot;3.8\&quot;&quot;
++
++[package.extras]
++docs = [&quot;sphinx&quot;, &quot;rst.linker&quot;]
++testing = [&quot;packaging&quot;, &quot;pep517&quot;, &quot;importlib-resources (&gt;=1.3)&quot;]
++
++[package.dependencies]
++zipp = &quot;&gt;=0.5&quot;
++
++[[package]]
++name = &quot;iniconfig&quot;
++version = &quot;1.0.1&quot;
++description = &quot;iniconfig: brain-dead simple config-ini parsing&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;*&quot;
++
++[[package]]
++name = &quot;ipdb&quot;
++version = &quot;0.13.3&quot;
++description = &quot;IPython-enabled pdb&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;&gt;=2.7&quot;
++
++[package.dependencies]
++setuptools = &quot;*&quot;
++
++[package.dependencies.ipython]
++version = &quot;&gt;=5.1.0&quot;
++python = &quot;&gt;=3.4&quot;
++
++[[package]]
++name = &quot;ipython&quot;
++version = &quot;7.17.0&quot;
++description = &quot;IPython: Productive Interactive Computing&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;&gt;=3.7&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++
++[package.extras]
++all = [&quot;Sphinx (&gt;=1.3)&quot;, &quot;ipykernel&quot;, &quot;ipyparallel&quot;, &quot;ipywidgets&quot;, &quot;nbconvert&quot;, &quot;nbformat&quot;, &quot;nose (&gt;=0.10.1)&quot;, &quot;notebook&quot;, &quot;numpy (&gt;=1.14)&quot;, &quot;pygments&quot;, &quot;qtconsole&quot;, &quot;requests&quot;, &quot;testpath&quot;]
++doc = [&quot;Sphinx (&gt;=1.3)&quot;]
++kernel = [&quot;ipykernel&quot;]
++nbconvert = [&quot;nbconvert&quot;]
++nbformat = [&quot;nbformat&quot;]
++notebook = [&quot;notebook&quot;, &quot;ipywidgets&quot;]
++parallel = [&quot;ipyparallel&quot;]
++qtconsole = [&quot;qtconsole&quot;]
++test = [&quot;nose (&gt;=0.10.1)&quot;, &quot;requests&quot;, &quot;testpath&quot;, &quot;pygments&quot;, &quot;nbformat&quot;, &quot;ipykernel&quot;, &quot;numpy (&gt;=1.14)&quot;]
++
++[package.dependencies]
++appnope = &quot;*&quot;
++backcall = &quot;*&quot;
++colorama = &quot;*&quot;
++decorator = &quot;*&quot;
++jedi = &quot;&gt;=0.10&quot;
++pexpect = &quot;*&quot;
++pickleshare = &quot;*&quot;
++prompt-toolkit = &quot;&gt;=2.0.0,&lt;3.0.0 || &gt;3.0.0,&lt;3.0.1 || &gt;3.0.1,&lt;3.1.0&quot;
++pygments = &quot;*&quot;
++setuptools = &quot;&gt;=18.5&quot;
++traitlets = &quot;&gt;=4.2&quot;
++
++[[package]]
++name = &quot;ipython-genutils&quot;
++version = &quot;0.2.0&quot;
++description = &quot;Vestigial utilities from IPython&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;*&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++
+ [[package]]
+ name = &quot;itsdangerous&quot;
+ version = &quot;1.1.0&quot;
+@@ -115,6 +255,22 @@ category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
+ 
++[[package]]
++name = &quot;jedi&quot;
++version = &quot;0.17.2&quot;
++description = &quot;An autocompletion tool for Python that can be used for text editors.&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++
++[package.extras]
++qa = [&quot;flake8 (3.7.9)&quot;]
++testing = [&quot;Django (&lt;3.1)&quot;, &quot;colorama&quot;, &quot;docopt&quot;, &quot;pytest (&gt;=3.9.0,&lt;5.0.0)&quot;]
++
++[package.dependencies]
++parso = &quot;&gt;=0.7.0,&lt;0.8.0&quot;
++
+ [[package]]
+ name = &quot;jinja2&quot;
+ version = &quot;2.11.2&quot;
+@@ -137,6 +293,104 @@ category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*&quot;
+ 
++[[package]]
++name = &quot;more-itertools&quot;
++version = &quot;8.4.0&quot;
++description = &quot;More routines for operating on iterables, beyond itertools&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;&gt;=3.5&quot;
++
++[[package]]
++name = &quot;packaging&quot;
++version = &quot;20.4&quot;
++description = &quot;Core utilities for Python packages&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++
++[package.dependencies]
++pyparsing = &quot;&gt;=2.0.2&quot;
++six = &quot;*&quot;
++
++[[package]]
++name = &quot;parso&quot;
++version = &quot;0.7.1&quot;
++description = &quot;A Python Parser&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++
++[package.extras]
++testing = [&quot;docopt&quot;, &quot;pytest (&gt;=3.0.7)&quot;]
++
++[[package]]
++name = &quot;pexpect&quot;
++version = &quot;4.8.0&quot;
++description = &quot;Pexpect allows easy control of interactive console applications.&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;*&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot; and sys_platform != \&quot;win32\&quot;&quot;
++
++[package.dependencies]
++ptyprocess = &quot;&gt;=0.5&quot;
++
++[[package]]
++name = &quot;pickleshare&quot;
++version = &quot;0.7.5&quot;
++description = &quot;Tiny &#39;shelve&#39;-like database with concurrency support&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;*&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++
++[[package]]
++name = &quot;pluggy&quot;
++version = &quot;0.13.1&quot;
++description = &quot;plugin and hook calling mechanisms for python&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++
++[package.extras]
++dev = [&quot;pre-commit&quot;, &quot;tox&quot;]
++
++[package.dependencies]
++[package.dependencies.importlib-metadata]
++version = &quot;&gt;=0.12&quot;
++python = &quot;&lt;3.8&quot;
++
++[[package]]
++name = &quot;prompt-toolkit&quot;
++version = &quot;3.0.6&quot;
++description = &quot;Library for building powerful interactive command lines in Python&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;&gt;=3.6.1&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++
++[package.dependencies]
++wcwidth = &quot;*&quot;
++
++[[package]]
++name = &quot;ptyprocess&quot;
++version = &quot;0.6.0&quot;
++description = &quot;Run a subprocess in a pseudo terminal&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;*&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot; and sys_platform != \&quot;win32\&quot;&quot;
++
++[[package]]
++name = &quot;py&quot;
++version = &quot;1.9.0&quot;
++description = &quot;library with cross-python path, ini-parsing, io, code, log facilities&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++
+ [[package]]
+ name = &quot;pycparser&quot;
+ version = &quot;2.20&quot;
+@@ -145,6 +399,50 @@ category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
+ 
++[[package]]
++name = &quot;pygments&quot;
++version = &quot;2.6.1&quot;
++description = &quot;Pygments is a syntax highlighting package written in Python.&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;&gt;=3.5&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++
++[[package]]
++name = &quot;pyparsing&quot;
++version = &quot;2.4.7&quot;
++description = &quot;Python parsing module&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;&gt;=2.6, !=3.0.*, !=3.1.*, !=3.2.*&quot;
++
++[[package]]
++name = &quot;pytest&quot;
++version = &quot;6.0.1&quot;
++description = &quot;pytest: simple powerful testing with Python&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;&gt;=3.5&quot;
++
++[package.extras]
++checkqa_mypy = [&quot;mypy (0.780)&quot;]
++testing = [&quot;argcomplete&quot;, &quot;hypothesis (&gt;=3.56)&quot;, &quot;mock&quot;, &quot;nose&quot;, &quot;requests&quot;, &quot;xmlschema&quot;]
++
++[package.dependencies]
++atomicwrites = &quot;&gt;=1.0&quot;
++attrs = &quot;&gt;=17.4.0&quot;
++colorama = &quot;*&quot;
++iniconfig = &quot;*&quot;
++more-itertools = &quot;&gt;=4.0.0&quot;
++packaging = &quot;*&quot;
++pluggy = &quot;&gt;=0.12,&lt;1.0&quot;
++py = &quot;&gt;=1.8.2&quot;
++toml = &quot;*&quot;
++
++[package.dependencies.importlib-metadata]
++version = &quot;&gt;=0.12&quot;
++python = &quot;&lt;3.8&quot;
++
+ [[package]]
+ name = &quot;requests&quot;
+ version = &quot;2.24.0&quot;
+@@ -171,6 +469,31 @@ category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*&quot;
+ 
++[[package]]
++name = &quot;toml&quot;
++version = &quot;0.10.1&quot;
++description = &quot;Python Library for Tom&#39;s Obvious, Minimal Language&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;*&quot;
++
++[[package]]
++name = &quot;traitlets&quot;
++version = &quot;4.3.3&quot;
++description = &quot;Traitlets Python config system&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;*&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++
++[package.extras]
++test = [&quot;pytest&quot;, &quot;mock&quot;]
++
++[package.dependencies]
++decorator = &quot;*&quot;
++ipython-genutils = &quot;*&quot;
++six = &quot;*&quot;
++
+ [[package]]
+ name = &quot;urllib3&quot;
+ version = &quot;1.25.10&quot;
+@@ -184,6 +507,15 @@ brotli = [&quot;brotlipy (&gt;=0.6.0)&quot;]
+ secure = [&quot;certifi&quot;, &quot;cryptography (&gt;=1.3.4)&quot;, &quot;idna (&gt;=2.0.0)&quot;, &quot;pyOpenSSL (&gt;=0.14)&quot;, &quot;ipaddress&quot;]
+ socks = [&quot;PySocks (&gt;=1.5.6,&lt;1.5.7 || &gt;1.5.7,&lt;2.0)&quot;]
+ 
++[[package]]
++name = &quot;wcwidth&quot;
++version = &quot;0.2.5&quot;
++description = &quot;Measures the displayed width of unicode strings in a terminal&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;*&quot;
++marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++
+ [[package]]
+ name = &quot;werkzeug&quot;
+ version = &quot;1.0.1&quot;
+@@ -196,12 +528,29 @@ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
+ dev = [&quot;pytest&quot;, &quot;pytest-timeout&quot;, &quot;coverage&quot;, &quot;tox&quot;, &quot;sphinx&quot;, &quot;pallets-sphinx-themes&quot;, &quot;sphinx-issues&quot;]
+ watchdog = [&quot;watchdog&quot;]
+ 
++[[package]]
++name = &quot;zipp&quot;
++version = &quot;3.1.0&quot;
++description = &quot;Backport of pathlib-compatible object wrapper for zip files&quot;
++category = &quot;dev&quot;
++optional = false
++python-versions = &quot;&gt;=3.6&quot;
++marker = &quot;python_version &lt; \&quot;3.8\&quot;&quot;
++
++[package.extras]
++docs = [&quot;sphinx&quot;, &quot;jaraco.packaging (&gt;=3.2)&quot;, &quot;rst.linker (&gt;=1.9)&quot;]
++testing = [&quot;jaraco.itertools&quot;, &quot;func-timeout&quot;]
++
+ [metadata]
+ lock-version = &quot;1.0&quot;
+ python-versions = &quot;^3.7&quot;
+-content-hash = &quot;5efa8d3aa125259ad269866dce833dcfd765044a16533d68c65897d73d9eaff4&quot;
++content-hash = &quot;3cfb3337e3938185bd5cf650d8258403f4e2227115904da0972cba109818ebf5&quot;
+ 
+ [metadata.files]
++appnope = [
++    {file = &quot;appnope-0.1.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:5b26757dc6f79a3b7dc9fab95359328d5747fcb2409d331ea66d0272b90ab2a0&quot;},
++    {file = &quot;appnope-0.1.0.tar.gz&quot;, hash = &quot;sha256:8b995ffe925347a2138d7ac0fe77155e4311a0ea6d6da4f5128fe4b3cbe5ed71&quot;},
++]
+ argon2-cffi = [
+     {file = &quot;argon2-cffi-20.1.0.tar.gz&quot;, hash = &quot;sha256:d8029b2d3e4b4cea770e9e5a0104dd8fa185c1724a0f01528ae4826a6d25f97d&quot;},
+     {file = &quot;argon2_cffi-20.1.0-cp27-cp27m-macosx_10_6_intel.whl&quot;, hash = &quot;sha256:6ea92c980586931a816d61e4faf6c192b4abce89aa767ff6581e6ddc985ed003&quot;},
+@@ -220,6 +569,18 @@ argon2-cffi = [
+     {file = &quot;argon2_cffi-20.1.0-cp38-cp38-win32.whl&quot;, hash = &quot;sha256:77e909cc756ef81d6abb60524d259d959bab384832f0c651ed7dcb6e5ccdbb78&quot;},
+     {file = &quot;argon2_cffi-20.1.0-cp38-cp38-win_amd64.whl&quot;, hash = &quot;sha256:9dfd5197852530294ecb5795c97a823839258dfd5eb9420233c7cfedec2058f2&quot;},
+ ]
++atomicwrites = [
++    {file = &quot;atomicwrites-1.4.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197&quot;},
++    {file = &quot;atomicwrites-1.4.0.tar.gz&quot;, hash = &quot;sha256:ae70396ad1a434f9c7046fd2dd196fc04b12f9e91ffb859164193be8b6168a7a&quot;},
++]
++attrs = [
++    {file = &quot;attrs-19.3.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:08a96c641c3a74e44eb59afb61a24f2cb9f4d7188748e76ba4bb5edfa3cb7d1c&quot;},
++    {file = &quot;attrs-19.3.0.tar.gz&quot;, hash = &quot;sha256:f7b7ce16570fe9965acd6d30101a28f62fb4a7f9e926b3bbc9b61f8b04247e72&quot;},
++]
++backcall = [
++    {file = &quot;backcall-0.2.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:fbbce6a29f263178a1f7915c1940bde0ec2b2a967566fe1c65c1dfb7422bd255&quot;},
++    {file = &quot;backcall-0.2.0.tar.gz&quot;, hash = &quot;sha256:5cbdbf27be5e7cfadb448baf0aa95508f91f2bbc6c6437cd9cd06e2a4c215e1e&quot;},
++]
+ certifi = [
+     {file = &quot;certifi-2020.6.20-py2.py3-none-any.whl&quot;, hash = &quot;sha256:8fc0819f1f30ba15bdb34cceffb9ef04d99f420f68eb75d901e9560b8749fc41&quot;},
+     {file = &quot;certifi-2020.6.20.tar.gz&quot;, hash = &quot;sha256:5930595817496dd21bb8dc35dad090f1c2cd0adfaf21204bf6732ca5d8ee34d3&quot;},
+@@ -262,6 +623,14 @@ click = [
+     {file = &quot;click-7.1.2-py2.py3-none-any.whl&quot;, hash = &quot;sha256:dacca89f4bfadd5de3d7489b7c8a566eee0d3676333fbb50030263894c38c0dc&quot;},
+     {file = &quot;click-7.1.2.tar.gz&quot;, hash = &quot;sha256:d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a&quot;},
+ ]
++colorama = [
++    {file = &quot;colorama-0.4.3-py2.py3-none-any.whl&quot;, hash = &quot;sha256:7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff&quot;},
++    {file = &quot;colorama-0.4.3.tar.gz&quot;, hash = &quot;sha256:e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1&quot;},
++]
++decorator = [
++    {file = &quot;decorator-4.4.2-py2.py3-none-any.whl&quot;, hash = &quot;sha256:41fa54c2a0cc4ba648be4fd43cff00aedf5b9465c9bf18d64325bc225f08f760&quot;},
++    {file = &quot;decorator-4.4.2.tar.gz&quot;, hash = &quot;sha256:e3a62f0520172440ca0dcc823749319382e377f37f140a0b99ef45fecb84bfe7&quot;},
++]
+ flask = [
+     {file = &quot;Flask-1.1.2-py2.py3-none-any.whl&quot;, hash = &quot;sha256:8a4fdd8936eba2512e9c85df320a37e694c93945b33ef33c89946a340a238557&quot;},
+     {file = &quot;Flask-1.1.2.tar.gz&quot;, hash = &quot;sha256:4efa1ae2d7c9865af48986de8aeb8504bf32c7f3d6fdc9353d34b21f4b127060&quot;},
+@@ -278,10 +647,33 @@ idna = [
+     {file = &quot;idna-2.10-py2.py3-none-any.whl&quot;, hash = &quot;sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0&quot;},
+     {file = &quot;idna-2.10.tar.gz&quot;, hash = &quot;sha256:b307872f855b18632ce0c21c5e45be78c0ea7ae4c15c828c20788b26921eb3f6&quot;},
+ ]
++importlib-metadata = [
++    {file = &quot;importlib_metadata-1.7.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:dc15b2969b4ce36305c51eebe62d418ac7791e9a157911d58bfb1f9ccd8e2070&quot;},
++    {file = &quot;importlib_metadata-1.7.0.tar.gz&quot;, hash = &quot;sha256:90bb658cdbbf6d1735b6341ce708fc7024a3e14e99ffdc5783edea9f9b077f83&quot;},
++]
++iniconfig = [
++    {file = &quot;iniconfig-1.0.1-py3-none-any.whl&quot;, hash = &quot;sha256:80cf40c597eb564e86346103f609d74efce0f6b4d4f30ec8ce9e2c26411ba437&quot;},
++    {file = &quot;iniconfig-1.0.1.tar.gz&quot;, hash = &quot;sha256:e5f92f89355a67de0595932a6c6c02ab4afddc6fcdc0bfc5becd0d60884d3f69&quot;},
++]
++ipdb = [
++    {file = &quot;ipdb-0.13.3.tar.gz&quot;, hash = &quot;sha256:d6f46d261c45a65e65a2f7ec69288a1c511e16206edb2875e7ec6b2f66997e78&quot;},
++]
++ipython = [
++    {file = &quot;ipython-7.17.0-py3-none-any.whl&quot;, hash = &quot;sha256:5a8f159ca8b22b9a0a1f2a28befe5ad2b703339afb58c2ffe0d7c8d7a3af5999&quot;},
++    {file = &quot;ipython-7.17.0.tar.gz&quot;, hash = &quot;sha256:b70974aaa2674b05eb86a910c02ed09956a33f2dd6c71afc60f0b128a77e7f28&quot;},
++]
++ipython-genutils = [
++    {file = &quot;ipython_genutils-0.2.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:72dd37233799e619666c9f639a9da83c34013a73e8bbc79a7a6348d93c61fab8&quot;},
++    {file = &quot;ipython_genutils-0.2.0.tar.gz&quot;, hash = &quot;sha256:eb2e116e75ecef9d4d228fdc66af54269afa26ab4463042e33785b887c628ba8&quot;},
++]
+ itsdangerous = [
+     {file = &quot;itsdangerous-1.1.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:b12271b2047cb23eeb98c8b5622e2e5c5e9abd9784a153e9d8ef9cb4dd09d749&quot;},
+     {file = &quot;itsdangerous-1.1.0.tar.gz&quot;, hash = &quot;sha256:321b033d07f2a4136d3ec762eac9f16a10ccd60f53c0c91af90217ace7ba1f19&quot;},
+ ]
++jedi = [
++    {file = &quot;jedi-0.17.2-py2.py3-none-any.whl&quot;, hash = &quot;sha256:98cc583fa0f2f8304968199b01b6b4b94f469a1f4a74c1560506ca2a211378b5&quot;},
++    {file = &quot;jedi-0.17.2.tar.gz&quot;, hash = &quot;sha256:86ed7d9b750603e4ba582ea8edc678657fb4007894a12bcf6f4bb97892f31d20&quot;},
++]
+ jinja2 = [
+     {file = &quot;Jinja2-2.11.2-py2.py3-none-any.whl&quot;, hash = &quot;sha256:f0a4641d3cf955324a89c04f3d94663aa4d638abe8f733ecd3582848e1c37035&quot;},
+     {file = &quot;Jinja2-2.11.2.tar.gz&quot;, hash = &quot;sha256:89aab215427ef59c34ad58735269eb58b1a5808103067f7bb9d5836c651b3bb0&quot;},
+@@ -321,10 +713,58 @@ markupsafe = [
+     {file = &quot;MarkupSafe-1.1.1-cp38-cp38-win_amd64.whl&quot;, hash = &quot;sha256:e8313f01ba26fbbe36c7be1966a7b7424942f670f38e666995b88d012765b9be&quot;},
+     {file = &quot;MarkupSafe-1.1.1.tar.gz&quot;, hash = &quot;sha256:29872e92839765e546828bb7754a68c418d927cd064fd4708fab9fe9c8bb116b&quot;},
+ ]
++more-itertools = [
++    {file = &quot;more-itertools-8.4.0.tar.gz&quot;, hash = &quot;sha256:68c70cc7167bdf5c7c9d8f6954a7837089c6a36bf565383919bb595efb8a17e5&quot;},
++    {file = &quot;more_itertools-8.4.0-py3-none-any.whl&quot;, hash = &quot;sha256:b78134b2063dd214000685165d81c154522c3ee0a1c0d4d113c80361c234c5a2&quot;},
++]
++packaging = [
++    {file = &quot;packaging-20.4-py2.py3-none-any.whl&quot;, hash = &quot;sha256:998416ba6962ae7fbd6596850b80e17859a5753ba17c32284f67bfff33784181&quot;},
++    {file = &quot;packaging-20.4.tar.gz&quot;, hash = &quot;sha256:4357f74f47b9c12db93624a82154e9b120fa8293699949152b22065d556079f8&quot;},
++]
++parso = [
++    {file = &quot;parso-0.7.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:97218d9159b2520ff45eb78028ba8b50d2bc61dcc062a9682666f2dc4bd331ea&quot;},
++    {file = &quot;parso-0.7.1.tar.gz&quot;, hash = &quot;sha256:caba44724b994a8a5e086460bb212abc5a8bc46951bf4a9a1210745953622eb9&quot;},
++]
++pexpect = [
++    {file = &quot;pexpect-4.8.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:0b48a55dcb3c05f3329815901ea4fc1537514d6ba867a152b581d69ae3710937&quot;},
++    {file = &quot;pexpect-4.8.0.tar.gz&quot;, hash = &quot;sha256:fc65a43959d153d0114afe13997d439c22823a27cefceb5ff35c2178c6784c0c&quot;},
++]
++pickleshare = [
++    {file = &quot;pickleshare-0.7.5-py2.py3-none-any.whl&quot;, hash = &quot;sha256:9649af414d74d4df115d5d718f82acb59c9d418196b7b4290ed47a12ce62df56&quot;},
++    {file = &quot;pickleshare-0.7.5.tar.gz&quot;, hash = &quot;sha256:87683d47965c1da65cdacaf31c8441d12b8044cdec9aca500cd78fc2c683afca&quot;},
++]
++pluggy = [
++    {file = &quot;pluggy-0.13.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:966c145cd83c96502c3c3868f50408687b38434af77734af1e9ca461a4081d2d&quot;},
++    {file = &quot;pluggy-0.13.1.tar.gz&quot;, hash = &quot;sha256:15b2acde666561e1298d71b523007ed7364de07029219b604cf808bfa1c765b0&quot;},
++]
++prompt-toolkit = [
++    {file = &quot;prompt_toolkit-3.0.6-py3-none-any.whl&quot;, hash = &quot;sha256:683397077a64cd1f750b71c05afcfc6612a7300cb6932666531e5a54f38ea564&quot;},
++    {file = &quot;prompt_toolkit-3.0.6.tar.gz&quot;, hash = &quot;sha256:7630ab85a23302839a0f26b31cc24f518e6155dea1ed395ea61b42c45941b6a6&quot;},
++]
++ptyprocess = [
++    {file = &quot;ptyprocess-0.6.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:d7cc528d76e76342423ca640335bd3633420dc1366f258cb31d05e865ef5ca1f&quot;},
++    {file = &quot;ptyprocess-0.6.0.tar.gz&quot;, hash = &quot;sha256:923f299cc5ad920c68f2bc0bc98b75b9f838b93b599941a6b63ddbc2476394c0&quot;},
++]
++py = [
++    {file = &quot;py-1.9.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:366389d1db726cd2fcfc79732e75410e5fe4d31db13692115529d34069a043c2&quot;},
++    {file = &quot;py-1.9.0.tar.gz&quot;, hash = &quot;sha256:9ca6883ce56b4e8da7e79ac18787889fa5206c79dcc67fb065376cd2fe03f342&quot;},
++]
+ pycparser = [
+     {file = &quot;pycparser-2.20-py2.py3-none-any.whl&quot;, hash = &quot;sha256:7582ad22678f0fcd81102833f60ef8d0e57288b6b5fb00323d101be910e35705&quot;},
+     {file = &quot;pycparser-2.20.tar.gz&quot;, hash = &quot;sha256:2d475327684562c3a96cc71adf7dc8c4f0565175cf86b6d7a404ff4c771f15f0&quot;},
+ ]
++pygments = [
++    {file = &quot;Pygments-2.6.1-py3-none-any.whl&quot;, hash = &quot;sha256:ff7a40b4860b727ab48fad6360eb351cc1b33cbf9b15a0f689ca5353e9463324&quot;},
++    {file = &quot;Pygments-2.6.1.tar.gz&quot;, hash = &quot;sha256:647344a061c249a3b74e230c739f434d7ea4d8b1d5f3721bc0f3558049b38f44&quot;},
++]
++pyparsing = [
++    {file = &quot;pyparsing-2.4.7-py2.py3-none-any.whl&quot;, hash = &quot;sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b&quot;},
++    {file = &quot;pyparsing-2.4.7.tar.gz&quot;, hash = &quot;sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1&quot;},
++]
++pytest = [
++    {file = &quot;pytest-6.0.1-py3-none-any.whl&quot;, hash = &quot;sha256:8b6007800c53fdacd5a5c192203f4e531eb2a1540ad9c752e052ec0f7143dbad&quot;},
++    {file = &quot;pytest-6.0.1.tar.gz&quot;, hash = &quot;sha256:85228d75db9f45e06e57ef9bf4429267f81ac7c0d742cc9ed63d09886a9fe6f4&quot;},
++]
+ requests = [
+     {file = &quot;requests-2.24.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:fe75cc94a9443b9246fc7049224f75604b113c36acb93f87b80ed42c44cbb898&quot;},
+     {file = &quot;requests-2.24.0.tar.gz&quot;, hash = &quot;sha256:b3559a131db72c33ee969480840fff4bb6dd111de7dd27c8ee1f820f4f00231b&quot;},
+@@ -333,11 +773,27 @@ six = [
+     {file = &quot;six-1.15.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced&quot;},
+     {file = &quot;six-1.15.0.tar.gz&quot;, hash = &quot;sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259&quot;},
+ ]
++toml = [
++    {file = &quot;toml-0.10.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:bda89d5935c2eac546d648028b9901107a595863cb36bae0c73ac804a9b4ce88&quot;},
++    {file = &quot;toml-0.10.1.tar.gz&quot;, hash = &quot;sha256:926b612be1e5ce0634a2ca03470f95169cf16f939018233a670519cb4ac58b0f&quot;},
++]
++traitlets = [
++    {file = &quot;traitlets-4.3.3-py2.py3-none-any.whl&quot;, hash = &quot;sha256:70b4c6a1d9019d7b4f6846832288f86998aa3b9207c6821f3578a6a6a467fe44&quot;},
++    {file = &quot;traitlets-4.3.3.tar.gz&quot;, hash = &quot;sha256:d023ee369ddd2763310e4c3eae1ff649689440d4ae59d7485eb4cfbbe3e359f7&quot;},
++]
+ urllib3 = [
+     {file = &quot;urllib3-1.25.10-py2.py3-none-any.whl&quot;, hash = &quot;sha256:e7983572181f5e1522d9c98453462384ee92a0be7fac5f1413a1e35c56cc0461&quot;},
+     {file = &quot;urllib3-1.25.10.tar.gz&quot;, hash = &quot;sha256:91056c15fa70756691db97756772bb1eb9678fa585d9184f24534b100dc60f4a&quot;},
+ ]
++wcwidth = [
++    {file = &quot;wcwidth-0.2.5-py2.py3-none-any.whl&quot;, hash = &quot;sha256:beb4802a9cebb9144e99086eff703a642a13d6a0052920003a230f3294bbe784&quot;},
++    {file = &quot;wcwidth-0.2.5.tar.gz&quot;, hash = &quot;sha256:c4d647b99872929fdb7bdcaa4fbe7f01413ed3d98077df798530e5b04f116c83&quot;},
++]
+ werkzeug = [
+     {file = &quot;Werkzeug-1.0.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:2de2a5db0baeae7b2d2664949077c2ac63fbd16d98da0ff71837f7d1dea3fd43&quot;},
+     {file = &quot;Werkzeug-1.0.1.tar.gz&quot;, hash = &quot;sha256:6c80b1e5ad3665290ea39320b91e1be1e0d5f60652b964a3070216de83d2e47c&quot;},
+ ]
++zipp = [
++    {file = &quot;zipp-3.1.0-py3-none-any.whl&quot;, hash = &quot;sha256:aa36550ff0c0b7ef7fa639055d797116ee891440eac1a56f378e2d3179e0320b&quot;},
++    {file = &quot;zipp-3.1.0.tar.gz&quot;, hash = &quot;sha256:c599e4d75c98f6798c509911d08a22e6c021d074469042177c8c86fb92eefd96&quot;},
++]
+diff --git a/pyproject.toml b/pyproject.toml
+index ab605ef..2945695 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -25,6 +25,8 @@ goodconf = &quot;^1.0.0&quot;
+ argon2-cffi = &quot;^20.1.0&quot;
+ 
+ [tool.poetry.dev-dependencies]
++pytest = &quot;^6.0.1&quot;
++ipdb = &quot;^0.13.3&quot;
+ 
+ [build-system]
+ requires = [&quot;poetry&gt;=0.12&quot;]
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index fc0a246..4894744 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -53,7 +53,7 @@ def get_chapter(self, title_id, chapter_id):
+ 
+         chapter = {
+             &quot;id&quot;: chapter_id,
+-            &quot;title_id&quot;: md_json[&quot;manga_id&quot;],
++            &quot;title_id&quot;: str(md_json[&quot;manga_id&quot;]),
+             &quot;site&quot;: &quot;mangadex&quot;,
+             &quot;name&quot;: md_json[&quot;title&quot;],
+             &quot;pages&quot;: [f&quot;{img_path}/{page}&quot; for page in md_json[&quot;page_array&quot;]],
+@@ -133,7 +133,7 @@ def _parse_chapter_number(string):
+ 
+ def _extract_groups(chap):
+     return [
+-        group.strip()
++        html.unescape(group.strip())
+         for group in [chap[&quot;group_name&quot;], chap[&quot;group_name_2&quot;], chap[&quot;group_name_3&quot;]]
+         if group
+     ]
+diff --git a/tests/mangoapi/test_mangadex.py b/tests/mangoapi/test_mangadex.py
+new file mode 100644
+index 0000000..6be93fb
+--- /dev/null
++++ b/tests/mangoapi/test_mangadex.py
+@@ -0,0 +1,133 @@
++import os
++
++from mangoapi.mangadex import Mangadex
++from pytaku.conf import config
++
++
++def test_get_title():
++    title = Mangadex().get_title(&quot;2597&quot;)
++    assert title == {
++        &quot;id&quot;: &quot;2597&quot;,
++        &quot;name&quot;: &quot;Sayonara Football&quot;,
++        &quot;site&quot;: &quot;mangadex&quot;,
++        &quot;cover_ext&quot;: &quot;jpg&quot;,
++        &quot;alt_names&quot;: [&quot;Adiós al fútbol&quot;, &quot;さよならフットボール&quot;, &quot;再见足球&quot;],
++        &quot;descriptions&quot;: [
++            &quot;Nozomi wants to enter the newcomer&#39;s competition. But the coach is against it, because their club is a boy&#39;s football club and she&#39;s... a she. Will she be able to enter the match she wants to play in?&quot;
++        ],
++        &quot;chapters&quot;: [
++            {
++                &quot;id&quot;: &quot;84598&quot;,
++                &quot;name&quot;: &quot;Epilogue&quot;,
++                &quot;volume&quot;: 2,
++                &quot;groups&quot;: [&quot;Shoujo Crusade&quot;],
++                &quot;number&quot;: &quot;8&quot;,
++                &quot;num_major&quot;: 8,
++            },
++            {
++                &quot;id&quot;: &quot;84596&quot;,
++                &quot;name&quot;: &quot;Football Under the Blue Sky&quot;,
++                &quot;volume&quot;: 2,
++                &quot;groups&quot;: [&quot;Shoujo Crusade&quot;],
++                &quot;number&quot;: &quot;7&quot;,
++                &quot;num_major&quot;: 7,
++            },
++            {
++                &quot;id&quot;: &quot;84594&quot;,
++                &quot;name&quot;: &quot;Everyone in a Crisis&quot;,
++                &quot;volume&quot;: 2,
++                &quot;groups&quot;: [&quot;Shoujo Crusade&quot;],
++                &quot;number&quot;: &quot;6&quot;,
++                &quot;num_major&quot;: 6,
++            },
++            {
++                &quot;id&quot;: &quot;84592&quot;,
++                &quot;name&quot;: &quot;Clash and Decide&quot;,
++                &quot;volume&quot;: 2,
++                &quot;groups&quot;: [&quot;Shoujo Crusade&quot;],
++                &quot;number&quot;: &quot;5&quot;,
++                &quot;num_major&quot;: 5,
++            },
++            {
++                &quot;id&quot;: &quot;84590&quot;,
++                &quot;name&quot;: &quot;And There&#39;s the Whistle&quot;,
++                &quot;volume&quot;: 1,
++                &quot;groups&quot;: [&quot;Shoujo Crusade&quot;],
++                &quot;number&quot;: &quot;4&quot;,
++                &quot;num_major&quot;: 4,
++            },
++            {
++                &quot;id&quot;: &quot;84589&quot;,
++                &quot;name&quot;: &quot;A Plan to Become a Regular&quot;,
++                &quot;volume&quot;: 1,
++                &quot;groups&quot;: [&quot;Shoujo Crusade&quot;],
++                &quot;number&quot;: &quot;3&quot;,
++                &quot;num_major&quot;: 3,
++            },
++            {
++                &quot;id&quot;: &quot;84587&quot;,
++                &quot;name&quot;: &quot;Her Determination at That Time&quot;,
++                &quot;volume&quot;: 1,
++                &quot;groups&quot;: [&quot;Shoujo Crusade&quot;],
++                &quot;number&quot;: &quot;2&quot;,
++                &quot;num_major&quot;: 2,
++            },
++            {
++                &quot;id&quot;: &quot;84585&quot;,
++                &quot;name&quot;: &quot;The Entry of an Unmanageable Woman&quot;,
++                &quot;volume&quot;: 1,
++                &quot;groups&quot;: [&quot;Shoujo Crusade&quot;],
++                &quot;number&quot;: &quot;1&quot;,
++                &quot;num_major&quot;: 1,
++            },
++        ],
++    }
++
++
++def test_get_chapter():
++    chap = Mangadex().get_chapter(&quot;doesn&#39;t matter&quot;, &quot;696882&quot;)
++    assert chap == {
++        &quot;id&quot;: &quot;696882&quot;,
++        &quot;title_id&quot;: &quot;12088&quot;,
++        &quot;site&quot;: &quot;mangadex&quot;,
++        &quot;name&quot;: &quot;Extras&quot;,
++        &quot;pages&quot;: [
++            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S1.png&quot;,
++            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S2.png&quot;,
++            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S3.png&quot;,
++            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S4.png&quot;,
++            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S5.png&quot;,
++            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S6.png&quot;,
++            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S7.png&quot;,
++            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S8.png&quot;,
++            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S9.png&quot;,
++            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S10.png&quot;,
++            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S11.png&quot;,
++            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S12.png&quot;,
++            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S13.jpg&quot;,
++            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S14.jpg&quot;,
++            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S15.png&quot;,
++            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S16.png&quot;,
++        ],
++        &quot;groups&quot;: [&quot;Träumerei Scans&quot;, &quot;GlassChair&quot;],
++        &quot;is_webtoon&quot;: False,
++        &quot;number&quot;: &quot;81.5&quot;,
++        &quot;num_major&quot;: 81,
++        &quot;num_minor&quot;: 5,
++    }
++
++
++def test_search():
++    md = Mangadex()
++    md.username = config.MANGADEX_USERNAME
++    md.password = config.MANGADEX_PASSWORD
++
++    results = md.search_title(&quot;sayonara football&quot;)
++    assert results == [
++        {
++            &quot;id&quot;: &quot;2597&quot;,
++            &quot;name&quot;: &quot;Sayonara Football&quot;,
++            &quot;site&quot;: &quot;mangadex&quot;,
++            &quot;thumbnail&quot;: &quot;https://mangadex.org/images/manga/2597.large.jpg&quot;,
++        }
++    ]
+diff --git a/tests/mangoapi/test_mangasee.py b/tests/mangoapi/test_mangasee.py
+new file mode 100644
+index 0000000..b66d306
+--- /dev/null
++++ b/tests/mangoapi/test_mangasee.py
+@@ -0,0 +1,65 @@
++from mangoapi.mangasee import Mangasee
++
++
++def test_get_title():
++    title = Mangasee().get_title(&quot;Yu-Yu-Hakusho&quot;)
++    chapters = title.pop(&quot;chapters&quot;)
++    assert title == {
++        &quot;id&quot;: &quot;Yu-Yu-Hakusho&quot;,
++        &quot;name&quot;: &quot;Yu Yu Hakusho&quot;,
++        &quot;site&quot;: &quot;mangasee&quot;,
++        &quot;cover_ext&quot;: &quot;jpg&quot;,
++        &quot;alt_names&quot;: [],
++        &quot;descriptions&quot;: [
++            &quot;Yusuke Urameshi was a tough teen delinquent until one selfless act changed his life... by ending it. When he died saving a little kid from a speeding car, the afterlife didn&#39;t know what to do with him, so it gave him a second chance at life. Now, Yusuke is a ghost with a mission, performing good deeds at the behest of Botan, the ferrywoman of the River Styx, and Koenma, the pacifier-sucking judge of the dead.&quot;
++        ],
++    }
++    assert len(chapters) == 176
++    assert chapters[112] == {
++        &quot;groups&quot;: [],
++        &quot;id&quot;: &quot;63.5&quot;,
++        &quot;name&quot;: &quot;&quot;,
++        &quot;num_major&quot;: 63,
++        &quot;num_minor&quot;: 5,
++        &quot;number&quot;: &quot;63.5&quot;,
++        &quot;volume&quot;: &quot;&quot;,
++    }
++
++
++def test_get_chapter():
++    chapter = Mangasee().get_chapter(&quot;Yu-Yu-Hakusho&quot;, &quot;63.5&quot;)
++    pages = chapter.pop(&quot;pages&quot;)
++    assert chapter == {
++        &quot;groups&quot;: [],
++        &quot;id&quot;: &quot;63.5&quot;,
++        &quot;is_webtoon&quot;: False,
++        &quot;name&quot;: &quot;&quot;,
++        &quot;num_major&quot;: 63,
++        &quot;num_minor&quot;: 5,
++        &quot;number&quot;: &quot;63.5&quot;,
++        &quot;site&quot;: &quot;mangasee&quot;,
++        &quot;title_id&quot;: &quot;Yu-Yu-Hakusho&quot;,
++    }
++    assert pages[0] == &quot;https://s1.mangabeast01.com/manga/Yu-Yu-Hakusho/0063.5-001.png&quot;
++    assert pages[-1] == &quot;https://s1.mangabeast01.com/manga/Yu-Yu-Hakusho/0063.5-031.png&quot;
++
++
++def test_search_title():
++    class DictKeyvalStore(dict):
++        def get(self, key):
++            return self[key]
++
++        def set(self, key, val):
++            self[key] = val
++
++    ms = Mangasee()
++    ms.keyval_store = DictKeyvalStore()
++    results = ms.search_title(&quot;sayonara football&quot;)
++    assert results == [
++        {
++            &quot;id&quot;: &quot;Sayonara-Football&quot;,
++            &quot;name&quot;: &quot;Sayonara Football&quot;,
++            &quot;site&quot;: &quot;mangasee&quot;,
++            &quot;thumbnail&quot;: &quot;https://cover.mangabeast01.com/cover/Sayonara-Football.jpg&quot;,
++        }
++    ]
+</pre></body></html>

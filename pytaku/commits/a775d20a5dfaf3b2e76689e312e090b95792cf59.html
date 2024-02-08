@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a775d20a5d] less intrusive footer | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / a775d20a5d</strong><hr><pre>commit a775d20a5dfaf3b2e76689e312e090b95792cf59
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 8 15:56:54 2020 +0700
+
+    less intrusive footer
+
+diff --git a/pyproject.toml b/pyproject.toml
+index f4b556e..48bf9e1 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.2.3&quot;
++version = &quot;0.2.4&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/static/base.css b/src/pytaku/static/base.css
+index 6307f64..447e396 100644
+--- a/src/pytaku/static/base.css
++++ b/src/pytaku/static/base.css
+@@ -181,9 +181,12 @@ .content &gt; * {
+ }
+ 
+ footer {
+-  padding: 1rem var(--body-padding);
+-  background-color: #eee;
++  padding: 1rem var(--body-padding) var(--body-padding) var(--body-padding);
+   line-height: 1.5em;
++  opacity: 0.7;
++}
++footer a {
++  color: inherit;
+ }
+ 
+ /* sticky footer */
+diff --git a/src/pytaku/templates/home.html b/src/pytaku/templates/home.html
+index 76030ea..92c7871 100644
+--- a/src/pytaku/templates/home.html
++++ b/src/pytaku/templates/home.html
+@@ -7,6 +7,4 @@
+ {% block content %}
+ &lt;p&gt;Try searching for some manga title using the box above.&lt;/p&gt;
+ &lt;p&gt;Logging in allows you to follow manga titles.&lt;/p&gt;
+-
+-&lt;p&gt;&lt;strong&gt;This is a work in progress.&lt;/strong&gt; Expect bugs.&lt;/p&gt;
+ {% endblock %}
+</pre></body></html>

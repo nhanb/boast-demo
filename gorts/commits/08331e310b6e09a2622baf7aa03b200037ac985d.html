@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[08331e310b] force tk window to foreground on Windows | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 08331e310b</strong><hr><pre>commit 08331e310b6e09a2622baf7aa03b200037ac985d
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jun 22 14:43:39 2023 +0700
+
+    force tk window to foreground on Windows
+    
+    It&#39;s not 100% working yet: the window is brought above existing windows
+    but isn&#39;t focused. I have no idea how to proceed tbh.
+
+diff --git a/go.mod b/go.mod
+index 118e815..a9f68c4 100644
+--- a/go.mod
++++ b/go.mod
+@@ -3,3 +3,8 @@ module go.imnhan.com/gorts
+ go 1.20
+ 
+ require golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
++
++require (
++	github.com/lxn/win v0.0.0-20210218163916-a377121e959e // indirect
++	golang.org/x/sys v0.1.0 // indirect
++)
+diff --git a/go.sum b/go.sum
+index 001575f..b29d7b5 100644
+--- a/go.sum
++++ b/go.sum
+@@ -1,2 +1,7 @@
++github.com/lxn/win v0.0.0-20210218163916-a377121e959e h1:H+t6A/QJMbhCSEH5rAuRxh+CtW96g0Or0Fxa9IKr4uc=
++github.com/lxn/win v0.0.0-20210218163916-a377121e959e/go.mod h1:KxxjdtRkfNoYDCUP5ryK7XJJNTnpC8atvtmTheChOtk=
+ golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 h1:k/i9J1pBpvlfR+9QsetwPyERsqu1GIbi967PQMq3Ivc=
+ golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1/go.mod h1:V1LtkGg67GoY2N1AnLN78QLrzxkLyJw7RJb1gzOOz9w=
++golang.org/x/sys v0.0.0-20201018230417-eeed37f84f13/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
++golang.org/x/sys v0.1.0 h1:kunALQeHf1/185U1i0GOB/fy1IPRDDpuoOOqRReG57U=
++golang.org/x/sys v0.1.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+diff --git a/hacks_linux.go b/hacks_linux.go
+new file mode 100644
+index 0000000..e3d4782
+--- /dev/null
++++ b/hacks_linux.go
+@@ -0,0 +1,5 @@
++//go:build linux
++
++package main
++
++func forceFocus(handle string) error { return nil }
+diff --git a/hacks_windows.go b/hacks_windows.go
+new file mode 100644
+index 0000000..0adaf6f
+--- /dev/null
++++ b/hacks_windows.go
+@@ -0,0 +1,23 @@
++//go:build windows
++
++package main
++
++import (
++	&quot;fmt&quot;
++	&quot;strconv&quot;
++
++	&quot;github.com/lxn/win&quot;
++)
++
++func forceFocus(handle string) error {
++	hex := handle[2:] // trim the &quot;0x&quot; prefix
++	uintHandle, err := strconv.ParseUint(hex, 16, 64)
++	if err != nil {
++		return fmt.Errorf(&quot;failed to parse handle: %w&quot;, err)
++	}
++
++	h := win.HWND(uintptr(uintHandle))
++	win.SetForegroundWindow(h)
++	win.SetFocus(h)
++	return nil
++}
+diff --git a/main.go b/main.go
+index 48a4a38..8b9992f 100644
+--- a/main.go
++++ b/main.go
+@@ -107,6 +107,12 @@ func startGUI() {
+ 		req := netstring.DecodeMultiple(scanner.Text())
+ 		fmt.Printf(&quot;--&gt; %v\n&quot;, strings.Join(req, &quot;, &quot;))
+ 		switch req[0] {
++		case &quot;forcefocus&quot;:
++			err := forceFocus(req[1])
++			if err != nil {
++				fmt.Printf(&quot;forcefocus: %s\n&quot;, err)
++			}
++			respond(&quot;ok&quot;)
+ 		case &quot;geticon&quot;:
+ 			respond(string(gortsPngIcon))
+ 
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index d86049e..92d5b1d 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -179,6 +179,15 @@ proc initialize {} {
+ 
+     setupdiffcheck
+     #setupplayersuggestion
++
++
++    # By default this window is not focused and not even brought to
++    # foreground on Windows. I suspect it&#39;s because tcl is exec&#39;ed from Go.
++    # The old &quot;iconify, deiconify&quot; trick no longer seems to work, so this time
++    # I&#39;m passing it to Go to call the winapi&#39;s SetForegroundWindow directly.
++    if {$::tcl_platform(platform) == &quot;windows&quot;} {
++        windows_forcefocus
++    }
+ }
+ 
+ # Very simple IPC system where Tcl client talks to Go server via stdin/stdout
+@@ -196,6 +205,11 @@ proc ipc {method args} {
+     return [ipc_read]
+ }
+ 
++proc windows_forcefocus {} {
++    set handle [winfo id .]
++    ipc &quot;forcefocus&quot; $handle
++}
++
+ proc loadicon {} {
+     set resp [ipc &quot;geticon&quot;]
+     set iconblob [lindex $resp 0]
+@@ -331,13 +345,3 @@ proc checkdiff {_ key _} {
+         $widget configure -style &quot;Dirty.[winfo class $widget]&quot;
+     }
+ }
+-
+-# By default this window is not focused and not even brought to
+-# foreground on Windows. I suspect it&#39;s because tcl is exec&#39;ed from Go.
+-# Minimizing then re-opening it seems to do the trick.
+-# This workaround, however, makes the window unfocused on KDE, so
+-# let&#39;s only use it on Windows.
+-if {$tcl_platform(platform) == &quot;windows&quot;} {
+-    wm iconify .
+-    wm deiconify .
+-}
+</pre></body></html>

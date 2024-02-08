@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[7a6e285370] yaml strikes again | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 7a6e285370</strong><hr><pre>commit 7a6e285370f1a4b5cd43b158e8641e34395129bf
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jun 19 00:30:26 2023 +0700
+
+    yaml strikes again
+
+diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
+index 9ca5f76..8b3cedd 100644
+--- a/.github/workflows/build.yml
++++ b/.github/workflows/build.yml
+@@ -16,7 +16,7 @@ jobs:
+ 
+     - uses: actions/setup-go@v3
+       with:
+-        go-version: 1.20
++        go-version: &#39;1.20&#39;
+ 
+     - run: make dist/GORTS-Linux.zip
+ 
+</pre></body></html>

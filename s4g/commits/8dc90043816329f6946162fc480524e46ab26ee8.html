@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[8dc9004381] prepend web root to Article.WebPath | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 8dc9004381</strong><hr><pre>commit 8dc90043816329f6946162fc480524e46ab26ee8
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jul 12 20:41:54 2023 +0700
+
+    prepend web root to Article.WebPath
+    
+    This exposed a bunch of path-related bugs too, which are now fixed.
+
+diff --git a/docs/_theme/includes.tmpl b/docs/_theme/includes.tmpl
+index 19b5122..cdd6ec2 100644
+--- a/docs/_theme/includes.tmpl
++++ b/docs/_theme/includes.tmpl
+@@ -3,7 +3,7 @@
+ &lt;nav&gt;
+   &lt;a href=&quot;{{.Site.Root}}&quot;&gt;Home&lt;/a&gt;
+   {{- range .ArticlesInNav}}
+-  &lt;a href=&quot;{{$.Site.Root}}{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
++  &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+   {{- end}}
+ 
+   {{- if not .Post.PostedAt.IsZero}}
+diff --git a/docs/feed.xml b/docs/feed.xml
+index 4852045..4947aba 100644
+--- a/docs/feed.xml
++++ b/docs/feed.xml
+@@ -10,15 +10,15 @@
+   &lt;/author&gt;
+   &lt;entry&gt;
+     &lt;title&gt;This is a motherfucking website.&lt;/title&gt;
+-    &lt;id&gt;https://coolzone.example.com/mfws.html&lt;/id&gt;
+-    &lt;link href=&quot;https://coolzone.example.com/mfws.html&quot;&gt;&lt;/link&gt;
++    &lt;id&gt;https://coolzone.example.com/webmaker2000/mfws.html&lt;/id&gt;
++    &lt;link href=&quot;https://coolzone.example.com/webmaker2000/mfws.html&quot;&gt;&lt;/link&gt;
+     &lt;published&gt;2023-04-05T00:00:00+07:00&lt;/published&gt;
+     &lt;updated&gt;2023-04-05T00:00:00+07:00&lt;/updated&gt;
+   &lt;/entry&gt;
+   &lt;entry&gt;
+     &lt;title&gt;I&amp;#39;m Going To Scale My Foot Up Your Ass&lt;/title&gt;
+-    &lt;id&gt;https://coolzone.example.com/scale/&lt;/id&gt;
+-    &lt;link href=&quot;https://coolzone.example.com/scale/&quot;&gt;&lt;/link&gt;
++    &lt;id&gt;https://coolzone.example.com/webmaker2000/scale/&lt;/id&gt;
++    &lt;link href=&quot;https://coolzone.example.com/webmaker2000/scale/&quot;&gt;&lt;/link&gt;
+     &lt;published&gt;2008-04-24T00:00:00+07:00&lt;/published&gt;
+     &lt;updated&gt;2008-04-24T00:00:00+07:00&lt;/updated&gt;
+   &lt;/entry&gt;
+diff --git a/docs/index.html b/docs/index.html
+index f7eb7b2..8144f02 100644
+--- a/docs/index.html
++++ b/docs/index.html
+@@ -20,7 +20,7 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ 
+ &lt;div class=&quot;pages&quot;&gt;
+   &lt;a href=&quot;/webmaker2000/&quot;&gt;Home&lt;/a&gt;
+-  &lt;a href=&quot;about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/webmaker2000/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a class=&quot;feed-link&quot; href=&quot;/webmaker2000/feed.xml&quot;&gt;
+     &lt;img src=&quot;/webmaker2000/_theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
+   &lt;/a&gt;
+@@ -35,11 +35,11 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ &lt;ul&gt;
+   &lt;li&gt;
+     2023-04-05 —
+-    &lt;a href=&quot;mfws.html&quot;&gt;This is a motherfucking website.&lt;/a&gt;
++    &lt;a href=&quot;/webmaker2000/mfws.html&quot;&gt;This is a motherfucking website.&lt;/a&gt;
+   &lt;/li&gt;
+   &lt;li&gt;
+     2008-04-24 —
+-    &lt;a href=&quot;scale/&quot;&gt;I&amp;#39;m Going To Scale My Foot Up Your Ass&lt;/a&gt;
++    &lt;a href=&quot;/webmaker2000/scale/&quot;&gt;I&amp;#39;m Going To Scale My Foot Up Your Ass&lt;/a&gt;
+   &lt;/li&gt;
+ &lt;/ul&gt;
+ 
+diff --git a/feed.go b/feed.go
+index 4cee63a..7ecd3dd 100644
+--- a/feed.go
++++ b/feed.go
+@@ -16,9 +16,11 @@ func generateFeed(site SiteMetadata, posts []Article, path string) []byte {
+ 	}
+ 	var entries []*atom.Entry
+ 	for _, p := range posts {
++		// trim WebPath&#39;s leading slash because siteAddr already has one
++		link := siteAddr + p.WebPath[1:]
+ 		entries = append(entries, &amp;atom.Entry{
+-			ID:        siteAddr + p.WebPath(),
+-			Link:      []atom.Link{{Href: siteAddr + p.WebPath()}},
++			ID:        link,
++			Link:      []atom.Link{{Href: link}},
+ 			Title:     p.Title,
+ 			Published: atom.Time(p.PostedAt),
+ 			Updated:   atom.Time(p.PostedAt),
+diff --git a/main.go b/main.go
+index 4f4d081..1050c09 100644
+--- a/main.go
++++ b/main.go
+@@ -122,7 +122,7 @@ func regenerate(fsys writablefs.FS) (site SiteMetadata) {
+ 	defer timer(&quot;Took %s&quot;)()
+ 
+ 	site = ReadSiteMetadata(fsys)
+-	articles := findArticles(fsys)
++	articles := findArticles(fsys, site)
+ 
+ 	if len(articles) == 0 {
+ 		fmt.Println(&quot;No articles found.&quot;)
+@@ -183,27 +183,23 @@ type Article struct {
+ 	OutputPath string
+ 	DjotBody   []byte
+ 	ArticleMetadata
+-	webPath       string
++	WebPath       string
+ 	templatePaths []string
+ }
+ 
+-func (a *Article) WebPath() string {
+-	if a.webPath != &quot;&quot; {
+-		return a.webPath
+-	}
+-	path := a.OutputPath
+-	if strings.HasSuffix(path, &quot;/index.html&quot;) {
+-		path = strings.TrimSuffix(path, &quot;index.html&quot;)
++func (a *Article) ComputeWebPath(root string) {
++	webPath := root + a.OutputPath
++	if strings.HasSuffix(webPath, &quot;/index.html&quot;) {
++		webPath = strings.TrimSuffix(webPath, &quot;index.html&quot;)
+ 	}
+ 
+-	parts := strings.Split(path, &quot;/&quot;)
++	parts := strings.Split(webPath, &quot;/&quot;)
+ 	escaped := make([]string, len(parts))
+ 	for i := 0; i &lt; len(parts); i++ {
+ 		escaped[i] = url.PathEscape(parts[i])
+ 	}
+ 
+-	a.webPath = strings.Join(escaped, &quot;/&quot;)
+-	return a.webPath
++	a.WebPath = strings.Join(escaped, &quot;/&quot;)
+ }
+ 
+ func (a *Article) TemplatePaths() []string {
+@@ -310,7 +306,7 @@ func WriteHomePage(
+ 	fsys.WriteFile(&quot;index.html&quot;, buf.Bytes())
+ }
+ 
+-func findArticles(fsys writablefs.FS) (result []Article) {
++func findArticles(fsys writablefs.FS, site SiteMetadata) (result []Article) {
+ 
+ 	fs.WalkDir(fsys, &quot;.&quot;, func(path string, d fs.DirEntry, err error) error {
+ 		if d.IsDir() || !strings.HasSuffix(d.Name(), DjotExt) {
+@@ -351,6 +347,7 @@ func findArticles(fsys writablefs.FS) (result []Article) {
+ 			DjotBody:        bodyText,
+ 			ArticleMetadata: meta,
+ 		}
++		article.ComputeWebPath(site.Root)
+ 		result = append(result, article)
+ 		return nil
+ 	})
+diff --git a/theme/includes.tmpl b/theme/includes.tmpl
+index 19b5122..cdd6ec2 100644
+--- a/theme/includes.tmpl
++++ b/theme/includes.tmpl
+@@ -3,7 +3,7 @@
+ &lt;nav&gt;
+   &lt;a href=&quot;{{.Site.Root}}&quot;&gt;Home&lt;/a&gt;
+   {{- range .ArticlesInNav}}
+-  &lt;a href=&quot;{{$.Site.Root}}{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
++  &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+   {{- end}}
+ 
+   {{- if not .Post.PostedAt.IsZero}}
+</pre></body></html>

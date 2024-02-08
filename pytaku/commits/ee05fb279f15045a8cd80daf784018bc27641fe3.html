@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ee05fb279f] add footer | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / ee05fb279f</strong><hr><pre>commit ee05fb279f15045a8cd80daf784018bc27641fe3
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 8 15:50:11 2020 +0700
+
+    add footer
+
+diff --git a/pyproject.toml b/pyproject.toml
+index aaee76d..f4b556e 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.2.2&quot;
++version = &quot;0.2.3&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/static/base.css b/src/pytaku/static/base.css
+index 2599471..6307f64 100644
+--- a/src/pytaku/static/base.css
++++ b/src/pytaku/static/base.css
+@@ -172,7 +172,6 @@ .links a:hover {
+ }
+ 
+ .content {
+-  margin: auto;
+   padding: var(--body-padding);
+ }
+ .content &gt; * {
+@@ -180,3 +179,25 @@ .content &gt; * {
+   margin-top: 0.5rem;
+   margin-bottom: 0.5rem;
+ }
++
++footer {
++  padding: 1rem var(--body-padding);
++  background-color: #eee;
++  line-height: 1.5em;
++}
++
++/* sticky footer */
++html,
++body {
++  height: 100%;
++}
++body {
++  display: flex;
++  flex-direction: column;
++}
++.content {
++  flex: 1 0 auto;
++}
++footer {
++  flex-shrink: 0;
++}
+diff --git a/src/pytaku/templates/base.html b/src/pytaku/templates/base.html
+index d3363f9..4f23664 100644
+--- a/src/pytaku/templates/base.html
++++ b/src/pytaku/templates/base.html
+@@ -66,6 +66,17 @@
+     {% block content %}
+     {% endblock %}
+     &lt;/div&gt;
++
++    &lt;footer&gt;
++      &lt;p&gt;Pytaku is &lt;a href=&quot;https://git.sr.ht/~nhanb/pytaku&quot;&gt;free and open source software&lt;/a&gt;.&lt;/p&gt;
++      &lt;p&gt;
++        &lt;strong&gt;This is a test instance.&lt;/strong&gt;
++        Database may be wiped. Bugs may be present.&lt;br&gt;
++        Your favorite mangaka may never recover from his
++        &lt;a href=&quot;https://junk.imnhan.com/hunter_x_idol.jpg&quot;&gt;idol addiction&lt;/a&gt;
++        and your favorite series may never finish.
++      &lt;/p&gt;
++    &lt;/footer&gt;
+   &lt;/body&gt;
+ 
+ &lt;/html&gt;
+</pre></body></html>

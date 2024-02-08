@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[60570d9e7d] render webtoon in long uninterrupted strip | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 60570d9e7d</strong><hr><pre>commit 60570d9e7d9ec4741354910bbed388a98774c5a3
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 3 00:31:55 2020 +0700
+
+    render webtoon in long uninterrupted strip
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 9477d30..ed83127 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.1.2&quot;
++version = &quot;0.1.3&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/mangoapi/__init__.py b/src/mangoapi/__init__.py
+index d975b16..50ff31c 100644
+--- a/src/mangoapi/__init__.py
++++ b/src/mangoapi/__init__.py
+@@ -76,6 +76,7 @@ def get_chapter(chapter_id):
+         &quot;name&quot;: md_json[&quot;title&quot;],
+         &quot;pages&quot;: [f&quot;{img_path}/{page}&quot; for page in md_json[&quot;page_array&quot;]],
+         &quot;groups&quot;: _extract_groups(md_json),
++        &quot;is_webtoon&quot;: md_json[&quot;long_strip&quot;] == 1,
+         **_parse_chapter_number(md_json[&quot;chapter&quot;]),
+     }
+     return chapter
+diff --git a/src/pytaku/database/migrations/latest_schema.sql b/src/pytaku/database/migrations/latest_schema.sql
+index 18089c6..92857ab 100644
+--- a/src/pytaku/database/migrations/latest_schema.sql
++++ b/src/pytaku/database/migrations/latest_schema.sql
+@@ -22,7 +22,7 @@ CREATE TABLE chapter (
+     name text,
+     pages text,
+     groups text,
+-    updated_at text default (datetime(&#39;now&#39;)),
++    updated_at text default (datetime(&#39;now&#39;)), is_webtoon boolean,
+ 
+     foreign key (title_id, site) references title (id, site),
+     unique(id, title_id, site),
+diff --git a/src/pytaku/database/migrations/m0002.sql b/src/pytaku/database/migrations/m0002.sql
+new file mode 100644
+index 0000000..442f3d8
+--- /dev/null
++++ b/src/pytaku/database/migrations/m0002.sql
+@@ -0,0 +1 @@
++alter table chapter add column is_webtoon boolean;
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 6587b73..e12c15e 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -86,7 +86,8 @@ def save_chapter(chapter):
+         num_minor,
+         name,
+         pages,
+-        groups
++        groups,
++        is_webtoon
+     ) VALUES (
+         :id,
+         :title_id,
+@@ -95,7 +96,8 @@ def save_chapter(chapter):
+         :num_minor,
+         :name,
+         :pages,
+-        :groups
++        :groups,
++        :is_webtoon
+     );
+     &quot;&quot;&quot;,
+         {
+@@ -107,6 +109,7 @@ def save_chapter(chapter):
+             &quot;name&quot;: chapter[&quot;name&quot;],
+             &quot;pages&quot;: json.dumps(chapter[&quot;pages&quot;]),
+             &quot;groups&quot;: json.dumps(chapter[&quot;groups&quot;]),
++            &quot;is_webtoon&quot;: chapter[&quot;is_webtoon&quot;],
+         },
+     )
+ 
+@@ -116,7 +119,7 @@ def load_chapter(chapter_id):
+     result = list(
+         conn.cursor().execute(
+             &quot;&quot;&quot;
+-    SELECT id, title_id, num_major, num_minor, name, pages, groups
++    SELECT id, title_id, num_major, num_minor, name, pages, groups, is_webtoon
+     FROM chapter
+     WHERE id = ?;
+     &quot;&quot;&quot;,
+@@ -137,6 +140,7 @@ def load_chapter(chapter_id):
+             &quot;name&quot;: chapter[4],
+             &quot;pages&quot;: json.loads(chapter[5]),
+             &quot;groups&quot;: json.loads(chapter[6]),
++            &quot;is_webtoon&quot;: chapter[7],
+         }
+ 
+ 
+diff --git a/src/pytaku/templates/chapter.html b/src/pytaku/templates/chapter.html
+index 866a446..b6a5665 100644
+--- a/src/pytaku/templates/chapter.html
++++ b/src/pytaku/templates/chapter.html
+@@ -30,7 +30,10 @@
+ 
+   .pages img {
+     display: block;
+-    margin: 0 auto 1rem auto;
++    margin: 0 auto .7rem auto;
++  }
++  .pages.webtoon img {
++    margin: 0 auto;
+   }
+ 
+   .buttons {
+@@ -74,7 +77,7 @@ &lt;h1&gt;{{ self.title() }}&lt;/h1&gt;
+ &lt;/div&gt;
+ {% endblock %}
+ 
+-&lt;div class=&quot;pages&quot;&gt;
++&lt;div class=&quot;pages {% if is_webtoon %}webtoon{% endif %}&quot;&gt;
+   {% for page in pages %}
+   &lt;img src=&quot;{{ page }}&quot; crossorigin=&quot;anonymous&quot; referrerpolicy=&quot;no-referrer&quot;/&gt;
+   {% endfor %}
+</pre></body></html>

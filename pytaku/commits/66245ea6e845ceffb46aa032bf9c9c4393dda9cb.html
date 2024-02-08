@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[66245ea6e8] split single js file to multiple modules | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 66245ea6e8</strong><hr><pre>commit 66245ea6e845ceffb46aa032bf9c9c4393dda9cb
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 17 22:56:37 2020 +0700
+
+    split single js file to multiple modules
+
+diff --git a/src/pytaku/static/js/common-components.js b/src/pytaku/static/js/common-components.js
+new file mode 100644
+index 0000000..22852ee
+--- /dev/null
++++ b/src/pytaku/static/js/common-components.js
+@@ -0,0 +1,52 @@
++import { Auth } from &quot;./models.js&quot;;
++
++function Navbar(initialVNode) {
++  let isLoggingOut = false;
++  return {
++    view: (vnode) =&gt; {
++      let userLink;
++      if (Auth.isLoggedIn()) {
++        userLink = m(&quot;span.nav--greeting&quot;, [
++          &quot;Welcome, &quot;,
++          m(&quot;b&quot;, Auth.username),
++          &quot; &quot;,
++          m(
++            &quot;button&quot;,
++            {
++              onclick: (ev) =&gt; {
++                isLoggingOut = true;
++                m.redraw();
++                Auth.logout();
++              },
++              disabled: isLoggingOut ? &quot;disabled&quot; : null,
++            },
++            [
++              m(&quot;i.icon.icon-log-out&quot;),
++              isLoggingOut ? &quot; logging out&quot; : &quot; logout&quot;,
++            ]
++          ),
++        ]);
++      } else {
++        userLink = m(m.route.Link, { class: &quot;nav--link&quot;, href: &quot;/a&quot; }, [
++          m(&quot;i.icon.icon-log-in&quot;),
++          &quot;login / register&quot;,
++        ]);
++      }
++
++      return m(&quot;nav&quot;, [
++        m(m.route.Link, { class: &quot;nav--logo&quot;, href: &quot;/&quot; }, [
++          m(&quot;img.nav--logo--img&quot;, {
++            src: &quot;/static/pytaku.svg&quot;,
++            alt: &quot;home&quot;,
++          }),
++        ]),
++        m(&quot;form.nav--search-form&quot;, [
++          m(&quot;input&quot;, { placeholder: &quot;search title name&quot; }),
++          m(&quot;button&quot;, { type: &quot;submit&quot; }, [m(&quot;i.icon.icon-search&quot;)]),
++        ]),
++        userLink,
++      ]);
++    },
++  };
++}
++export { Navbar };
+diff --git a/src/pytaku/static/js/main.js b/src/pytaku/static/js/main.js
+new file mode 100644
+index 0000000..cf63ec1
+--- /dev/null
++++ b/src/pytaku/static/js/main.js
+@@ -0,0 +1,11 @@
++import { Auth } from &quot;./models.js&quot;;
++import Authentication from &quot;./routes/authentication.js&quot;;
++import Home from &quot;./routes/home.js&quot;;
++
++const root = document.getElementById(&quot;spa-root&quot;);
++m.route.prefix = &quot;&quot;;
++m.route(root, &quot;/h&quot;, {
++  &quot;/h&quot;: Home,
++  &quot;/a&quot;: Authentication,
++});
++Auth.init();
+diff --git a/src/pytaku/static/js/spa.js b/src/pytaku/static/js/routes/authentication.js
+similarity index 75%
+rename from src/pytaku/static/js/spa.js
+rename to src/pytaku/static/js/routes/authentication.js
+index 5776261..1e6743a 100644
+--- a/src/pytaku/static/js/spa.js
++++ b/src/pytaku/static/js/routes/authentication.js
+@@ -1,20 +1,5 @@
+-/* Top-level Components */
+-import { Auth } from &quot;./models.js&quot;;
+-
+-const Home = {
+-  oncreate: (vnode) =&gt; {
+-    document.title = &quot;Pytaku&quot;;
+-  },
+-  view: (vnode) =&gt; {
+-    return m(&quot;div.main&quot;, [
+-      m(Navbar),
+-      m(&quot;div.content&quot;, [
+-        m(&quot;p&quot;, &quot;Try searching for some manga title using the box above.&quot;),
+-        m(&quot;p&quot;, &quot;Logging in allows you to follow manga titles.&quot;),
+-      ]),
+-    ]);
+-  },
+-};
++import { Navbar } from &quot;../common-components.js&quot;;
++import { Auth } from &quot;../models.js&quot;;
+ 
+ function Authentication(initialVNode) {
+   let loginUsername;
+@@ -201,62 +186,4 @@ function Authentication(initialVNode) {
+   };
+ }
+ 
+-function Navbar(initialVNode) {
+-  let isLoggingOut = false;
+-  return {
+-    view: (vnode) =&gt; {
+-      let userLink;
+-      if (Auth.isLoggedIn()) {
+-        userLink = m(&quot;span.nav--greeting&quot;, [
+-          &quot;Welcome, &quot;,
+-          m(&quot;b&quot;, Auth.username),
+-          &quot; &quot;,
+-          m(
+-            &quot;button&quot;,
+-            {
+-              onclick: (ev) =&gt; {
+-                isLoggingOut = true;
+-                m.redraw();
+-                Auth.logout();
+-              },
+-              disabled: isLoggingOut ? &quot;disabled&quot; : null,
+-            },
+-            [
+-              m(&quot;i.icon.icon-log-out&quot;),
+-              isLoggingOut ? &quot; logging out&quot; : &quot; logout&quot;,
+-            ]
+-          ),
+-        ]);
+-      } else {
+-        userLink = m(m.route.Link, { class: &quot;nav--link&quot;, href: &quot;/a&quot; }, [
+-          m(&quot;i.icon.icon-log-in&quot;),
+-          &quot;login / register&quot;,
+-        ]);
+-      }
+-
+-      return m(&quot;nav&quot;, [
+-        m(m.route.Link, { class: &quot;nav--logo&quot;, href: &quot;/&quot; }, [
+-          m(&quot;img.nav--logo--img&quot;, {
+-            src: &quot;/static/pytaku.svg&quot;,
+-            alt: &quot;home&quot;,
+-          }),
+-        ]),
+-        m(&quot;form.nav--search-form&quot;, [
+-          m(&quot;input&quot;, { placeholder: &quot;search title name&quot; }),
+-          m(&quot;button&quot;, { type: &quot;submit&quot; }, [m(&quot;i.icon.icon-search&quot;)]),
+-        ]),
+-        userLink,
+-      ]);
+-    },
+-  };
+-}
+-
+-/* Entry point */
+-
+-const root = document.getElementById(&quot;spa-root&quot;);
+-m.route.prefix = &quot;&quot;;
+-m.route(root, &quot;/h&quot;, {
+-  &quot;/h&quot;: Home,
+-  &quot;/a&quot;: Authentication,
+-});
+-Auth.init();
++export default Authentication;
+diff --git a/src/pytaku/static/js/routes/home.js b/src/pytaku/static/js/routes/home.js
+new file mode 100644
+index 0000000..df0ce6d
+--- /dev/null
++++ b/src/pytaku/static/js/routes/home.js
+@@ -0,0 +1,18 @@
++import { Navbar } from &quot;../common-components.js&quot;;
++
++const Home = {
++  oncreate: (vnode) =&gt; {
++    document.title = &quot;Pytaku&quot;;
++  },
++  view: (vnode) =&gt; {
++    return m(&quot;div.main&quot;, [
++      m(Navbar),
++      m(&quot;div.content&quot;, [
++        m(&quot;p&quot;, &quot;Try searching for some manga title using the box above.&quot;),
++        m(&quot;p&quot;, &quot;Logging in allows you to follow manga titles.&quot;),
++      ]),
++    ]);
++  },
++};
++
++export default Home;
+diff --git a/src/pytaku/templates/spa.html b/src/pytaku/templates/spa.html
+index 3d43b80..ce36cfa 100644
+--- a/src/pytaku/templates/spa.html
++++ b/src/pytaku/templates/spa.html
+@@ -44,6 +44,6 @@
+ 
+     &lt;script&gt;const initialState = &quot;{{ initial_state }}&quot;;&lt;/script&gt;
+     &lt;script src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;vendored/mithril.min.js&#39;) }}&quot;&gt;&lt;/script&gt;
+-    &lt;script src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;js/spa.js&#39;) }}&quot; type=&quot;module&quot;&gt;&lt;/script&gt;
++    &lt;script src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;js/main.js&#39;) }}&quot; type=&quot;module&quot;&gt;&lt;/script&gt;
+   &lt;/body&gt;
+ &lt;/html&gt;
+</pre></body></html>

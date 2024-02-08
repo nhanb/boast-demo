@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[02273ce907] cache proxied images to filesystem, prune daily | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 02273ce907</strong><hr><pre>commit 02273ce90758a1c1f4d160aa2892e60c4105bb61
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 29 13:46:22 2020 +0700
+
+    cache proxied images to filesystem, prune daily
+
+diff --git a/.gitignore b/.gitignore
+index 5a972bb..6d9a6c8 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,3 +1,4 @@
++/proxy_cache
+ /debug.py
+ /test_secrets.json
+ __pycache__
+diff --git a/pyproject.toml b/pyproject.toml
+index dc48d86..7b01052 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.7&quot;
++version = &quot;0.3.8&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/conf.py b/src/pytaku/conf.py
+index 6d1ecb1..fd4e2fd 100644
+--- a/src/pytaku/conf.py
++++ b/src/pytaku/conf.py
+@@ -7,6 +7,9 @@ class Config(GoodConf):
+     MANGADEX_USERNAME = Value()
+     MANGADEX_PASSWORD = Value()
+     FLASK_SECRET_KEY = Value(initial=lambda: token_urlsafe(50))
++    PROXY_CACHE_DIR = Value(default=&quot;proxy_cache&quot;)
++    PROXY_CACHE_MAX_SIZE = Value(default=1024 * 1024 * 1024)  # 1GiB in bytes
++    PROXY_CACHE_MAX_AGE = Value(default=3600 * 24 * 7)  # 7 weeks in seconds
+ 
+ 
+ config = Config(default_files=[&quot;pytaku.conf.json&quot;])
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 2574598..9626226 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -3,6 +3,7 @@
+ import re
+ from concurrent.futures import ThreadPoolExecutor, as_completed
+ from datetime import timedelta
++from pathlib import Path
+ from typing import List, Tuple
+ 
+ import requests
+@@ -36,6 +37,7 @@
+     title_source_url,
+     title_thumbnail,
+ )
++from .storages import storage
+ 
+ config.load()
+ 
+@@ -61,19 +63,6 @@ def _chapter_name(chapter: dict):
+     return result
+ 
+ 
+-@app.route(&quot;/proxy/&lt;b64_url&gt;&quot;)
+-def proxy_view(b64_url):
+-    &quot;&quot;&quot;Fine I&#39;ll do it&quot;&quot;&quot;
+-    url = _decode_proxy_url(b64_url)
+-    if not _is_manga_img_url(url):
+-        print(&quot;Invalid img url:&quot;, url)
+-        return &quot;Nope&quot;, 400
+-    md_resp = requests.get(url)
+-    resp = make_response(md_resp.content, md_resp.status_code)
+-    resp.headers[&quot;Content-Type&quot;] = md_resp.headers[&quot;Content-Type&quot;]
+-    return resp
+-
+-
+ def _encode_proxy_url(url):
+     return base64.urlsafe_b64encode(url.encode()).decode()
+ 
+@@ -91,6 +80,40 @@ def _is_manga_img_url(
+     return pattern.match(url)
+ 
+ 
++@app.route(&quot;/proxy/&lt;b64_url&gt;&quot;)
++def proxy_view(b64_url):
++    &quot;&quot;&quot;
++    Cached proxy for images (manga cover/page). Motivations:
++        - get around source site&#39;s hotlinking protection
++        - keep working even when source site is down
++        - be a polite netizen in general
++    &quot;&quot;&quot;
++    url = _decode_proxy_url(b64_url)
++    if not _is_manga_img_url(url):
++        print(&quot;Invalid img url:&quot;, url)
++        return &quot;Nope&quot;, 400
++
++    cached_file_path = Path(config.PROXY_CACHE_DIR) / b64_url
++    cached_headers_path = cached_file_path.with_suffix(&quot;.headers.json&quot;)
++
++    if not (storage.exists(cached_file_path) and storage.exists(cached_headers_path)):
++        md_resp = requests.get(url)
++        status_code = md_resp.status_code
++        body = md_resp.content
++        headers = {&quot;Content-Type&quot;: md_resp.headers[&quot;content-type&quot;]}
++        if status_code == 200:
++            storage.save(cached_headers_path, json.dumps(headers).encode())
++            storage.save(cached_file_path, md_resp.content)
++    else:
++        status_code = 200
++        body = storage.read(cached_file_path)
++        headers = json.loads(storage.read(cached_headers_path))
++
++    headers[&quot;Cache-Control&quot;] = &quot;max-age=31536000&quot;
++
++    return body, status_code, headers
++
++
+ def read_tachiyomi_follows(text: str) -&gt; List[Tuple[str, str]]:
+     try:
+         data = json.loads(text)
+diff --git a/src/pytaku/scheduler.py b/src/pytaku/scheduler.py
+index d6183d2..1617c8d 100644
+--- a/src/pytaku/scheduler.py
++++ b/src/pytaku/scheduler.py
+@@ -1,7 +1,9 @@
+ import time
+ from abc import ABC, abstractmethod
+ from datetime import datetime, timedelta
++from pathlib import Path
+ 
++from .conf import config
+ from .persistence import delete_expired_tokens, find_outdated_titles, save_title
+ from .source_sites import get_title
+ 
+@@ -9,7 +11,7 @@
+ 
+ 
+ def main_loop():
+-    workers = [UpdateOutdatedTitles(), DeleteExpiredTokens()]
++    workers = [UpdateOutdatedTitles(), DeleteExpiredTokens(), PruneProxyCache()]
+ 
+     while True:
+         for worker in workers:
+@@ -55,3 +57,47 @@ def run(self):
+         num_deleted = delete_expired_tokens()
+         if num_deleted &gt; 0:
+             print(&quot;Deleted&quot;, num_deleted, &quot;tokens&quot;)
++
++
++class PruneProxyCache(Worker):
++    &quot;&quot;&quot;
++    If proxy cache dir size exceeds config.PROXY_CACHE_MAX_SIZE,
++    delete files that are older than config.PROXY_CACHE_MAX_AGE.
++
++    Only applies for FilesystemStorage.
++    TODO: update this accordingly when a new Storage class is introduced.
++    &quot;&quot;&quot;
++
++    interval = timedelta(days=1)
++
++    def run(self):
++        cache_dir = Path(config.PROXY_CACHE_DIR)
++        cache_size = get_dir_size(cache_dir)
++
++        if cache_size &lt;= config.PROXY_CACHE_MAX_SIZE:
++            return
++
++        now = time.time()
++        files_deleted = 0
++        bytes_deleted = 0
++        for child in cache_dir.iterdir():
++            if child.is_file():
++                stat = child.stat()
++                modified_at = stat.st_mtime
++                if (now - modified_at) &gt; config.PROXY_CACHE_MAX_AGE:
++                    child.unlink()  # yes this means delete
++                    files_deleted += 1
++                    bytes_deleted += stat.st_size
++
++        if files_deleted &gt; 0:
++            in_mb = bytes_deleted / 1024 / 1024
++            print(f&quot;Deleted {files_deleted} files ({in_mb:.2f} MiB).&quot;)
++        else:
++            print(&quot;Deleted nothing.&quot;)
++
++
++def get_dir_size(path: Path):
++    &quot;&quot;&quot;
++    In bytes.
++    &quot;&quot;&quot;
++    return sum(f.stat().st_size for f in path.glob(&quot;**/*&quot;) if f.is_file())
+diff --git a/src/pytaku/storages.py b/src/pytaku/storages.py
+new file mode 100644
+index 0000000..81d7fd2
+--- /dev/null
++++ b/src/pytaku/storages.py
+@@ -0,0 +1,33 @@
++from abc import ABC, abstractmethod
++from pathlib import Path
++
++
++class Storage(ABC):
++    @abstractmethod
++    def save(self, path: Path, blob: bytes):
++        pass
++
++    @abstractmethod
++    def exists(self, path: Path) -&gt; bool:
++        pass
++
++    @abstractmethod
++    def read(self, path: Path) -&gt; bytes:
++        pass
++
++
++class FilesystemStorage(Storage):
++    def save(self, path: Path, blob: bytes):
++        if not path.parent.is_dir():
++            path.parent.mkdir(parents=True)
++        path.write_bytes(blob)
++
++    def exists(self, path: Path) -&gt; bool:
++        return path.is_file()
++
++    def read(self, path: Path) -&gt; bytes:
++        return path.read_bytes()
++
++
++# TODO: support other storages e.g. s3-like
++storage = FilesystemStorage()
+</pre></body></html>

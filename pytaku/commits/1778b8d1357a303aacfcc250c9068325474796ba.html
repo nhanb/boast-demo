@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1778b8d135] run update title task less rapidly | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 1778b8d135</strong><hr><pre>commit 1778b8d1357a303aacfcc250c9068325474796ba
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 8 02:41:38 2020 +0700
+
+    run update title task less rapidly
+    
+    Eventually this should be configurable via CLI args.
+    Too lazy to do that now.
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 680d4a2..2dafa4e 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.1.8&quot;
++version = &quot;0.1.9&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/scheduler.py b/src/pytaku/scheduler.py
+index 5c7176d..69aa702 100644
+--- a/src/pytaku/scheduler.py
++++ b/src/pytaku/scheduler.py
+@@ -37,7 +37,7 @@ def after_run(self):
+ 
+ 
+ class UpdateOutdatedSeries(Worker):
+-    interval = timedelta(seconds=9)
++    interval = timedelta(hours=2)
+ 
+     def run(self):
+         for title in find_outdated_titles():
+</pre></body></html>

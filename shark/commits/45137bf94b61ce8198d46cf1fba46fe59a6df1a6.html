@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[45137bf94b] fix janky dragging, mostly on Windows | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 45137bf94b</strong><hr><pre>commit 45137bf94b61ce8198d46cf1fba46fe59a6df1a6
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 8 20:07:19 2022 +0700
+
+    fix janky dragging, mostly on Windows
+
+diff --git a/.gitignore b/.gitignore
+index 94c0d5f..7db2ff1 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,3 +1,4 @@
+ /dist
+ /icon256.ico
+ /icon512.png
++/*.exe
+diff --git a/main.go b/main.go
+index 554bb9e..65b363a 100644
+--- a/main.go
++++ b/main.go
+@@ -194,6 +194,7 @@ func handleNonHungryInputs(g *Game) {
+ 		newWinPos := g.WinStartPos.Add(mousePos.Subtract(g.MouseStartPos))
+ 		g.X = newWinPos.x
+ 		g.Y = newWinPos.y
++		ebiten.SetWindowPosition(g.X, g.Y)
+ 	}
+ 
+ 	g.PreviousMousePos = mousePos
+</pre></body></html>

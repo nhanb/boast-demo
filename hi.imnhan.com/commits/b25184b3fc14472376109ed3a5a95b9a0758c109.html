@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b25184b3fc] post: italic in terminal vim | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / b25184b3fc</strong><hr><pre>commit b25184b3fc14472376109ed3a5a95b9a0758c109
+Author: nhanb &lt;nhan@nerdyweekly.com&gt;
+Date:   Sat Aug 2 22:43:36 2014 +0700
+
+    post: italic in terminal vim
+
+diff --git a/content/images/italic_01_gvim.png b/content/images/italic_01_gvim.png
+new file mode 100644
+index 0000000..d153345
+Binary files /dev/null and b/content/images/italic_01_gvim.png differ
+diff --git a/content/images/italic_02_vim.png b/content/images/italic_02_vim.png
+new file mode 100644
+index 0000000..a0beaa8
+Binary files /dev/null and b/content/images/italic_02_vim.png differ
+diff --git a/content/italic-text-in-vim-tmux-gnome-terminal.md b/content/italic-text-in-vim-tmux-gnome-terminal.md
+new file mode 100644
+index 0000000..861f0cd
+--- /dev/null
++++ b/content/italic-text-in-vim-tmux-gnome-terminal.md
+@@ -0,0 +1,84 @@
++Title: Enable italic text inside vim inside tmux inside gnome-terminal
++Date: 2014-08-02 16:46
++Category: tutorials
++Tags: linux, vim
++Slug: enable-italic-text-vim-tmux-gnome-terminal
++
++It has bothered me for a while what I can&#39;t get terminal vim to display *italic* text. It might
++seem trivial but it makes a world of difference when I&#39;m editing Markdown or HTML. Here&#39;s what gvim
++looks like:
++
++![](/images/italic_01_gvim.png)
++
++Neat, right? This is what terminal vim shows:
++
++![](/images/italic_02_vim.png)
++
++I don&#39;t know about you, but the second one looks catastrophically messy and counterintuitive to me.
++Let&#39;s change that. My current setup is terminal vim running inside a tmux session on
++gnome-terminal. Let&#39;s go through these things.
++
++## gnome-terminal
++
++Note that older versions of `gnome-terminal` do not support italic text. To check if your terminal
++does support it, run this command:
++
++```bash
++$ echo &quot;\e[3m foo \e[23m&quot;
++```
++
++If your version of gnome-terminal supports it, an italic *foo* will appear. If not, upgrade it! :)
++
++## vim
++
++You may have noticed: `[3m` and `[23m` are the special sequences to start and stop printing
++italic text. Unfortunately, vim doesn&#39;t care about those. It expects `sitm` and `ritm` instead.
++We&#39;ll need to map them manually. Simply use these commands:
++
++```bash
++# Download a custom terminfo that defines sitm and ritm
++$ wget https://gist.githubusercontent.com/sos4nt/3187620/raw/8e13c1fec5b72d415ed2917590348451de5f8e58/xterm-256color-italic.terminfo
++# Compile it
++$ tic xterm-256color-italic.terminfo
++# Activate xterm-256color-italic.terminfo automatically
++# (edit filename accordingly if you&#39;re using another shell)
++$ echo &#39;export TERM=xterm-256color-italic&#39; &gt;&gt; ~/.bashrc
++```
++
++Open a new terminal window and try the first command again. You should now see an italic *foo*. If
++not, I can&#39;t help you any further :P
++
++## tmux
++
++The only reason I use terminal vim instead of gvim is tmux integration, therefore I almost always
++run vim inside a tmux session. Unfortunately tmux does some weird things to your terminal, one of
++them is altering the `$TERM` environment variable. When we open a tmux session, it will typically
++reset `$TERM` to `screen-256color` or something like that.
++
++If you did the previous step, the `export` command in your `.bashrc` should have overridden tmux&#39;s
++`$TERM` value. If for some reason it doesn&#39;t work, you can directly tell tmux to use the correct
++value. Add this line to `~/.tmux.conf`:
++
++```
++set -g default-terminal &quot;xterm-256color-italic&quot;
++```
++
++## More on vim
++
++If you still can&#39;t see any italic text in a markdown file, it might be because your colorscheme
++deliberately disables it. Try using another colorscheme (I highly recommend [solarized][2]). You
++can also check if your markdown syntax plugin does use italics; I&#39;m currently using [Tim Pope&#39;s
++markdown plugin][3] and it works great!
++
++## References:
++
++1. [Terminal that supports ANSI italic escape code?][4]
++2. [gnome-terminal&#39;s italic escape codes][5]
++3. [Enabling italic fonts in iTerm2, tmux, and vim][6]
++
++[1]: https://gist.githubusercontent.com/sos4nt/3187620/raw/8e13c1fec5b72d415ed2917590348451de5f8e58/xterm-256color-italic.terminfo
++[2]: http://ethanschoonover.com/solarized
++[3]: https://github.com/tpope/vim-markdown
++[4]: http://superuser.com/questions/204743/terminal-that-supports-ansi-italic-escape-code
++[5]: http://stackoverflow.com/a/21077380
++[6]: https://alexpearce.me/2014/05/italics-in-iterm2-vim-tmux/
+</pre></body></html>

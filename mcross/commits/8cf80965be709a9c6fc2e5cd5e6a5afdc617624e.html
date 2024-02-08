@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[8cf80965be] basic preformatted &amp; link cosmetics | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 8cf80965be</strong><hr><pre>commit 8cf80965be709a9c6fc2e5cd5e6a5afdc617624e
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu May 14 20:24:35 2020 +0700
+
+    basic preformatted &amp; link cosmetics
+
+diff --git a/README.md b/README.md
+index 4e04916..026f941 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,16 @@
+-![do you remember wwww?](https://p.caophim.net/81.webp)
++McCross is a WIP [gemini://](https://gemini.circumlunar.space/) browser
++written in python and tkinter.
+ 
+-McCross is a WIP [gemini://](https://gemini.circumlunar.space/) browser,
+-built in loving memory of a simpler, more innocent time.
+-
+-Developed against gemini://gemini.circumlunar.space/ because apparently
+-it&#39;s the only one with a valid, CA-approved TLS cert.
++It&#39;s developed against gemini://gemini.circumlunar.space/ because apparently
++that&#39;s the only server with a valid, CA-approved TLS cert.
+ 
+ It currently looks like this:
+ 
+-![](https://p.caophim.net/82.png)
++![](https://p.caophim.net/84.png)
++
++Happy-path fetching and rendering already works.
++Clicking on links isn&#39;t implemented yet though.
++I&#39;m still figuring out stuff as I go.
+ 
+ # Installation
+ 
+diff --git a/pyproject.toml b/pyproject.toml
+index d2e98ba..97c39b0 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;mccross&quot;
+-version = &quot;0.1.0&quot;
++version = &quot;0.1.1&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+diff --git a/src/mccross/document.py b/src/mccross/document.py
+index e27d4ad..37af176 100644
+--- a/src/mccross/document.py
++++ b/src/mccross/document.py
+@@ -73,9 +73,3 @@ def parse(text):
+             nodes.append(TextNode(line))
+ 
+     return nodes
+-
+-
+-def test():
+-    return parse(
+-        &quot;&quot;&quot;# Project Gemini\n\n## Overview\n\nGemini is a new internet protocol which:\n\n* Is heavier than gopher\n* Is lighter than the web\n* Will not replace either\n* Strives for maximum power to weight ratio\n* Takes user privacy very seriously\n\n## Resources\n\n=&gt; docs/\tGemini documentation\n=&gt; software/\tGemini software\n=&gt; servers/\tKnown Gemini servers\n=&gt; gemini://gus.guru/\tGemini Universal Search engine\n=&gt; https://lists.orbitalfox.eu/listinfo/gemini\tGemini mailing list\n=&gt; https://portal.mozz.us/?url=gemini%3A%2F%2Fgemini.circumlunar.space%2F&amp;fmt=fixed\tGemini-to-web proxy service\n=&gt; https://proxy.vulpes.one/gemini/gemini.circumlunar.space\tAnother Gemini-to-web proxy service\n=&gt; gemini://gemini.conman.org/test/torture/\tGemini client torture test\n\n## Geminispace aggregator (experimental!)\n\n=&gt; capcom/\tCAPCOM\n\n## Free Gemini hosting\n\n=&gt; users/\tUsers with Gemini content on this server\n```\nfooo\nbar\n```\nBye.\n&quot;&quot;&quot;
+-    )
+diff --git a/src/mccross/gui/model.py b/src/mccross/gui/model.py
+index d351890..80b4678 100644
+--- a/src/mccross/gui/model.py
++++ b/src/mccross/gui/model.py
+@@ -1,10 +1,46 @@
+ from .. import document
+ 
++DEMO_TEXT = &quot;&quot;&quot;\
++# Welcome to McCross Browser
++
++## List
++
++* おぼえていますか　目と目が会った時を
++* Do you remember? The time when our eyes first met?
++* おぼえていますか　手と手触れ会った時
++* Do you remember? The time when our hands first touched?
++
++## Codes
++
++```
++[tool.poetry]
++name = &quot;mccross&quot;
++version = &quot;0.1.0&quot;
++description = &quot;Do you remember www?&quot;
++authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
++license = &quot;MIT&quot;
++```
++
++## Links
++
++=&gt; gemini.circumlunar.space/docs/	Gemini documentation
++=&gt; gemini://gemini.circumlunar.space/software/ Gemini software
++=&gt; gemini.circumlunar.space/servers/     Known Gemini servers
++=&gt; gemini://gus.guru/	Gemini Universal Search engine
++=&gt; https://lists.orbitalfox.eu/listinfo/gemini	Gemini mailing list
++=&gt; https://portal.mozz.us/?url=gemini%3A%2F%2Fgemini.circumlunar.space%2F&amp;fmt=fixed	Gemini-to-web proxy service
++=&gt; https://proxy.vulpes.one/gemini/gemini.circumlunar.space	Another Gemini-to-web proxy service
++=&gt; gemini://gemini.conman.org/test/torture/	Gemini client torture test
++&quot;&quot;&quot;
++
+ 
+ class Model:
+-    plaintext = &quot;Nothing to see here... yet.&quot;
++    plaintext = &quot;&quot;
+     gemini_nodes = None
+ 
++    def __init__(self):
++        self.update_content(DEMO_TEXT)
++
+     def update_content(self, plaintext):
+         self.plaintext = plaintext
+         self.gemini_nodes = []
+diff --git a/src/mccross/gui/view.py b/src/mccross/gui/view.py
+index 8625556..6565cba 100644
+--- a/src/mccross/gui/view.py
++++ b/src/mccross/gui/view.py
+@@ -1,6 +1,7 @@
+ import sys
+ from tkinter import Text, Tk, font, ttk
+ 
++from ..document import GeminiNode, LinkNode, PreformattedNode, TextNode
+ from .model import Model
+ from .widgets import ReadOnlyText
+ 
+@@ -78,9 +79,17 @@ def __init__(self, root: Tk, model: Model):
+                 &quot;Times&quot;,
+             ]
+         )
++        mono_font = pick_font([&quot;Ubuntu Mono&quot;, &quot;Consolas&quot;, &quot;Courier&quot;])
+         text.config(
+             font=(text_font, 13), bg=&quot;#fff8dc&quot;, fg=&quot;black&quot;, padx=5, pady=5,
+         )
++        text.tag_config(&quot;link&quot;, foreground=&quot;blue&quot;, underline=1)
++        text.tag_config(
++            &quot;pre&quot;,
++            font=(mono_font, 13),
++            # background=&quot;#ffe4c4&quot;,
++            # selectbackground=text.cget(&quot;selectbackground&quot;),
++        )
+         text.pack(side=&quot;left&quot;, fill=&quot;both&quot;, expand=True)
+ 
+         text_scrollbar = ttk.Scrollbar(viewport, command=text.yview)
+@@ -105,6 +114,21 @@ def render_page(self):
+         if not self.model.gemini_nodes:
+             self.text.insert(&quot;end&quot;, self.model.plaintext)
+         else:
+-            self.text.insert(
+-                &quot;end&quot;, &quot;\n&quot;.join(str(node) for node in self.model.gemini_nodes)
+-            )
++            for node in self.model.gemini_nodes:
++                render_node(node, self.text)
++
++
++def render_node(node: GeminiNode, widget: Text):
++    nodetype = type(node)
++    if nodetype is TextNode:
++        widget.insert(&quot;end&quot;, node.text + &quot;\n&quot;)
++    elif nodetype is LinkNode:
++        widget.insert(&quot;end&quot;, &quot;=&gt; &quot;)
++        widget.insert(&quot;end&quot;, f&quot;{node.url}&quot;, (&quot;link&quot;,))
++        if node.name:
++            widget.insert(&quot;end&quot;, f&quot; {node.name}&quot;)
++        widget.insert(&quot;end&quot;, &quot;\n&quot;)
++    elif nodetype is PreformattedNode:
++        widget.insert(&quot;end&quot;, f&quot;```\n{node.text}\n```\n&quot;, (&quot;pre&quot;,))
++    else:
++        widget.insert(&quot;end&quot;, node.text + &quot;\n&quot;)
+</pre></body></html>

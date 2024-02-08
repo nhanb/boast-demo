@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[34d5390109] mangasee with the new url fuckery | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 34d5390109</strong><hr><pre>commit 34d5390109086a17b0270b6aa3c9ccb35885c621
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Mar 24 00:17:12 2021 +0700
+
+    mangasee with the new url fuckery
+    
+    Mangasee may now use a different chapter link depending on the first
+    digit of its raw id. Therefore, we now need to use that raw id as our
+    unique `chapter.id`. This naturally required a migration script to
+    update existing records too.
+    
+    Also disable mangadex updates because, you know, it&#39;s dead.
+
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+index dc2baef..86a1faf 100644
+--- a/src/mangoapi/mangasee.py
++++ b/src/mangoapi/mangasee.py
+@@ -35,7 +35,7 @@ def get_title(self, title_id):
+             numbers = _parse_chapter_number(ch[&quot;Chapter&quot;])
+             chapters.append(
+                 {
+-                    &quot;id&quot;: numbers[&quot;number&quot;],
++                    &quot;id&quot;: numbers[&quot;raw_id&quot;],
+                     &quot;name&quot;: ch[&quot;ChapterName&quot;],
+                     &quot;volume&quot;: &quot;&quot;,
+                     &quot;groups&quot;: [],
+@@ -55,17 +55,20 @@ def get_title(self, title_id):
+         }
+ 
+     def get_chapter(self, title_id, chapter_id):
+-        resp = self.http_get(
+-            f&quot;https://mangasee123.com/read-online/{title_id}-chapter-{chapter_id}.html&quot;
+-        )
++        numbers = _parse_chapter_number(chapter_id)
++        index = chapter_id[0]
++        suffix = &quot;&quot; if index == &quot;1&quot; else f&quot;-index-{index}&quot;
++        url = f&quot;https://mangasee123.com/read-online/{title_id}-chapter-{numbers[&#39;number&#39;]}{suffix}.html&quot;
++        print(&quot;&gt;&gt;&quot;, url)
++        resp = self.http_get(url)
+         html = resp.text
+ 
+         title_id = regexes[&quot;chapter_title_name&quot;].search(html).group(1)
+         chapter_data = json.loads(regexes[&quot;chapter_data&quot;].search(html).group(1))
+         num_pages = int(chapter_data[&quot;Page&quot;])
++        directory = chapter_data[&quot;Directory&quot;]
++        img_server = regexes[&quot;chapter_img_server&quot;].search(html).group(1)
+         img_server = regexes[&quot;chapter_img_server&quot;].search(html).group(1)
+-
+-        numbers = _parse_chapter_number(chapter_data[&quot;Chapter&quot;])
+ 
+         result = {
+             &quot;id&quot;: chapter_id,
+@@ -73,7 +76,9 @@ def get_chapter(self, title_id, chapter_id):
+             &quot;site&quot;: &quot;mangasee&quot;,
+             &quot;name&quot;: chapter_data[&quot;ChapterName&quot;] or &quot;&quot;,
+             &quot;pages&quot;: [
+-                _generate_img_src(img_server, title_id, chapter_data[&quot;Chapter&quot;], p)
++                _generate_img_src(
++                    img_server, title_id, chapter_data[&quot;Chapter&quot;], directory, p
++                )
+                 for p in range(1, num_pages + 1)
+             ],
+             &quot;pages_alt&quot;: [],
+@@ -180,13 +185,35 @@ def _parse_chapter_number(e):
+     result = {
+         &quot;num_major&quot;: major,
+         &quot;number&quot;: str(major) if not minor else f&quot;{major}.{minor}&quot;,
++        &quot;raw_id&quot;: e,
+     }
+     if minor:
+         result[&quot;num_minor&quot;] = minor
+     return result
+ 
+ 
+-def _generate_img_src(img_srv, title_id, chapter_id, page):
++def _chapter_url(e):
++    &quot;&quot;&quot;
++    Yet another bright idea:
++
++        (vm.ChapterURLEncode = function (e) {
++            Index = &quot;&quot;;
++            var t = e.substring(0, 1);
++            1 != t &amp;&amp; (Index = &quot;-index-&quot; + t);
++            var n = parseInt(e.slice(1, -1)),
++            m = &quot;&quot;,
++            a = e[e.length - 1];
++            return (
++            0 != a &amp;&amp; (m = &quot;.&quot; + a),
++            &quot;-chapter-&quot; + n + m + Index + vm.PageOne + &quot;.html&quot;
++            );
++        }),
++
++    e.g. vm.ChapterURLEncode(&quot;201420&quot;) === &quot;-chapter-142-index-2-page-1.html&quot;
++    &quot;&quot;&quot;
++
++
++def _generate_img_src(img_srv, title_id, chapter_id, directory, page):
+     &quot;&quot;&quot;
+     Chapter ID padding logic:
+ 
+@@ -206,4 +233,8 @@ def _generate_img_src(img_srv, title_id, chapter_id, page):
+         padded_chapter = chapter
+     else:
+         padded_chapter = f&quot;{chapter}.{odd}&quot;
+-    return f&quot;https://{img_srv}/manga/{title_id}/{padded_chapter}-{page:03d}.png&quot;
++
++    directory = f&quot;{directory}/&quot; if directory else &quot;&quot;
++    return (
++        f&quot;https://{img_srv}/manga/{title_id}/{directory}{padded_chapter}-{page:03d}.png&quot;
++    )
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 88e51d1..3de7507 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -98,6 +98,7 @@ def proxy_view(b64_url):
+         - be a polite netizen in general
+     &quot;&quot;&quot;
+     url = _decode_proxy_url(b64_url)
++    print(&quot;Proxying url:&quot;, url)
+     if not _is_manga_img_url(url):
+         print(&quot;Invalid img url:&quot;, url)
+         return &quot;Nope&quot;, 400
+diff --git a/src/pytaku/scheduler.py b/src/pytaku/scheduler.py
+index aa24b34..e56c340 100644
+--- a/src/pytaku/scheduler.py
++++ b/src/pytaku/scheduler.py
+@@ -65,6 +65,10 @@ class UpdateOutdatedTitles(Worker):
+ 
+     def run(self):
+         for title in find_outdated_titles():
++            if title[&quot;site&quot;] == &quot;mangadex&quot;:
++                print(f&quot;Skipped title {title[&#39;id&#39;]} from {title[&#39;site&#39;]}.&quot;)
++                continue
++
+             print(f&quot;Updating title {title[&#39;id&#39;]} from {title[&#39;site&#39;]}...&quot;, end=&quot;&quot;)
+             try:
+                 updated_title = get_title(title[&quot;site&quot;], title[&quot;id&quot;])
+diff --git a/src/pytaku/scripts/__init__.py b/src/pytaku/scripts/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/src/pytaku/scripts/migrate_mangasee_chapter_ids.py b/src/pytaku/scripts/migrate_mangasee_chapter_ids.py
+new file mode 100644
+index 0000000..b4a88ff
+--- /dev/null
++++ b/src/pytaku/scripts/migrate_mangasee_chapter_ids.py
+@@ -0,0 +1,76 @@
++import subprocess
++from typing import List, Tuple
++
++from mangoapi.mangasee import Mangasee
++from pytaku.database.common import get_conn, run_sql
++from pytaku.persistence import save_title
++
++ms = Mangasee()
++
++
++def fetch_title(title_id: str) -&gt; List[Tuple[str, str]]:
++    &quot;&quot;&quot;
++    Each tuple is (old_id, new_id)
++    &quot;&quot;&quot;
++    title = ms.get_title(title_id)
++    updates = [(title_id, ch[&quot;number&quot;], ch[&quot;id&quot;]) for ch in title[&quot;chapters&quot;]]
++    return title, updates
++
++
++def migrate():
++    mangasee_titles = run_sql(
++        &quot;SELECT id FROM title WHERE site = &#39;mangasee&#39; ORDER BY lower(id);&quot;
++    )
++    print(f&quot;There are {len(mangasee_titles)} titles to update.&quot;)
++
++    diffs = []
++    new_titles = []
++    for title_id in mangasee_titles:
++        print(f&quot;&gt;&gt; Fetching {title_id}&quot;)
++        new_title, new_title_diffs = fetch_title(title_id)
++        diffs += new_title_diffs
++        new_titles.append(new_title)
++
++    print(&quot;Diffs:&quot;)
++    for diff in diffs:
++        print(diff)
++
++    print(&quot;Starting db transaction&quot;)
++    conn = get_conn()
++    cursor = conn.cursor()
++    cursor.execute(&quot;pragma foreign_keys = off;&quot;)
++    cursor.execute(&quot;begin transaction;&quot;)
++
++    for new_title in new_titles:
++        print(f&#39;Saving title {new_title[&quot;id&quot;]}&#39;)
++        save_title(new_title)
++
++    for title_id, old_chapter_id, new_chapter_id in diffs:
++        print(&quot;Updating&quot;, title_id, old_chapter_id, &quot;to&quot;, new_chapter_id)
++        cursor.execute(
++            &quot;UPDATE chapter SET id=? WHERE id=? AND title_id=? AND site=&#39;mangasee&#39;;&quot;,
++            (new_chapter_id, old_chapter_id, title_id),
++        )
++        cursor.execute(
++            &quot;UPDATE read SET chapter_id=? WHERE chapter_id=? AND title_id=? AND site=&#39;mangasee&#39;;&quot;,
++            (new_chapter_id, old_chapter_id, title_id),
++        )
++
++    cursor.execute(&quot;pragma foreign_key_check;&quot;)
++    cursor.execute(&quot;commit;&quot;)
++    cursor.execute(&quot;pragma foreign_keys = on;&quot;)
++    print(&quot;All done!&quot;)
++
++
++def main():
++    subprocess.run([&quot;systemctl&quot;, &quot;--user&quot;, &quot;stop&quot;, &quot;pytaku&quot;], check=True)
++    subprocess.run([&quot;systemctl&quot;, &quot;--user&quot;, &quot;stop&quot;, &quot;pytaku-scheduler&quot;], check=True)
++
++    migrate()
++
++    subprocess.run([&quot;systemctl&quot;, &quot;--user&quot;, &quot;start&quot;, &quot;pytaku&quot;], check=True)
++    subprocess.run([&quot;systemctl&quot;, &quot;--user&quot;, &quot;start&quot;, &quot;pytaku-scheduler&quot;], check=True)
++
++
++if __name__ == &quot;__main__&quot;:
++    main()
+</pre></body></html>

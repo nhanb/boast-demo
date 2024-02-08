@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[bfd6e86d0f] let FileServer list dir without index.html | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / bfd6e86d0f</strong><hr><pre>commit bfd6e86d0ff87a23040a07d1057deda6b3ad3260
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jul 12 16:08:10 2023 +0700
+
+    let FileServer list dir without index.html
+
+diff --git a/livereload/livereload.go b/livereload/livereload.go
+index 3e4fbc4..4031248 100644
+--- a/livereload/livereload.go
++++ b/livereload/livereload.go
+@@ -94,7 +94,7 @@ func Middleware(fsys writablefs.FS, f http.Handler) http.Handler {
+ 
+ 		originalContent, err := fs.ReadFile(fsys, path)
+ 		if err != nil {
+-			http.NotFound(w, r)
++			f.ServeHTTP(w, r)
+ 			return
+ 		}
+ 
+</pre></body></html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[4128c53b39] persist title &amp; chapter, got prev/next working | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 4128c53b39</strong><hr><pre>commit 4128c53b39c5319109e471843bc62bf98de55610
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 2 12:18:01 2020 +0700
+
+    persist title &amp; chapter, got prev/next working
+    
+    TODO: expiry
+
+diff --git a/.gitignore b/.gitignore
+index 68e2f20..fd80dcd 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -2,6 +2,6 @@
+ __pycache__
+ *.pyc
+ *.json
+-*.sqlite3
++*.sqlite3*
+ *.egg-info
+ /dist/
+diff --git a/src/mangoapi/__init__.py b/src/mangoapi/__init__.py
+index e83784e..c41cf81 100644
+--- a/src/mangoapi/__init__.py
++++ b/src/mangoapi/__init__.py
+@@ -14,9 +14,9 @@ def _parse_chapter_number(string):
+     count = len(nums)
+     assert count == 1 or count == 2
+     result = {&quot;number&quot;: string}
+-    result[&quot;major&quot;] = int(nums[0])
++    result[&quot;num_major&quot;] = int(nums[0])
+     if count == 2:
+-        result[&quot;minor&quot;] = int(nums[1])
++        result[&quot;num_minor&quot;] = int(nums[1])
+     return result
+ 
+ 
+@@ -35,13 +35,10 @@ def get_title(title_id):
+     md_json = md_resp.json()
+     assert md_json[&quot;status&quot;] == &quot;OK&quot;
+ 
+-    cover_url = md_json[&quot;manga&quot;][&quot;cover_url&quot;]
+-    cover = &quot;https://mangadex.org&quot; + cover_url[: cover_url.rfind(&quot;?&quot;)]
+-
+     title = {
++        &quot;id&quot;: title_id,
+         &quot;name&quot;: md_json[&quot;manga&quot;][&quot;title&quot;],
+         &quot;alt_names&quot;: md_json[&quot;manga&quot;][&quot;alt_names&quot;],
+-        &quot;cover&quot;: cover,
+         &quot;descriptions&quot;: md_json[&quot;manga&quot;][&quot;description&quot;].split(&quot;\r\n\r\n&quot;),
+         &quot;chapters&quot;: [
+             {
+@@ -52,7 +49,7 @@ def get_title(title_id):
+                 **_parse_chapter_number(chap[&quot;chapter&quot;]),
+             }
+             for chap_id, chap in md_json[&quot;chapter&quot;].items()
+-            if chap[&quot;lang_code&quot;] == &quot;gb&quot;
++            if chap[&quot;lang_code&quot;] == &quot;gb&quot; and chap[&quot;group_name&quot;] != &quot;MangaPlus&quot;
+         ],
+     }
+     return title
+diff --git a/src/pytaku/database/migrations/latest_schema.sql b/src/pytaku/database/migrations/latest_schema.sql
+index 8755f7d..eac8301 100644
+--- a/src/pytaku/database/migrations/latest_schema.sql
++++ b/src/pytaku/database/migrations/latest_schema.sql
+@@ -3,6 +3,7 @@
+ 
+ CREATE TABLE title (
+     id text,
++    name text,
+     site text,
+     chapters text,
+     alt_names text,
+@@ -13,13 +14,14 @@ CREATE TABLE title (
+ CREATE TABLE chapter (
+     id text,
+     title_id text,
++    site text,
+     num_major integer,
+     num_minor integer,
+     name text,
+     pages text,
+     groups text,
+ 
+-    foreign key (title_id) references title (id),
+-    unique(id, title_id),
++    foreign key (title_id, site) references title (id, site),
++    unique(id, title_id, site),
+     unique(num_major, num_minor, title_id)
+ );
+diff --git a/src/pytaku/database/migrations/m0001.sql b/src/pytaku/database/migrations/m0001.sql
+index 045fa19..c8d0fbd 100644
+--- a/src/pytaku/database/migrations/m0001.sql
++++ b/src/pytaku/database/migrations/m0001.sql
+@@ -1,5 +1,6 @@
+ create table title (
+     id text,
++    name text,
+     site text,
+     chapters text,
+     alt_names text,
+@@ -11,13 +12,14 @@ create table title (
+ create table chapter (
+     id text,
+     title_id text,
++    site text,
+     num_major integer,
+     num_minor integer,
+     name text,
+     pages text,
+     groups text,
+ 
+-    foreign key (title_id) references title (id),
+-    unique(id, title_id),
++    foreign key (title_id, site) references title (id, site),
++    unique(id, title_id, site),
+     unique(num_major, num_minor, title_id)
+ );
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 8eb9d23..0a23275 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -7,6 +7,13 @@
+ from mangoapi import get_chapter, get_title, search_title
+ 
+ from . import mangadex
++from .persistence import (
++    get_prev_next_chapters,
++    load_chapter,
++    load_title,
++    save_chapter,
++    save_title,
++)
+ 
+ app = Flask(__name__)
+ 
+@@ -16,18 +23,39 @@ def home_view():
+     return render_template(&quot;home.html&quot;)
+ 
+ 
+-@app.route(&quot;/title/mangadex/&lt;int:title_id&gt;&quot;)
++@app.route(&quot;/title/mangadex/&lt;title_id&gt;&quot;)
+ def title_view(title_id):
+-    title = get_title(title_id)
+-    return render_template(&quot;title.html&quot;, id=title_id, **title)
+-
+-
+-@app.route(&quot;/chapter/mangadex/&lt;int:chapter_id&gt;&quot;)
++    title = load_title(title_id)
++    if not title:
++        print(&quot;Getting title&quot;, title_id)
++        title = get_title(title_id)
++        print(&quot;Saving title&quot;, title_id, &quot;to db&quot;)
++        save_title(title)
++    else:
++        print(&quot;Loading title&quot;, title_id, &quot;from db&quot;)
++    return render_template(&quot;title.html&quot;, **title)
++
++
++@app.route(&quot;/chapter/mangadex/&lt;chapter_id&gt;&quot;)
+ def chapter_view(chapter_id):
+-    chapter = get_chapter(chapter_id)
++    chapter = load_chapter(chapter_id)
++    if not chapter:
++        print(&quot;Getting chapter&quot;, chapter_id)
++        chapter = get_chapter(chapter_id)
++        save_chapter(chapter)
++    else:
++        print(&quot;Loading chapter&quot;, chapter_id, &quot;from db&quot;)
++
+     chapter[&quot;pages&quot;] = [
+         url_for(&quot;proxy_view&quot;, b64_url=_encode_proxy_url(p)) for p in chapter[&quot;pages&quot;]
+     ]
++
++    # YIIIIKES
++    title = load_title(chapter[&quot;title_id&quot;])
++    prev_chapter, next_chapter = get_prev_next_chapters(title, chapter)
++    chapter[&quot;prev_chapter&quot;] = prev_chapter
++    chapter[&quot;next_chapter&quot;] = next_chapter
++
+     return render_template(&quot;chapter.html&quot;, **chapter)
+ 
+ 
+@@ -46,8 +74,7 @@ def proxy_view(b64_url):
+     &quot;&quot;&quot;Fine I&#39;ll do it&quot;&quot;&quot;
+     url = _decode_proxy_url(b64_url)
+     if not _is_manga_img_url(url):
+-        return &quot;Nope&quot;
+-    print(&quot;Proxying&quot;, url)
++        return &quot;Nope&quot;, 400
+     md_resp = requests.get(url)
+     resp = make_response(md_resp.content, md_resp.status_code)
+     resp.headers.extend(**md_resp.headers)
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+new file mode 100644
+index 0000000..7bdc074
+--- /dev/null
++++ b/src/pytaku/persistence.py
+@@ -0,0 +1,147 @@
++import json
++
++from .database.common import get_conn
++
++
++def save_title(title):
++    conn = get_conn()
++    conn.cursor().execute(
++        &quot;&quot;&quot;
++    INSERT INTO title (
++        id,
++        name,
++        site,
++        chapters,
++        alt_names,
++        descriptions
++    ) VALUES (
++        :id,
++        :name,
++        :site,
++        :chapters,
++        :alt_names,
++        :descriptions
++    );
++    &quot;&quot;&quot;,
++        {
++            &quot;id&quot;: title[&quot;id&quot;],
++            &quot;name&quot;: title[&quot;name&quot;],
++            &quot;site&quot;: &quot;mangadex&quot;,
++            &quot;chapters&quot;: json.dumps(title[&quot;chapters&quot;]),
++            &quot;alt_names&quot;: json.dumps(title[&quot;alt_names&quot;]),
++            &quot;descriptions&quot;: json.dumps(title[&quot;descriptions&quot;]),
++        },
++    )
++
++
++def load_title(title_id):
++    conn = get_conn()
++    result = list(
++        conn.cursor().execute(
++            &quot;&quot;&quot;
++    SELECT id, name, site, chapters, alt_names, descriptions
++    FROM title
++    WHERE id = ?;
++    &quot;&quot;&quot;,
++            (title_id,),
++        )
++    )
++    if not result:
++        return None
++    elif len(result) &gt; 1:
++        raise Exception(f&quot;Found multiple results for title_id {title_id}!&quot;)
++    else:
++        title = result[0]
++        return {
++            &quot;id&quot;: title[0],
++            &quot;name&quot;: title[1],
++            &quot;site&quot;: title[2],
++            &quot;chapters&quot;: json.loads(title[3]),
++            &quot;alt_names&quot;: json.loads(title[4]),
++            &quot;descriptions&quot;: json.loads(title[5]),
++        }
++
++
++def save_chapter(chapter):
++    conn = get_conn()
++    conn.cursor().execute(
++        &quot;&quot;&quot;
++    INSERT INTO chapter (
++        id,
++        title_id,
++        site,
++        num_major,
++        num_minor,
++        name,
++        pages,
++        groups
++    ) VALUES (
++        :id,
++        :title_id,
++        :site,
++        :num_major,
++        :num_minor,
++        :name,
++        :pages,
++        :groups
++    );
++    &quot;&quot;&quot;,
++        {
++            &quot;id&quot;: chapter[&quot;id&quot;],
++            &quot;title_id&quot;: chapter[&quot;title_id&quot;],
++            &quot;site&quot;: &quot;mangadex&quot;,
++            &quot;num_major&quot;: chapter[&quot;num_major&quot;],
++            &quot;num_minor&quot;: chapter.get(&quot;num_minor&quot;, None),
++            &quot;name&quot;: chapter[&quot;name&quot;],
++            &quot;pages&quot;: json.dumps(chapter[&quot;pages&quot;]),
++            &quot;groups&quot;: json.dumps(chapter[&quot;groups&quot;]),
++        },
++    )
++
++
++def load_chapter(chapter_id):
++    conn = get_conn()
++    result = list(
++        conn.cursor().execute(
++            &quot;&quot;&quot;
++    SELECT id, title_id, num_major, num_minor, name, pages, groups
++    FROM chapter
++    WHERE id = ?;
++    &quot;&quot;&quot;,
++            (chapter_id,),
++        )
++    )
++    if not result:
++        return None
++    elif len(result) &gt; 1:
++        raise Exception(f&quot;Found multiple results for chapter_id {chapter_id}!&quot;)
++    else:
++        chapter = result[0]
++        return {
++            &quot;id&quot;: chapter[0],
++            &quot;title_id&quot;: chapter[1],
++            &quot;num_major&quot;: chapter[2],
++            &quot;num_minor&quot;: chapter[3],
++            &quot;name&quot;: chapter[4],
++            &quot;pages&quot;: json.loads(chapter[5]),
++            &quot;groups&quot;: json.loads(chapter[6]),
++        }
++
++
++def get_prev_next_chapters(title, chapter):
++    &quot;&quot;&quot;
++    Maybe consider writing SQL query instead?
++    &quot;&quot;&quot;
++    chapters = title[&quot;chapters&quot;]
++    chapter_id = chapter[&quot;id&quot;]
++
++    prev_chapter = None
++    next_chapter = None
++    for i, chap in enumerate(chapters):
++        if chap[&quot;id&quot;] == chapter_id:
++            if i - 1 &gt;= 0:
++                next_chapter = chapters[i - 1]
++            if i + 1 &lt; len(chapters):
++                prev_chapter = chapters[i + 1]
++
++    return prev_chapter, next_chapter
+diff --git a/src/pytaku/static/base.css b/src/pytaku/static/base.css
+index c694ac3..e366545 100644
+--- a/src/pytaku/static/base.css
++++ b/src/pytaku/static/base.css
+@@ -85,6 +85,15 @@ .button.blue {
+   background-color: var(--btn-blue);
+   border-bottom: 4px solid var(--btn-blue-bottom);
+ }
++.button.disabled,
++.button.disabled:hover,
++.button.disabled:active {
++  background-color: #aaa;
++  border-bottom: 4px solid #aaa;
++  filter: none;
++  cursor: default;
++  opacity: 0.5;
++}
+ .button &gt; img {
+   height: 1rem;
+ }
+diff --git a/src/pytaku/static/icons/arrow-up-right.svg b/src/pytaku/static/icons/arrow-up-right.svg
+new file mode 100644
+index 0000000..b61b220
+--- /dev/null
++++ b/src/pytaku/static/icons/arrow-up-right.svg
+@@ -0,0 +1 @@
++&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; class=&quot;feather feather-arrow-up-right&quot;&gt;&lt;line x1=&quot;7&quot; y1=&quot;17&quot; x2=&quot;17&quot; y2=&quot;7&quot;&gt;&lt;/line&gt;&lt;polyline points=&quot;7 7 17 7 17 17&quot;&gt;&lt;/polyline&gt;&lt;/svg&gt;
+\ No newline at end of file
+diff --git a/src/pytaku/static/icons/list.svg b/src/pytaku/static/icons/list.svg
+new file mode 100644
+index 0000000..1c2ecba
+--- /dev/null
++++ b/src/pytaku/static/icons/list.svg
+@@ -0,0 +1 @@
++&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; class=&quot;feather feather-list&quot;&gt;&lt;line x1=&quot;8&quot; y1=&quot;6&quot; x2=&quot;21&quot; y2=&quot;6&quot;&gt;&lt;/line&gt;&lt;line x1=&quot;8&quot; y1=&quot;12&quot; x2=&quot;21&quot; y2=&quot;12&quot;&gt;&lt;/line&gt;&lt;line x1=&quot;8&quot; y1=&quot;18&quot; x2=&quot;21&quot; y2=&quot;18&quot;&gt;&lt;/line&gt;&lt;line x1=&quot;3&quot; y1=&quot;6&quot; x2=&quot;3.01&quot; y2=&quot;6&quot;&gt;&lt;/line&gt;&lt;line x1=&quot;3&quot; y1=&quot;12&quot; x2=&quot;3.01&quot; y2=&quot;12&quot;&gt;&lt;/line&gt;&lt;line x1=&quot;3&quot; y1=&quot;18&quot; x2=&quot;3.01&quot; y2=&quot;18&quot;&gt;&lt;/line&gt;&lt;/svg&gt;
+\ No newline at end of file
+diff --git a/src/pytaku/templates/base.html b/src/pytaku/templates/base.html
+index 94e7a47..022fefc 100644
+--- a/src/pytaku/templates/base.html
++++ b/src/pytaku/templates/base.html
+@@ -1,9 +1,11 @@
+ {# vim: ft=htmldjango
+ #}
+ 
+-{% macro ibutton(href=&#39;&#39;, left_icon=&#39;&#39;, right_icon=&#39;&#39;, text=&#39;&#39;, color=&#39;red&#39;) -%}
++{% macro ibutton(href=&#39;&#39;, left_icon=&#39;&#39;, right_icon=&#39;&#39;, text=&#39;&#39;, color=&#39;red&#39;, disabled=False) -%}
+ {% set element = &#39;a&#39; if href else &#39;button&#39; %}
+-&lt;{{ element }} class=&quot;{{ color }} button&quot; {% if href %}href=&quot;{{ href }}&quot;{% endif %}&gt;
++&lt;{{ element }} class=&quot;{{ color }} button {% if disabled %}disabled{% endif %}&quot;
++        {% if href %}href=&quot;{{ href }}&quot;{% endif %}
++        {% if disabled %}disabled{% endif %} &gt;
+   {% if left_icon %}
+   &lt;img src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;icons/&#39; + left_icon + &#39;.svg&#39;)}}&quot; alt=&quot;{{ text }} icon&quot; /&gt;
+   {% endif %}
+diff --git a/src/pytaku/templates/chapter.html b/src/pytaku/templates/chapter.html
+index aa11159..3df7cc2 100644
+--- a/src/pytaku/templates/chapter.html
++++ b/src/pytaku/templates/chapter.html
+@@ -1,7 +1,9 @@
+ {% extends &#39;base.html&#39; %}
+ 
+ {% block title %}
+-Ch.{{ number }} - {{ name }}
++Ch. {{ num_major }}
++{% if num_minor %}.{{ num_minor }}{% endif %}
++{% if name %} - {{ name }}{% endif %}
+ {% endblock %}
+ 
+ {% block head %}
+@@ -45,14 +47,24 @@
+ 
+ {% block content %}
+ 
+-&lt;h1&gt;Ch.{{ number }}: {{ name }}&lt;/h1&gt;
++&lt;h1&gt;{{ self.title() }}&lt;/h1&gt;
+ 
+ {# Put buttons in block to reuse later in this same template #}
+ {% block buttons %}
+ &lt;div class=&quot;buttons&quot;&gt;
+-{{ ibutton(href=&#39;#TODO&#39;, left_icon=&#39;chevrons-left&#39;, text=&#39;Previous&#39;) }}
+-{{ ibutton(left_icon=&#39;eye&#39;, text=&#39;Reading&#39;, color=&#39;green&#39;) }}
+-{{ ibutton(href=&#39;#TODO&#39;, right_icon=&#39;chevrons-right&#39;, text=&#39;Next&#39;) }}
++  {% if prev_chapter %}
++  {{ ibutton(href=url_for(&#39;chapter_view&#39;, chapter_id=prev_chapter[&#39;id&#39;]), left_icon=&#39;chevrons-left&#39;, text=&#39;Prev&#39;) }}
++  {% else %}
++  {{ ibutton(left_icon=&#39;chevrons-left&#39;, text=&#39;Prev&#39;, disabled=True) }}
++  {% endif %}
++
++  {{ ibutton(href=url_for(&#39;title_view&#39;, title_id=title_id), left_icon=&#39;list&#39;, text=&#39;Chapter list&#39;, color=&#39;blue&#39;) }}
++
++  {% if next_chapter %}
++  {{ ibutton(href=url_for(&#39;chapter_view&#39;, chapter_id=next_chapter[&#39;id&#39;]), right_icon=&#39;chevrons-right&#39;, text=&#39;Next&#39;) }}
++  {% else %}
++  {{ ibutton(right_icon=&#39;chevrons-right&#39;, text=&#39;Next&#39;, disabled=True) }}
++  {% endif %}
+ &lt;/div&gt;
+ {% endblock %}
+ 
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index 700f6e2..ad63a95 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -15,13 +15,12 @@
+ 
+ {% block content %}
+ 
++&lt;div&gt;
+ &lt;h1&gt;{{ name }}&lt;/h1&gt;
++{{ ibutton(href=&#39;https://mangadex.org/manga/&#39; + id, right_icon=&#39;arrow-up-right&#39;, text=&#39;Source site&#39;, color=&#39;blue&#39;) }}
++&lt;/div&gt;
+ 
+-{{ ibutton(left_icon=&#39;bookmark&#39;, text=&#39;Bookmark&#39;, color=&#39;blue&#39;) }}
+-
+-&lt;a href=&quot;https://mangadex.org/manga/{{ id }}&quot;&gt;Original link&lt;/a&gt;
+-
+-&lt;img class=&quot;cover&quot; src=&quot;{{ cover }}&quot; alt=&quot;cover&quot; /&gt;
++&lt;img class=&quot;cover&quot; src=&quot;https://mangadex.org/images/manga/{{ id }}.jpg&quot; alt=&quot;cover&quot; /&gt;
+ 
+ &lt;table&gt;
+   &lt;tr&gt;
+@@ -35,7 +34,6 @@ &lt;h1&gt;{{ name }}&lt;/h1&gt;
+         Chapter {{ chapter[&#39;number&#39;] }}
+         {% if chapter[&#39;volume&#39;] %}Volume {{ chapter[&#39;volume&#39;] }} {% endif %}
+         {% if chapter[&#39;name&#39;] %}- {{ chapter[&#39;name&#39;] }} {% endif %}
+-
+       &lt;/a&gt;
+     &lt;/td&gt;
+     &lt;td&gt;{{ &#39;, &#39;.join(chapter[&#39;groups&#39;]) }}&lt;/td&gt;
+</pre></body></html>

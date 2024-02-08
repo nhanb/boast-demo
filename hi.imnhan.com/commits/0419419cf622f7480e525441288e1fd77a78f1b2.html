@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[0419419cf6] fix post date format | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 0419419cf6</strong><hr><pre>commit 0419419cf622f7480e525441288e1fd77a78f1b2
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 24 15:18:51 2023 +0700
+
+    fix post date format
+
+diff --git a/_s4g/theme/home.tmpl b/_s4g/theme/home.tmpl
+index 0c286f0..8e75915 100644
+--- a/_s4g/theme/home.tmpl
++++ b/_s4g/theme/home.tmpl
+@@ -30,7 +30,7 @@
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;{{.PostedAt.Local.Format &quot;January 1, 2006&quot;}}&lt;/span&gt;
++    &lt;span&gt;{{.PostedAt.Local.Format &quot;January 2, 2006&quot;}}&lt;/span&gt;
+   &lt;/li&gt;
+   {{- end}}
+   {{- end}}
+diff --git a/_s4g/theme/series-index.tmpl b/_s4g/theme/series-index.tmpl
+index aee5b53..b68b8e5 100644
+--- a/_s4g/theme/series-index.tmpl
++++ b/_s4g/theme/series-index.tmpl
+@@ -15,7 +15,7 @@
+   &lt;li style=&quot;margin-bottom: 1rem;&quot;&gt;
+     &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;{{.PostedAt.Local.Format &quot;January 1, 2006&quot;}}&lt;/span&gt;
++    &lt;span&gt;{{.PostedAt.Local.Format &quot;January 2, 2006&quot;}}&lt;/span&gt;
+   &lt;/li&gt;
+ {{- end}}
+ {{ end }}
+diff --git a/index.html b/index.html
+index 6e0ffd1..5b85ccd 100644
+--- a/index.html
++++ b/index.html
+@@ -43,142 +43,142 @@ &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/s4g/&quot;&gt;s4g is a Stupidly Simple Static Site Generator&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;August 8, 2023&lt;/span&gt;
++    &lt;span&gt;August 24, 2023&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/chromebook/&quot;&gt;Acer Chromebook Spin 713 &amp;#34;Voxel&amp;#34;: an adequate Crostini device, a buggy Linux laptop&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;April 4, 2023&lt;/span&gt;
++    &lt;span&gt;April 22, 2023&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/go-stack/&quot;&gt;Go, Postgres, Caddy, systemd: a simple, highly portable, Docker-free web stack&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;February 2, 2023&lt;/span&gt;
++    &lt;span&gt;February 12, 2023&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/sqlite-python/&quot;&gt;Working with SQLite in Python without an ORM or migration framework&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;January 1, 2022&lt;/span&gt;
++    &lt;span&gt;January 30, 2022&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/pippable-webapp/&quot;&gt;I made my python webapp installable via pip&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;October 10, 2021&lt;/span&gt;
++    &lt;span&gt;October 2, 2021&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/vim-open-link/&quot;&gt;Opening http link under the cursor in vim&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;August 8, 2021&lt;/span&gt;
++    &lt;span&gt;August 7, 2021&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/stepmania-pad/&quot;&gt;Simplest possible stepmania soft-to-hard pad mod&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;February 2, 2021&lt;/span&gt;
++    &lt;span&gt;February 8, 2021&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/movie-streaming/put.io/&quot;&gt;The video streaming finale, or why put.io is awesome&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;October 10, 2020&lt;/span&gt;
++    &lt;span&gt;October 21, 2020&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/movie-streaming/gflick-fixed/&quot;&gt;Streaming videos from Google Drive: a second attempt&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;June 6, 2020&lt;/span&gt;
++    &lt;span&gt;June 10, 2020&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/mcross/&quot;&gt;Introducing McRoss—a minimal gemini browser&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;May 5, 2020&lt;/span&gt;
++    &lt;span&gt;May 29, 2020&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/movie-streaming/gflick/&quot;&gt;Towards an acceptable video playing experience&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;April 4, 2020&lt;/span&gt;
++    &lt;span&gt;April 26, 2020&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/petition-fraud/&quot;&gt;I did NOT sign that online petition!&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;March 3, 2016&lt;/span&gt;
++    &lt;span&gt;March 12, 2016&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/fightstick-2/&quot;&gt;My first DIY fightstick: Part 2&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;January 1, 2016&lt;/span&gt;
++    &lt;span&gt;January 23, 2016&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/fightstick-1/&quot;&gt;My first DIY fightstick: Part 1&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;December 12, 2015&lt;/span&gt;
++    &lt;span&gt;December 8, 2015&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/custom-theme/&quot;&gt;Look ma, no stock theme!&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;June 6, 2015&lt;/span&gt;
++    &lt;span&gt;June 5, 2015&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/pyqt5/&quot;&gt;How to install PyQt5 on a virtualenv on Ubuntu 14.04&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;February 2, 2015&lt;/span&gt;
++    &lt;span&gt;February 14, 2015&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/fcitx/&quot;&gt;Dẹp ibus-unikey đi, dùng fcitx-unikey nhé!&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;January 1, 2015&lt;/span&gt;
++    &lt;span&gt;January 29, 2015&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/pytaku-old/&quot;&gt;Introducing Pytaku—the only online manga reader you&amp;#39;ll ever need&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;January 1, 2015&lt;/span&gt;
++    &lt;span&gt;January 2, 2015&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/virtualenvwrapper/&quot;&gt;Virtualenv(wrapper), python2 and python3&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;December 12, 2014&lt;/span&gt;
++    &lt;span&gt;December 16, 2014&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/tmux-italics/&quot;&gt;Enable italic text inside vim inside tmux inside gnome-terminal&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;August 8, 2014&lt;/span&gt;
++    &lt;span&gt;August 2, 2014&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/node-webkit/&quot;&gt;Setting up your development environment for a node-webkit project&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;May 5, 2014&lt;/span&gt;
++    &lt;span&gt;May 1, 2014&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/hdviet/&quot;&gt;How I bypassed my university&amp;#39;s domain blocker to watch movies on hdviet.com&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;March 3, 2014&lt;/span&gt;
++    &lt;span&gt;March 17, 2014&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/manjaro-xfce/&quot;&gt;What I did after installing Manjaro xfce&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;February 2, 2014&lt;/span&gt;
++    &lt;span&gt;February 4, 2014&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/cool/&quot;&gt;&amp;#34;Have you built anything cool?&amp;#34;&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;January 1, 2014&lt;/span&gt;
++    &lt;span&gt;January 25, 2014&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/ubuntu-programs/&quot;&gt;Installing programs in Ubuntu&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;September 9, 2013&lt;/span&gt;
++    &lt;span&gt;September 6, 2013&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/rmit-wifi/&quot;&gt;Fix RMIT wi-fi issue in Ubuntu 13.04 and variants&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;June 6, 2013&lt;/span&gt;
++    &lt;span&gt;June 17, 2013&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/linux-automation/&quot;&gt;Why I use Linux: Automation&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;June 6, 2013&lt;/span&gt;
++    &lt;span&gt;June 7, 2013&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/pathogen-vs-vundle/&quot;&gt;Modern vim plugin management: Pathogen vs Vundle&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;May 5, 2013&lt;/span&gt;
++    &lt;span&gt;May 13, 2013&lt;/span&gt;
+   &lt;/li&gt;
+ &lt;/ul&gt;
+ 
+diff --git a/movie-streaming/index.html b/movie-streaming/index.html
+index 916442c..b07b406 100644
+--- a/movie-streaming/index.html
++++ b/movie-streaming/index.html
+@@ -40,19 +40,19 @@ &lt;h1&gt;The movie streaming saga&lt;/h1&gt;
+   &lt;li style=&quot;margin-bottom: 1rem;&quot;&gt;
+     &lt;a href=&quot;/movie-streaming/gflick/&quot;&gt;Towards an acceptable video playing experience&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;April 4, 2020&lt;/span&gt;
++    &lt;span&gt;April 26, 2020&lt;/span&gt;
+   &lt;/li&gt;
+ 
+   &lt;li style=&quot;margin-bottom: 1rem;&quot;&gt;
+     &lt;a href=&quot;/movie-streaming/gflick-fixed/&quot;&gt;Streaming videos from Google Drive: a second attempt&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;June 6, 2020&lt;/span&gt;
++    &lt;span&gt;June 10, 2020&lt;/span&gt;
+   &lt;/li&gt;
+ 
+   &lt;li style=&quot;margin-bottom: 1rem;&quot;&gt;
+     &lt;a href=&quot;/movie-streaming/put.io/&quot;&gt;The video streaming finale, or why put.io is awesome&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;October 10, 2020&lt;/span&gt;
++    &lt;span&gt;October 21, 2020&lt;/span&gt;
+   &lt;/li&gt;
+ 
+ &lt;/ol&gt;
+</pre></body></html>

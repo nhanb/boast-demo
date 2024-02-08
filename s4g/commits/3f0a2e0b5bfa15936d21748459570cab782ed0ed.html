@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[3f0a2e0b5b] support showing arbitrary errors in html | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 3f0a2e0b5b</strong><hr><pre>commit 3f0a2e0b5bfa15936d21748459570cab782ed0ed
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jul 16 23:49:54 2023 +0700
+
+    support showing arbitrary errors in html
+
+diff --git a/livereload/error.go b/livereload/error.go
+index b8ed95d..ac650db 100644
+--- a/livereload/error.go
++++ b/livereload/error.go
+@@ -18,9 +18,21 @@ type htmlErr interface {
+ 	Html() template.HTML
+ }
+ 
+-func serveError(w http.ResponseWriter, r *http.Request, err htmlErr) {
++func serveError(w http.ResponseWriter, r *http.Request, err error) {
+ 	var buf bytes.Buffer
+-	errTmpl.Execute(&amp;buf, err)
++	_, ok := err.(htmlErr)
++	if ok {
++		errTmpl.Execute(&amp;buf, err)
++	} else {
++		// Shim for errors that don&#39;t support HTML output
++		errTmpl.Execute(&amp;buf, struct {
++			Error string
++			Html  template.HTML
++		}{
++			Error: err.Error(),
++			Html:  template.HTML(err.Error()),
++		})
++	}
+ 	body := withLiveReload(buf.Bytes())
+ 	w.Write(body)
+ }
+diff --git a/livereload/livereload.go b/livereload/livereload.go
+index b51105a..4eb7615 100644
+--- a/livereload/livereload.go
++++ b/livereload/livereload.go
+@@ -86,7 +86,7 @@ func Middleware(mux *http.ServeMux, root string, fsys writablefs.FS, f http.Hand
+ 		err = state.err
+ 		state.errMut.RUnlock()
+ 		if err != nil {
+-			serveError(w, r, err.(htmlErr))
++			serveError(w, r, err)
+ 			return
+ 		}
+ 
+</pre></body></html>

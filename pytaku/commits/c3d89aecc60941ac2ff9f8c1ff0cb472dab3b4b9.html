@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[c3d89aecc6] move is_webtoon logic from chapter to title | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / c3d89aecc6</strong><hr><pre>commit c3d89aecc60941ac2ff9f8c1ff0cb472dab3b4b9
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Jan 22 14:55:32 2021 +0700
+
+    move is_webtoon logic from chapter to title
+    
+    Eventually we should properly implement tags.
+
+diff --git a/pyproject.toml b/pyproject.toml
+index d79d58c..bcb2885 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.33&quot;
++version = &quot;0.3.34&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index 336bdfd..c03b350 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -5,6 +5,7 @@
+ from mangoapi.base_site import Site, requires_login
+ 
+ MANGAPLUS_GROUP_ID = 9097
++LONG_STRIP_TAG_ID = 36
+ 
+ 
+ class Mangadex(Site):
+@@ -30,6 +31,7 @@ def get_title(self, title_id):
+             &quot;cover_ext&quot;: cover_ext,
+             &quot;alt_names&quot;: manga[&quot;altTitles&quot;],
+             &quot;descriptions&quot;: html.unescape(manga[&quot;description&quot;]).split(&quot;\r\n\r\n&quot;),
++            &quot;is_webtoon&quot;: LONG_STRIP_TAG_ID in manga[&quot;tags&quot;],
+             &quot;chapters&quot;: [
+                 {
+                     &quot;id&quot;: str(chap[&quot;id&quot;]),
+@@ -89,8 +91,6 @@ def get_chapter(self, title_id, chapter_id):
+             if mdah_server
+             else [],
+             &quot;groups&quot;: [html.unescape(group[&quot;name&quot;]) for group in data[&quot;groups&quot;]],
+-            # TODO: longStrip doesn&#39;t exist in v2 API yet. Nagging for it on Discord.
+-            &quot;is_webtoon&quot;: bool(data.get(&quot;longString&quot;)),
+             **_parse_chapter_number(data[&quot;chapter&quot;]),
+         }
+         return chapter
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+index a34fe54..c531989 100644
+--- a/src/mangoapi/mangasee.py
++++ b/src/mangoapi/mangasee.py
+@@ -47,6 +47,7 @@ def get_title(self, title_id):
+             &quot;name&quot;: name,
+             &quot;site&quot;: &quot;mangasee&quot;,
+             &quot;cover_ext&quot;: &quot;jpg&quot;,
++            &quot;is_webtoon&quot;: False,
+             &quot;chapters&quot;: chapters,
+             &quot;alt_names&quot;: [],
+             &quot;descriptions&quot;: [desc],
+@@ -76,7 +77,6 @@ def get_chapter(self, title_id, chapter_id):
+             ],
+             &quot;pages_alt&quot;: [],
+             &quot;groups&quot;: [],
+-            &quot;is_webtoon&quot;: False,
+             **numbers,
+         }
+         return result
+diff --git a/src/pytaku/database/migrations/latest_schema.sql b/src/pytaku/database/migrations/latest_schema.sql
+index 307e5a7..c684f1b 100644
+--- a/src/pytaku/database/migrations/latest_schema.sql
++++ b/src/pytaku/database/migrations/latest_schema.sql
+@@ -9,7 +9,7 @@ CREATE TABLE title (
+     chapters text,
+     alt_names text,
+     descriptions text,
+-    updated_at text default (datetime(&#39;now&#39;)),
++    updated_at text default (datetime(&#39;now&#39;)), is_webtoon boolean not null default false,
+ 
+     unique(id, site)
+ );
+@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS &quot;read&quot; (
+     foreign key (user_id) references user (id),
+     unique(user_id, site, title_id, chapter_id)
+ );
+-CREATE TABLE IF NOT EXISTS &quot;chapter&quot;(
++CREATE TABLE IF NOT EXISTS &quot;chapter&quot; (
+     id text,
+     title_id text,
+     site text,
+@@ -63,8 +63,7 @@ CREATE TABLE IF NOT EXISTS &quot;chapter&quot;(
+     pages text,
+     groups text,
+     updated_at text default (datetime(&#39;now&#39;)),
+-    is_webtoon boolean, pages_alt text not null default &#39;[]&#39;,
+-
++    pages_alt text not null default &#39;[]&#39;,
+     foreign key (title_id, site) references title (id, site),
+     unique(site, title_id, id)
+ );
+diff --git a/src/pytaku/database/migrations/m0008.sql b/src/pytaku/database/migrations/m0008.sql
+new file mode 100644
+index 0000000..fa872cd
+--- /dev/null
++++ b/src/pytaku/database/migrations/m0008.sql
+@@ -0,0 +1,40 @@
++-- Move is_webtoon column from chapter to title.
++-- No need to migrate existing data: scheduled title updates will populate the
++-- correct data in no time.
++
++pragma foreign_keys = off; -- to let us do anything at all
++begin transaction;
++
++-- Easy part: add is_webtoon column to &quot;title&quot; table
++alter table title add column is_webtoon boolean not null default false;
++
++-- Clumsy part: remove is_webtoon column from &quot;chapter&quot; table
++---- 1. create new
++create table new_chapter (
++    id text,
++    title_id text,
++    site text,
++    num_major integer,
++    num_minor integer,
++    name text,
++    pages text,
++    groups text,
++    updated_at text default (datetime(&#39;now&#39;)),
++    pages_alt text not null default &#39;[]&#39;,
++    foreign key (title_id, site) references title (id, site),
++    unique(site, title_id, id)
++);
++---- 2. copy from old to new
++insert into new_chapter (id, title_id, site, num_major, num_minor, name,
++                         pages, groups, updated_at, pages_alt)
++    select id, title_id, site, num_major, num_minor, name, pages, groups,
++           updated_at, pages_alt
++    from chapter;
++---- 3. drop old
++drop table chapter;
++---- 4. rename new
++alter table new_chapter rename to chapter;
++
++pragma foreign_key_check;
++commit;
++pragma foreign_keys = on;
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index fa78bd9..aa77aca 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -16,6 +16,7 @@ def save_title(title):
+         name,
+         site,
+         cover_ext,
++        is_webtoon,
+         chapters,
+         alt_names,
+         descriptions
+@@ -24,12 +25,14 @@ def save_title(title):
+         :name,
+         :site,
+         :cover_ext,
++        :is_webtoon,
+         :chapters,
+         :alt_names,
+         :descriptions
+     ) ON CONFLICT (id, site) DO UPDATE SET
+         name=excluded.name,
+         cover_ext=excluded.cover_ext,
++        is_webtoon=excluded.is_webtoon,
+         chapters=excluded.chapters,
+         alt_names=excluded.alt_names,
+         descriptions=excluded.descriptions,
+@@ -41,6 +44,7 @@ def save_title(title):
+             &quot;name&quot;: title[&quot;name&quot;],
+             &quot;site&quot;: title[&quot;site&quot;],
+             &quot;cover_ext&quot;: title[&quot;cover_ext&quot;],
++            &quot;is_webtoon&quot;: title[&quot;is_webtoon&quot;],
+             &quot;chapters&quot;: json.dumps(title[&quot;chapters&quot;]),
+             &quot;alt_names&quot;: json.dumps(title[&quot;alt_names&quot;]),
+             &quot;descriptions&quot;: json.dumps(title[&quot;descriptions&quot;]),
+@@ -51,7 +55,7 @@ def save_title(title):
+ def load_title(site, title_id, user_id=None):
+     result = run_sql(
+         &quot;&quot;&quot;
+-        SELECT id, name, site, cover_ext, chapters, alt_names, descriptions
++        SELECT id, name, site, cover_ext, is_webtoon, chapters, alt_names, descriptions
+         FROM title
+         WHERE id = ?
+           AND site = ?;
+@@ -106,8 +110,7 @@ def save_chapter(chapter):
+         name,
+         pages,
+         pages_alt,
+-        groups,
+-        is_webtoon
++        groups
+     ) VALUES (
+         :id,
+         :title_id,
+@@ -117,8 +120,7 @@ def save_chapter(chapter):
+         :name,
+         :pages,
+         :pages_alt,
+-        :groups,
+-        :is_webtoon
++        :groups
+     ) ON CONFLICT (id, title_id, site) DO UPDATE SET
+         num_major=excluded.num_major,
+         num_minor=excluded.num_minor,
+@@ -126,7 +128,6 @@ def save_chapter(chapter):
+         pages=excluded.pages,
+         pages_alt=excluded.pages_alt,
+         groups=excluded.groups,
+-        is_webtoon=excluded.is_webtoon,
+         updated_at=datetime(&#39;now&#39;)
+     ;
+     &quot;&quot;&quot;,
+@@ -140,7 +141,6 @@ def save_chapter(chapter):
+             &quot;pages&quot;: json.dumps(chapter[&quot;pages&quot;]),
+             &quot;pages_alt&quot;: json.dumps(chapter[&quot;pages_alt&quot;]),
+             &quot;groups&quot;: json.dumps(chapter[&quot;groups&quot;]),
+-            &quot;is_webtoon&quot;: chapter[&quot;is_webtoon&quot;],
+         },
+     )
+ 
+@@ -149,7 +149,7 @@ def load_chapter(site, title_id, chapter_id, ignore_old=True):
+     updated_at = &quot;datetime(&#39;now&#39;, &#39;-1 days&#39;)&quot; if ignore_old else &quot;&#39;1980-01-01&#39;&quot;
+     result = run_sql(
+         f&quot;&quot;&quot;
+-        SELECT id, title_id, site, num_major, num_minor, name, pages, pages_alt, groups, is_webtoon
++        SELECT id, title_id, site, num_major, num_minor, name, pages, pages_alt, groups
+         FROM chapter
+         WHERE site=? AND title_id=? AND id=? AND updated_at &gt; {updated_at};
+         &quot;&quot;&quot;,
+diff --git a/tests/mangoapi/test_mangadex.py b/tests/mangoapi/test_mangadex.py
+index 1dec5a5..8815031 100644
+--- a/tests/mangoapi/test_mangadex.py
++++ b/tests/mangoapi/test_mangadex.py
+@@ -10,6 +10,7 @@ def test_get_title():
+         &quot;site&quot;: &quot;mangadex&quot;,
+         &quot;cover_ext&quot;: &quot;jpg&quot;,
+         &quot;alt_names&quot;: [&quot;Adiós al fútbol&quot;, &quot;さよならフットボール&quot;, &quot;再见足球&quot;],
++        &quot;is_webtoon&quot;: False,
+         &quot;descriptions&quot;: [
+             &quot;Nozomi wants to enter the newcomer&#39;s competition. But the coach is against it, because their club is a boy&#39;s football club and she&#39;s... a she. Will she be able to enter the match she wants to play in?&quot;
+         ],
+@@ -82,6 +83,11 @@ def test_get_title():
+     }
+ 
+ 
++def test_get_title_webtoon():
++    title = Mangadex().get_title(&quot;1&quot;)
++    assert title[&quot;is_webtoon&quot;] is True
++
++
+ def test_get_chapter():
+     chap = Mangadex().get_chapter(&quot;doesn&#39;t matter&quot;, &quot;696882&quot;)
+     pages = chap.pop(&quot;pages&quot;)
+@@ -92,7 +98,6 @@ def test_get_chapter():
+         &quot;site&quot;: &quot;mangadex&quot;,
+         &quot;name&quot;: &quot;Extras&quot;,
+         &quot;groups&quot;: [&quot;Träumerei Scans&quot;, &quot;GlassChair&quot;],
+-        &quot;is_webtoon&quot;: False,
+         &quot;number&quot;: &quot;81.5&quot;,
+         &quot;num_major&quot;: 81,
+         &quot;num_minor&quot;: 5,
+</pre></body></html>

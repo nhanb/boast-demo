@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[16e066a92d] fix tclkit encoding | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 16e066a92d</strong><hr><pre>commit 16e066a92d69c16f4940db417131a919048f2c7d
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jun 18 18:12:23 2023 +0700
+
+    fix tclkit encoding
+
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index 92a5918..e63e4d5 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -1,3 +1,10 @@
++# tclkit on Windows defaults to cp1252 encoding which will mangle utf-8
++# source code, so let&#39;s give it no chance to fuck up:
++encoding system &quot;utf-8&quot;
++fconfigure stdin -encoding &quot;utf-8&quot;
++fconfigure stdout -encoding &quot;utf-8&quot;
++fconfigure stderr -encoding &quot;utf-8&quot;
++
+ package require Tk
+ 
+ wm title . &quot;Overly Repetitive Tedious Software (in Go)&quot;
+@@ -28,7 +35,7 @@ ttk::label .c.players.p1lbl -text &quot;Player 1&quot;
+ ttk::combobox .c.players.p1name -textvariable p1name -width 35
+ ttk::combobox .c.players.p1country -textvariable p1country -width 5
+ ttk::spinbox .c.players.p1score -textvariable p1score -from 0 -to 999 -width 4
+-ttk::button .c.players.p1win -text &quot;▲ Win&quot; -width 5 -state disabled
++ttk::button .c.players.p1win -text &quot;▲ Win&quot; -width 6 -state disabled
+ ttk::label .c.players.p1teamlbl -text &quot;Team 1&quot;
+ ttk::combobox .c.players.p1team -textvariable p1team
+ ttk::separator .c.players.separator -orient horizontal
+@@ -36,7 +43,7 @@ ttk::label .c.players.p2lbl -text &quot;Player 2&quot;
+ ttk::combobox .c.players.p2name -textvariable p2name -width 35
+ ttk::combobox .c.players.p2country -textvariable p2country -width 5
+ ttk::spinbox .c.players.p2score -textvariable p2score -from 0 -to 999 -width 4
+-ttk::button .c.players.p2win -text &quot;▲ Win&quot; -width 5 -state disabled
++ttk::button .c.players.p2win -text &quot;▲ Win&quot; -width 6 -state disabled
+ ttk::label .c.players.p2teamlbl -text &quot;Team 2&quot;
+ ttk::combobox .c.players.p2team -textvariable p2team
+ ttk::frame .c.buttons
+</pre></body></html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a203685782] split gui into submodules | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / a203685782</strong><hr><pre>commit a203685782473fa25e666e1bb6d923d25dae4cd4
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu May 14 12:57:07 2020 +0700
+
+    split gui into submodules
+
+diff --git a/src/mccross/__init__.py b/src/mccross/__init__.py
+index 918327d..41a25c8 100644
+--- a/src/mccross/__init__.py
++++ b/src/mccross/__init__.py
+@@ -1,4 +1,4 @@
+-from .gui import Controller
++from .gui.controller import Controller
+ 
+ 
+ def run():
+diff --git a/src/mccross/gui/__init__.py b/src/mccross/gui/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/src/mccross/gui/controller.py b/src/mccross/gui/controller.py
+new file mode 100644
+index 0000000..a49c79d
+--- /dev/null
++++ b/src/mccross/gui/controller.py
+@@ -0,0 +1,39 @@
++from tkinter import Tk
++
++from .. import transport
++from .model import Model
++from .view import View
++
++
++class Controller:
++    def __init__(self):
++        self.root = Tk()
++        self.model = Model()
++        self.view = View(self.root, self.model)
++        self.view.go_callback = self.go_callback
++
++    def run(self):
++        self.root.title(&quot;McCross Browser&quot;)
++        self.root.geometry(&quot;800x600&quot;)
++        self.root.mainloop()
++
++    def go_callback(self, url: str):
++        # TODO more visual indications
++        # TODO url validation
++
++        print(&quot;Requesting&quot;, url)
++
++        resp = transport.get(url)
++        if resp.status.startswith(&quot;2&quot;):
++            self.model.plaintext = resp.body.decode()
++        else:
++            self.model.plaintext = &quot;\n&quot;.join(
++                [
++                    &quot;Error:&quot;,
++                    f&quot;{resp.status} {resp.meta}&quot;,
++                    resp.body.decode() if resp.body else &quot;&quot;,
++                ]
++            )
++
++        print(&quot;Received&quot;, resp)
++        self.view.render_page()
+diff --git a/src/mccross/gui/model.py b/src/mccross/gui/model.py
+new file mode 100644
+index 0000000..b1472d0
+--- /dev/null
++++ b/src/mccross/gui/model.py
+@@ -0,0 +1,2 @@
++class Model:
++    plaintext = &quot;Nothing to see here... yet.&quot;
+diff --git a/src/mccross/gui.py b/src/mccross/gui/view.py
+similarity index 73%
+rename from src/mccross/gui.py
+rename to src/mccross/gui/view.py
+index 0b4f3b7..e60604f 100644
+--- a/src/mccross/gui.py
++++ b/src/mccross/gui/view.py
+@@ -1,12 +1,8 @@
+ import sys
+ from tkinter import Text, Tk, font, ttk
+ 
+-from . import client
+-from .gui_widgets import ReadOnlyText
+-
+-
+-class Model:
+-    plaintext = &quot;Nothing to see here... yet.&quot;
++from .model import Model
++from .widgets import ReadOnlyText
+ 
+ 
+ def pick_font(names):
+@@ -106,37 +102,3 @@ def _on_go(self, ev=None):
+     def render_page(self):
+         self.text.delete(&quot;1.0&quot;, &quot;end&quot;)
+         self.text.insert(&quot;end&quot;, self.model.plaintext)
+-
+-
+-class Controller:
+-    def __init__(self):
+-        self.root = Tk()
+-        self.model = Model()
+-        self.view = View(self.root, self.model)
+-        self.view.go_callback = self.go_callback
+-
+-    def run(self):
+-        self.root.title(&quot;McCross Browser&quot;)
+-        self.root.geometry(&quot;800x600&quot;)
+-        self.root.mainloop()
+-
+-    def go_callback(self, url: str):
+-        # TODO more visual indications
+-        # TODO url validation
+-
+-        print(&quot;Requesting&quot;, url)
+-
+-        resp = client.get(url)
+-        if resp.status.startswith(&quot;2&quot;):
+-            self.model.plaintext = resp.body.decode()
+-        else:
+-            self.model.plaintext = &quot;\n&quot;.join(
+-                [
+-                    &quot;Error:&quot;,
+-                    f&quot;{resp.status} {resp.meta}&quot;,
+-                    resp.body.decode() if resp.body else &quot;&quot;,
+-                ]
+-            )
+-
+-        print(&quot;Received&quot;, resp)
+-        self.view.render_page()
+diff --git a/src/mccross/gui_widgets.py b/src/mccross/gui/widgets.py
+similarity index 100%
+rename from src/mccross/gui_widgets.py
+rename to src/mccross/gui/widgets.py
+diff --git a/src/mccross/client.py b/src/mccross/transport.py
+similarity index 100%
+rename from src/mccross/client.py
+rename to src/mccross/transport.py
+</pre></body></html>

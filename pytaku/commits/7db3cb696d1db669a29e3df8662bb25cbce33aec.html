@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[7db3cb696d] also look for pages_alt when checking img url | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 7db3cb696d</strong><hr><pre>commit 7db3cb696d1db669a29e3df8662bb25cbce33aec
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Jan 29 16:11:08 2021 +0700
+
+    also look for pages_alt when checking img url
+
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index cf145a7..3747a16 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -402,10 +402,14 @@ def is_manga_page_url(url):
+     Checks if url exists in db as a page image.
+     This is currently used to avoid abuse of our /proxy/ endpoint.
+     &quot;&quot;&quot;
+-    result = run_sql(
+-        &quot;&quot;&quot;
+-        SELECT 1 FROM chapter, json_each(pages) WHERE value = ? LIMIT 1;
+-        &quot;&quot;&quot;,
+-        (url,),
+-    )
+-    return len(result) == 1
++    is_page = run_sql(
++        &quot;SELECT 1 FROM chapter, json_each(pages) WHERE value = ? LIMIT 1;&quot;, (url,)
++    ) == [1]
++    if is_page:
++        return True
++
++    is_page_alt = run_sql(
++        &quot;SELECT 1 FROM chapter, json_each(pages_alt) WHERE value = ? LIMIT 1;&quot;, (url,)
++    ) == [1]
++
++    return is_page_alt
+</pre></body></html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[bd7d6dec5c] satisfy black + isort | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / bd7d6dec5c</strong><hr><pre>commit bd7d6dec5c9bd8c9f1f08ac64f33c0eff34f8163
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Nov 30 21:08:39 2020 +0700
+
+    satisfy black + isort
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 7a48c30..c486d5b 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -28,3 +28,7 @@ ipdb = &quot;^0.13.2&quot;
+ [build-system]
+ requires = [&quot;poetry&gt;=0.12&quot;]
+ build-backend = &quot;poetry.masonry.api&quot;
++
++[tool.isort]
++multi_line_output = 3
++include_trailing_comma = true
+diff --git a/src/mcross/__init__.py b/src/mcross/__init__.py
+index c99ebbe..04a9753 100644
+--- a/src/mcross/__init__.py
++++ b/src/mcross/__init__.py
+@@ -10,9 +10,10 @@ def run():
+ 
+ 
+ def info():
+-    from . import conf
+     from pprint import pprint
+ 
++    from . import conf
++
+     conf.init()
+ 
+     print(&quot;Config file:&quot;, conf.CONFIG_FILE)
+diff --git a/src/mcross/conf.py b/src/mcross/conf.py
+index f37c43a..c92b774 100644
+--- a/src/mcross/conf.py
++++ b/src/mcross/conf.py
+@@ -60,7 +60,9 @@ def parse_conf_args():
+     argparser = argparse.ArgumentParser()
+     for confdef in conf_definitions:
+         argparser.add_argument(
+-            f&quot;-{confdef.short_name}&quot;, f&quot;--{confdef.name}&quot;, type=confdef.type,
++            f&quot;-{confdef.short_name}&quot;,
++            f&quot;--{confdef.name}&quot;,
++            type=confdef.type,
+         )
+     args = argparser.parse_args()
+     return {key.replace(&quot;_&quot;, &quot;-&quot;): val for key, val in vars(args).items() if val}
+diff --git a/src/mcross/gui/controller.py b/src/mcross/gui/controller.py
+index 9e80fc7..bd03dbb 100644
+--- a/src/mcross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -7,9 +7,13 @@
+ 
+ import curio
+ 
+-from ..transport import (MAX_REQUEST_SECONDS, GeminiUrl,
+-                         NonAbsoluteUrlWithoutContextError,
+-                         UnsupportedProtocolError, get)
++from ..transport import (
++    MAX_REQUEST_SECONDS,
++    GeminiUrl,
++    NonAbsoluteUrlWithoutContextError,
++    UnsupportedProtocolError,
++    get,
++)
+ from .model import Model
+ from .view import WAITING_CURSOR, View
+ 
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index 116c605..866b38f 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -3,8 +3,16 @@
+ from tkinter import Text, Tk, font, ttk
+ 
+ from .. import conf
+-from ..document import (GeminiNode, H1Node, H2Node, H3Node, LinkNode,
+-                        ListItemNode, PreformattedNode, TextNode)
++from ..document import (
++    GeminiNode,
++    H1Node,
++    H2Node,
++    H3Node,
++    LinkNode,
++    ListItemNode,
++    PreformattedNode,
++    TextNode,
++)
+ from .model import Model
+ from .widgets import AltButton, McEntry, ReadOnlyText
+ 
+diff --git a/src/mcross/gui/widgets.py b/src/mcross/gui/widgets.py
+index e04cbc6..2e3b426 100644
+--- a/src/mcross/gui/widgets.py
++++ b/src/mcross/gui/widgets.py
+@@ -1,6 +1,7 @@
+-from idlelib.redirector import WidgetRedirector
+ from tkinter import Text, ttk
+ 
++from idlelib.redirector import WidgetRedirector
++
+ 
+ # Can&#39;t just use a Text widget with state=&#39;disabled&#39; because that would
+ # also disable Ctrl+C / Ctrl+V.
+</pre></body></html>

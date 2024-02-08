@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[0ecf571af9] make sure no extruding $ or footnote numbering | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 0ecf571af9</strong><hr><pre>commit 0ecf571af9de8fff52473ff9dacbc5f996a6bfd1
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Apr 17 12:33:30 2023 +0700
+
+    make sure no extruding $ or footnote numbering
+    
+    Also tweak list spacing.
+
+diff --git a/nhanb-theme/static/css/index.css b/nhanb-theme/static/css/index.css
+index 7f42eab..3e8fe47 100644
+--- a/nhanb-theme/static/css/index.css
++++ b/nhanb-theme/static/css/index.css
+@@ -20,7 +20,7 @@ .article-list time {
+   margin-top: 0.1rem;
+ }
+ 
+-@media (min-width: 760px) {
++@media (min-width: 780px) {
+   .article:hover::before {
+     position: absolute;
+     margin-left: -1rem;
+diff --git a/nhanb-theme/static/css/main.css b/nhanb-theme/static/css/main.css
+index 394cad8..5267b9a 100644
+--- a/nhanb-theme/static/css/main.css
++++ b/nhanb-theme/static/css/main.css
+@@ -72,6 +72,11 @@ p {
+   line-height: 1.4rem;
+   margin: 1.5rem 0;
+ }
++p + ul,
++p + ol {
++  /* make sure 1st list item doesn&#39;t look too separated from preceding &lt;p&gt; */
++  margin-top: -0.5rem;
++}
+ 
+ li {
+   margin-bottom: 0.6rem;
+@@ -194,6 +199,19 @@ nav ul {
+   padding: 0.5rem 0;
+ }
+ 
++.footnote ol {
++  /* Hack to make sure the list&#39;s marker doesn&#39;t get out of view.
++   * Couldn&#39;t use `list-style-position: inside` because the marker will be
++   * pushed to another line.
++   */
++  margin-left: 2rem;
++}
++.footnote hr::after {
++  content: &quot;Footnotes:&quot;;
++  color: var(--fg-color);
++  font-size: 1.3rem;
++}
++
+ footer {
+   margin-top: 1.5rem;
+   border-top: var(--hr-border);
+</pre></body></html>

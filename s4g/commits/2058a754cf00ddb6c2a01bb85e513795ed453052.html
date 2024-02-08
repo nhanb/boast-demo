@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[2058a754cf] print more messages | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 2058a754cf</strong><hr><pre>commit 2058a754cf00ddb6c2a01bb85e513795ed453052
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Jul 7 22:33:06 2023 +0700
+
+    print more messages
+
+diff --git a/main.go b/main.go
+index 6ff70fc..d5d1826 100644
+--- a/main.go
++++ b/main.go
+@@ -85,20 +85,22 @@ func regenerate(fsys WritableFS) {
+ 		startYear = time.Now().Year()
+ 	}
+ 
+-	fmt.Printf(&quot;Found %d articles:\n&quot;, len(articles))
+ 	for _, a := range articles {
+ 		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Title)
+ 		a.WriteHtmlFile(&amp;site, articlesInNav, startYear)
+ 	}
++	fmt.Printf(&quot;Processed %d articles\n&quot;, len(articles))
+ 
+ 	if site.GenerateHome {
+ 		WriteHomePage(fsys, site, articlesInFeed, articlesInNav, startYear)
++		fmt.Println(&quot;Generated index.html&quot;)
+ 	}
+ 
+ 	fsys.WriteFile(
+ 		FEED_PATH,
+ 		generateFeed(site, articlesInFeed, site.HomePath+FEED_PATH),
+ 	)
++	fmt.Println(&quot;Generated&quot;, FEED_PATH)
+ }
+ 
+ type SiteMetadata struct {
+</pre></body></html>

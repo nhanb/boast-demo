@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[0e1fda117e] WIP import from tachiyomi | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 0e1fda117e</strong><hr><pre>commit 0e1fda117e4a5190f3fa916f2de66fe6d180a556
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 12 23:46:40 2020 +0700
+
+    WIP import from tachiyomi
+    
+    todo: ensure latest chapters, mark them as read
+
+diff --git a/src/pytaku/database/common.py b/src/pytaku/database/common.py
+index f9a36d8..dcb443f 100644
+--- a/src/pytaku/database/common.py
++++ b/src/pytaku/database/common.py
+@@ -34,3 +34,7 @@ def run_sql(*args, **kwargs):
+ 
+ def run_sql_on_demand(*args, **kwargs):
+     return get_conn().cursor().execute(*args, **kwargs)
++
++
++def run_sql_many(*args, **kwargs):
++    return get_conn().cursor().executemany(*args, **kwargs)
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 5c49f17..e5339d8 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -1,10 +1,14 @@
+ import base64
++import json
+ import re
++from concurrent.futures import ThreadPoolExecutor, as_completed
+ from datetime import timedelta
++from typing import List, Tuple
+ 
+ import requests
+ from flask import (
+     Flask,
++    flash,
+     make_response,
+     redirect,
+     render_template,
+@@ -19,6 +23,7 @@
+     follow,
+     get_followed_titles,
+     get_prev_next_chapters,
++    import_follows,
+     load_chapter,
+     load_title,
+     register_user,
+@@ -40,7 +45,9 @@
+ 
+ app = Flask(__name__)
+ app.config.update(
+-    SECRET_KEY=config.FLASK_SECRET_KEY, PERMANENT_SESSION_LIFETIME=timedelta(days=365),
++    SECRET_KEY=config.FLASK_SECRET_KEY,
++    PERMANENT_SESSION_LIFETIME=timedelta(days=365),
++    MAX_CONTENT_LENGTH=10 * 1024 * 1024,  # max 10MiB payload
+ )
+ 
+ 
+@@ -263,3 +270,95 @@ def _is_manga_img_url(
+     ),
+ ):
+     return pattern.match(url)
++
++
++@app.route(&quot;/import&quot;, methods=[&quot;GET&quot;, &quot;POST&quot;])
++@require_login
++def import_view():
++    if request.method == &quot;POST&quot;:
++
++        # check if the post request has the file part
++        if &quot;tachiyomi&quot; not in request.files:
++            flash(&quot;No file part&quot;)
++            return redirect(request.url)
++        file = request.files[&quot;tachiyomi&quot;]
++
++        # if user does not select file, browser also
++        # submit an empty part without filename
++        if file.filename == &quot;&quot;:
++            flash(&quot;No selected file&quot;)
++            return redirect(request.url)
++
++        if file:
++            text = file.read()
++            site_title_pairs = read_tachiyomi_follows(text)
++            if site_title_pairs is None:
++                flash(&quot;Malformed input file.&quot;)
++                return redirect(request.url)
++
++            # First fetch &amp; save titles if they&#39;re not already in db
++            ensure_titles(site_title_pairs)
++
++            # Then follow them all
++            for site, title_id in site_title_pairs:
++                follow(session[&quot;user&quot;][&quot;id&quot;], site, title_id)
++
++            # Mark them all as &quot;read&quot; too.
++            print(&quot;TODO&quot;)
++
++            flash(f&quot;Added {len(site_title_pairs)} follows.&quot;)
++
++    return render_template(&quot;import.html&quot;)
++
++
++def read_tachiyomi_follows(text: str) -&gt; List[Tuple[str, str]]:
++    try:
++        data = json.loads(text)
++        mangadex_id = None
++        mangasee_id = None
++        for extension in data[&quot;extensions&quot;]:
++            id, name = extension.split(&quot;:&quot;)
++            if name == &quot;MangaDex&quot;:
++                mangadex_id = int(id)
++            elif name == &quot;Mangasee&quot;:
++                mangasee_id = int(id)
++        assert mangadex_id and mangasee_id
++
++        results = []
++        for manga in data[&quot;mangas&quot;]:
++            path = manga[&quot;manga&quot;][0]
++            site_id = manga[&quot;manga&quot;][2]
++            if site_id == mangadex_id:
++                site = &quot;mangadex&quot;
++                title_id = path[len(&quot;/manga/&quot;) : -1]
++            elif site_id == mangasee_id:
++                site = &quot;mangasee&quot;
++                title_id = path[len(&quot;/manga/&quot;) :]
++            else:
++                continue
++            results.append((site, title_id))
++
++        return results
++
++    except Exception:  # yikes
++        import traceback
++
++        traceback.print_exc()
++        return None
++
++
++def ensure_titles(site_title_pairs: List[Tuple[str, str]]):
++    new_titles = [
++        (site, title_id)
++        for site, title_id in site_title_pairs
++        if load_title(site, title_id) is None  # again, n+1 queries are fine in sqlite
++    ]
++    print(f&quot;Fetching {len(new_titles)} new titles out of {len(site_title_pairs)}.&quot;)
++    with ThreadPoolExecutor(max_workers=3) as executor:
++        futures = [
++            executor.submit(get_title, site, title_id) for site, title_id in new_titles
++        ]
++        for future in as_completed(futures):
++            title = future.result()
++            save_title(title)
++            print(f&quot;Saved {title[&#39;site&#39;]}: {title[&#39;name&#39;]}&quot;)
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 5158069..27e9d36 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -1,9 +1,10 @@
+ import json
++from typing import List, Tuple
+ 
+ import apsw
+ import argon2
+ 
+-from .database.common import run_sql, run_sql_on_demand
++from .database.common import run_sql, run_sql_many, run_sql_on_demand
+ 
+ 
+ def save_title(title):
+@@ -214,7 +215,10 @@ def verify_username_password(username, password):
+ 
+ def follow(user_id, site, title_id):
+     run_sql(
+-        &quot;INSERT INTO follow (user_id, site, title_id) VALUES (?, ?, ?);&quot;,
++        &quot;&quot;&quot;
++        INSERT INTO follow (user_id, site, title_id) VALUES (?, ?, ?)
++        ON CONFLICT DO NOTHING;
++        &quot;&quot;&quot;,
+         (user_id, site, title_id),
+     )
+ 
+@@ -321,3 +325,12 @@ def set(key: str, value: str):
+             &quot;&quot;&quot;,
+             (key, value),
+         )
++
++
++def import_follows(user_id: int, site_title_pairs: List[Tuple[str, str]]):
++    run_sql_many(
++        &quot;&quot;&quot;
++        INSERT INTO follow (user_id, site, title_id) VALUES (?, ?, ?);
++        &quot;&quot;&quot;,
++        [(user_id, site, title_id) for site, title_id in site_title_pairs],
++    )
+diff --git a/src/pytaku/templates/import.html b/src/pytaku/templates/import.html
+new file mode 100644
+index 0000000..8734d98
+--- /dev/null
++++ b/src/pytaku/templates/import.html
+@@ -0,0 +1,36 @@
++{% extends &#39;base.html&#39; %}
++
++{% block title %}
++Import followed titles
++{% endblock %}
++
++{% block head %}
++&lt;style&gt;
++input[type=file] {
++  border: 2px solid black;
++  border-radius: var(--border-radius);
++  margin: 1rem 0;
++}
++
++.message {
++  color: red;
++}
++&lt;/style&gt;
++{% endblock %}
++
++{% block content %}
++&lt;h1&gt;Importing from Tachiyomi&lt;/h1&gt;
++
++&lt;form method=&quot;POST&quot; enctype=&quot;multipart/form-data&quot; class=&quot;upload-form&quot;&gt;
++  &lt;p&gt;Go to &lt;b&gt;Settings &gt; Backup &gt; Create backup&lt;/b&gt;, then upload the generated json file here:&lt;/p&gt;
++  &lt;input type=&quot;file&quot; name=&quot;tachiyomi&quot;&gt;&lt;br&gt;
++  {{ ibutton(text=&#39;Submit&#39;) }}
++&lt;/form&gt;
++
++{% with messages = get_flashed_messages() %}
++  {% for message in messages %}
++  &lt;p class=&quot;message&quot;&gt;{{ message }}&lt;/p&gt;
++  {% endfor %}
++{% endwith %}
++
++{% endblock %}
+diff --git a/tests/pytaku/test_import_follows.py b/tests/pytaku/test_import_follows.py
+new file mode 100644
+index 0000000..309fd95
+--- /dev/null
++++ b/tests/pytaku/test_import_follows.py
+@@ -0,0 +1,41 @@
++from pytaku.main import read_tachiyomi_follows
++
++
++def test_read_tachiyomi_follows():
++    data = &quot;&quot;&quot;
++{
++  &quot;version&quot;: 2,
++  &quot;mangas&quot;: [
++    { &quot;manga&quot;: [&quot;/manga/Ajin&quot;, &quot;Ajin&quot;, 9, 0, 0] },
++    {
++      &quot;manga&quot;: [
++        &quot;/manga/28664/&quot;,
++        &quot;Ano Hito no I ni wa Boku ga Tarinai&quot;,
++        2499283573021220255,
++        0,
++        0
++      ]
++    },
++    { &quot;manga&quot;: [&quot;/manga/Chainsaw-Man&quot;, &quot;Chainsaw Man&quot;, 9, 0, 0] },
++    { &quot;manga&quot;: [&quot;/manga/Chi-No-Wadachi&quot;, &quot;Chi no Wadachi&quot;, 9, 0, 0] },
++    { &quot;manga&quot;: [&quot;/manga/13318/&quot;, &quot;Dagashi Kashi&quot;, 2499283573021220255, 0, 0] },
++    { &quot;manga&quot;: [&quot;/manga/31688/&quot;, &quot;Dai Dark&quot;, 2499283573021220255, 0, 0] }
++  ],
++  &quot;categories&quot;: [],
++  &quot;extensions&quot;: [
++    &quot;1998944621602463790:MANGA Plus by SHUEISHA&quot;,
++    &quot;2499283573021220255:MangaDex&quot;,
++    &quot;4637971935551651734:Guya&quot;,
++    &quot;9064882169246918586:Jaimini&#39;s Box&quot;,
++    &quot;9:Mangasee&quot;
++  ]
++}
++    &quot;&quot;&quot;
++    assert read_tachiyomi_follows(data) == [
++        (&quot;mangasee&quot;, &quot;Ajin&quot;),
++        (&quot;mangadex&quot;, &quot;28664&quot;),
++        (&quot;mangasee&quot;, &quot;Chainsaw-Man&quot;),
++        (&quot;mangasee&quot;, &quot;Chi-No-Wadachi&quot;),
++        (&quot;mangadex&quot;, &quot;13318&quot;),
++        (&quot;mangadex&quot;, &quot;31688&quot;),
++    ]
+</pre></body></html>

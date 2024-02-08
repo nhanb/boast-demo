@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[eb6d225a36] define subcommands: new &amp; serve | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / eb6d225a36</strong><hr><pre>commit eb6d225a36436358e3b155a3036d96e92c75412b
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jul 12 16:08:54 2023 +0700
+
+    define subcommands: new &amp; serve
+
+diff --git a/main.go b/main.go
+index a3bdc5b..0b7ad16 100644
+--- a/main.go
++++ b/main.go
+@@ -9,6 +9,7 @@
+ 	&quot;log&quot;
+ 	&quot;net/http&quot;
+ 	&quot;net/url&quot;
++	&quot;os&quot;
+ 	&quot;path/filepath&quot;
+ 	&quot;sort&quot;
+ 	&quot;strings&quot;
+@@ -25,21 +26,52 @@
+ const FeedPath = &quot;feed.xml&quot;
+ 
+ func main() {
+-	var port, folder, new string
+-	flag.StringVar(&amp;new, &quot;new&quot;, &quot;&quot;, &quot;Path for new site to make&quot;)
+-	flag.StringVar(&amp;port, &quot;port&quot;, &quot;3338&quot;, &quot;Port for local preview server&quot;)
+-	flag.StringVar(&amp;folder, &quot;folder&quot;, &quot;www&quot;, &quot;Web folder&quot;)
+-	flag.Parse()
+-
+-	if new != &quot;&quot; {
+-		fmt.Println(&quot;Making new site at&quot;, new)
+-		err := makeSite(new, NewSiteMetadata())
+-		if err != nil {
+-			log.Fatal(err)
+-		}
+-		return
++	invalidCommand := func() {
++		fmt.Println(&quot;Usage: webfolder2000 new|serve [...]&quot;)
++		os.Exit(1)
++	}
++
++	// If no subcommand is given, default to &quot;serve&quot;
++	var cmd string
++	var args []string
++	if len(os.Args) &lt; 2 {
++		cmd = &quot;serve&quot;
++		args = os.Args[1:]
++	} else {
++		cmd = os.Args[1]
++		args = os.Args[2:]
++	}
++
++	var newFolder string
++	newCmd := flag.NewFlagSet(&quot;new&quot;, flag.ExitOnError)
++	newCmd.StringVar(&amp;newFolder, &quot;f&quot;, &quot;site1&quot;, &quot;Folder for new website&quot;)
++
++	var serveFolder, servePort string
++	serveCmd := flag.NewFlagSet(&quot;serve&quot;, flag.ExitOnError)
++	serveCmd.StringVar(&amp;serveFolder, &quot;f&quot;, &quot;www&quot;, &quot;Folder for existing website&quot;)
++	serveCmd.StringVar(&amp;servePort, &quot;p&quot;, &quot;3338&quot;, &quot;Port for local preview server&quot;)
++
++	switch cmd {
++	case &quot;new&quot;:
++		newCmd.Parse(args)
++		handleNewCmd(newFolder)
++	case &quot;serve&quot;:
++		serveCmd.Parse(args)
++		handleServeCmd(serveFolder, servePort)
++	default:
++		invalidCommand()
++	}
++}
++
++func handleNewCmd(folder string) {
++	fmt.Println(&quot;Making new site at&quot;, folder)
++	err := makeSite(folder, NewSiteMetadata())
++	if err != nil {
++		log.Fatal(err)
+ 	}
++}
+ 
++func handleServeCmd(folder, port string) {
+ 	djot.StartService()
+ 	fmt.Println(&quot;Started djot.js service&quot;)
+ 
+</pre></body></html>

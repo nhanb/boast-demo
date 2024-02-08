@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[c55e6f4f6e] fix empty body/charset case; use regex | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / c55e6f4f6e</strong><hr><pre>commit c55e6f4f6e9fde5335c5263f9462ef4db654b36a
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jun 18 11:53:21 2020 +0700
+
+    fix empty body/charset case; use regex
+
+diff --git a/src/mcross/gui/controller.py b/src/mcross/gui/controller.py
+index 0749068..de350c2 100644
+--- a/src/mcross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -161,21 +161,23 @@ async def load_page(self, url: GeminiUrl):
+         )
+ 
+         # Support whatever encoding that python supports
+-        try:
+-            body_string = resp.body.decode(resp.charset)
+-        except LookupError:
+-            await self.put_gui_op(
+-                self.model.update_content,
+-                &quot;\n&quot;.join(
+-                    [
+-                        &quot;Error:&quot;,
+-                        f&quot;{resp.status} {resp.meta}&quot;,
+-                        f&quot;Unsupported charset: {resp.charset}&quot;,
+-                    ]
+-                ),
+-                &quot;text/plain&quot;,
+-            )
+-            return resp
++        body_string = &quot;&quot;
++        if resp.body and resp.charset:
++            try:
++                body_string = resp.body.decode(resp.charset)
++            except LookupError:
++                await self.put_gui_op(
++                    self.model.update_content,
++                    &quot;\n&quot;.join(
++                        [
++                            &quot;Error:&quot;,
++                            f&quot;{resp.status} {resp.meta}&quot;,
++                            f&quot;Unsupported charset: {resp.charset}&quot;,
++                        ]
++                    ),
++                    &quot;text/plain&quot;,
++                )
++                return resp
+ 
+         # Sucessfully decoded body string!
+         if resp.status.startswith(&quot;2&quot;):
+@@ -185,13 +187,7 @@ async def load_page(self, url: GeminiUrl):
+         else:
+             await self.put_gui_op(
+                 self.model.update_content,
+-                &quot;\n&quot;.join(
+-                    [
+-                        &quot;Error:&quot;,
+-                        f&quot;{resp.status} {resp.meta}&quot;,
+-                        body_string if resp.body else &quot;&quot;,
+-                    ]
+-                ),
++                f&quot;Error:\n{resp.status} {resp.meta}\n{body_string}&quot;,
+                 &quot;text/plain&quot;,
+             )
+         return resp
+diff --git a/src/mcross/transport.py b/src/mcross/transport.py
+index 3eb448d..aa47ab7 100644
+--- a/src/mcross/transport.py
++++ b/src/mcross/transport.py
+@@ -31,10 +31,19 @@ def _parse_resp_header(header, pattern=re.compile(r&quot;^(\d\d)\s+(.{,1024})\r\n$&quot;))
+     match = pattern.match(header)
+     assert match is not None, f&quot;Malformed response header: {header}&quot;
+     status = match.group(1)
+-    meta = match.group(2)
++    meta = match.group(2).strip()
+     return status, meta
+ 
+ 
++def _parse_meta(meta, pattern=re.compile(r&quot;^(\S+)\s*;\s*charset=(\S+)$&quot;)):
++    match = pattern.match(meta)
++    if not match:
++        return None, None
++    mime_type = match.group(1)
++    charset = match.group(2)
++    return mime_type, charset
++
++
+ # TODO: GeminiUrl&#39;s context-aware parse() method probably doesn&#39;t belong
+ # in a &quot;transport&quot; module.
+ 
+@@ -138,22 +147,9 @@ async def raw_get(url: GeminiUrl):
+ 
+         status, meta = _parse_resp_header(header.decode())
+ 
+-        # If success, extract mime type &amp; charset from meta
+-        mime_type = None
+-        charset = None
+-        if status.startswith(&quot;2&quot;):
+-            if not meta:
+-                mime_type = &quot;text/gemini&quot;
+-                charset = &quot;utf-8&quot;
+-            else:
+-                meta_parts = meta.split(&quot;;&quot;)
+-                mime_type = meta_parts[0].strip() or &quot;text/gemini&quot;
+-                charset = &quot;&quot;
+-                if len(meta_parts) == 2:
+-                    charset_part = meta_parts[1].strip()
+-                    if charset_part.startswith(&quot;charset=&quot;):
+-                        charset = charset_part[len(&quot;charset=&quot;) :]
+-                charset = charset or &quot;utf-8&quot;
++        mime_type, charset = _parse_meta(meta)
++        mime_type = mime_type or &quot;text/gemini&quot;
++        charset = charset or &quot;utf-8&quot;
+ 
+         resp = Response(
+             status=status, meta=meta, url=url, mime_type=mime_type, charset=charset
+</pre></body></html>

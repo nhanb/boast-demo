@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[5e64ca62ae] WIP players | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 5e64ca62ae</strong><hr><pre>commit 5e64ca62ae9f2fa512601268e6ea6a6df6651e1e
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jun 19 21:44:37 2023 +0700
+
+    WIP players
+    
+    Got country name-to-code mappings. Now let&#39;s actually fetch them.
+
+diff --git a/.gitignore b/.gitignore
+index 58c4c79..8682b36 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,2 +1,4 @@
+ /dist
+ /web/state.json
++/players.csv
++/creds*
+diff --git a/startgg/countries.go b/startgg/countries.go
+new file mode 100644
+index 0000000..5d1ed9e
+--- /dev/null
++++ b/startgg/countries.go
+@@ -0,0 +1,262 @@
++package startgg
++
++// Startgg only shows (non-standard) country names (ongoing problem for years,
++// probably will never be fixed), so we need this mapping to convert these
++// names to alpha-2 codes.
++// From https://gist.github.com/morleym/a39c43f6544a350c109c5f7b0b055155
++var nameToCode = map[string]string{
++	&quot;Bangladesh&quot;:                         &quot;bd&quot;,
++	&quot;Belgium&quot;:                            &quot;be&quot;,
++	&quot;Burkina Faso&quot;:                       &quot;bf&quot;,
++	&quot;Bulgaria&quot;:                           &quot;bg&quot;,
++	&quot;Bosnia and Herzegovina&quot;:             &quot;ba&quot;,
++	&quot;Barbados&quot;:                           &quot;bb&quot;,
++	&quot;Wallis and Futuna&quot;:                  &quot;wf&quot;,
++	&quot;Saint Barthelemy&quot;:                   &quot;bl&quot;,
++	&quot;Bermuda&quot;:                            &quot;bm&quot;,
++	&quot;Brunei&quot;:                             &quot;bn&quot;,
++	&quot;Bolivia&quot;:                            &quot;bo&quot;,
++	&quot;Bahrain&quot;:                            &quot;bh&quot;,
++	&quot;Burundi&quot;:                            &quot;bi&quot;,
++	&quot;Benin&quot;:                              &quot;bj&quot;,
++	&quot;Bhutan&quot;:                             &quot;bt&quot;,
++	&quot;Jamaica&quot;:                            &quot;jm&quot;,
++	&quot;Bouvet Island&quot;:                      &quot;bv&quot;,
++	&quot;Botswana&quot;:                           &quot;bw&quot;,
++	&quot;Samoa&quot;:                              &quot;ws&quot;,
++	&quot;Bonaire, Saint Eustatius and Saba &quot;: &quot;bq&quot;,
++	&quot;Brazil&quot;:                             &quot;br&quot;,
++	&quot;Bahamas&quot;:                            &quot;bs&quot;,
++	&quot;Jersey&quot;:                             &quot;je&quot;,
++	&quot;Belarus&quot;:                            &quot;by&quot;,
++	&quot;Belize&quot;:                             &quot;bz&quot;,
++	&quot;Russia&quot;:                             &quot;ru&quot;,
++	&quot;Rwanda&quot;:                             &quot;rw&quot;,
++	&quot;Serbia&quot;:                             &quot;rs&quot;,
++	&quot;East Timor&quot;:                         &quot;tl&quot;,
++	&quot;Reunion&quot;:                            &quot;re&quot;,
++	&quot;Turkmenistan&quot;:                       &quot;tm&quot;,
++	&quot;Tajikistan&quot;:                         &quot;tj&quot;,
++	&quot;Romania&quot;:                            &quot;ro&quot;,
++	&quot;Tokelau&quot;:                            &quot;tk&quot;,
++	&quot;Guinea-Bissau&quot;:                      &quot;gw&quot;,
++	&quot;Guam&quot;:                               &quot;gu&quot;,
++	&quot;Guatemala&quot;:                          &quot;gt&quot;,
++	&quot;South Georgia and the South Sandwich Islands&quot;: &quot;gs&quot;,
++	&quot;Greece&quot;:                               &quot;gr&quot;,
++	&quot;Equatorial Guinea&quot;:                    &quot;gq&quot;,
++	&quot;Guadeloupe&quot;:                           &quot;gp&quot;,
++	&quot;Japan&quot;:                                &quot;jp&quot;,
++	&quot;Guyana&quot;:                               &quot;gy&quot;,
++	&quot;Guernsey&quot;:                             &quot;gg&quot;,
++	&quot;French Guiana&quot;:                        &quot;gf&quot;,
++	&quot;Georgia&quot;:                              &quot;ge&quot;,
++	&quot;Grenada&quot;:                              &quot;gd&quot;,
++	&quot;United Kingdom&quot;:                       &quot;gb&quot;,
++	&quot;Gabon&quot;:                                &quot;ga&quot;,
++	&quot;El Salvador&quot;:                          &quot;sv&quot;,
++	&quot;Guinea&quot;:                               &quot;gn&quot;,
++	&quot;Gambia&quot;:                               &quot;gm&quot;,
++	&quot;Greenland&quot;:                            &quot;gl&quot;,
++	&quot;Gibraltar&quot;:                            &quot;gi&quot;,
++	&quot;Ghana&quot;:                                &quot;gh&quot;,
++	&quot;Oman&quot;:                                 &quot;om&quot;,
++	&quot;Tunisia&quot;:                              &quot;tn&quot;,
++	&quot;Jordan&quot;:                               &quot;jo&quot;,
++	&quot;Croatia&quot;:                              &quot;hr&quot;,
++	&quot;Haiti&quot;:                                &quot;ht&quot;,
++	&quot;Hungary&quot;:                              &quot;hu&quot;,
++	&quot;Hong Kong&quot;:                            &quot;hk&quot;,
++	&quot;Honduras&quot;:                             &quot;hn&quot;,
++	&quot;Heard Island and McDonald Islands&quot;:    &quot;hm&quot;,
++	&quot;Venezuela&quot;:                            &quot;ve&quot;,
++	&quot;Puerto Rico&quot;:                          &quot;pr&quot;,
++	&quot;Palestinian Territory&quot;:                &quot;ps&quot;,
++	&quot;Palau&quot;:                                &quot;pw&quot;,
++	&quot;Portugal&quot;:                             &quot;pt&quot;,
++	&quot;Svalbard and Jan Mayen&quot;:               &quot;sj&quot;,
++	&quot;Paraguay&quot;:                             &quot;py&quot;,
++	&quot;Iraq&quot;:                                 &quot;iq&quot;,
++	&quot;Panama&quot;:                               &quot;pa&quot;,
++	&quot;French Polynesia&quot;:                     &quot;pf&quot;,
++	&quot;Papua New Guinea&quot;:                     &quot;pg&quot;,
++	&quot;Peru&quot;:                                 &quot;pe&quot;,
++	&quot;Pakistan&quot;:                             &quot;pk&quot;,
++	&quot;Philippines&quot;:                          &quot;ph&quot;,
++	&quot;Pitcairn&quot;:                             &quot;pn&quot;,
++	&quot;Poland&quot;:                               &quot;pl&quot;,
++	&quot;Saint Pierre and Miquelon&quot;:            &quot;pm&quot;,
++	&quot;Zambia&quot;:                               &quot;zm&quot;,
++	&quot;Western Sahara&quot;:                       &quot;eh&quot;,
++	&quot;Estonia&quot;:                              &quot;ee&quot;,
++	&quot;Egypt&quot;:                                &quot;eg&quot;,
++	&quot;South Africa&quot;:                         &quot;za&quot;,
++	&quot;Ecuador&quot;:                              &quot;ec&quot;,
++	&quot;Italy&quot;:                                &quot;it&quot;,
++	&quot;Vietnam&quot;:                              &quot;vn&quot;,
++	&quot;Solomon Islands&quot;:                      &quot;sb&quot;,
++	&quot;Ethiopia&quot;:                             &quot;et&quot;,
++	&quot;Somalia&quot;:                              &quot;so&quot;,
++	&quot;Zimbabwe&quot;:                             &quot;zw&quot;,
++	&quot;Saudi Arabia&quot;:                         &quot;sa&quot;,
++	&quot;Spain&quot;:                                &quot;es&quot;,
++	&quot;Eritrea&quot;:                              &quot;er&quot;,
++	&quot;Montenegro&quot;:                           &quot;me&quot;,
++	&quot;Moldova&quot;:                              &quot;md&quot;,
++	&quot;Madagascar&quot;:                           &quot;mg&quot;,
++	&quot;Saint Martin&quot;:                         &quot;mf&quot;,
++	&quot;Morocco&quot;:                              &quot;ma&quot;,
++	&quot;Monaco&quot;:                               &quot;mc&quot;,
++	&quot;Uzbekistan&quot;:                           &quot;uz&quot;,
++	&quot;Myanmar&quot;:                              &quot;mm&quot;,
++	&quot;Mali&quot;:                                 &quot;ml&quot;,
++	&quot;Macao&quot;:                                &quot;mo&quot;,
++	&quot;Mongolia&quot;:                             &quot;mn&quot;,
++	&quot;Marshall Islands&quot;:                     &quot;mh&quot;,
++	&quot;Macedonia&quot;:                            &quot;mk&quot;,
++	&quot;Mauritius&quot;:                            &quot;mu&quot;,
++	&quot;Malta&quot;:                                &quot;mt&quot;,
++	&quot;Malawi&quot;:                               &quot;mw&quot;,
++	&quot;Maldives&quot;:                             &quot;mv&quot;,
++	&quot;Martinique&quot;:                           &quot;mq&quot;,
++	&quot;Northern Mariana Islands&quot;:             &quot;mp&quot;,
++	&quot;Montserrat&quot;:                           &quot;ms&quot;,
++	&quot;Mauritania&quot;:                           &quot;mr&quot;,
++	&quot;Isle of Man&quot;:                          &quot;im&quot;,
++	&quot;Uganda&quot;:                               &quot;ug&quot;,
++	&quot;Tanzania&quot;:                             &quot;tz&quot;,
++	&quot;Malaysia&quot;:                             &quot;my&quot;,
++	&quot;Mexico&quot;:                               &quot;mx&quot;,
++	&quot;Israel&quot;:                               &quot;il&quot;,
++	&quot;France&quot;:                               &quot;fr&quot;,
++	&quot;British Indian Ocean Territory&quot;:       &quot;io&quot;,
++	&quot;Saint Helena&quot;:                         &quot;sh&quot;,
++	&quot;Finland&quot;:                              &quot;fi&quot;,
++	&quot;Fiji&quot;:                                 &quot;fj&quot;,
++	&quot;Falkland Islands&quot;:                     &quot;fk&quot;,
++	&quot;Micronesia&quot;:                           &quot;fm&quot;,
++	&quot;Faroe Islands&quot;:                        &quot;fo&quot;,
++	&quot;Nicaragua&quot;:                            &quot;ni&quot;,
++	&quot;Netherlands&quot;:                          &quot;nl&quot;,
++	&quot;Norway&quot;:                               &quot;no&quot;,
++	&quot;Namibia&quot;:                              &quot;na&quot;,
++	&quot;Vanuatu&quot;:                              &quot;vu&quot;,
++	&quot;New Caledonia&quot;:                        &quot;nc&quot;,
++	&quot;Niger&quot;:                                &quot;ne&quot;,
++	&quot;Norfolk Island&quot;:                       &quot;nf&quot;,
++	&quot;Nigeria&quot;:                              &quot;ng&quot;,
++	&quot;New Zealand&quot;:                          &quot;nz&quot;,
++	&quot;Nepal&quot;:                                &quot;np&quot;,
++	&quot;Nauru&quot;:                                &quot;nr&quot;,
++	&quot;Niue&quot;:                                 &quot;nu&quot;,
++	&quot;Cook Islands&quot;:                         &quot;ck&quot;,
++	&quot;Kosovo&quot;:                               &quot;xk&quot;,
++	&quot;Ivory Coast&quot;:                          &quot;ci&quot;,
++	&quot;Switzerland&quot;:                          &quot;ch&quot;,
++	&quot;Colombia&quot;:                             &quot;co&quot;,
++	&quot;China&quot;:                                &quot;cn&quot;,
++	&quot;Cameroon&quot;:                             &quot;cm&quot;,
++	&quot;Chile&quot;:                                &quot;cl&quot;,
++	&quot;Cocos Islands&quot;:                        &quot;cc&quot;,
++	&quot;Canada&quot;:                               &quot;ca&quot;,
++	&quot;CA&quot;:                                   &quot;ca&quot;,
++	&quot;Republic of the Congo&quot;:                &quot;cg&quot;,
++	&quot;Central African Republic&quot;:             &quot;cf&quot;,
++	&quot;Democratic Republic of the Congo&quot;:     &quot;cd&quot;,
++	&quot;Czech Republic&quot;:                       &quot;cz&quot;,
++	&quot;Cyprus&quot;:                               &quot;cy&quot;,
++	&quot;Christmas Island&quot;:                     &quot;cx&quot;,
++	&quot;Costa Rica&quot;:                           &quot;cr&quot;,
++	&quot;Curacao&quot;:                              &quot;cw&quot;,
++	&quot;Cape Verde&quot;:                           &quot;cv&quot;,
++	&quot;Cuba&quot;:                                 &quot;cu&quot;,
++	&quot;Swaziland&quot;:                            &quot;sz&quot;,
++	&quot;Syria&quot;:                                &quot;sy&quot;,
++	&quot;Sint Maarten&quot;:                         &quot;sx&quot;,
++	&quot;Kyrgyzstan&quot;:                           &quot;kg&quot;,
++	&quot;Kenya&quot;:                                &quot;ke&quot;,
++	&quot;South Sudan&quot;:                          &quot;ss&quot;,
++	&quot;Suriname&quot;:                             &quot;sr&quot;,
++	&quot;Kiribati&quot;:                             &quot;ki&quot;,
++	&quot;Cambodia&quot;:                             &quot;kh&quot;,
++	&quot;Saint Kitts and Nevis&quot;:                &quot;kn&quot;,
++	&quot;Comoros&quot;:                              &quot;km&quot;,
++	&quot;Sao Tome and Principe&quot;:                &quot;st&quot;,
++	&quot;Slovakia&quot;:                             &quot;sk&quot;,
++	&quot;South Korea&quot;:                          &quot;kr&quot;,
++	&quot;Slovenia&quot;:                             &quot;si&quot;,
++	&quot;North Korea&quot;:                          &quot;kp&quot;,
++	&quot;Kuwait&quot;:                               &quot;kw&quot;,
++	&quot;Senegal&quot;:                              &quot;sn&quot;,
++	&quot;San Marino&quot;:                           &quot;sm&quot;,
++	&quot;Sierra Leone&quot;:                         &quot;sl&quot;,
++	&quot;Seychelles&quot;:                           &quot;sc&quot;,
++	&quot;Kazakhstan&quot;:                           &quot;kz&quot;,
++	&quot;Cayman Islands&quot;:                       &quot;ky&quot;,
++	&quot;Singapore&quot;:                            &quot;sg&quot;,
++	&quot;Sweden&quot;:                               &quot;se&quot;,
++	&quot;Sudan&quot;:                                &quot;sd&quot;,
++	&quot;Dominican Republic&quot;:                   &quot;do&quot;,
++	&quot;Dominica&quot;:                             &quot;dm&quot;,
++	&quot;Djibouti&quot;:                             &quot;dj&quot;,
++	&quot;Denmark&quot;:                              &quot;dk&quot;,
++	&quot;British Virgin Islands&quot;:               &quot;vg&quot;,
++	&quot;Germany&quot;:                              &quot;de&quot;,
++	&quot;Yemen&quot;:                                &quot;ye&quot;,
++	&quot;Algeria&quot;:                              &quot;dz&quot;,
++	&quot;United States&quot;:                        &quot;us&quot;,
++	&quot;US&quot;:                                   &quot;us&quot;,
++	&quot;Uruguay&quot;:                              &quot;uy&quot;,
++	&quot;Mayotte&quot;:                              &quot;yt&quot;,
++	&quot;United States Minor Outlying Islands&quot;: &quot;um&quot;,
++	&quot;Lebanon&quot;:                              &quot;lb&quot;,
++	&quot;Saint Lucia&quot;:                          &quot;lc&quot;,
++	&quot;Laos&quot;:                                 &quot;la&quot;,
++	&quot;Tuvalu&quot;:                               &quot;tv&quot;,
++	&quot;Taiwan&quot;:                               &quot;tw&quot;,
++	&quot;Trinidad and Tobago&quot;:                  &quot;tt&quot;,
++	&quot;Turkey&quot;:                               &quot;tr&quot;,
++	&quot;Sri Lanka&quot;:                            &quot;lk&quot;,
++	&quot;Liechtenstein&quot;:                        &quot;li&quot;,
++	&quot;Latvia&quot;:                               &quot;lv&quot;,
++	&quot;Tonga&quot;:                                &quot;to&quot;,
++	&quot;Lithuania&quot;:                            &quot;lt&quot;,
++	&quot;Luxembourg&quot;:                           &quot;lu&quot;,
++	&quot;Liberia&quot;:                              &quot;lr&quot;,
++	&quot;Lesotho&quot;:                              &quot;ls&quot;,
++	&quot;Thailand&quot;:                             &quot;th&quot;,
++	&quot;French Southern Territories&quot;:          &quot;tf&quot;,
++	&quot;Togo&quot;:                                 &quot;tg&quot;,
++	&quot;Chad&quot;:                                 &quot;td&quot;,
++	&quot;Turks and Caicos Islands&quot;:             &quot;tc&quot;,
++	&quot;Libya&quot;:                                &quot;ly&quot;,
++	&quot;Vatican&quot;:                              &quot;va&quot;,
++	&quot;Saint Vincent and the Grenadines&quot;:     &quot;vc&quot;,
++	&quot;United Arab Emirates&quot;:                 &quot;ae&quot;,
++	&quot;Andorra&quot;:                              &quot;ad&quot;,
++	&quot;Antigua and Barbuda&quot;:                  &quot;ag&quot;,
++	&quot;Afghanistan&quot;:                          &quot;af&quot;,
++	&quot;Anguilla&quot;:                             &quot;ai&quot;,
++	&quot;U.S. Virgin Islands&quot;:                  &quot;vi&quot;,
++	&quot;Iceland&quot;:                              &quot;is&quot;,
++	&quot;Iran&quot;:                                 &quot;ir&quot;,
++	&quot;Armenia&quot;:                              &quot;am&quot;,
++	&quot;Albania&quot;:                              &quot;al&quot;,
++	&quot;Angola&quot;:                               &quot;ao&quot;,
++	&quot;Antarctica&quot;:                           &quot;aq&quot;,
++	&quot;American Samoa&quot;:                       &quot;as&quot;,
++	&quot;Argentina&quot;:                            &quot;ar&quot;,
++	&quot;Australia&quot;:                            &quot;au&quot;,
++	&quot;Austria&quot;:                              &quot;at&quot;,
++	&quot;Aruba&quot;:                                &quot;aw&quot;,
++	&quot;India&quot;:                                &quot;in&quot;,
++	&quot;Aland Islands&quot;:                        &quot;ax&quot;,
++	&quot;Azerbaijan&quot;:                           &quot;az&quot;,
++	&quot;Ireland&quot;:                              &quot;ie&quot;,
++	&quot;Indonesia&quot;:                            &quot;id&quot;,
++	&quot;Ukraine&quot;:                              &quot;ua&quot;,
++	&quot;Qatar&quot;:                                &quot;qa&quot;,
++	&quot;Mozambique&quot;:                           &quot;mz&quot;,
++	&quot;Wales&quot;:                                &quot;gb-wls&quot;,
++	&quot;Scotland&quot;:                             &quot;gb-sct&quot;,
++}
+diff --git a/startgg/startgg.go b/startgg/startgg.go
+new file mode 100644
+index 0000000..6220586
+--- /dev/null
++++ b/startgg/startgg.go
+@@ -0,0 +1,80 @@
++package startgg
++
++import (
++	&quot;bytes&quot;
++	_ &quot;embed&quot;
++	&quot;encoding/json&quot;
++	&quot;fmt&quot;
++	&quot;io/ioutil&quot;
++	&quot;net/http&quot;
++)
++
++const STARTGG_URL = &quot;https://api.start.gg/gql/alpha&quot;
++
++type Player struct {
++	GamerTag string
++	Prefix   string
++}
++
++type GraphQL struct {
++	Query     string   `json:&quot;query&quot;`
++	Variables struct{} `json:&quot;variables&quot;`
++}
++
++func FetchPlayers(token string, tourneySlug string) ([]Player, error) {
++	query := `
++{
++  tournament(slug: &quot;%s&quot;) {
++    participants(query: {page: %d, perPage: 500}) {
++      nodes {
++        entrants {
++          event {
++            slug
++            name
++          }
++          team {
++            name
++          }
++        }
++        gamerTag
++        prefix
++        user {
++          location {
++            country
++          }
++        }
++      }
++    }
++  }
++}
++`
++	body, err := json.Marshal(GraphQL{
++		Query:     fmt.Sprintf(query, tourneySlug, 1),
++		Variables: struct{}{},
++	})
++	if err != nil {
++		panic(err)
++	}
++
++	req, err := http.NewRequest(&quot;POST&quot;, STARTGG_URL, bytes.NewBuffer(body))
++	if err != nil {
++		panic(err)
++	}
++	req.Header.Add(&quot;User-Agent&quot;, &quot;GORTS/0.2&quot;)
++	req.Header.Add(&quot;Content-Type&quot;, &quot;application/json&quot;)
++	req.Header.Add(&quot;Authorization&quot;, &quot;Bearer &quot;+token)
++
++	resp, err := http.DefaultClient.Do(req)
++	if err != nil {
++		return nil, fmt.Errorf(&quot;fetch players: %w&quot;, err)
++	}
++	defer resp.Body.Close()
++
++	respdata, err := ioutil.ReadAll(resp.Body)
++	fmt.Println(&quot;&gt;&gt;&gt;&gt;&quot;, string(respdata))
++
++	//var res map[string]interface{}
++	//json.NewDecoder(resp.Body).Decode(&amp;res)
++	//fmt.Println(res[&quot;json&quot;])
++	return nil, nil
++}
+</pre></body></html>

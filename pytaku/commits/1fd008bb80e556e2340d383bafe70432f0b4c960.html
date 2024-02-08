@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1fd008bb80] remove debugging print statement | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 1fd008bb80</strong><hr><pre>commit 1fd008bb80e556e2340d383bafe70432f0b4c960
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 23 23:36:32 2020 +0700
+
+    remove debugging print statement
+
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 95b7721..9f8deb2 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -542,7 +542,6 @@ def api_read():
+ 
+     if reads:
+         for r in reads:
+-            print(&quot;&gt;&gt; reading&quot;, request.user_id, r)
+             read(
+                 request.user_id, r[&quot;site&quot;], r[&quot;title_id&quot;], r[&quot;chapter_id&quot;],
+             )
+@@ -553,4 +552,7 @@ def api_read():
+             )
+     # TODO: rewrite read/unread to do bulk updates instead of n+1 queries like these.
+     # ... Or maybe not. SQLite doesn&#39;t mind.
++
++    # Also TODO: maybe a separate &quot;read all from title&quot; API would be cleaner &amp; easier on
++    # FE side.
+     return {}
+</pre></body></html>

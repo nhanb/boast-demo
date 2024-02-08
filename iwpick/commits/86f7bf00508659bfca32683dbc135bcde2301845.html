@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[86f7bf0050] add always-focused text input | iwpick | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">iwpick</a> / 86f7bf0050</strong><hr><pre>commit 86f7bf00508659bfca32683dbc135bcde2301845
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 29 00:21:06 2022 +0700
+
+    add always-focused text input
+    
+    ... while still keeping up/down array for list navigation
+
+diff --git a/main.go b/main.go
+index a5a9d77..7fb7f67 100644
+--- a/main.go
++++ b/main.go
+@@ -8,6 +8,7 @@
+ 	&quot;os/exec&quot;
+ 	&quot;strings&quot;
+ 
++	&quot;github.com/gdamore/tcell/v2&quot;
+ 	&quot;github.com/rivo/tview&quot;
+ )
+ 
+@@ -82,15 +83,33 @@ func main() {
+ 	fmt.Println(networks)
+ 
+ 	app := tview.NewApplication()
+-	list := tview.NewList().ShowSecondaryText(false)
+ 
++	input := tview.NewInputField().SetLabel(&quot;Filter: &quot;)
++	list := tview.NewList().ShowSecondaryText(false)
+ 	for _, nw := range networks {
+ 		list.AddItem(
+ 			fmt.Sprintf(&quot;[%d] %s (%s)&quot;, nw.Strength, nw.SSID, nw.Security),
+ 			&quot;&quot;, 0, nil)
+ 	}
+ 
+-	if err := app.SetRoot(list, true).SetFocus(list).Run(); err != nil {
++	flex := tview.NewFlex().SetDirection(tview.FlexRow)
++	flex.AddItem(input, 2, 1, true)
++	flex.AddItem(list, 0, 1, false)
++
++	input.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
++		switch event.Key() {
++		case tcell.KeyUp:
++			i := list.GetCurrentItem()
++			if i &gt; 0 {
++				list.SetCurrentItem(i - 1)
++			}
++		case tcell.KeyDown:
++			list.SetCurrentItem(list.GetCurrentItem() + 1)
++		}
++		return event
++	})
++
++	if err := app.SetRoot(flex, true).SetFocus(input).Run(); err != nil {
+ 		panic(err)
+ 	}
+ }
+</pre></body></html>

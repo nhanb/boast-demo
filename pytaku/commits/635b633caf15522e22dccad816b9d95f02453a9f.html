@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[635b633caf] add ipv4 warning | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 635b633caf</strong><hr><pre>commit 635b633caf15522e22dccad816b9d95f02453a9f
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Feb 12 21:13:54 2023 +0700
+
+    add ipv4 warning
+
+diff --git a/README.md b/README.md
+index 7016ed4..4dd3e86 100644
+--- a/README.md
++++ b/README.md
+@@ -87,6 +87,12 @@ ## Code QA tools
+ 
+ # Production
+ 
++**Gotcha:** mangasee image servers will timeout if you try to download images
++via ipv6, so you&#39;ll need to disable IPv6 on your VM. It&#39;s unfortunate that
++python-requests [doesn&#39;t][https://github.com/psf/requests/issues/1691] have an
++official way to specify ipv4/ipv6 on its API, and I&#39;m too lazy to figure out
++alternatives.
++
+ I&#39;m running my instance on Debian 11, but any unix-like environment with these
+ should work:
+ 
+</pre></body></html>

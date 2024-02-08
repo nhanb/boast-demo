@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[34d294b883] mangasee switched their cover domain again | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 34d294b883</strong><hr><pre>commit 34d294b8836d39198eccde34d0bd183fce5a42b2
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jul 24 14:52:38 2022 +0700
+
+    mangasee switched their cover domain again
+
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+index 7874ef8..04495ca 100644
+--- a/src/mangoapi/mangasee.py
++++ b/src/mangoapi/mangasee.py
+@@ -123,7 +123,7 @@ def search_title(self, query):
+                 &quot;id&quot;: row[0],
+                 &quot;name&quot;: row[1],
+                 &quot;site&quot;: &quot;mangasee&quot;,
+-                &quot;thumbnail&quot;: f&quot;https://cover.nep.li/cover/{row[0]}.jpg&quot;,
++                &quot;thumbnail&quot;: f&quot;https://temp.compsci88.com/cover/{row[0]}.jpg&quot;,
+             }
+             for row in self.search_table.search(query)
+         ]
+@@ -132,7 +132,7 @@ def title_cover(self, title_id, cover_ext):
+         return self.title_thumbnail(title_id, cover_ext)
+ 
+     def title_thumbnail(self, title_id, cover_ext):
+-        return f&quot;https://cover.nep.li/cover/{title_id}.jpg&quot;
++        return f&quot;https://temp.compsci88.com/cover/{title_id}.jpg&quot;
+ 
+     def title_source_url(self, title_id):
+         return f&quot;https://mangasee123.com/manga/{title_id}&quot;
+diff --git a/tests/mangoapi/test_mangasee.py b/tests/mangoapi/test_mangasee.py
+index 914a2b6..d5d8e6a 100644
+--- a/tests/mangoapi/test_mangasee.py
++++ b/tests/mangoapi/test_mangasee.py
+@@ -65,6 +65,6 @@ def set(self, key, val):
+             &quot;id&quot;: &quot;Sayonara-Football&quot;,
+             &quot;name&quot;: &quot;Sayonara, Football&quot;,
+             &quot;site&quot;: &quot;mangasee&quot;,
+-            &quot;thumbnail&quot;: &quot;https://cover.nep.li/cover/Sayonara-Football.jpg&quot;,
++            &quot;thumbnail&quot;: &quot;https://temp.compsci88.com/cover/Sayonara-Football.jpg&quot;,
+         }
+     ]
+</pre></body></html>

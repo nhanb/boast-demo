@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a4f4bc0889] ttk ui mockup | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / a4f4bc0889</strong><hr><pre>commit a4f4bc0889f7a9352183fb0af673d23bb75807c0
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jun 15 17:40:30 2023 +0700
+
+    ttk ui mockup
+    
+    There must be a more civilized way to do internal grid padding right?
+    Right?
+
+diff --git a/tk/main.tcl b/tk/main.tcl
+index d87864a..bed22c0 100644
+--- a/tk/main.tcl
++++ b/tk/main.tcl
+@@ -1,6 +1,7 @@
+ package require Tk
+ 
+-wm title . &quot;Create or Open?&quot;
++wm title . &quot;Overly Repetitive Tedious Software (in Go)&quot;
++tk appname gorts
+ 
+ set OS [lindex $tcl_platform(os) 0]
+ if {$OS == &quot;Windows&quot;} {
+@@ -10,3 +11,60 @@ if {$OS == &quot;Windows&quot;} {
+ } else {
+     ttk::style theme use clam
+ }
++
++ttk::frame .c -padding 5
++ttk::frame .c.description
++ttk::label .c.description.lbl -text &quot;Match description&quot;
++ttk::entry .c.description.entry
++ttk::frame .c.players
++ttk::label .c.players.p1lbl -text &quot;Player 1&quot;
++ttk::combobox .c.players.p1name -width 35
++ttk::combobox .c.players.p1country -width 5
++ttk::spinbox .c.players.p1score -from 0 -to 999 -width 4
++ttk::button .c.players.p1win -text &quot;▲ Win&quot; -width 5
++ttk::label .c.players.p1teamlbl -text &quot;Team 1&quot;
++ttk::combobox .c.players.p1teamname
++ttk::separator .c.players.separator -orient horizontal
++ttk::label .c.players.p2lbl -text &quot;Player 2&quot;
++ttk::combobox .c.players.p2name -width 35
++ttk::combobox .c.players.p2country -width 5
++ttk::spinbox .c.players.p2score -from 0 -to 999 -width 4
++ttk::button .c.players.p2win -text &quot;▲ Win&quot; -width 5
++ttk::label .c.players.p2teamlbl -text &quot;Team 2&quot;
++ttk::combobox .c.players.p2teamname
++ttk::frame .c.buttons
++ttk::button .c.buttons.apply -text &quot;▶ Apply&quot;
++ttk::button .c.buttons.discard -text &quot;✖ Discard&quot;
++ttk::button .c.buttons.reset -text &quot;↶ Reset scores&quot;
++ttk::button .c.buttons.swap -text &quot;⇄ Swap players&quot;
++
++grid .c -row 0 -column 0 -sticky NESW
++grid .c.description -row 0 -column 0 -sticky NESW -pady {0 5}
++grid .c.description.lbl -row 0 -column 0 -padx {0 5}
++grid .c.description.entry -row 0 -column 1 -sticky EW
++grid columnconfigure .c.description 1 -weight 1
++grid .c.players -row 1 -column 0
++grid .c.players.p1lbl -row 0 -column 0
++grid .c.players.p1name -row 0 -column 1
++grid .c.players.p1country -row 0 -column 2
++grid .c.players.p1score -row 0 -column 3
++grid .c.players.p1win -row 0 -column 4 -padx {5 0} -rowspan 2 -sticky NS
++grid .c.players.p1teamlbl -row 1 -column 0
++grid .c.players.p1teamname -row 1 -column 1 -columnspan 3 -sticky EW
++grid .c.players.separator -row 2 -column 0 -columnspan 5 -pady 10 -sticky EW
++grid .c.players.p2lbl -row 3 -column 0
++grid .c.players.p2name -row 3 -column 1
++grid .c.players.p2country -row 3 -column 2
++grid .c.players.p2score -row 3 -column 3
++grid .c.players.p2win -row 3 -column 4 -padx {5 0} -rowspan 2 -sticky NS
++grid .c.players.p2teamlbl -row 4 -column 0
++grid .c.players.p2teamname -row 4 -column 1 -columnspan 3 -sticky EW
++grid .c.buttons -row 5 -column 0 -sticky W -pady {10 0}
++grid .c.buttons.apply -row 0 -column 0
++grid .c.buttons.discard -row 0 -column 1
++grid .c.buttons.reset -row 0 -column 2
++grid .c.buttons.swap -row 0 -column 3
++
++grid columnconfigure .c.players 2 -pad 5
++grid columnconfigure .c.buttons 1 -pad 15
++grid columnconfigure .c.buttons 3 -pad 15
+</pre></body></html>

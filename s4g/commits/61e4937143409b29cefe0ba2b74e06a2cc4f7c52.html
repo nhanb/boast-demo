@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[61e4937143] site skeleton and WIP findPosts() | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 61e4937143</strong><hr><pre>commit 61e4937143409b29cefe0ba2b74e06a2cc4f7c52
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jun 28 21:04:04 2023 +0700
+
+    site skeleton and WIP findPosts()
+    
+    Should probably collect pages in the same walkdir too
+
+diff --git a/go.mod b/go.mod
+index 93bf149..07dc113 100644
+--- a/go.mod
++++ b/go.mod
+@@ -1,3 +1,5 @@
+ module go.imnhan.com/webmaker2000
+ 
+ go 1.20
++
++require github.com/BurntSushi/toml v1.3.2
+diff --git a/go.sum b/go.sum
+new file mode 100644
+index 0000000..ef0f966
+--- /dev/null
++++ b/go.sum
+@@ -0,0 +1,2 @@
++github.com/BurntSushi/toml v1.3.2 h1:o7IhLm0Msx3BaB+n3Ag7L8EVlByGnpq14C4YWiu/gL8=
++github.com/BurntSushi/toml v1.3.2/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
+diff --git a/main.go b/main.go
+index 60d6517..8abca0e 100644
+--- a/main.go
++++ b/main.go
+@@ -2,27 +2,68 @@
+ 
+ import (
+ 	&quot;flag&quot;
+-	&quot;log&quot;
++	&quot;fmt&quot;
++	&quot;io/fs&quot;
+ 	&quot;net/http&quot;
+ 	&quot;os&quot;
++	&quot;path/filepath&quot;
++
++	&quot;github.com/BurntSushi/toml&quot;
+ )
+ 
+ func main() {
+ 	var port, folder string
+-	flag.StringVar(&amp;port, &quot;port&quot;, &quot;3338&quot;, &quot;Web port&quot;)
+-	flag.StringVar(&amp;folder, &quot;folder&quot;, &quot;www&quot;, &quot;Web port&quot;)
++	flag.StringVar(&amp;port, &quot;port&quot;, &quot;3338&quot;, &quot;Port for local preview server&quot;)
++	flag.StringVar(&amp;folder, &quot;folder&quot;, &quot;www&quot;, &quot;Web folder&quot;)
+ 	flag.Parse()
+ 
+-	err := os.Chdir(folder)
++	absolutePath, err := filepath.Abs(folder)
+ 	if err != nil {
+-		log.Fatal(err)
++		panic(err)
+ 	}
++	fsys := os.DirFS(absolutePath)
++
++	meta := readSiteMetadata(fsys)
++	fmt.Println(&quot;Found site:&quot;, meta)
++
++	findPosts(fsys)
+ 
+ 	println(&quot;Serving local website at http://localhost:&quot; + port)
+-	fs := http.FileServer(http.Dir(&quot;.&quot;))
+-	http.Handle(&quot;/&quot;, fs)
++	http.Handle(&quot;/&quot;, http.FileServer(http.FS(fsys)))
+ 	err = http.ListenAndServe(&quot;127.0.0.1:&quot;+port, nil)
+ 	if err != nil {
+-		log.Fatal(err)
++		panic(err)
+ 	}
+ }
++
++type SiteMetadata struct {
++	Name    string
++	Tagline string
++}
++
++func readSiteMetadata(fsys fs.FS) (sm SiteMetadata) {
++	_, err := toml.DecodeFS(fsys, &quot;website.toml&quot;, &amp;sm)
++	if err != nil {
++		panic(err)
++	}
++	return sm
++}
++
++type Article struct {
++	Path     string
++	Title    string
++	DjotBody string
++}
++type Post Article
++type Page Article
++
++func findPosts(fsys fs.FS) (posts []Post) {
++	var paths []string
++	fs.WalkDir(fsys, &quot;.&quot;, func(path string, d fs.DirEntry, err error) error {
++		if d.Name() == &quot;post.toml&quot; {
++			paths = append(paths, filepath.Dir(path))
++		}
++		return nil
++	})
++	return posts
++}
+diff --git a/www/about/index.dj b/www/about/index.dj
+new file mode 100644
+index 0000000..35ff8b8
+--- /dev/null
++++ b/www/about/index.dj
+@@ -0,0 +1,8 @@
++## About this site
++
++It&#39;s a website.
++
++## No really
++
++It really _is_ a full-blown
++[mf-ing website](https://motherfuckingwebsite.com/).
+diff --git a/www/about/page.toml b/www/about/page.toml
+new file mode 100644
+index 0000000..8b00bc3
+--- /dev/null
++++ b/www/about/page.toml
+@@ -0,0 +1 @@
++title = &quot;About&quot;
+diff --git a/www/hello/index.dj b/www/hello/index.dj
+new file mode 100644
+index 0000000..18249f3
+--- /dev/null
++++ b/www/hello/index.dj
+@@ -0,0 +1 @@
++Hello world.
+diff --git a/www/hello/post.toml b/www/hello/post.toml
+new file mode 100644
+index 0000000..5917a39
+--- /dev/null
++++ b/www/hello/post.toml
+@@ -0,0 +1 @@
++title = &quot;Good morning&quot;
+diff --git a/www/index.html b/www/index.html
+deleted file mode 100644
+index 391a8cb..0000000
+--- a/www/index.html
++++ /dev/null
+@@ -1 +0,0 @@
+-yello
+diff --git a/www/website.toml b/www/website.toml
+new file mode 100644
+index 0000000..0b0fc98
+--- /dev/null
++++ b/www/website.toml
+@@ -0,0 +1,2 @@
++Name = &quot;My Site&quot;
++Tagline = &quot;And it&#39;s fine.&quot;
+</pre></body></html>

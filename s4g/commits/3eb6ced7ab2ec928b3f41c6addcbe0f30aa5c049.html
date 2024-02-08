@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[3eb6ced7ab] add footer | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 3eb6ced7ab</strong><hr><pre>commit 3eb6ced7ab2ec928b3f41c6addcbe0f30aa5c049
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jul 4 11:33:51 2023 +0700
+
+    add footer
+
+diff --git a/main.go b/main.go
+index 4f8678b..99596a2 100644
+--- a/main.go
++++ b/main.go
+@@ -63,11 +63,12 @@ func main() {
+ }
+ 
+ type SiteMetadata struct {
+-	Address  string
+-	Name     string
+-	Tagline  string
+-	HomePath string
+-	Author   struct {
++	Address       string
++	Name          string
++	Tagline       string
++	HomePath      string
++	DisableFooter bool
++	Author        struct {
+ 		Name  string
+ 		URI   string
+ 		Email string
+@@ -120,6 +121,7 @@ func (a *Article) WriteHtmlFile(site *SiteMetadata, pages []Article) {
+ 		Post    *Article
+ 		Pages   []Article
+ 		Feed    string
++		Now     time.Time
+ 	}{
+ 		Site:    site,
+ 		Content: template.HTML(contentHtml),
+@@ -127,6 +129,7 @@ func (a *Article) WriteHtmlFile(site *SiteMetadata, pages []Article) {
+ 		Post:    a,
+ 		Pages:   pages,
+ 		Feed:    site.HomePath + FEED_PATH,
++		Now:     time.Now(),
+ 	})
+ 	if err != nil {
+ 		fmt.Println(&quot;Error in WriteHtmlFile:&quot;, err)
+@@ -156,12 +159,14 @@ func WriteHomePage(fsys WritableFS, site SiteMetadata, posts, pages []Article) {
+ 		Posts []Article
+ 		Pages []Article
+ 		Feed  string
++		Now   time.Time
+ 	}{
+ 		Site:  &amp;site,
+ 		Title: fmt.Sprintf(&quot;%s - %s&quot;, site.Name, site.Tagline),
+ 		Posts: posts,
+ 		Pages: pages,
+ 		Feed:  site.HomePath + FEED_PATH,
++		Now:   time.Now(),
+ 	})
+ 	if err != nil {
+ 		fmt.Println(&quot;Error in WriteHtmlFile:&quot;, err)
+diff --git a/www/_theme/base.tmpl b/www/_theme/base.tmpl
+index 243c903..499adcc 100644
+--- a/www/_theme/base.tmpl
++++ b/www/_theme/base.tmpl
+@@ -1,5 +1,5 @@
+ &lt;!DOCTYPE html&gt;
+-&lt;html lang=&quot;en&quot;&gt;
++&lt;html&gt;
+ 
+ &lt;head&gt;
+   &lt;meta charset=&quot;utf-8&quot; /&gt;
+@@ -17,6 +17,21 @@
+ 
+ &lt;body&gt;
+ {{template &quot;body&quot; .}}
++
++{{if not .Site.DisableFooter}}
++&lt;footer&gt;
++Copyright {{.Now.Year}} {{.Site.Author.Name}}. All rights reserved.&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;.
++&lt;/footer&gt;
++&lt;style&gt;
++footer {
++  margin-top: 2rem;
++  text-align: right;
++  font-size: 0.8rem;
++}
++&lt;/style&gt;
++{{end}}
++
+ &lt;/body&gt;
+ 
+ &lt;/html&gt;
+diff --git a/www/about/index.html b/www/about/index.html
+index 1bd0517..ce31568 100644
+--- a/www/about/index.html
++++ b/www/about/index.html
+@@ -1,5 +1,5 @@
+ &lt;!DOCTYPE html&gt;
+-&lt;html lang=&quot;en&quot;&gt;
++&lt;html&gt;
+ 
+ &lt;head&gt;
+   &lt;meta charset=&quot;utf-8&quot; /&gt;
+@@ -50,6 +50,21 @@ &lt;h2&gt;No really&lt;/h2&gt;
+ &lt;/style&gt;
+ 
+ 
++
++
++&lt;footer&gt;
++Copyright 2023 Coolio McCool. All rights reserved.&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;.
++&lt;/footer&gt;
++&lt;style&gt;
++footer {
++  margin-top: 2rem;
++  text-align: right;
++  font-size: 0.8rem;
++}
++&lt;/style&gt;
++
++
+ &lt;/body&gt;
+ 
+ &lt;/html&gt;
+diff --git a/www/hello/index.html b/www/hello/index.html
+index 121a1e2..839d5b1 100644
+--- a/www/hello/index.html
++++ b/www/hello/index.html
+@@ -1,5 +1,5 @@
+ &lt;!DOCTYPE html&gt;
+-&lt;html lang=&quot;en&quot;&gt;
++&lt;html&gt;
+ 
+ &lt;head&gt;
+   &lt;meta charset=&quot;utf-8&quot; /&gt;
+@@ -49,6 +49,21 @@ &lt;h1 class=&quot;post-title&quot;&gt;Hello&lt;/h1&gt;
+ &lt;/style&gt;
+ 
+ 
++
++
++&lt;footer&gt;
++Copyright 2023 Coolio McCool. All rights reserved.&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;.
++&lt;/footer&gt;
++&lt;style&gt;
++footer {
++  margin-top: 2rem;
++  text-align: right;
++  font-size: 0.8rem;
++}
++&lt;/style&gt;
++
++
+ &lt;/body&gt;
+ 
+ &lt;/html&gt;
+diff --git a/www/index.html b/www/index.html
+index e85d410..4b4b344 100644
+--- a/www/index.html
++++ b/www/index.html
+@@ -1,5 +1,5 @@
+ &lt;!DOCTYPE html&gt;
+-&lt;html lang=&quot;en&quot;&gt;
++&lt;html&gt;
+ 
+ &lt;head&gt;
+   &lt;meta charset=&quot;utf-8&quot; /&gt;
+@@ -85,6 +85,21 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ }
+ &lt;/style&gt;
+ 
++
++
++&lt;footer&gt;
++Copyright 2023 Coolio McCool. All rights reserved.&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;.
++&lt;/footer&gt;
++&lt;style&gt;
++footer {
++  margin-top: 2rem;
++  text-align: right;
++  font-size: 0.8rem;
++}
++&lt;/style&gt;
++
++
+ &lt;/body&gt;
+ 
+ &lt;/html&gt;
+diff --git a/www/mfws.html b/www/mfws.html
+index fa54235..8c7eee6 100644
+--- a/www/mfws.html
++++ b/www/mfws.html
+@@ -1,5 +1,5 @@
+ &lt;!DOCTYPE html&gt;
+-&lt;html lang=&quot;en&quot;&gt;
++&lt;html&gt;
+ 
+ &lt;head&gt;
+   &lt;meta charset=&quot;utf-8&quot; /&gt;
+@@ -138,6 +138,21 @@ &lt;h2&gt;Epilogue&lt;/h2&gt;
+ &lt;/style&gt;
+ 
+ 
++
++
++&lt;footer&gt;
++Copyright 2023 Coolio McCool. All rights reserved.&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;.
++&lt;/footer&gt;
++&lt;style&gt;
++footer {
++  margin-top: 2rem;
++  text-align: right;
++  font-size: 0.8rem;
++}
++&lt;/style&gt;
++
++
+ &lt;/body&gt;
+ 
+ &lt;/html&gt;
+diff --git a/www/website.toml b/www/website.toml
+index 1654c4a..c3a7f0b 100644
+--- a/www/website.toml
++++ b/www/website.toml
+@@ -2,6 +2,7 @@ Address = &quot;https://coolzone.example.com&quot;
+ Name = &quot;CoolZone&quot;
+ Tagline = &quot;Cool people only.&quot;
+ HomePath = &quot;/&quot;
++DisableFooter = false
+ 
+ [Author]
+ Name = &quot;Coolio McCool&quot;
+</pre></body></html>

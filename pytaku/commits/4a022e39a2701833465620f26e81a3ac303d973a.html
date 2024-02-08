@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[4a022e39a2] more lax db busy timeout | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 4a022e39a2</strong><hr><pre>commit 4a022e39a2701833465620f26e81a3ac303d973a
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 24 00:11:33 2020 +0700
+
+    more lax db busy timeout
+
+diff --git a/pyproject.toml b/pyproject.toml
+index fbdb802..df8f397 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.1&quot;
++version = &quot;0.3.2&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/database/common.py b/src/pytaku/database/common.py
+index 15ffeec..1bc6095 100644
+--- a/src/pytaku/database/common.py
++++ b/src/pytaku/database/common.py
+@@ -24,6 +24,14 @@ def get_conn():
+         _conn = apsw.Connection(DBNAME)
+         # Apparently you need to enable this pragma per connection:
+         _conn.cursor().execute(&quot;PRAGMA foreign_keys = ON;&quot;)
++        # No idea what the default db busy timeout is, but apparently it&#39;s super strict:
++        # got BusyError almost consistently when clicking &quot;finish&quot; on latest chapter,
++        # making FE send both a &quot;read&quot; and &quot;get title&quot; request at roughly the same time.
++        # It still makes no sense though, since &quot;get title&quot; is supposedly a read-only
++        # operation and only &quot;read&quot; is a write. According to docs, WAL mode allows 1
++        # writer and unlimited readers at the same time. WTF guys?
++        # But anyway, until I can get to the bottom of it, let&#39;s slap on a band-aid:
++        _conn.setbusytimeout(1000)
+         _conn.setrowtrace(_row_trace)
+     return _conn
+ 
+</pre></body></html>

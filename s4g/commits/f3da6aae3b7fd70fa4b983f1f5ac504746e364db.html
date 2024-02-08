@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[f3da6aae3b] home page is no longer a special case | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / f3da6aae3b</strong><hr><pre>commit f3da6aae3b7fd70fa4b983f1f5ac504746e364db
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jul 12 19:02:00 2023 +0700
+
+    home page is no longer a special case
+    
+    I love it when a design comes together.
+
+diff --git a/docs/_theme/base.tmpl b/docs/_theme/base.tmpl
+index 5792618..22971ce 100644
+--- a/docs/_theme/base.tmpl
++++ b/docs/_theme/base.tmpl
+@@ -3,7 +3,7 @@
+ 
+ &lt;head&gt;
+   &lt;meta charset=&quot;utf-8&quot; /&gt;
+-  &lt;title&gt;{{.Title}}&lt;/title&gt;
++  &lt;title&gt;{{if .Title}}{{.Title}} | {{end}}{{ .Site.Name -}}&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;{{.Feed}}&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.Site.Root}}_theme/base.css&quot;&gt;
+diff --git a/docs/_theme/home.tmpl b/docs/_theme/home.tmpl
+index d2b8297..37d93ba 100644
+--- a/docs/_theme/home.tmpl
++++ b/docs/_theme/home.tmpl
+@@ -20,6 +20,8 @@
+ 
+ &lt;hr&gt;
+ 
++{{.Content}}
++
+ &lt;p&gt;All posts, newest first:&lt;/p&gt;
+ 
+ &lt;ul&gt;
+diff --git a/docs/index.dj b/docs/index.dj
+new file mode 100644
+index 0000000..0c20203
+--- /dev/null
++++ b/docs/index.dj
+@@ -0,0 +1,5 @@
++Title: Home
++ShowInNav: false
++ShowInFeed: false
++Templates: $_theme/base.tmpl, $_theme/includes.tmpl, $_theme/home.tmpl
++---
+diff --git a/docs/index.html b/docs/index.html
+index df81f2b..f7eb7b2 100644
+--- a/docs/index.html
++++ b/docs/index.html
+@@ -3,7 +3,7 @@
+ 
+ &lt;head&gt;
+   &lt;meta charset=&quot;utf-8&quot; /&gt;
+-  &lt;title&gt;CoolZone - Cool people only.&lt;/title&gt;
++  &lt;title&gt;Home | CoolZone&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/webmaker2000/feed.xml&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/webmaker2000/_theme/base.css&quot;&gt;
+@@ -28,6 +28,8 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ 
+ &lt;hr&gt;
+ 
++
++
+ &lt;p&gt;All posts, newest first:&lt;/p&gt;
+ 
+ &lt;ul&gt;
+diff --git a/main.go b/main.go
+index d718617..4f4d081 100644
+--- a/main.go
++++ b/main.go
+@@ -159,17 +159,11 @@ func regenerate(fsys writablefs.FS) (site SiteMetadata) {
+ 
+ 	for _, a := range articles {
+ 		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Title)
+-		a.WriteHtmlFile(&amp;site, articlesInNav, startYear)
++		a.WriteHtmlFile(&amp;site, articlesInNav, articlesInFeed, startYear)
+ 		generatedFiles[a.OutputPath] = true
+ 	}
+ 	fmt.Printf(&quot;Processed %d articles\n&quot;, len(articles))
+ 
+-	if site.GenerateHome {
+-		WriteHomePage(fsys, site, articlesInFeed, articlesInNav, startYear)
+-		generatedFiles[&quot;index.html&quot;] = true
+-		fmt.Println(&quot;Generated index.html&quot;)
+-	}
+-
+ 	fsys.WriteFile(
+ 		FeedPath,
+ 		generateFeed(site, articlesInFeed, site.Root+FeedPath),
+@@ -233,6 +227,7 @@ func (a *Article) TemplatePaths() []string {
+ func (a *Article) WriteHtmlFile(
+ 	site *SiteMetadata,
+ 	articlesInNav []Article,
++	articlesInFeed []Article,
+ 	startYear int,
+ ) {
+ 	// First generate the main content in html
+@@ -243,23 +238,25 @@ func (a *Article) WriteHtmlFile(
+ 	// TODO: should probably reuse the template object for common cases
+ 	tmpl := template.Must(template.ParseFS(a.Fs, a.TemplatePaths()...))
+ 	err := tmpl.Execute(&amp;buf, struct {
+-		Site          *SiteMetadata
+-		Content       template.HTML
+-		Title         string
+-		Post          *Article
+-		ArticlesInNav []Article
+-		Feed          string
+-		Now           time.Time
+-		StartYear     int
++		Site           *SiteMetadata
++		Content        template.HTML
++		Title          string
++		Post           *Article
++		ArticlesInNav  []Article
++		ArticlesInFeed []Article
++		Feed           string
++		Now            time.Time
++		StartYear      int
+ 	}{
+-		Site:          site,
+-		Content:       template.HTML(contentHtml),
+-		Title:         fmt.Sprintf(&quot;%s | %s&quot;, a.Title, site.Name),
+-		Post:          a,
+-		ArticlesInNav: articlesInNav,
+-		Feed:          site.Root + FeedPath,
+-		Now:           time.Now(),
+-		StartYear:     startYear,
++		Site:           site,
++		Content:        template.HTML(contentHtml),
++		Title:          a.Title,
++		Post:           a,
++		ArticlesInNav:  articlesInNav,
++		ArticlesInFeed: articlesInFeed,
++		Feed:           site.Root + FeedPath,
++		Now:            time.Now(),
++		StartYear:      startYear,
+ 	})
+ 	if err != nil {
+ 		fmt.Println(&quot;Error in WriteHtmlFile:&quot;, err)
+diff --git a/metadata.go b/metadata.go
+index caadd06..0a41d5a 100644
+--- a/metadata.go
++++ b/metadata.go
+@@ -14,15 +14,14 @@
+ )
+ 
+ type SiteMetadata struct {
+-	Address      string
+-	Name         string
+-	Tagline      string
+-	Root         string
+-	ShowFooter   bool
+-	GenerateHome bool
+-	AuthorName   string
+-	AuthorURI    string
+-	AuthorEmail  string
++	Address     string
++	Name        string
++	Tagline     string
++	Root        string
++	ShowFooter  bool
++	AuthorName  string
++	AuthorURI   string
++	AuthorEmail string
+ }
+ 
+ type ArticleMetadata struct {
+@@ -36,9 +35,8 @@ type ArticleMetadata struct {
+ 
+ func NewSiteMetadata() SiteMetadata {
+ 	return SiteMetadata{
+-		Root:         &quot;/&quot;,
+-		ShowFooter:   true,
+-		GenerateHome: true,
++		Root:       &quot;/&quot;,
++		ShowFooter: true,
+ 	}
+ }
+ 
+diff --git a/theme/base.tmpl b/theme/base.tmpl
+index 5792618..22971ce 100644
+--- a/theme/base.tmpl
++++ b/theme/base.tmpl
+@@ -3,7 +3,7 @@
+ 
+ &lt;head&gt;
+   &lt;meta charset=&quot;utf-8&quot; /&gt;
+-  &lt;title&gt;{{.Title}}&lt;/title&gt;
++  &lt;title&gt;{{if .Title}}{{.Title}} | {{end}}{{ .Site.Name -}}&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;{{.Feed}}&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.Site.Root}}_theme/base.css&quot;&gt;
+diff --git a/theme/home.tmpl b/theme/home.tmpl
+index d2b8297..37d93ba 100644
+--- a/theme/home.tmpl
++++ b/theme/home.tmpl
+@@ -20,6 +20,8 @@
+ 
+ &lt;hr&gt;
+ 
++{{.Content}}
++
+ &lt;p&gt;All posts, newest first:&lt;/p&gt;
+ 
+ &lt;ul&gt;
+</pre></body></html>

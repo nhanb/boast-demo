@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[79e93fa088] implement proxy to get around CORS restriction | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 79e93fa088</strong><hr><pre>commit 79e93fa088292f2f8de0820966e39b9645de764f
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 1 18:28:21 2020 +0700
+
+    implement proxy to get around CORS restriction
+
+diff --git a/src/mangoapi/__init__.py b/src/mangoapi/__init__.py
+index f90608f..36b053a 100644
+--- a/src/mangoapi/__init__.py
++++ b/src/mangoapi/__init__.py
+@@ -13,8 +13,9 @@ def _parse_chapter_number(string):
+ 
+ 
+ def get_title(title_id):
+-    md_resp = requests.get(f&quot;https://mangadex.org/api/?id={title_id}&amp;type=manga&quot;)
+-    assert md_resp.status_code == 200
++    url = f&quot;https://mangadex.org/api/?id={title_id}&amp;type=manga&quot;
++    md_resp = requests.get(url)
++    assert md_resp.status_code == 200, md_resp.text
+     md_json = md_resp.json()
+     assert md_json[&quot;status&quot;] == &quot;OK&quot;
+ 
+@@ -45,7 +46,7 @@ def get_chapter(chapter_id):
+     md_resp = requests.get(
+         f&quot;https://mangadex.org/api/?id={chapter_id}&amp;type=chapter&amp;saver=0&quot;
+     )
+-    assert md_resp.status_code == 200
++    assert md_resp.status_code == 200, md_resp.text
+     md_json = md_resp.json()
+     assert md_json[&quot;status&quot;] == &quot;OK&quot;
+ 
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 631deae..78c1d01 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -1,10 +1,19 @@
+-from flask import Flask, render_template
++import base64
++import re
++
++import requests
++from flask import Flask, make_response, render_template, url_for
+ 
+ from mangoapi import get_chapter, get_title
+ 
+ app = Flask(__name__)
+ 
+ 
++@app.route(&quot;/&quot;)
++def home_view():
++    return render_template(&quot;home.html&quot;)
++
++
+ @app.route(&quot;/title/mangadex/&lt;int:title_id&gt;&quot;)
+ def title_view(title_id):
+     title = get_title(title_id)
+@@ -14,9 +23,26 @@ def title_view(title_id):
+ @app.route(&quot;/chapter/mangadex/&lt;int:chapter_id&gt;&quot;)
+ def chapter_view(chapter_id):
+     chapter = get_chapter(chapter_id)
++    chapter[&quot;pages&quot;] = [
++        url_for(&quot;proxy_view&quot;, b64_url=base64.urlsafe_b64encode(p.encode()).decode())
++        for p in chapter[&quot;pages&quot;]
++    ]
+     return render_template(&quot;chapter.html&quot;, **chapter)
+ 
+ 
+ @app.route(&quot;/search&quot;)
+ def search_view():
+     return &quot;TODO&quot;
++
++
++@app.route(&quot;/proxy/&lt;b64_url&gt;&quot;)
++def proxy_view(b64_url):
++    &quot;&quot;&quot;Fine I&#39;ll do it&quot;&quot;&quot;
++    url = base64.urlsafe_b64decode(b64_url).decode()
++    if not re.match(r&quot;^https://\w+\.mangadex\.org/data/.+$&quot;, url):
++        return &quot;Nope&quot;
++    print(&quot;Proxying&quot;, url)
++    md_resp = requests.get(url)
++    resp = make_response(md_resp.content, md_resp.status_code)
++    resp.headers.extend(**md_resp.headers)
++    return resp
+diff --git a/src/pytaku/templates/home.html b/src/pytaku/templates/home.html
+new file mode 100644
+index 0000000..1f05a23
+--- /dev/null
++++ b/src/pytaku/templates/home.html
+@@ -0,0 +1,13 @@
++{% extends &#39;base.html&#39; %}
++
++{% block title %}
++Home
++{% endblock %}
++
++{% block content %}
++&lt;h1&gt;Sample links&lt;/h1&gt;
++&lt;ul&gt;
++  &lt;li&gt;&lt;a href=&quot;/title/mangadex/23811&quot;&gt;Title&lt;/a&gt;&lt;/li&gt;
++  &lt;li&gt;&lt;a href=&quot;/chapter/mangadex/976942&quot;&gt;Chapter&lt;/a&gt;&lt;/li&gt;
++&lt;/ul&gt;
++{% endblock %}
+</pre></body></html>

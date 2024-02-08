@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b0657927bb] use latest util files | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / b0657927bb</strong><hr><pre>commit b0657927bbf9b9c4c5bc34cef5c4f4038b751ed0
+Author: nhanb &lt;nhan@nerdyweekly.com&gt;
+Date:   Sat Aug 2 16:35:24 2014 +0700
+
+    use latest util files
+    
+    Makefile, develop_server.sh and fabfile.py copied from pelican 3.4&#39;s
+    quickstart
+
+diff --git a/Makefile b/Makefile
+index 0ad7a53..3086dc3 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,5 +1,5 @@
+-PY=python
+-PELICAN=pelican
++PY?=python3
++PELICAN?=pelican
+ PELICANOPTS=
+ 
+ BASEDIR=$(CURDIR)
+@@ -12,15 +12,26 @@ FTP_HOST=localhost
+ FTP_USER=anonymous
+ FTP_TARGET_DIR=/
+ 
+-SSH_HOST=github.com
++SSH_HOST=localhost
+ SSH_PORT=22
+-SSH_USER=git
+-SSH_TARGET_DIR=nhanb/blog.git
++SSH_USER=root
++SSH_TARGET_DIR=/var/www
+ 
+ S3_BUCKET=my_s3_bucket
+ 
++CLOUDFILES_USERNAME=my_rackspace_username
++CLOUDFILES_API_KEY=my_rackspace_api_key
++CLOUDFILES_CONTAINER=my_cloudfiles_container
++
+ DROPBOX_DIR=~/Dropbox/Public/
+ 
++GITHUB_PAGES_BRANCH=master
++
++DEBUG ?= 0
++ifeq ($(DEBUG), 1)
++	PELICANOPTS += -D
++endif
++
+ help:
+ 	@echo &#39;Makefile for a pelican Web site                                        &#39;
+ 	@echo &#39;                                                                       &#39;
+@@ -29,34 +40,42 @@ help:
+ 	@echo &#39;   make clean                       remove the generated files         &#39;
+ 	@echo &#39;   make regenerate                  regenerate files upon modification &#39;
+ 	@echo &#39;   make publish                     generate using production settings &#39;
+-	@echo &#39;   make serve                       serve site at http://localhost:8000&#39;
+-	@echo &#39;   make devserver                   start/restart develop_server.sh    &#39;
++	@echo &#39;   make serve [PORT=8000]           serve site at http://localhost:8000&#39;
++	@echo &#39;   make devserver [PORT=8000]       start/restart develop_server.sh    &#39;
+ 	@echo &#39;   make stopserver                  stop local server                  &#39;
+-	@echo &#39;   ssh_upload                       upload the web site via SSH        &#39;
+-	@echo &#39;   rsync_upload                     upload the web site via rsync+ssh  &#39;
+-	@echo &#39;   dropbox_upload                   upload the web site via Dropbox    &#39;
+-	@echo &#39;   ftp_upload                       upload the web site via FTP        &#39;
+-	@echo &#39;   s3_upload                        upload the web site via S3         &#39;
+-	@echo &#39;   github                           upload the web site via gh-pages   &#39;
++	@echo &#39;   make ssh_upload                  upload the web site via SSH        &#39;
++	@echo &#39;   make rsync_upload                upload the web site via rsync+ssh  &#39;
++	@echo &#39;   make dropbox_upload              upload the web site via Dropbox    &#39;
++	@echo &#39;   make ftp_upload                  upload the web site via FTP        &#39;
++	@echo &#39;   make s3_upload                   upload the web site via S3         &#39;
++	@echo &#39;   make cf_upload                   upload the web site via Cloud Files&#39;
++	@echo &#39;   make github                      upload the web site via gh-pages   &#39;
++	@echo &#39;                                                                       &#39;
++	@echo &#39;Set the DEBUG variable to 1 to enable debugging, e.g. make DEBUG=1 html&#39;
+ 	@echo &#39;                                                                       &#39;
+ 
+-
+-html: clean $(OUTPUTDIR)/index.html
+-
+-$(OUTPUTDIR)/%.html:
++html:
+ 	$(PELICAN) $(INPUTDIR) -o $(OUTPUTDIR) -s $(CONFFILE) $(PELICANOPTS)
+ 
+ clean:
+-	[ ! -d $(OUTPUTDIR) ] || find $(OUTPUTDIR) -mindepth 1 -delete
++	[ ! -d $(OUTPUTDIR) ] || rm -rf $(OUTPUTDIR)
+ 
+-regenerate: clean
++regenerate:
+ 	$(PELICAN) -r $(INPUTDIR) -o $(OUTPUTDIR) -s $(CONFFILE) $(PELICANOPTS)
+ 
+ serve:
++ifdef PORT
++	cd $(OUTPUTDIR) &amp;&amp; $(PY) -m pelican.server $(PORT)
++else
+ 	cd $(OUTPUTDIR) &amp;&amp; $(PY) -m pelican.server
++endif
+ 
+ devserver:
++ifdef PORT
++	$(BASEDIR)/develop_server.sh restart $(PORT)
++else
+ 	$(BASEDIR)/develop_server.sh restart
++endif
+ 
+ stopserver:
+ 	kill -9 `cat pelican.pid`
+@@ -70,7 +89,7 @@ ssh_upload: publish
+ 	scp -P $(SSH_PORT) -r $(OUTPUTDIR)/* $(SSH_USER)@$(SSH_HOST):$(SSH_TARGET_DIR)
+ 
+ rsync_upload: publish
+-	rsync -e &quot;ssh -p $(SSH_PORT)&quot; -P -rvz --delete $(OUTPUTDIR)/ $(SSH_USER)@$(SSH_HOST):$(SSH_TARGET_DIR) --cvs-exclude
++	rsync -e &quot;ssh -p $(SSH_PORT)&quot; -P -rvzc --delete $(OUTPUTDIR)/ $(SSH_USER)@$(SSH_HOST):$(SSH_TARGET_DIR) --cvs-exclude
+ 
+ dropbox_upload: publish
+ 	cp -r $(OUTPUTDIR)/* $(DROPBOX_DIR)
+@@ -79,61 +98,13 @@ ftp_upload: publish
+ 	lftp ftp://$(FTP_USER)@$(FTP_HOST) -e &quot;mirror -R $(OUTPUTDIR) $(FTP_TARGET_DIR) ; quit&quot;
+ 
+ s3_upload: publish
+-	s3cmd sync $(OUTPUTDIR)/ s3://$(S3_BUCKET) --acl-public --delete-removed
++        s3cmd sync $(OUTPUTDIR)/ s3://$(S3_BUCKET) --acl-public --delete-removed --guess-mime-type
++
++cf_upload: publish
++	cd $(OUTPUTDIR) &amp;&amp; swift -v -A https://auth.api.rackspacecloud.com/v1.0 -U $(CLOUDFILES_USERNAME) -K $(CLOUDFILES_API_KEY) upload -c $(CLOUDFILES_CONTAINER) .
+ 
+ github: publish
+ 	ghp-import $(OUTPUTDIR)
+ 	git push git@github.com:nhanb/nhanb.github.io.git gh-pages:master
+ 
+-.PHONY: html help clean regenerate serve devserver publish ssh_upload rsync_upload dropbox_upload ftp_upload s3_upload github
+-
+-
+-######################################################################
+-# post/page operations
+-######################################################################
+-
+-PAGESDIR=$(INPUTDIR)/pages
+-DATE := $(shell date +&#39;%Y-%m-%d %H:%M:%S&#39;)
+-SLUG := $(shell echo &#39;${NAME}&#39; | sed -e &#39;s/[^[:alnum:]]/-/g&#39; | tr -s &#39;-&#39; | tr A-Z a-z)
+-EXT ?= md
+-
+-newpost:
+-ifdef NAME
+-	echo &quot;Title: $(NAME)&quot; &gt;  $(INPUTDIR)/$(SLUG).$(EXT)
+-	echo &quot;Slug: $(SLUG)&quot; &gt;&gt; $(INPUTDIR)/$(SLUG).$(EXT)
+-	echo &quot;Date: $(DATE)&quot; &gt;&gt; $(INPUTDIR)/$(SLUG).$(EXT)
+-	echo &quot;&quot;              &gt;&gt; $(INPUTDIR)/$(SLUG).$(EXT)
+-	echo &quot;&quot;              &gt;&gt; $(INPUTDIR)/$(SLUG).$(EXT)
+-	${EDITOR} ${INPUTDIR}/${SLUG}.${EXT} &amp;
+-else
+-	@echo &#39;Variable NAME is not defined.&#39;
+-	@echo &#39;Do make newpost NAME=&#39;&quot;&#39;&quot;&#39;Post Name&#39;&quot;&#39;&quot;
+-endif
+-
+-editpost:
+-ifdef NAME
+-	${EDITOR} ${INPUTDIR}/${SLUG}.${EXT} &amp;
+-else
+-	@echo &#39;Variable NAME is not defined.&#39;
+-	@echo &#39;Do make editpost NAME=&#39;&quot;&#39;&quot;&#39;Post Name&#39;&quot;&#39;&quot;
+-endif
+-
+-newpage:
+-ifdef NAME
+-	echo &quot;Title: $(NAME)&quot; &gt;  $(PAGESDIR)/$(SLUG).$(EXT)
+-	echo &quot;Slug: $(SLUG)&quot; &gt;&gt; $(PAGESDIR)/$(SLUG).$(EXT)
+-	echo &quot;&quot;              &gt;&gt; $(PAGESDIR)/$(SLUG).$(EXT)
+-	echo &quot;&quot;              &gt;&gt; $(PAGESDIR)/$(SLUG).$(EXT)
+-	${EDITOR} ${PAGESDIR}/${SLUG}.$(EXT)
+-else
+-	@echo &#39;Variable NAME is not defined.&#39;
+-	@echo &#39;Do make newpage NAME=&#39;&quot;&#39;&quot;&#39;Page Name&#39;&quot;&#39;&quot;
+-endif
+-
+-editpage:
+-ifdef NAME
+-	${EDITOR} ${PAGESDIR}/${SLUG}.$(EXT)
+-else
+-	@echo &#39;Variable NAME is not defined.&#39;
+-	@echo &#39;Do make editpage NAME=&#39;&quot;&#39;&quot;&#39;Page Name&#39;&quot;&#39;&quot;
+-endif
++.PHONY: html help clean regenerate serve devserver publish ssh_upload rsync_upload dropbox_upload ftp_upload s3_upload cf_upload github
+diff --git a/develop_server.sh b/develop_server.sh
+index 0909d7b..e295a8d 100755
+--- a/develop_server.sh
++++ b/develop_server.sh
+@@ -2,8 +2,8 @@
+ ##
+ # This section should match your Makefile
+ ##
+-PY=python
+-PELICAN=pelican
++PY=${PY:-python3}
++PELICAN=${PELICAN:-pelican}
+ PELICANOPTS=
+ 
+ BASEDIR=$(pwd)
+@@ -19,11 +19,11 @@ SRV_PID=$BASEDIR/srv.pid
+ PELICAN_PID=$BASEDIR/pelican.pid
+ 
+ function usage(){
+-  echo &quot;usage: $0 (stop) (start) (restart)&quot;
+-  echo &quot;This starts pelican in debug and reload mode and then launches&quot;
+-  echo &quot;A pelican.server to help site development. It doesn&#39;t read&quot;
+-  echo &quot;your pelican options so you edit any paths in your Makefile&quot;
+-  echo &quot;you will need to edit it as well&quot;
++  echo &quot;usage: $0 (stop) (start) (restart) [port]&quot;
++  echo &quot;This starts Pelican in debug and reload mode and then launches&quot;
++  echo &quot;an HTTP server to help site development. It doesn&#39;t read&quot;
++  echo &quot;your Pelican settings, so if you edit any paths in your Makefile&quot;
++  echo &quot;you will need to edit your settings as well.&quot;
+   exit 3
+ }
+ 
+@@ -35,14 +35,14 @@ function shut_down(){
+   PID=$(cat $SRV_PID)
+   if [[ $? -eq 0 ]]; then
+     if alive $PID; then
+-      echo &quot;Killing pelican.server&quot;
++      echo &quot;Stopping HTTP server&quot;
+       kill $PID
+     else
+       echo &quot;Stale PID, deleting&quot;
+     fi
+     rm $SRV_PID
+   else
+-    echo &quot;pelican.server PIDFile not found&quot;
++    echo &quot;HTTP server PIDFile not found&quot;
+   fi
+ 
+   PID=$(cat $PELICAN_PID)
+@@ -60,38 +60,42 @@ function shut_down(){
+ }
+ 
+ function start_up(){
+-  echo &quot;Starting up Pelican and pelican.server&quot;
++  local port=$1
++  echo &quot;Starting up Pelican and HTTP server&quot;
+   shift
+   $PELICAN --debug --autoreload -r $INPUTDIR -o $OUTPUTDIR -s $CONFFILE $PELICANOPTS &amp;
+   pelican_pid=$!
+   echo $pelican_pid &gt; $PELICAN_PID
+   cd $OUTPUTDIR
+-  $PY -m pelican.server &amp;
++  $PY -m pelican.server $port &amp;
+   srv_pid=$!
+   echo $srv_pid &gt; $SRV_PID
+   cd $BASEDIR
+   sleep 1
+   if ! alive $pelican_pid ; then
+-    echo &quot;Pelican didn&#39;t start. Is the pelican package installed?&quot;
++    echo &quot;Pelican didn&#39;t start. Is the Pelican package installed?&quot;
+     return 1
+   elif ! alive $srv_pid ; then
+-    echo &quot;pelican.server didn&#39;t start. Is the pelican package installed?&quot;
++    echo &quot;The HTTP server didn&#39;t start. Is there another service using port 8000?&quot;
+     return 1
+   fi
+-  echo &#39;Pelican and pelican.server processes now running in background.&#39;
++  echo &#39;Pelican and HTTP server processes now running in background.&#39;
+ }
+ 
+ ###
+ #  MAIN
+ ###
+-[[ $# -ne 1 ]] &amp;&amp; usage
++[[ ($# -eq 0) || ($# -gt 2) ]] &amp;&amp; usage
++port=&#39;&#39;
++[[ $# -eq 2 ]] &amp;&amp; port=$2
++
+ if [[ $1 == &quot;stop&quot; ]]; then
+   shut_down
+ elif [[ $1 == &quot;restart&quot; ]]; then
+   shut_down
+-  start_up
++  start_up $port
+ elif [[ $1 == &quot;start&quot; ]]; then
+-  if ! start_up; then
++  if ! start_up $port; then
+     shut_down
+   fi
+ else
+diff --git a/fabfile.py b/fabfile.py
+new file mode 100644
+index 0000000..39dd7aa
+--- /dev/null
++++ b/fabfile.py
+@@ -0,0 +1,73 @@
++from fabric.api import *
++import fabric.contrib.project as project
++import os
++import sys
++import SimpleHTTPServer
++import SocketServer
++
++# Local path configuration (can be absolute or relative to fabfile)
++env.deploy_path = &#39;output&#39;
++DEPLOY_PATH = env.deploy_path
++
++# Remote server configuration
++production = &#39;root@localhost:22&#39;
++dest_path = &#39;/var/www&#39;
++
++# Rackspace Cloud Files configuration settings
++env.cloudfiles_username = &#39;my_rackspace_username&#39;
++env.cloudfiles_api_key = &#39;my_rackspace_api_key&#39;
++env.cloudfiles_container = &#39;my_cloudfiles_container&#39;
++
++
++def clean():
++    if os.path.isdir(DEPLOY_PATH):
++        local(&#39;rm -rf {deploy_path}&#39;.format(**env))
++        local(&#39;mkdir {deploy_path}&#39;.format(**env))
++
++def build():
++    local(&#39;pelican -s pelicanconf.py&#39;)
++
++def rebuild():
++    clean()
++    build()
++
++def regenerate():
++    local(&#39;pelican -r -s pelicanconf.py&#39;)
++
++def serve():
++    os.chdir(env.deploy_path)
++
++    PORT = 8000
++    class AddressReuseTCPServer(SocketServer.TCPServer):
++        allow_reuse_address = True
++
++    server = AddressReuseTCPServer((&#39;&#39;, PORT), SimpleHTTPServer.SimpleHTTPRequestHandler)
++
++    sys.stderr.write(&#39;Serving on port {0} ...\n&#39;.format(PORT))
++    server.serve_forever()
++
++def reserve():
++    build()
++    serve()
++
++def preview():
++    local(&#39;pelican -s publishconf.py&#39;)
++
++def cf_upload():
++    rebuild()
++    local(&#39;cd {deploy_path} &amp;&amp; &#39;
++          &#39;swift -v -A https://auth.api.rackspacecloud.com/v1.0 &#39;
++          &#39;-U {cloudfiles_username} &#39;
++          &#39;-K {cloudfiles_api_key} &#39;
++          &#39;upload -c {cloudfiles_container} .&#39;.format(**env))
++
++@hosts(production)
++def publish():
++    local(&#39;pelican -s publishconf.py&#39;)
++    project.rsync_project(
++        remote_dir=dest_path,
++        exclude=&quot;.DS_Store&quot;,
++        local_dir=DEPLOY_PATH.rstrip(&#39;/&#39;) + &#39;/&#39;,
++        delete=True,
++        extra_opts=&#39;-c&#39;,
++    )
+</pre></body></html>

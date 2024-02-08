@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[678c79824f] try using native Windows theme | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 678c79824f</strong><hr><pre>commit 678c79824fcd390c99866120771a7f39546555fd
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jun 19 20:41:36 2023 +0700
+
+    try using native Windows theme
+
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index 97a5d8c..917eb9b 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -13,15 +13,14 @@ package require Tk
+ wm title . &quot;Overly Repetitive Tedious Software (in Go)&quot;
+ tk appname gorts
+ 
+-#set OS [lindex $tcl_platform(os) 0]
+-#if {$OS == &quot;Windows&quot;} {
+-    #ttk::style theme use vista
+-#} elseif {$OS == &quot;Darwin&quot;} {
+-    #ttk::style theme use aqua
+-#} else {
+-    #ttk::style theme use clam
+-#}
+-ttk::style theme use clam
++set OS [lindex $tcl_platform(os) 0]
++if {$OS == &quot;Windows&quot;} {
++    ttk::style theme use vista
++} elseif {$OS == &quot;Darwin&quot;} {
++    ttk::style theme use aqua
++} else {
++    ttk::style theme use clam
++}
+ 
+ wm protocol . WM_DELETE_WINDOW {
+     exit 0
+</pre></body></html>

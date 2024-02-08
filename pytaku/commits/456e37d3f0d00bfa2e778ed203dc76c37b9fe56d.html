@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[456e37d3f0] make sure there&#39;s something in og:description | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 456e37d3f0</strong><hr><pre>commit 456e37d3f0d00bfa2e778ed203dc76c37b9fe56d
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Aug 11 21:28:26 2020 +0700
+
+    make sure there&#39;s something in og:description
+    
+    Otherwise opengraph crawlers may pick up some unrelated block (e.g.
+    footer text) for description instead.
+
+diff --git a/src/pytaku/templates/chapter.html b/src/pytaku/templates/chapter.html
+index ffebe6f..d2061b2 100644
+--- a/src/pytaku/templates/chapter.html
++++ b/src/pytaku/templates/chapter.html
+@@ -7,7 +7,7 @@
+ {% block head %}
+ &lt;meta property=&quot;og:title&quot; content=&quot;{{ title[&#39;name&#39;] }} {{ self.title() }} - Pytaku&quot; /&gt;
+ &lt;meta property=&quot;og:image&quot; content=&quot;{{ title[&#39;cover&#39;] }}&quot; /&gt;
+-&lt;meta property=&quot;og:description&quot; content=&quot;{{ title[&#39;descriptions&#39;] | join(&#39;\n&#39;) }}&quot; /&gt;
++&lt;meta property=&quot;og:description&quot; content=&quot;{{ title[&#39;descriptions&#39;] | join(&#39;\n&#39;) or &#39;(no description)&#39; }}&quot; /&gt;
+ 
+ {% if next_chapter %}
+ &lt;link rel=&quot;prefetch&quot; href=&quot;{{ url_for(&#39;chapter_view&#39;, site=site, title_id=title_id, chapter_id=next_chapter[&#39;id&#39;])}}&quot;&gt;
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index 559d939..ce0095e 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -3,7 +3,7 @@
+ {% block head %}
+ &lt;meta property=&quot;og:title&quot; content=&quot;{{ name }} - Pytaku&quot; /&gt;
+ &lt;meta property=&quot;og:image&quot; content=&quot;{{ cover }}&quot; /&gt;
+-&lt;meta property=&quot;og:description&quot; content=&quot;{{ descriptions | join(&#39;\n&#39;) }}&quot; /&gt;
++&lt;meta property=&quot;og:description&quot; content=&quot;{{ descriptions | join(&#39;\n&#39;) or &#39;(no description)&#39; }}&quot; /&gt;
+ 
+ &lt;style&gt;
+   .cover {
+</pre></body></html>

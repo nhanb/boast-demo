@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e7f2142215] load pages one at a time and in order | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / e7f2142215</strong><hr><pre>commit e7f2142215d814a8791a4795a0aa8dec666c91aa
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 23 17:35:22 2020 +0700
+
+    load pages one at a time and in order
+
+diff --git a/src/pytaku/static/js/routes/chapter.js b/src/pytaku/static/js/routes/chapter.js
+index b48fbcd..f336e9a 100644
+--- a/src/pytaku/static/js/routes/chapter.js
++++ b/src/pytaku/static/js/routes/chapter.js
+@@ -1,9 +1,22 @@
+ import { Auth } from &quot;../models.js&quot;;
+ import { LoadingMessage, fullChapterName, Button } from &quot;../utils.js&quot;;
+ 
++const LoadingPlaceholder = {
++  view: () =&gt; m(&quot;h2&quot;, [m(&quot;i.icon.icon-loader.spin&quot;)]),
++};
++
+ function Chapter(initialVNode) {
+   let isLoading = false;
+   let chapter = {};
++  let loadedPages = [];
++  let pendingPages = [];
++
++  function loadNextPage() {
++    loadedPages.push({
++      completed: false,
++      src: pendingPages.splice(0, 1)[0],
++    });
++  }
+ 
+   return {
+     oninit: (vnode) =&gt; {
+@@ -22,8 +35,10 @@ function Chapter(initialVNode) {
+         },
+       })
+         .then((resp) =&gt; {
+-          chapter = resp;
+           document.title = fullChapterName(chapter);
++          chapter = resp;
++          pendingPages = chapter.pages;
++          loadNextPage();
+         })
+         .finally(() =&gt; {
+           isLoading = false;
+@@ -82,9 +97,23 @@ function Chapter(initialVNode) {
+           &quot;div&quot;,
+           {
+             class:
+-              &quot;chapter--pages&quot; + chapter.is_webtoon ? &quot; chapter--webtoon&quot; : &quot;&quot;,
++              &quot;chapter--pages&quot; +
++              (chapter.is_webtoon ? &quot; chapter--webtoon&quot; : &quot;&quot;),
+           },
+-          [chapter.pages.map((page) =&gt; m(&quot;img&quot;, { src: page }))]
++          [
++            loadedPages.map((page) =&gt; [
++              m(&quot;img&quot;, {
++                src: page.src,
++                style: { display: page.completed ? &quot;block&quot; : &quot;none&quot; },
++                onload: (ev) =&gt; {
++                  page.completed = true;
++                  loadNextPage();
++                },
++              }),
++              page.completed ? &quot;&quot; : m(LoadingPlaceholder),
++            ]),
++            pendingPages.map((page) =&gt; m(LoadingPlaceholder)),
++          ]
+         ),
+         buttons,
+       ]);
+</pre></body></html>

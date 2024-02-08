@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b7a4e06877] custom footer text | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / b7a4e06877</strong><hr><pre>commit b7a4e0687780d771d25cfd2217e49bf260bc27df
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 23 22:03:09 2023 +0700
+
+    custom footer text
+
+diff --git a/_s4g/settings.txt b/_s4g/settings.txt
+index 718f6eb..7a1f97c 100644
+--- a/_s4g/settings.txt
++++ b/_s4g/settings.txt
+@@ -3,10 +3,11 @@ Name: Hi, I&#39;m Nhân
+ Tagline: and this is my humble corner on the intertubes
+ Root: /
+ ShowFooter: true
++FooterText: Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ NavbarLinks: index.dj, about/index.dj, projects/index.dj, #CV#https://cv.imnhan.com
+ DefaultThumb: about/keyboard-warrior.jpg
+ 
+-AuthorName: nhanb
++AuthorName: Bùi Thành Nhân
+ AuthorURI: https://hi.imnhan.com
+ AuthorEmail: hi@imnhan.com
+ AuthorTwitter: nhanb
+diff --git a/_s4g/theme/includes.tmpl b/_s4g/theme/includes.tmpl
+index 652d4a1..018b4d4 100644
+--- a/_s4g/theme/includes.tmpl
++++ b/_s4g/theme/includes.tmpl
+@@ -23,7 +23,7 @@
+ {{- if .Site.ShowFooter -}}
+ &lt;footer&gt;
+ © {{if eq .StartYear .Now.Year}}{{.StartYear}}{{else}}{{.StartYear}}–{{.Now.Year}}{{end}} {{.Site.AuthorName}}&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++{{.Site.FooterText}}
+ &lt;/footer&gt;
+ {{- end -}}
+ {{- end}}
+diff --git a/about/index.html b/about/index.html
+index f08b173..ffa30bc 100644
+--- a/about/index.html
++++ b/about/index.html
+@@ -43,8 +43,8 @@ &lt;h1&gt;About&lt;/h1&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/chromebook/index.html b/chromebook/index.html
+index 3cd5cc8..28f9bf5 100644
+--- a/chromebook/index.html
++++ b/chromebook/index.html
+@@ -182,8 +182,8 @@ &lt;h2&gt;Aside: Chromebook keyboard quirks on KDE&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/cool/index.html b/cool/index.html
+index 4460831..8f0b644 100644
+--- a/cool/index.html
++++ b/cool/index.html
+@@ -180,8 +180,8 @@ &lt;h2&gt;To sum it up…&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/custom-theme/index.html b/custom-theme/index.html
+index a7de1c7..8affbc5 100644
+--- a/custom-theme/index.html
++++ b/custom-theme/index.html
+@@ -118,8 +118,8 @@ &lt;h2&gt;That’s it!&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/fcitx/index.html b/fcitx/index.html
+index 83a8388..281c5c3 100644
+--- a/fcitx/index.html
++++ b/fcitx/index.html
+@@ -100,8 +100,8 @@ &lt;h2&gt;vim-fcitx&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/feed.xml b/feed.xml
+index 3544a2b..3abd5c9 100644
+--- a/feed.xml
++++ b/feed.xml
+@@ -4,7 +4,7 @@
+   &lt;link rel=&quot;self&quot; href=&quot;/feed.xml&quot;&gt;&lt;/link&gt;
+   &lt;updated&gt;2023-04-22T15:55:00+07:00&lt;/updated&gt;
+   &lt;author&gt;
+-    &lt;name&gt;nhanb&lt;/name&gt;
++    &lt;name&gt;Bùi Thành Nhân&lt;/name&gt;
+     &lt;uri&gt;https://hi.imnhan.com&lt;/uri&gt;
+     &lt;email&gt;hi@imnhan.com&lt;/email&gt;
+   &lt;/author&gt;
+diff --git a/fightstick-1/index.html b/fightstick-1/index.html
+index 4c709fc..3f9e74d 100644
+--- a/fightstick-1/index.html
++++ b/fightstick-1/index.html
+@@ -209,8 +209,8 @@ &lt;h2&gt;Um… that’s it (for now).&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/fightstick-2/index.html b/fightstick-2/index.html
+index fb59989..f697f79 100644
+--- a/fightstick-2/index.html
++++ b/fightstick-2/index.html
+@@ -92,8 +92,8 @@ &lt;h2&gt;Thoughts&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/go-stack/index.html b/go-stack/index.html
+index 9c4f12e..2ae6681 100644
+--- a/go-stack/index.html
++++ b/go-stack/index.html
+@@ -270,8 +270,8 @@ &lt;h2&gt;Closing remarks&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/hdviet/index.html b/hdviet/index.html
+index 1eac9dc..4644692 100644
+--- a/hdviet/index.html
++++ b/hdviet/index.html
+@@ -232,8 +232,8 @@ &lt;h2&gt;Google App Engine to the rescue!&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/ideas.html b/ideas.html
+index 09143bf..d184b8c 100644
+--- a/ideas.html
++++ b/ideas.html
+@@ -93,8 +93,8 @@ &lt;h2&gt;Discord bot that launches CSGO/etc. server on demand&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/index.html b/index.html
+index 1fd7d58..dc34083 100644
+--- a/index.html
++++ b/index.html
+@@ -211,8 +211,8 @@ &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
+ &lt;/style&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ 
+diff --git a/linux-automation/index.html b/linux-automation/index.html
+index 73911a1..de41fc2 100644
+--- a/linux-automation/index.html
++++ b/linux-automation/index.html
+@@ -137,8 +137,8 @@ &lt;h2&gt;Putting them all together&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/manjaro-xfce/index.html b/manjaro-xfce/index.html
+index 6c5f7f7..1568400 100644
+--- a/manjaro-xfce/index.html
++++ b/manjaro-xfce/index.html
+@@ -94,8 +94,8 @@ &lt;h2&gt;Install international fonts&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/mcross/index.html b/mcross/index.html
+index 41fbdc6..dedb6e6 100644
+--- a/mcross/index.html
++++ b/mcross/index.html
+@@ -142,8 +142,8 @@ &lt;h1&gt;Closing thoughts&lt;/h1&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/movie-streaming/gflick-fixed/index.html b/movie-streaming/gflick-fixed/index.html
+index 6e86f6b..061e38a 100644
+--- a/movie-streaming/gflick-fixed/index.html
++++ b/movie-streaming/gflick-fixed/index.html
+@@ -164,8 +164,8 @@ &lt;h2&gt;In conclusion&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/movie-streaming/gflick/index.html b/movie-streaming/gflick/index.html
+index 6616998..beb6856 100644
+--- a/movie-streaming/gflick/index.html
++++ b/movie-streaming/gflick/index.html
+@@ -197,8 +197,8 @@ &lt;h2&gt;Other failed attempts&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/movie-streaming/index.html b/movie-streaming/index.html
+index a20761e..b50f70b 100644
+--- a/movie-streaming/index.html
++++ b/movie-streaming/index.html
+@@ -60,8 +60,8 @@ &lt;h1&gt;The movie streaming saga&lt;/h1&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/movie-streaming/put.io/index.html b/movie-streaming/put.io/index.html
+index 69efb92..f7ce801 100644
+--- a/movie-streaming/put.io/index.html
++++ b/movie-streaming/put.io/index.html
+@@ -92,8 +92,8 @@ &lt;h1&gt;The video streaming finale, or why put.io is awesome&lt;/h1&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/node-webkit/index.html b/node-webkit/index.html
+index 898f11d..c1e59b0 100644
+--- a/node-webkit/index.html
++++ b/node-webkit/index.html
+@@ -238,8 +238,8 @@ &lt;h2&gt;Simple cross-platform build command&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/notes.html b/notes.html
+index a09d5b6..3f04d9f 100644
+--- a/notes.html
++++ b/notes.html
+@@ -76,8 +76,8 @@ &lt;h2&gt;SRE&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/pathogen-vs-vundle/index.html b/pathogen-vs-vundle/index.html
+index 0673457..6e26da1 100644
+--- a/pathogen-vs-vundle/index.html
++++ b/pathogen-vs-vundle/index.html
+@@ -281,8 +281,8 @@ &lt;h2&gt;Vundle, the new cool kid&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/petition-fraud/index.html b/petition-fraud/index.html
+index fe0eaca..0c0c099 100644
+--- a/petition-fraud/index.html
++++ b/petition-fraud/index.html
+@@ -88,8 +88,8 @@ &lt;h2&gt;Why do I even care?&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/pippable-webapp/index.html b/pippable-webapp/index.html
+index 6ac1b17..bfbfca7 100644
+--- a/pippable-webapp/index.html
++++ b/pippable-webapp/index.html
+@@ -192,8 +192,8 @@ &lt;h2&gt;But why bother?&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/projects/index.html b/projects/index.html
+index 4354124..9e9e344 100644
+--- a/projects/index.html
++++ b/projects/index.html
+@@ -86,8 +86,8 @@ &lt;h2&gt;Caophim&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/pyqt5/index.html b/pyqt5/index.html
+index e5c4a7a..fa90365 100644
+--- a/pyqt5/index.html
++++ b/pyqt5/index.html
+@@ -61,8 +61,8 @@ &lt;h1&gt;How to install PyQt5 on a virtualenv on Ubuntu 14.04&lt;/h1&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/pytaku-old/index.html b/pytaku-old/index.html
+index d84f66c..5c7eddd 100644
+--- a/pytaku-old/index.html
++++ b/pytaku-old/index.html
+@@ -96,8 +96,8 @@ &lt;h2&gt;Give it a spin&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/rmit-wifi/index.html b/rmit-wifi/index.html
+index e68928a..21472b3 100644
+--- a/rmit-wifi/index.html
++++ b/rmit-wifi/index.html
+@@ -74,8 +74,8 @@ &lt;h3&gt;Update (Dec 16, 2013)&lt;/h3&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/sqlite-python/index.html b/sqlite-python/index.html
+index 2742cba..cc8ac56 100644
+--- a/sqlite-python/index.html
++++ b/sqlite-python/index.html
+@@ -208,8 +208,8 @@ &lt;h2&gt;A quick note on SQL injection&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/stepmania-pad/index.html b/stepmania-pad/index.html
+index f387c34..ae9537e 100644
+--- a/stepmania-pad/index.html
++++ b/stepmania-pad/index.html
+@@ -104,8 +104,8 @@ &lt;h1&gt;Simplest possible stepmania soft-to-hard pad mod&lt;/h1&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/tmux-italics/index.html b/tmux-italics/index.html
+index 9280724..a221c09 100644
+--- a/tmux-italics/index.html
++++ b/tmux-italics/index.html
+@@ -117,8 +117,8 @@ &lt;h2&gt;References:&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/ubuntu-programs/index.html b/ubuntu-programs/index.html
+index 89b2f4f..f2931f6 100644
+--- a/ubuntu-programs/index.html
++++ b/ubuntu-programs/index.html
+@@ -170,8 +170,8 @@ &lt;h2&gt;Synaptic, Ubuntu Software Center&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/vim-open-link/index.html b/vim-open-link/index.html
+index ddac649..f007c28 100644
+--- a/vim-open-link/index.html
++++ b/vim-open-link/index.html
+@@ -143,8 +143,8 @@ &lt;h2&gt;But why stop there?&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/virtualenvwrapper/index.html b/virtualenvwrapper/index.html
+index 605e07d..2662d64 100644
+--- a/virtualenvwrapper/index.html
++++ b/virtualenvwrapper/index.html
+@@ -58,8 +58,8 @@ &lt;h1&gt;Virtualenv(wrapper), python2 and python3&lt;/h1&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/yaks.html b/yaks.html
+index 000cec6..fb6f1da 100644
+--- a/yaks.html
++++ b/yaks.html
+@@ -100,8 +100,8 @@ &lt;h2&gt;Home server&lt;/h2&gt;
+ &lt;/main&gt;
+ 
+ &lt;footer&gt;
+-© 2013–2023 nhanb&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++© 2013–2023 Bùi Thành Nhân&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+</pre></body></html>

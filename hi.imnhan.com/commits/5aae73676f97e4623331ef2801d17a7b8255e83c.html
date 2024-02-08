@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[5aae73676f] makefile commands for post/page manipulation | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 5aae73676f</strong><hr><pre>commit 5aae73676f97e4623331ef2801d17a7b8255e83c
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Wed Dec 4 10:35:14 2013 +0700
+
+    makefile commands for post/page manipulation
+    
+    also part of new post &quot;have you built anything&quot;
+
+diff --git a/Makefile b/Makefile
+index 1e5b1bf..0ad7a53 100644
+--- a/Makefile
++++ b/Makefile
+@@ -86,3 +86,54 @@ github: publish
+ 	git push git@github.com:nhanb/nhanb.github.io.git gh-pages:master
+ 
+ .PHONY: html help clean regenerate serve devserver publish ssh_upload rsync_upload dropbox_upload ftp_upload s3_upload github
++
++
++######################################################################
++# post/page operations
++######################################################################
++
++PAGESDIR=$(INPUTDIR)/pages
++DATE := $(shell date +&#39;%Y-%m-%d %H:%M:%S&#39;)
++SLUG := $(shell echo &#39;${NAME}&#39; | sed -e &#39;s/[^[:alnum:]]/-/g&#39; | tr -s &#39;-&#39; | tr A-Z a-z)
++EXT ?= md
++
++newpost:
++ifdef NAME
++	echo &quot;Title: $(NAME)&quot; &gt;  $(INPUTDIR)/$(SLUG).$(EXT)
++	echo &quot;Slug: $(SLUG)&quot; &gt;&gt; $(INPUTDIR)/$(SLUG).$(EXT)
++	echo &quot;Date: $(DATE)&quot; &gt;&gt; $(INPUTDIR)/$(SLUG).$(EXT)
++	echo &quot;&quot;              &gt;&gt; $(INPUTDIR)/$(SLUG).$(EXT)
++	echo &quot;&quot;              &gt;&gt; $(INPUTDIR)/$(SLUG).$(EXT)
++	${EDITOR} ${INPUTDIR}/${SLUG}.${EXT} &amp;
++else
++	@echo &#39;Variable NAME is not defined.&#39;
++	@echo &#39;Do make newpost NAME=&#39;&quot;&#39;&quot;&#39;Post Name&#39;&quot;&#39;&quot;
++endif
++
++editpost:
++ifdef NAME
++	${EDITOR} ${INPUTDIR}/${SLUG}.${EXT} &amp;
++else
++	@echo &#39;Variable NAME is not defined.&#39;
++	@echo &#39;Do make editpost NAME=&#39;&quot;&#39;&quot;&#39;Post Name&#39;&quot;&#39;&quot;
++endif
++
++newpage:
++ifdef NAME
++	echo &quot;Title: $(NAME)&quot; &gt;  $(PAGESDIR)/$(SLUG).$(EXT)
++	echo &quot;Slug: $(SLUG)&quot; &gt;&gt; $(PAGESDIR)/$(SLUG).$(EXT)
++	echo &quot;&quot;              &gt;&gt; $(PAGESDIR)/$(SLUG).$(EXT)
++	echo &quot;&quot;              &gt;&gt; $(PAGESDIR)/$(SLUG).$(EXT)
++	${EDITOR} ${PAGESDIR}/${SLUG}.$(EXT)
++else
++	@echo &#39;Variable NAME is not defined.&#39;
++	@echo &#39;Do make newpage NAME=&#39;&quot;&#39;&quot;&#39;Page Name&#39;&quot;&#39;&quot;
++endif
++
++editpage:
++ifdef NAME
++	${EDITOR} ${PAGESDIR}/${SLUG}.$(EXT)
++else
++	@echo &#39;Variable NAME is not defined.&#39;
++	@echo &#39;Do make editpage NAME=&#39;&quot;&#39;&quot;&#39;Page Name&#39;&quot;&#39;&quot;
++endif
+diff --git a/content/have-you-built-anything-cool-.md b/content/have-you-built-anything-cool-.md
+new file mode 100644
+index 0000000..1b09623
+--- /dev/null
++++ b/content/have-you-built-anything-cool-.md
+@@ -0,0 +1,49 @@
++Title: &quot;Have you built anything cool?&quot;
++Slug: have-you-built-anything-cool
++Date: 2013-12-04 08:55:44
++Status: draft
++
++So yesterday I went to a *networking event* - something I have never liked or been good at. I&#39;m
++not sure if I&#39;m one of those introverts or if I&#39;m just socially awkward, but the very idea of
++going around trying to converse with total strangers just to exchange business cards is not at all
++appealing to me. Anyway, that&#39;s another story. Right now I want to write about something a guy
++from a non-tech company asked me:
++
++&gt; \- Have you built anything cool?  
++&gt; \- [pause] Well, more or less...  
++&gt; \- What do you mean by &quot;more or less&quot;? [...] Have you built anything at all?  
++
++Then I went on trying to explain what my recent side project - 
++[pytaku](https://pytaku.appspot.com) - does and why it is awesome for me. He seemed to be
++disinterested halfway through so I decided to shut up anyway.
++
++Sure, I have done stuff every now and then, be it assignment work or something I decided to create
++for my own amusement. It is just funny how I have already stepped into to my final year without
++taking a proper look back at what I have done in these past 2 years, so I&#39;m going to do just that.
++
++If you - Nicholas - are reading this and don&#39;t want all the nerdy stuff, here are my condensed
++answers:
++
++### Have you built anything?  
++Yes, I have done desktop and Android games, a movie ticket sales program, a desktop manga
++grabber, a web version of it that talks to dropbox, and several small shell scripts / web
++utilities.  
++
++### So, nothing cool?  
++If you&#39;re neither a tech geek nor an otaku (which I assume you&#39;re probably not) then no,
++there&#39;s probably nothing I&#39;ve done that you would find interesting.
++
++## First year - Welcome to the web, and the GUI programming disillusionment
++
++I had touched *web stuff* before in high school: a vBulletin forum that I created (unofficially)
++for students in my middle school. However, I only properly learned PHP and JS when I started the
++Web Programming course here. With (moderately) great power came great desires, so I set out to
++build a basic PHP site to scrape a view page&#39;s HTML to get direct video links (not working anymore
++since a recent youtube update)
++
++![tubegrab v2.9](/images/tubegrab.jpg &quot;tubegrab v2.9&quot;)
++
++That was my first touch on jQueryUI and regular expressions; I also learned how RMIT&#39;s mekong
++server sucked to the point that it didn&#39;t allow `get_file_contents()`.
++
++I also learned about MVC and GUI programming with Java swing.
+diff --git a/content/images/tubegrab.jpg b/content/images/tubegrab.jpg
+new file mode 100644
+index 0000000..e018871
+Binary files /dev/null and b/content/images/tubegrab.jpg differ
+</pre></body></html>

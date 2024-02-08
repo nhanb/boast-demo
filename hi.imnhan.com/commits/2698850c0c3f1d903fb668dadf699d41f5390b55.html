@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[2698850c0c] simplify home page | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 2698850c0c</strong><hr><pre>commit 2698850c0c3f1d903fb668dadf699d41f5390b55
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 21 18:28:58 2023 +0700
+
+    simplify home page
+
+diff --git a/_theme/base.css b/_theme/base.css
+index c061eb7..53a5d64 100644
+--- a/_theme/base.css
++++ b/_theme/base.css
+@@ -1,5 +1,6 @@
+ html {
+-  font-family: serif;
++  font-family: system-ui, sans-serif;
++  font-size: 1em;
+   max-width: 50rem;
+   margin: auto;
+ }
+diff --git a/_theme/home.tmpl b/_theme/home.tmpl
+index d85797f..8938254 100644
+--- a/_theme/home.tmpl
++++ b/_theme/home.tmpl
+@@ -27,10 +27,10 @@
+ &lt;ul&gt;
+   {{- range .ArticlesInFeed}}
+   {{- if not .IsDraft}}
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;{{.PostedAt.Local.Format &quot;2006-01-02&quot;}} — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;({{.PostedAt.Local.Format &quot;2006-01-02&quot;}})&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;{{.PostedAt.Local.Format &quot;January 1, 2006&quot;}}&lt;/span&gt;
+   &lt;/li&gt;
+   {{- end}}
+   {{- end}}
+@@ -64,26 +64,10 @@ hr {
+ ul {
+   padding: 0;
+   list-style: none;
+-  /*font-size: 1.1rem;*/
+ }
+ 
+-.time-suffix {
+-  display: none;
+-}
+-
+-@media (max-width: 30rem) {
+-  .time-suffix {
+-    display: inline;
+-  }
+-  .time-prefix {
+-    display: none;
+-  }
+-  li {
+-    margin-bottom: 0.5rem;
+-  }
+-  li::before {
+-    content: &#39;❖&#39;;
+-  }
++.article {
++  margin-bottom: 1rem;
+ }
+ &lt;/style&gt;
+ 
+diff --git a/index.html b/index.html
+index fe21aa6..35a4b6c 100644
+--- a/index.html
++++ b/index.html
+@@ -34,140 +34,140 @@ &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
+ &lt;p&gt;All posts, newest first:&lt;/p&gt;
+ 
+ &lt;ul&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2023-04-22 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/chromebook/&quot;&gt;Acer Chromebook Spin 713 &amp;#34;Voxel&amp;#34;: an adequate Crostini device, a buggy Linux laptop&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2023-04-22)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;April 4, 2023&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2023-02-12 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/go-stack/&quot;&gt;Go, Postgres, Caddy, systemd: a simple, highly portable, Docker-free web stack&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2023-02-12)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;February 2, 2023&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2022-01-30 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/sqlite-python/&quot;&gt;Working with SQLite in Python without an ORM or migration framework&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2022-01-30)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;January 1, 2022&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2021-10-02 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/pippable-webapp/&quot;&gt;I made my python webapp installable via pip&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2021-10-02)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;October 10, 2021&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2021-08-07 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/vim-open-link/&quot;&gt;Opening http link under the cursor in vim&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2021-08-07)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;August 8, 2021&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2021-02-08 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/stepmania-pad/&quot;&gt;Simplest possible stepmania soft-to-hard pad mod&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2021-02-08)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;February 2, 2021&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2020-10-21 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/video-streaming-3/&quot;&gt;The video streaming finale, or why put.io is awesome&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2020-10-21)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;October 10, 2020&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2020-06-10 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/video-streaming-2/&quot;&gt;Streaming videos from Google Drive: a second attempt&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2020-06-10)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;June 6, 2020&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2020-05-29 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/mcross/&quot;&gt;Introducing McRoss—a minimal gemini browser&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2020-05-29)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;May 5, 2020&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2020-04-26 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/video-streaming-1/&quot;&gt;Towards an acceptable video playing experience&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2020-04-26)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;April 4, 2020&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2016-03-12 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/petition-fraud/&quot;&gt;I did NOT sign that online petition!&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2016-03-12)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;March 3, 2016&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2016-01-23 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/fightstick-2/&quot;&gt;My first DIY fightstick: Part 2&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2016-01-23)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;January 1, 2016&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2015-12-08 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/fightstick-1/&quot;&gt;My first DIY fightstick: Part 1&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2015-12-08)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;December 12, 2015&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2015-06-05 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/custom-theme/&quot;&gt;Look ma, no stock theme!&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2015-06-05)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;June 6, 2015&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2015-02-14 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/pyqt5/&quot;&gt;How to install PyQt5 on a virtualenv on Ubuntu 14.04&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2015-02-14)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;February 2, 2015&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2015-01-29 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/fcitx/&quot;&gt;Dẹp ibus-unikey đi, dùng fcitx-unikey nhé!&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2015-01-29)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;January 1, 2015&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2015-01-02 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/pytaku-old/&quot;&gt;Introducing Pytaku—the only online manga reader you&amp;#39;ll ever need&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2015-01-02)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;January 1, 2015&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2014-12-16 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/virtualenvwrapper/&quot;&gt;Virtualenv(wrapper), python2 and python3&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2014-12-16)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;December 12, 2014&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2014-08-02 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/tmux-italics/&quot;&gt;Enable italic text inside vim inside tmux inside gnome-terminal&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2014-08-02)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;August 8, 2014&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2014-05-01 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/node-webkit/&quot;&gt;Setting up your development environment for a node-webkit project&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2014-05-01)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;May 5, 2014&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2014-03-17 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/hdviet/&quot;&gt;How I bypassed my university&amp;#39;s domain blocker to watch movies on hdviet.com&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2014-03-17)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;March 3, 2014&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2014-02-04 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/manjaro-xfce/&quot;&gt;What I did after installing Manjaro xfce&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2014-02-04)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;February 2, 2014&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2014-01-25 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/cool/&quot;&gt;&amp;#34;Have you built anything cool?&amp;#34;&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2014-01-25)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;January 1, 2014&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2013-09-06 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/ubuntu-programs/&quot;&gt;Installing programs in Ubuntu&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2013-09-06)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;September 9, 2013&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2013-06-17 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/rmit-wifi/&quot;&gt;Fix RMIT wi-fi issue in Ubuntu 13.04 and variants&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2013-06-17)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;June 6, 2013&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2013-06-07 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/linux-automation/&quot;&gt;Why I use Linux: Automation&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2013-06-07)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;June 6, 2013&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2013-05-13 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/pathogen-vs-vundle/&quot;&gt;Modern vim plugin management: Pathogen vs Vundle&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2013-05-13)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;May 5, 2013&lt;/span&gt;
+   &lt;/li&gt;
+ &lt;/ul&gt;
+ 
+@@ -197,26 +197,10 @@ &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
+ ul {
+   padding: 0;
+   list-style: none;
+-   
+ }
+ 
+-.time-suffix {
+-  display: none;
+-}
+-
+-@media (max-width: 30rem) {
+-  .time-suffix {
+-    display: inline;
+-  }
+-  .time-prefix {
+-    display: none;
+-  }
+-  li {
+-    margin-bottom: 0.5rem;
+-  }
+-  li::before {
+-    content: &#39;❖&#39;;
+-  }
++.article {
++  margin-bottom: 1rem;
+ }
+ &lt;/style&gt;
+ 
+</pre></body></html>

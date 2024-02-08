@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a2d4972ff2] handle source site error responses in 1 place | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / a2d4972ff2</strong><hr><pre>commit a2d4972ff275f9686c83b9b9976ee748c6d5c86d
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 27 21:14:22 2020 +0700
+
+    handle source site error responses in 1 place
+    
+    Now raises specific exceptions too so caller code can now know if we or
+    source site did an oopsie.
+
+diff --git a/src/mangoapi/base_site.py b/src/mangoapi/base_site.py
+index 5cbbc36..65990c1 100644
+--- a/src/mangoapi/base_site.py
++++ b/src/mangoapi/base_site.py
+@@ -3,14 +3,16 @@
+ 
+ import requests
+ 
++from .exceptions import SourceSite5xxError, SourceSiteUnexpectedError
++
+ 
+ class Site(ABC):
+     def __init__(self):
+         self.username = None
+         self.password = None
+         self.is_logged_in = False
+-        self.session = requests.Session()
+-        self.session.headers.update(
++        self._session = requests.Session()
++        self._session.headers.update(
+             {
+                 &quot;User-Agent&quot;: &quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36&quot;
+             }
+@@ -44,6 +46,23 @@ def title_source_url(self, title_id):
+     def login(self, username, password):
+         raise NotImplementedError()
+ 
++    def _http_request(self, method, *args, **kwargs):
++        request_func = getattr(self._session, method)
++        resp = request_func(*args, **kwargs)
++
++        if 500 &lt;= resp.status_code &lt;= 599:
++            raise SourceSite5xxError(resp.text)
++        elif resp.status_code != 200:
++            raise SourceSiteUnexpectedError(resp.status_code, resp.text)
++
++        return resp
++
++    def http_get(self, *args, **kwargs):
++        return self._http_request(&quot;get&quot;, *args, **kwargs)
++
++    def http_post(self, *args, **kwargs):
++        return self._http_request(&quot;post&quot;, *args, **kwargs)
++
+ 
+ def requires_login(func):
+     &quot;&quot;&quot;
+diff --git a/src/mangoapi/exceptions.py b/src/mangoapi/exceptions.py
+new file mode 100644
+index 0000000..a48d331
+--- /dev/null
++++ b/src/mangoapi/exceptions.py
+@@ -0,0 +1,8 @@
++class SourceSite5xxError(Exception):
++    pass
++
++
++class SourceSiteUnexpectedError(Exception):
++    def __init__(self, status_code, resp_text):
++        self.status_code = status_code
++        self.resp_text = resp_text
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index 90c404b..425218f 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -7,8 +7,7 @@
+ class Mangadex(Site):
+     def get_title(self, title_id):
+         url = f&quot;https://mangadex.org/api/?id={title_id}&amp;type=manga&quot;
+-        md_resp = self.session.get(url)
+-        assert md_resp.status_code == 200, md_resp.text
++        md_resp = self.http_get(url)
+         md_json = md_resp.json()
+         assert md_json[&quot;status&quot;] == &quot;OK&quot;
+ 
+@@ -39,10 +38,9 @@ def get_title(self, title_id):
+         return title
+ 
+     def get_chapter(self, title_id, chapter_id):
+-        md_resp = self.session.get(
++        md_resp = self.http_get(
+             f&quot;https://mangadex.org/api/?id={chapter_id}&amp;type=chapter&amp;saver=0&quot;
+         )
+-        assert md_resp.status_code == 200, md_resp.text
+         md_json = md_resp.json()
+         assert md_json[&quot;status&quot;] == &quot;OK&quot;
+ 
+@@ -63,8 +61,7 @@ def get_chapter(self, title_id, chapter_id):
+ 
+     @requires_login
+     def search_title(self, query):
+-        md_resp = self.session.get(f&quot;https://mangadex.org/quick_search/{query}&quot;)
+-        assert md_resp.status_code == 200, md_resp.text
++        md_resp = self.http_get(f&quot;https://mangadex.org/quick_search/{query}&quot;)
+ 
+         matches = TITLES_PATTERN.findall(md_resp.text)
+         titles = [
+@@ -85,12 +82,11 @@ def login(self, username, password):
+             &quot;two_factor&quot;: &quot;&quot;,
+             &quot;remember_me&quot;: &quot;1&quot;,
+         }
+-        md_resp = self.session.post(
++        self.http_post(
+             &quot;https://mangadex.org/ajax/actions.ajax.php?function=login&quot;,
+             data=form_data,
+             headers={&quot;X-Requested-With&quot;: &quot;XMLHttpRequest&quot;},
+         )
+-        assert md_resp.status_code == 200, md_resp.text
+         self.is_logged_in = True
+ 
+     def title_cover(self, title_id, cover_ext):
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+index 5f2080b..8ffa305 100644
+--- a/src/mangoapi/mangasee.py
++++ b/src/mangoapi/mangasee.py
+@@ -25,8 +25,7 @@ def __init__(self, keyval_store=None):
+         self.keyval_store = keyval_store
+ 
+     def get_title(self, title_id):
+-        resp = self.session.get(f&quot;https://mangasee123.com/manga/{title_id}&quot;, timeout=3)
+-        assert resp.status_code == 200
++        resp = self.http_get(f&quot;https://mangasee123.com/manga/{title_id}&quot;, timeout=3)
+         html = resp.text
+         name = regexes[&quot;title_name&quot;].search(html).group(1).strip()
+         desc = regexes[&quot;title_desc&quot;].search(html).group(1).strip()
+@@ -54,10 +53,9 @@ def get_title(self, title_id):
+         }
+ 
+     def get_chapter(self, title_id, chapter_id):
+-        resp = self.session.get(
++        resp = self.http_get(
+             f&quot;https://mangasee123.com/read-online/{title_id}-chapter-{chapter_id}.html&quot;
+         )
+-        assert resp.status_code == 200
+         html = resp.text
+ 
+         title_id = regexes[&quot;chapter_title_name&quot;].search(html).group(1)
+@@ -108,7 +106,7 @@ def search_title(self, query):
+                 )
+             if not titles:
+                 print(&quot;Fetching mangasee title list...&quot;, end=&quot;&quot;)
+-                resp = self.session.get(&quot;https://mangasee123.com/_search.php&quot;)
++                resp = self.http_get(&quot;https://mangasee123.com/_search.php&quot;)
+                 print(&quot; done&quot;)
+                 titles = resp.json()
+                 self.keyval_store.set(&quot;mangasee_titles&quot;, resp.text)
+</pre></body></html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[eb339c9b55] read list of networks from iwctl | iwpick | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">iwpick</a> / eb339c9b55</strong><hr><pre>commit eb339c9b5527c57d4cfd96b9107d917c6e99d60e
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 28 23:48:34 2022 +0700
+
+    read list of networks from iwctl
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..8808251
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,2 @@
++/iwpick
++/main
+diff --git a/Makefile b/Makefile
+new file mode 100644
+index 0000000..d1e789c
+--- /dev/null
++++ b/Makefile
+@@ -0,0 +1,8 @@
++iwpick: main.go go.mod go.sum
++	go build -o iwpick
++
++run:
++	go run *.go
++
++watch:
++	find . -name &#39;*.go&#39; | entr make run
+diff --git a/ansi.go b/ansi.go
+new file mode 100644
+index 0000000..b9af1d5
+--- /dev/null
++++ b/ansi.go
+@@ -0,0 +1,39 @@
++package main
++
++/*
++This file is copied from https://github.com/acarl005/stripansi
++whose original license is as follows:
++
++
++MIT License
++
++Copyright (c) 2018 Andrew Carlson
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the &quot;Software&quot;), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.
++*/
++
++import &quot;regexp&quot;
++
++const ansi = &quot;[\u001B\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=&gt;&lt;~]))&quot;
++
++var re = regexp.MustCompile(ansi)
++
++func StripANSI(str string) string {
++	return re.ReplaceAllString(str, &quot;&quot;)
++}
+diff --git a/main.go b/main.go
+index 6120617..a5a9d77 100644
+--- a/main.go
++++ b/main.go
+@@ -1,16 +1,94 @@
+ package main
+ 
+ import (
++	&quot;bufio&quot;
++	&quot;bytes&quot;
++	&quot;fmt&quot;
++	&quot;log&quot;
++	&quot;os/exec&quot;
++	&quot;strings&quot;
++
+ 	&quot;github.com/rivo/tview&quot;
+ )
+ 
++type Network struct {
++	SSID        string
++	Security    string
++	Strength    int
++	StrengthStr string
++	IsCurrent   bool
++}
++
++func GetNetworks() (networks []Network) {
++	scanCmd := exec.Command(&quot;iwctl&quot;, &quot;station&quot;, &quot;wlan0&quot;, &quot;scan&quot;)
++	if err := scanCmd.Run(); err != nil {
++		log.Fatal(err)
++	}
++
++	listCmd := exec.Command(&quot;iwctl&quot;, &quot;station&quot;, &quot;wlan0&quot;, &quot;get-networks&quot;)
++	var out bytes.Buffer
++	listCmd.Stdout = &amp;out
++	if err := listCmd.Run(); err != nil {
++		log.Fatal(err)
++	}
++
++	s := bufio.NewScanner(strings.NewReader(out.String()))
++	for i := 0; i &lt; 4; i++ {
++		s.Scan() // ignore first 4 lines, which are headers
++	}
++	for s.Scan() {
++		nw := Network{}
++
++		line := strings.TrimSpace(s.Text())
++		if line == &quot;&quot; {
++			continue
++		}
++
++		// Wifi strength is at end of line, indicated by number of white
++		// asterisks, right-padded with grey asterisks to always reach 4 chars.
++		lastSpaceIndex := strings.LastIndex(line, &quot; &quot;)
++		strengthStr := line[lastSpaceIndex+1:]
++		// \x1b (ANSI escape) starts the grey color switch, which means
++		// whatever precedes it is the actual strength.
++		nw.Strength = strings.Index(strengthStr, &quot;\x1b&quot;)
++		if nw.Strength == -1 {
++			// no grey asterisks means all 4 are white asterisks
++			// =&gt; full strength
++			nw.Strength = 4
++		}
++
++		// We don&#39;t need formatting info for the rest of the data
++		line = StripANSI(line[:lastSpaceIndex])
++		parts := strings.Fields(line)
++
++		if parts[0] == &quot;&gt;&quot; {
++			nw.IsCurrent = true
++			parts = parts[1:]
++		} else {
++			nw.IsCurrent = false
++		}
++
++		size := len(parts)
++		nw.Security = parts[size-1]
++		nw.SSID = strings.Join(parts[:size-1], &quot; &quot;)
++
++		networks = append(networks, nw)
++	}
++	return networks
++}
++
+ func main() {
++	networks := GetNetworks()
++	fmt.Println(networks)
++
+ 	app := tview.NewApplication()
+-	list := tview.NewList().ShowSecondaryText(false).
+-		AddItem(&quot;List item 1&quot;, &quot;Some explanatory text&quot;, 0, nil).
+-		AddItem(&quot;List item 2&quot;, &quot;Some explanatory text&quot;, 0, nil).
+-		AddItem(&quot;List item 3&quot;, &quot;Some explanatory text&quot;, 0, nil).
+-		AddItem(&quot;List item 4&quot;, &quot;Some explanatory text&quot;, 0, nil)
++	list := tview.NewList().ShowSecondaryText(false)
++
++	for _, nw := range networks {
++		list.AddItem(
++			fmt.Sprintf(&quot;[%d] %s (%s)&quot;, nw.Strength, nw.SSID, nw.Security),
++			&quot;&quot;, 0, nil)
++	}
+ 
+ 	if err := app.SetRoot(list, true).SetFocus(list).Run(); err != nil {
+ 		panic(err)
+</pre></body></html>

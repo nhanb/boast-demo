@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[f8df3b0265] refactor proxy code | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / f8df3b0265</strong><hr><pre>commit f8df3b02655b2217bbacf0bf775a2cf6929a2b73
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 1 19:58:17 2020 +0700
+
+    refactor proxy code
+    
+    ... into separate REPL-friendly functions to aid debugging.
+    Also allow img urls straight from mangadex.org (previously only allowed
+    the sN.mangadex.org subdomains).
+
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 78c1d01..9bba60e 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -24,8 +24,7 @@ def title_view(title_id):
+ def chapter_view(chapter_id):
+     chapter = get_chapter(chapter_id)
+     chapter[&quot;pages&quot;] = [
+-        url_for(&quot;proxy_view&quot;, b64_url=base64.urlsafe_b64encode(p.encode()).decode())
+-        for p in chapter[&quot;pages&quot;]
++        url_for(&quot;proxy_view&quot;, b64_url=_encode_proxy_url(p)) for p in chapter[&quot;pages&quot;]
+     ]
+     return render_template(&quot;chapter.html&quot;, **chapter)
+ 
+@@ -38,11 +37,25 @@ def search_view():
+ @app.route(&quot;/proxy/&lt;b64_url&gt;&quot;)
+ def proxy_view(b64_url):
+     &quot;&quot;&quot;Fine I&#39;ll do it&quot;&quot;&quot;
+-    url = base64.urlsafe_b64decode(b64_url).decode()
+-    if not re.match(r&quot;^https://\w+\.mangadex\.org/data/.+$&quot;, url):
++    url = _decode_proxy_url(b64_url)
++    if not _is_manga_img_url(url):
+         return &quot;Nope&quot;
+     print(&quot;Proxying&quot;, url)
+     md_resp = requests.get(url)
+     resp = make_response(md_resp.content, md_resp.status_code)
+     resp.headers.extend(**md_resp.headers)
+     return resp
++
++
++def _encode_proxy_url(url):
++    return base64.urlsafe_b64encode(url.encode()).decode()
++
++
++def _decode_proxy_url(b64_url):
++    return base64.urlsafe_b64decode(b64_url).decode()
++
++
++def _is_manga_img_url(
++    url, pattern=re.compile(r&quot;^https://(\w+\.)?mangadex\.org/data/.+$&quot;)
++):
++    return pattern.match(url)
+</pre></body></html>

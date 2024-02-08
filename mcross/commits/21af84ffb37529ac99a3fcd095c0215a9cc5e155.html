@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[21af84ffb3] tell curio we don&#39;t need to join() | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 21af84ffb3</strong><hr><pre>commit 21af84ffb37529ac99a3fcd095c0215a9cc5e155
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun May 17 12:02:24 2020 +0700
+
+    tell curio we don&#39;t need to join()
+    
+    So it doesn&#39;t spam the &quot;task never joined&quot; warning.
+
+diff --git a/src/mcross/gui/controller.py b/src/mcross/gui/controller.py
+index 0e4bf45..1e90538 100644
+--- a/src/mcross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -28,7 +28,9 @@ def __init__(self):
+ 
+         def schedule_as_coro(func):
+             def do_schedule(*args):
+-                task = curio.spawn(self.show_waiting_cursor_during_task(func, *args))
++                task = curio.spawn(
++                    self.show_waiting_cursor_during_task(func, *args), daemon=True
++                )
+                 self.pending_coros.append(task)
+ 
+             return do_schedule
+</pre></body></html>

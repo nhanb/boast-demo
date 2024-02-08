@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1c9d2de2b9] wip: deal with md@h links, stucked with cors protection | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 1c9d2de2b9</strong><hr><pre>commit 1c9d2de2b9d26c5f0e2318ca9d999569b2dcb84b
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 1 17:31:52 2020 +0700
+
+    wip: deal with md@h links, stucked with cors protection
+
+diff --git a/src/mangoapi/__init__.py b/src/mangoapi/__init__.py
+index 0851216..f90608f 100644
+--- a/src/mangoapi/__init__.py
++++ b/src/mangoapi/__init__.py
+@@ -42,22 +42,22 @@ def get_title(title_id):
+ 
+ 
+ def get_chapter(chapter_id):
+-    md_resp = requests.get(f&quot;https://mangadex.org/api/?id={chapter_id}&amp;type=chapter&quot;)
++    md_resp = requests.get(
++        f&quot;https://mangadex.org/api/?id={chapter_id}&amp;type=chapter&amp;saver=0&quot;
++    )
+     assert md_resp.status_code == 200
+     md_json = md_resp.json()
+     assert md_json[&quot;status&quot;] == &quot;OK&quot;
+ 
+-    img_path = f&quot;{md_json[&#39;server&#39;]}{md_json[&#39;hash&#39;]}&quot;
++    server = md_json.get(&quot;server_fallback&quot;) or md_json[&quot;server&quot;]
++    img_path = f&quot;{server}{md_json[&#39;hash&#39;]}&quot;
+ 
+     chapter = {
+-        &#39;id&#39;: chapter_id,
+-        &#39;title_id&#39;: md_json[&#39;manga_id&#39;],
+-        &#39;name&#39;: md_json[&#39;title&#39;],
+-        &#39;pages&#39;: [
+-            f&#39;{img_path}/{page}&#39;
+-            for page in md_json[&#39;page_array&#39;]
+-        ],
+-        &#39;group&#39;: md_json[&#39;group_name&#39;],
+-        **_parse_chapter_number(md_json[&#39;chapter&#39;]),
++        &quot;id&quot;: chapter_id,
++        &quot;title_id&quot;: md_json[&quot;manga_id&quot;],
++        &quot;name&quot;: md_json[&quot;title&quot;],
++        &quot;pages&quot;: [f&quot;{img_path}/{page}&quot; for page in md_json[&quot;page_array&quot;]],
++        &quot;group&quot;: md_json[&quot;group_name&quot;],
++        **_parse_chapter_number(md_json[&quot;chapter&quot;]),
+     }
+     return chapter
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index dc59158..631deae 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -8,7 +8,7 @@
+ @app.route(&quot;/title/mangadex/&lt;int:title_id&gt;&quot;)
+ def title_view(title_id):
+     title = get_title(title_id)
+-    return render_template(&quot;title.html&quot;, **title)
++    return render_template(&quot;title.html&quot;, id=title_id, **title)
+ 
+ 
+ @app.route(&quot;/chapter/mangadex/&lt;int:chapter_id&gt;&quot;)
+diff --git a/src/pytaku/templates/chapter.html b/src/pytaku/templates/chapter.html
+index 97665a7..fbca8e1 100644
+--- a/src/pytaku/templates/chapter.html
++++ b/src/pytaku/templates/chapter.html
+@@ -52,7 +52,7 @@ &lt;h1&gt;Ch.{{ number }}: {{ name }}&lt;/h1&gt;
+ 
+ &lt;div class=&quot;pages&quot;&gt;
+   {% for page in pages %}
+-  &lt;img src=&quot;{{ page }}&quot; /&gt;
++  &lt;img src=&quot;{{ page }}&quot; crossorigin=&quot;anonymous&quot; referrerpolicy=&quot;no-referrer&quot;/&gt;
+   {% endfor %}
+ &lt;/div&gt;
+ 
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index 73c813e..6cf093f 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -19,6 +19,8 @@ &lt;h1&gt;{{ name }}&lt;/h1&gt;
+ 
+ {{ ibutton(left_icon=&#39;bookmark&#39;, text=&#39;Bookmark&#39;, color=&#39;blue&#39;) }}
+ 
++&lt;a href=&quot;https://mangadex.org/manga/{{ id }}&quot;&gt;Original link&lt;/a&gt;
++
+ &lt;img class=&quot;cover&quot; src=&quot;{{ cover }}&quot; alt=&quot;cover&quot; /&gt;
+ 
+ &lt;table&gt;
+</pre></body></html>

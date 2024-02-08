@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[afc0a0f4c4] make sure the GUI gets focused on Windows | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / afc0a0f4c4</strong><hr><pre>commit afc0a0f4c40748073dede9b116d360c0d47ac1f5
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jun 18 23:05:53 2023 +0700
+
+    make sure the GUI gets focused on Windows
+
+diff --git a/main.go b/main.go
+index f3a6e6c..63470a8 100644
+--- a/main.go
++++ b/main.go
+@@ -64,10 +64,9 @@ func startGUI() {
+ 		panic(err)
+ 	}
+ 
+-	io.WriteString(stdin, mainTcl)
++	fmt.Fprintln(stdin, mainTcl)
+ 	println(&quot;Loaded main tcl script.&quot;)
+ 
+-	// TODO: this should probably be refactored out
+ 	state := initState()
+ 
+ 	b64icon := base64.StdEncoding.EncodeToString(gortsPngIcon)
+@@ -75,7 +74,7 @@ func startGUI() {
+ 
+ 	fmt.Fprintf(stdin, &quot;set mainstatus \&quot;Point your OBS browser source to http://localhost:%s\&quot;\n&quot;, WebPort)
+ 
+-	io.WriteString(stdin, &quot;readstate\n&quot;)
++	fmt.Fprintln(stdin, &quot;readstate&quot;)
+ 
+ 	scanner := bufio.NewScanner(stdout)
+ 
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index e63e4d5..fc48d16 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -139,3 +139,14 @@ proc applystate {} {
+     puts $p2score
+     puts $p2team
+ }
++
++
++# By default this window is not focused and not even brought to
++# foreground on Windows. I suspect it&#39;s because tcl is exec&#39;ed from Go.
++# Minimizing then re-opening it seems to do the trick.
++# This workaround, however, makes the window unfocused on KDE, so
++# let&#39;s only use it on Windows.
++if {$tcl_platform(platform) == windows} {
++    wm iconify .
++    wm deiconify .
++}
+</pre></body></html>

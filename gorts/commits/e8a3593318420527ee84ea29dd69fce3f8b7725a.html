@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e8a3593318] country magic | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / e8a3593318</strong><hr><pre>commit e8a3593318420527ee84ea29dd69fce3f8b7725a
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Jun 16 21:53:53 2023 +0700
+
+    country magic
+
+diff --git a/web/index.js b/web/index.js
+index ab93e09..6f3ed00 100644
+--- a/web/index.js
++++ b/web/index.js
+@@ -20,6 +20,16 @@ const getDiff = (newState, oldState) =&gt; {
+   return diff;
+ };
+ 
++// Thanks internets:
++// https://dev.to/jorik/country-code-to-flag-emoji-a21
++function getFlagEmoji(countryCode) {
++  const codePoints = countryCode
++    .toUpperCase()
++    .split(&quot;&quot;)
++    .map((char) =&gt; 127397 + char.charCodeAt());
++  return String.fromCodePoint(...codePoints);
++}
++
+ const drawDiffToDom = (diff) =&gt; {
+   Object.keys(diff).forEach((key) =&gt; {
+     const element = document.querySelector(`#${key}`);
+@@ -35,6 +45,13 @@ const drawDiffToDom = (diff) =&gt; {
+       element.innerHTML = newValue;
+     };
+ 
++    // Country needs to be converted from code to flag emoji
++    if (key === &quot;p1country&quot; || key === &quot;p2country&quot;) {
++      updateFunc = () =&gt; {
++        element.innerHTML = getFlagEmoji(newValue);
++      };
++    }
++
+     fadeUpdate(element, newValue, updateFunc);
+   });
+ };
+diff --git a/web/state.json b/web/state.json
+index b66d8f0..6358e75 100644
+--- a/web/state.json
++++ b/web/state.json
+@@ -1,11 +1,11 @@
+ {
+-    &quot;description&quot;: &quot;asdfasdf&quot;,
+-    &quot;p1name&quot;: &quot;CYG BST | | Fuudo&quot;,
+-    &quot;p1country&quot;: &quot;🇯🇵&quot;,
+-    &quot;p1team&quot;: &quot;&quot;,
++    &quot;description&quot;: &quot;Saigon Cup 2023&quot;,
++    &quot;p1name&quot;: &quot;BST CYG Diego Umejuarez&quot;,
++    &quot;p1country&quot;: &quot;jp&quot;,
++    &quot;p1team&quot;: &quot;Team Japan&quot;,
+     &quot;p1score&quot;: 6,
+-    &quot;p2name&quot;: &quot;B.O.B | Xiaobao&quot;,
+-    &quot;p2country&quot;: &quot;🇯🇵&quot;,
++    &quot;p2name&quot;: &quot;Jiyuner&quot;,
++    &quot;p2country&quot;: &quot;us&quot;,
+     &quot;p2score&quot;: 1,
+-    &quot;p2team&quot;: &quot;&quot;
++    &quot;p2team&quot;: &quot;Team Japan2&quot;
+ }
+</pre></body></html>

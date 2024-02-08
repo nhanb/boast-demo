@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a86c95d461] tweak make targets | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / a86c95d461</strong><hr><pre>commit a86c95d461e9e0750b383df332fe515ff1252cf4
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jun 22 09:57:53 2023 +0700
+
+    tweak make targets
+
+diff --git a/Makefile b/Makefile
+index 9bc32b6..4ec55b8 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,17 +2,17 @@ windows:
+ 	CGO_ENABLED=0 GOOS=windows \
+ 		go build -o dist/windows/gorts.exe -ldflags -H=windowsgui
+ 	rm -rf dist/windows/web
+-	cp -r web dist/windows/web
++	cp -r web dist/windows/
+ 	rm -rf dist/windows/tcl
+-	cp -r tcl dist/windows/tcl
++	cp -r tcl dist/windows/
+ 	cp players.sample.csv dist/windows/
+ 
+ linux:
+ 	CGO_ENABLED=0 GOOS=linux go build -o dist/linux/gorts
+ 	rm -rf dist/linux/web
+-	cp -r web dist/linux/web
++	cp -r web dist/linux/
+ 	rm -rf dist/linux/tcl
+-	cp -r tcl dist/linux/tcl
++	cp -r tcl dist/linux/
+ 	cp players.sample.csv dist/linux/
+ 
+ dist/GORTS-Windows.zip: windows
+</pre></body></html>

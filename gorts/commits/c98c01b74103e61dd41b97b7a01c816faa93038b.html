@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[c98c01b741] include tclkit in Windows build | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / c98c01b741</strong><hr><pre>commit c98c01b74103e61dd41b97b7a01c816faa93038b
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jun 17 18:38:37 2023 +0700
+
+    include tclkit in Windows build
+    
+    TODO: gather license files for 3rd party stuff.
+
+diff --git a/.build.yml b/.build.yml
+index 92762d5..3f71bc5 100644
+--- a/.build.yml
++++ b/.build.yml
+@@ -17,6 +17,7 @@ tasks:
+       cd gorts
+       PATH=$PATH:~/go/bin make dist-windows
+       cd dist
++      curl -L &#39;https://tclkits.rkeene.org/fossil/raw/tclkit-8.6.3-win32-x86_64.exe?name=403c507437d0b10035c7839f22f5bb806ec1f491&#39; &gt; windows/tclkit.exe
+       zip -r gorts-windows.zip windows
+ 
+ artifacts:
+diff --git a/README.md b/README.md
+index f02c042..586fa99 100644
+--- a/README.md
++++ b/README.md
+@@ -9,6 +9,15 @@ # GORTS
+ Nothing is guaranteed to work yet. If you need to use something _now_, see
+ [ORTS][1].
+ 
++# Windows
++
++Just download the release, unzip and run gorts.exe.
++
++# Linux
++
++Needs tcl/tk installed on your OS.
++Assumes `tclsh` command is available in $PATH.
++
+ # License
+ 
+ Copyright (C) 2023 Bui Thanh Nhan
+diff --git a/main.go b/main.go
+index 1f010b6..c011b33 100644
+--- a/main.go
++++ b/main.go
+@@ -10,6 +10,7 @@
+ 	&quot;net/http&quot;
+ 	&quot;os&quot;
+ 	&quot;os/exec&quot;
++	&quot;runtime&quot;
+ 	&quot;strconv&quot;
+ )
+ 
+@@ -37,7 +38,12 @@ func main() {
+ }
+ 
+ func startGUI() {
+-	cmd := exec.Command(&quot;tclsh&quot;)
++	tclPath := &quot;tclsh&quot;
++	if runtime.GOOS == &quot;windows&quot; {
++		tclPath = &quot;./tclkit.exe&quot;
++	}
++
++	cmd := exec.Command(tclPath)
+ 	stdout, err := cmd.StdoutPipe()
+ 	if err != nil {
+ 		panic(err)
+</pre></body></html>

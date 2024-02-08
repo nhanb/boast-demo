@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[12e85af881] more skimmable stderr prefix | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 12e85af881</strong><hr><pre>commit 12e85af881b784bec3f9511da74b89ff7b75d660
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jun 19 21:11:47 2023 +0700
+
+    more skimmable stderr prefix
+
+diff --git a/main.go b/main.go
+index c7909bf..0ff2862 100644
+--- a/main.go
++++ b/main.go
+@@ -73,7 +73,7 @@ func startGUI() {
+ 		errscanner := bufio.NewScanner(stderr)
+ 		for errscanner.Scan() {
+ 			errtext := errscanner.Text()
+-			fmt.Printf(&quot;~~&gt; %s\n&quot;, errtext)
++			fmt.Printf(&quot;XXX %s\n&quot;, errtext)
+ 		}
+ 	}()
+ 
+@@ -91,18 +91,18 @@ func startGUI() {
+ 	next := func() string {
+ 		scanner.Scan()
+ 		v := scanner.Text()
+-		println(&quot;==&gt;&quot;, v)
++		println(&quot;--&gt;&quot;, v)
+ 		return v
+ 	}
+ 
+ 	respond := func(s string) {
+-		println(&quot;&lt;==&quot;, s)
++		println(&quot;&lt;--&quot;, s)
+ 		io.WriteString(stdin, s+&quot;\n&quot;)
+ 	}
+ 
+ 	for scanner.Scan() {
+ 		req := scanner.Text()
+-		println(&quot;==&gt; &quot; + req)
++		println(&quot;--&gt; &quot; + req)
+ 		switch req {
+ 		case &quot;readstate&quot;:
+ 			// TODO: there must be a more... civilized way.
+</pre></body></html>

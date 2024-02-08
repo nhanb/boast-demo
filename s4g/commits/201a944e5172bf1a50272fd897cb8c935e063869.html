@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[201a944e51] rename consts to CamelCase | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 201a944e51</strong><hr><pre>commit 201a944e5172bf1a50272fd897cb8c935e063869
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jul 9 17:04:58 2023 +0700
+
+    rename consts to CamelCase
+
+diff --git a/main.go b/main.go
+index ebbf72c..f3f1685 100644
+--- a/main.go
++++ b/main.go
+@@ -19,10 +19,10 @@
+ 	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
+ )
+ 
+-const DJOT_EXT = &quot;.dj&quot;
+-const SITE_EXT = &quot;.wbmkr2k&quot;
+-const SITE_FILENAME = &quot;website&quot; + SITE_EXT
+-const FEED_PATH = &quot;feed.xml&quot;
++const DjotExt = &quot;.dj&quot;
++const SiteExt = &quot;.wbmkr2k&quot;
++const SiteFileName = &quot;website&quot; + SiteExt
++const FeedPath = &quot;feed.xml&quot;
+ 
+ func main() {
+ 	var port, folder, new string
+@@ -80,7 +80,7 @@ func regenerate(fsys writablefs.FS) {
+ 	if len(articles) == 0 {
+ 		fmt.Println(&quot;No articles found.&quot;)
+ 		fsys.RemoveAll(&quot;index.html&quot;)
+-		fsys.RemoveAll(FEED_PATH)
++		fsys.RemoveAll(FeedPath)
+ 		return
+ 	}
+ 
+@@ -124,11 +124,11 @@ func regenerate(fsys writablefs.FS) {
+ 	}
+ 
+ 	fsys.WriteFile(
+-		FEED_PATH,
+-		generateFeed(site, articlesInFeed, site.HomePath+FEED_PATH),
++		FeedPath,
++		generateFeed(site, articlesInFeed, site.HomePath+FeedPath),
+ 	)
+-	generatedFiles[FEED_PATH] = true
+-	fmt.Println(&quot;Generated&quot;, FEED_PATH)
++	generatedFiles[FeedPath] = true
++	fmt.Println(&quot;Generated&quot;, FeedPath)
+ 
+ 	DeleteOldGeneratedFiles(fsys, generatedFiles)
+ 	WriteManifest(fsys, generatedFiles)
+@@ -158,7 +158,7 @@ func newSiteMetadata() SiteMetadata {
+ 
+ func readSiteMetadata(fsys writablefs.FS) SiteMetadata {
+ 	sm := newSiteMetadata()
+-	_, err := toml.DecodeFS(fsys, SITE_FILENAME, &amp;sm)
++	_, err := toml.DecodeFS(fsys, SiteFileName, &amp;sm)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+@@ -209,7 +209,7 @@ func (a *Article) WriteHtmlFile(
+ 		Title:         fmt.Sprintf(&quot;%s | %s&quot;, a.Title, site.Name),
+ 		Post:          a,
+ 		ArticlesInNav: articlesInNav,
+-		Feed:          site.HomePath + FEED_PATH,
++		Feed:          site.HomePath + FeedPath,
+ 		Now:           time.Now(),
+ 		StartYear:     startYear,
+ 	})
+@@ -253,7 +253,7 @@ func WriteHomePage(
+ 		Title:          fmt.Sprintf(&quot;%s - %s&quot;, site.Name, site.Tagline),
+ 		ArticlesInFeed: articlesInFeed,
+ 		ArticlesInNav:  articlesInNav,
+-		Feed:           site.HomePath + FEED_PATH,
++		Feed:           site.HomePath + FeedPath,
+ 		Now:            time.Now(),
+ 		StartYear:      startYear,
+ 	})
+@@ -267,7 +267,7 @@ func WriteHomePage(
+ func findArticles(fsys writablefs.FS) (result []Article) {
+ 
+ 	fs.WalkDir(fsys, &quot;.&quot;, func(path string, d fs.DirEntry, err error) error {
+-		if d.IsDir() || !strings.HasSuffix(d.Name(), DJOT_EXT) {
++		if d.IsDir() || !strings.HasSuffix(d.Name(), DjotExt) {
+ 			return nil
+ 		}
+ 
+@@ -298,7 +298,7 @@ func findArticles(fsys writablefs.FS) (result []Article) {
+ 		article := Article{
+ 			Fs:              fsys,
+ 			Path:            path,
+-			WebPath:         strings.TrimSuffix(path, DJOT_EXT) + &quot;.html&quot;,
++			WebPath:         strings.TrimSuffix(path, DjotExt) + &quot;.html&quot;,
+ 			DjotBody:        bodyText,
+ 			ArticleMetadata: meta,
+ 		}
+diff --git a/makesite.go b/makesite.go
+index af438ac..1a4ddec 100644
+--- a/makesite.go
++++ b/makesite.go
+@@ -23,7 +23,7 @@ func makeSite(path string, meta SiteMetadata) error {
+ 	}
+ 
+ 	// Create site metadata file
+-	metaFilePath := filepath.Join(path, SITE_FILENAME)
++	metaFilePath := filepath.Join(path, SiteFileName)
+ 	metaFile, err := os.Create(metaFilePath)
+ 	if err != nil {
+ 		return fmt.Errorf(&quot;create site metadata: %w&quot;, err)
+diff --git a/watcher.go b/watcher.go
+index d24f350..e9e1e47 100644
+--- a/watcher.go
++++ b/watcher.go
+@@ -12,7 +12,7 @@
+ 	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
+ )
+ 
+-var WATCHED_EXTS = []string{DJOT_EXT, SITE_EXT, &quot;.tmpl&quot;}
++var WatchedExts = []string{DjotExt, SiteExt, &quot;.tmpl&quot;}
+ 
+ const debounceInterval = 500 * time.Millisecond
+ 
+@@ -60,7 +60,7 @@ func WatchLocalFS(fsys writablefs.FS, callback func()) (Close func() error) {
+ 
+ 				// Avoid infinite loop
+ 				if event.Has(fsnotify.Write) &amp;&amp;
+-					!contains(WATCHED_EXTS, filepath.Ext(event.Name)) {
++					!contains(WatchedExts, filepath.Ext(event.Name)) {
+ 					break
+ 				}
+ 
+</pre></body></html>

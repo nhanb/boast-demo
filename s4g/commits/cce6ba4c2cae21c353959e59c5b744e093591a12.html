@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[cce6ba4c2c] fix post date format | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / cce6ba4c2c</strong><hr><pre>commit cce6ba4c2cae21c353959e59c5b744e093591a12
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 24 15:18:35 2023 +0700
+
+    fix post date format
+
+diff --git a/docs/_s4g/theme/base.css b/docs/_s4g/theme/base.css
+index c10cd1f..90ac997 100644
+--- a/docs/_s4g/theme/base.css
++++ b/docs/_s4g/theme/base.css
+@@ -28,14 +28,14 @@ footer {
+ pre,
+ .sidenote {
+   border: 1px solid black;
+-  background-color: #eee;
+   padding: 0.5rem;
+ }
+ pre {
+-  overflow-y: scroll;
++  overflow-x: auto;
+ }
+ .sidenote {
+   margin-left: 2rem;
++  background-color: #eee;
+ }
+ .sidenote p {
+   margin: 0;
+diff --git a/docs/_s4g/theme/home.tmpl b/docs/_s4g/theme/home.tmpl
+index 0c286f0..8e75915 100644
+--- a/docs/_s4g/theme/home.tmpl
++++ b/docs/_s4g/theme/home.tmpl
+@@ -30,7 +30,7 @@
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;{{.PostedAt.Local.Format &quot;January 1, 2006&quot;}}&lt;/span&gt;
++    &lt;span&gt;{{.PostedAt.Local.Format &quot;January 2, 2006&quot;}}&lt;/span&gt;
+   &lt;/li&gt;
+   {{- end}}
+   {{- end}}
+diff --git a/docs/_s4g/theme/series-index.tmpl b/docs/_s4g/theme/series-index.tmpl
+index aee5b53..b68b8e5 100644
+--- a/docs/_s4g/theme/series-index.tmpl
++++ b/docs/_s4g/theme/series-index.tmpl
+@@ -15,7 +15,7 @@
+   &lt;li style=&quot;margin-bottom: 1rem;&quot;&gt;
+     &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;{{.PostedAt.Local.Format &quot;January 1, 2006&quot;}}&lt;/span&gt;
++    &lt;span&gt;{{.PostedAt.Local.Format &quot;January 2, 2006&quot;}}&lt;/span&gt;
+   &lt;/li&gt;
+ {{- end}}
+ {{ end }}
+diff --git a/docs/index.html b/docs/index.html
+index e9dddfd..3ad81fb 100644
+--- a/docs/index.html
++++ b/docs/index.html
+@@ -41,12 +41,12 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/s4g/mfws.html&quot;&gt;This is a motherfucking website.&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;April 4, 2023&lt;/span&gt;
++    &lt;span&gt;April 5, 2023&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/s4g/scale/&quot;&gt;I&amp;#39;m Going To Scale My Foot Up Your Ass&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;April 4, 2008&lt;/span&gt;
++    &lt;span&gt;April 24, 2008&lt;/span&gt;
+   &lt;/li&gt;
+ &lt;/ul&gt;
+ 
+diff --git a/theme/home.tmpl b/theme/home.tmpl
+index 0c286f0..8e75915 100644
+--- a/theme/home.tmpl
++++ b/theme/home.tmpl
+@@ -30,7 +30,7 @@
+   &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;{{.PostedAt.Local.Format &quot;January 1, 2006&quot;}}&lt;/span&gt;
++    &lt;span&gt;{{.PostedAt.Local.Format &quot;January 2, 2006&quot;}}&lt;/span&gt;
+   &lt;/li&gt;
+   {{- end}}
+   {{- end}}
+diff --git a/theme/series-index.tmpl b/theme/series-index.tmpl
+index aee5b53..b68b8e5 100644
+--- a/theme/series-index.tmpl
++++ b/theme/series-index.tmpl
+@@ -15,7 +15,7 @@
+   &lt;li style=&quot;margin-bottom: 1rem;&quot;&gt;
+     &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+     &lt;br&gt;
+-    &lt;span&gt;{{.PostedAt.Local.Format &quot;January 1, 2006&quot;}}&lt;/span&gt;
++    &lt;span&gt;{{.PostedAt.Local.Format &quot;January 2, 2006&quot;}}&lt;/span&gt;
+   &lt;/li&gt;
+ {{- end}}
+ {{ end }}
+</pre></body></html>

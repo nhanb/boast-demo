@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[c171648d44] implement right click; add end-of-animation hook | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / c171648d44</strong><hr><pre>commit c171648d4436e8ff2e4676687db4d2371cc106b7
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 17 13:40:10 2023 +0700
+
+    implement right click; add end-of-animation hook
+
+diff --git a/states.go b/states.go
+index f511309..fa690e8 100644
+--- a/states.go
++++ b/states.go
+@@ -35,17 +35,21 @@ func (sm *StateMachine) SetState(s State) {
+ func (sm *StateMachine) Update() error {
+ 	sm.state.Update(sm)
+ 
+-	// Advance or reset animation frame
++	// Advance to next animation frame
+ 	sm.ticks += 1
+ 	if sm.ticks &lt; 10 {
+ 		return nil
+ 	}
+ 	sm.ticks = 0
+-	if sm.frameIdx &gt;= sm.animFrameCount-1 {
+-		sm.frameIdx = 0
+-	} else {
++	if sm.frameIdx &lt; sm.animFrameCount-1 {
+ 		sm.frameIdx += 1
++		return nil
+ 	}
++
++	// At end of current anim, restart the animation,
++	// execute state-specific hook if any.
++	sm.frameIdx = 0
++	sm.state.EndAnimHook(sm)
+ 	return nil
+ }
+ 
+@@ -59,9 +63,9 @@ func (sm *StateMachine) Layout(ow, oh int) (sw, sh int) {
+ type State interface {
+ 	Enter(sm *StateMachine)
+ 	Update(sm *StateMachine)
++	EndAnimHook(sm *StateMachine)
+ }
+ 
+-type StateRClick struct{}
+ type StateHungry struct{}
+ type StateFeed struct{}
+ type StateWalkL struct{}
+@@ -75,7 +79,12 @@ func (s *StateIdle) Update(sm *StateMachine) {
+ 		sm.SetState(&amp;StateDrag{})
+ 		return
+ 	}
++	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
++		sm.SetState(&amp;StateRClick{})
++		return
++	}
+ }
++func (s *StateIdle) EndAnimHook(sm *StateMachine) {}
+ 
+ type StateDrag struct {
+ 	PreviousMousePos Vector
+@@ -101,3 +110,14 @@ func (s *StateDrag) Update(sm *StateMachine) {
+ 	}
+ 	s.PreviousMousePos = mousePos
+ }
++func (s *StateDrag) EndAnimHook(sm *StateMachine) {}
++
++type StateRClick struct{}
++
++func (s *StateRClick) Enter(sm *StateMachine) {
++	sm.SetAnim(RightClick)
++}
++func (s *StateRClick) Update(sm *StateMachine) {}
++func (s *StateRClick) EndAnimHook(sm *StateMachine) {
++	sm.SetState(&amp;StateIdle{})
++}
+</pre></body></html>

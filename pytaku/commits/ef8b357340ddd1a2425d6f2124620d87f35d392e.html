@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ef8b357340] prefetch next chapter | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / ef8b357340</strong><hr><pre>commit ef8b357340ddd1a2425d6f2124620d87f35d392e
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 2 17:40:58 2020 +0700
+
+    prefetch next chapter
+    
+    So when user actually navigates to next chapter they don&#39;t have to wait
+    for the initial network request to source site.
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 37c1cb5..9477d30 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.1.1&quot;
++version = &quot;0.1.2&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/templates/chapter.html b/src/pytaku/templates/chapter.html
+index 3df7cc2..866a446 100644
+--- a/src/pytaku/templates/chapter.html
++++ b/src/pytaku/templates/chapter.html
+@@ -7,6 +7,11 @@
+ {% endblock %}
+ 
+ {% block head %}
++
++{% if next_chapter %}
++&lt;link rel=&quot;prefetch&quot; href=&quot;{{ url_for(&#39;chapter_view&#39;, chapter_id=next_chapter[&#39;id&#39;])}}&quot;&gt;
++{% endif %}
++
+ &lt;style&gt;
+   html {
+     background-color: #444;
+@@ -43,6 +48,7 @@
+     margin-right: 0;
+   }
+ &lt;/style&gt;
++
+ {% endblock %}
+ 
+ {% block content %}
+</pre></body></html>

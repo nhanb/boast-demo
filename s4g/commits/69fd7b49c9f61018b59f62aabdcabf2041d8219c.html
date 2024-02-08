@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[69fd7b49c9] watcher: ignore swap and dot files/dirs | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 69fd7b49c9</strong><hr><pre>commit 69fd7b49c9f61018b59f62aabdcabf2041d8219c
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jul 9 12:59:30 2023 +0700
+
+    watcher: ignore swap and dot files/dirs
+
+diff --git a/watcher.go b/watcher.go
+index 2430b32..fe68698 100644
+--- a/watcher.go
++++ b/watcher.go
+@@ -5,6 +5,7 @@
+ 	&quot;io/fs&quot;
+ 	&quot;os&quot;
+ 	&quot;path/filepath&quot;
++	&quot;strings&quot;
+ 	&quot;time&quot;
+ 
+ 	&quot;github.com/fsnotify/fsnotify&quot;
+@@ -25,7 +26,7 @@ func WatchLocalFS(fsys writablefs.FS, callback func()) (Close func() error) {
+ 	}
+ 
+ 	fs.WalkDir(fsys, &quot;.&quot;, func(path string, d fs.DirEntry, err error) error {
+-		if !d.IsDir() {
++		if !d.IsDir() || shouldIgnore(path) {
+ 			return nil
+ 		}
+ 
+@@ -51,14 +52,18 @@ func WatchLocalFS(fsys writablefs.FS, callback func()) (Close func() error) {
+ 					return
+ 				}
+ 
++				//fmt.Println(&quot;EVENT:&quot;, event.Op, event.Name)
++
++				if shouldIgnore(event.Name) {
++					break
++				}
++
+ 				// Avoid infinite loop
+ 				if event.Has(fsnotify.Write) &amp;&amp;
+ 					!contains(WATCHED_EXTS, filepath.Ext(event.Name)) {
+ 					break
+ 				}
+ 
+-				//fmt.Println(&quot;EVENT:&quot;, event.Op, event.Name)
+-
+ 				// Dynamically watch new/renamed folders
+ 				if event.Has(fsnotify.Create) || event.Has(fsnotify.Rename) {
+ 					stat, err := os.Stat(event.Name)
+@@ -101,3 +106,10 @@ func printWatchList(w *fsnotify.Watcher) {
+ 		fmt.Println(&quot;  &quot; + path)
+ 	}
+ }
++
++// Ignore swap and dot files/dirs, which are typically editor
++// temp files or supporting data like .git.
++func shouldIgnore(path string) bool {
++	fname := filepath.Base(path)
++	return fname[0] == &#39;.&#39; || strings.HasSuffix(fname, &quot;.swp&quot;)
++}
+</pre></body></html>

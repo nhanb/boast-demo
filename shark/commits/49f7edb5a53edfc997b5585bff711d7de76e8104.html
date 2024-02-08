@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[49f7edb5a5] reuse git tag msg for GH Release message | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 49f7edb5a5</strong><hr><pre>commit 49f7edb5a53edfc997b5585bff711d7de76e8104
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jul 7 21:27:46 2022 +0700
+
+    reuse git tag msg for GH Release message
+
+diff --git a/.github/workflows/main.yml b/.github/workflows/main.yml
+index b192f4f..14de397 100644
+--- a/.github/workflows/main.yml
++++ b/.github/workflows/main.yml
+@@ -55,5 +55,11 @@ jobs:
+         if gh release view &quot;$TAG&quot;; then
+           gh release upload &quot;$TAG&quot; dist/*
+         else
+-          gh release create &quot;$TAG&quot; dist/* --generate-notes
++          # Work around GH being daft:
++          # https://github.com/actions/checkout/issues/290
++          git fetch --force --tags
++
++          git tag -l --format=&#39;%(contents)&#39; &quot;$TAG&quot; &gt; RELEASE_NOTES
++          cat RELEASE_NOTES
++          gh release create &quot;$TAG&quot; dist/* -F RELEASE_NOTES
+         fi
+</pre></body></html>

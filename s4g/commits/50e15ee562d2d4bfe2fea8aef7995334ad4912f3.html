@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[50e15ee562] clean up WebPath (trim index.html suffix) | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 50e15ee562</strong><hr><pre>commit 50e15ee562d2d4bfe2fea8aef7995334ad4912f3
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jul 9 20:33:36 2023 +0700
+
+    clean up WebPath (trim index.html suffix)
+
+diff --git a/feed.go b/feed.go
+index ed45e21..9dc9e1e 100644
+--- a/feed.go
++++ b/feed.go
+@@ -17,8 +17,8 @@ func generateFeed(site SiteMetadata, posts []Article, path string) []byte {
+ 	var entries []*atom.Entry
+ 	for _, p := range posts {
+ 		entries = append(entries, &amp;atom.Entry{
+-			ID:        siteAddr + p.WebPath,
+-			Link:      []atom.Link{{Href: siteAddr + p.WebPath}},
++			ID:        siteAddr + p.WebPath(),
++			Link:      []atom.Link{{Href: siteAddr + p.WebPath()}},
+ 			Title:     p.Title,
+ 			Published: atom.Time(p.PostedAt),
+ 			Updated:   atom.Time(p.PostedAt),
+diff --git a/main.go b/main.go
+index c4f9c04..f034930 100644
+--- a/main.go
++++ b/main.go
+@@ -116,7 +116,7 @@ func regenerate(fsys writablefs.FS) {
+ 	for _, a := range articles {
+ 		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Title)
+ 		a.WriteHtmlFile(&amp;site, articlesInNav, startYear)
+-		generatedFiles[a.WebPath] = true
++		generatedFiles[a.OutputPath] = true
+ 	}
+ 	fmt.Printf(&quot;Processed %d articles\n&quot;, len(articles))
+ 
+@@ -169,10 +169,10 @@ func readSiteMetadata(fsys writablefs.FS) SiteMetadata {
+ }
+ 
+ type Article struct {
+-	Fs       writablefs.FS
+-	Path     string
+-	WebPath  string
+-	DjotBody string
++	Fs         writablefs.FS
++	Path       string
++	OutputPath string
++	DjotBody   string
+ 	ArticleMetadata
+ }
+ 
+@@ -185,6 +185,14 @@ type ArticleMetadata struct {
+ 	ShowInNav  bool
+ }
+ 
++func (a *Article) WebPath() string {
++	p := a.OutputPath
++	if strings.HasSuffix(p, &quot;/index.html&quot;) {
++		p = strings.TrimSuffix(p, &quot;index.html&quot;)
++	}
++	return p
++}
++
+ func (a *Article) WriteHtmlFile(
+ 	site *SiteMetadata,
+ 	articlesInNav []Article,
+@@ -223,7 +231,7 @@ func (a *Article) WriteHtmlFile(
+ 	fullHtml := buf.Bytes()
+ 
+ 	// Now write into an html with the same name as the original djot file
+-	err = a.Fs.WriteFile(a.WebPath, fullHtml)
++	err = a.Fs.WriteFile(a.OutputPath, fullHtml)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+@@ -301,7 +309,7 @@ func findArticles(fsys writablefs.FS) (result []Article) {
+ 		article := Article{
+ 			Fs:              fsys,
+ 			Path:            path,
+-			WebPath:         strings.TrimSuffix(path, DjotExt) + &quot;.html&quot;,
++			OutputPath:      strings.TrimSuffix(path, DjotExt) + &quot;.html&quot;,
+ 			DjotBody:        bodyText,
+ 			ArticleMetadata: meta,
+ 		}
+diff --git a/www/about/index.html b/www/about/index.html
+index 7eefe28..f1f52cf 100644
+--- a/www/about/index.html
++++ b/www/about/index.html
+@@ -14,7 +14,7 @@
+ 
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+-  &lt;a href=&quot;/about/index.html&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+ 
+ &lt;/nav&gt;
+ 
+diff --git a/www/feed.xml b/www/feed.xml
+index df876fb..59e37b0 100644
+--- a/www/feed.xml
++++ b/www/feed.xml
+@@ -17,8 +17,8 @@
+   &lt;/entry&gt;
+   &lt;entry&gt;
+     &lt;title&gt;Hello&lt;/title&gt;
+-    &lt;id&gt;https://coolzone.example.com/hello/index.html&lt;/id&gt;
+-    &lt;link href=&quot;https://coolzone.example.com/hello/index.html&quot;&gt;&lt;/link&gt;
++    &lt;id&gt;https://coolzone.example.com/hello/&lt;/id&gt;
++    &lt;link href=&quot;https://coolzone.example.com/hello/&quot;&gt;&lt;/link&gt;
+     &lt;published&gt;2022-01-02T00:00:00+07:00&lt;/published&gt;
+     &lt;updated&gt;2022-01-02T00:00:00+07:00&lt;/updated&gt;
+   &lt;/entry&gt;
+diff --git a/www/hello/index.html b/www/hello/index.html
+index f9c85c7..a2df623 100644
+--- a/www/hello/index.html
++++ b/www/hello/index.html
+@@ -14,7 +14,7 @@
+ 
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+-  &lt;a href=&quot;/about/index.html&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2022-01-02&quot;&gt;
+diff --git a/www/index.html b/www/index.html
+index add5104..4ce2c50 100644
+--- a/www/index.html
++++ b/www/index.html
+@@ -20,7 +20,7 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ 
+ &lt;div class=&quot;pages&quot;&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+-  &lt;a href=&quot;about/index.html&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;about/&quot;&gt;About&lt;/a&gt;
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;
+     &lt;img src=&quot;/_theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
+   &lt;/a&gt;
+@@ -37,7 +37,7 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+   &lt;/li&gt;
+   &lt;li&gt;
+     2022-01-02 —
+-    &lt;a href=&quot;hello/index.html&quot;&gt;Hello&lt;/a&gt;
++    &lt;a href=&quot;hello/&quot;&gt;Hello&lt;/a&gt;
+   &lt;/li&gt;
+ &lt;/ul&gt;
+ 
+diff --git a/www/mfws.html b/www/mfws.html
+index 83eb6c9..dd9cd83 100644
+--- a/www/mfws.html
++++ b/www/mfws.html
+@@ -14,7 +14,7 @@
+ 
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+-  &lt;a href=&quot;/about/index.html&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2023-04-05&quot;&gt;
+</pre></body></html>

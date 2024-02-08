@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[10357b4181] NAS links | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 10357b4181</strong><hr><pre>commit 10357b41812bcbbd3fe64b60d7660d8572dcc85c
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Sep 26 14:00:30 2023 +0700
+
+    NAS links
+
+diff --git a/ideas/index.dj b/ideas/index.dj
+index b37cdc9..7054402 100644
+--- a/ideas/index.dj
++++ b/ideas/index.dj
+@@ -10,6 +10,35 @@ Description: &quot;The idea is there. It just needs implementation.&quot;
+ 
+ ---
+ 
++## NAS options
++
++### Mini/micro PC: use m.2 -&gt; 5xSATA adapter
++
++Already got an HP EliteDesk 800 Desktop Mini G1, which seems to have m.2 2280
++pcie slot: &lt;https://h30434.www3.hp.com/t5/Business-PCs-Workstations-and-Point-of-Sale-Systems/HP-EliteDesk-800-G1-SSD-Compatibility/td-p/8335711&gt;
++
++Potential shopping list:
++
++- &lt;https://vi.aliexpress.com/item/1005003010904342.html&gt; (has data &amp; power wires too)
++- &lt;https://www.lazada.vn/products/525-inch-to-5-x-35-inch-sata-hdd-cage-rack-hard-drive-disk-enclosure-disk-tray-adapter-i2421205886-s11929573138.html&gt;
++- &lt;https://www.lazada.vn/products/m2-ngff-pcie-b-key-sata-to-sata-30-5-port-expansion-card-6gbps-adapter-card-jmb585-chipset-m2-nvme-to-sata30-i2263128054-s10920588244.html&gt;
++
++### Topton N5105 build
++
++![](./sama-im01.jpg)
++
++- Case: sama im01 &lt;https://voz.vn/t/tim-vo-case-nao-nho-gon-matx-lap-duoc-2-4-hdd-may-bac.818843/&gt;
++- Needs hdd cages
++- Motherboard: [Topton N5105](https://vi.aliexpress.com/item/1005005398288415.html)
++- PSU: TBD
++
++### Mid-tower office PC
++
++... is self-explanatory. Usually comes with 4-ish 3.5&quot; brackets out of the box.
++
++Or go SFF and still get 2 3.5&quot; bays:
++&lt;https://maytinhdongbo.com/p/may-tinh-hp-600-g2-sff-core-i3-ssd-cho-van-phong.htm&gt;
++
+ ## A Linux appliance with u-root
+ 
+ Only the kernel and a Go runtime, plus [a bunch][1] of busybox-like utils.
+diff --git a/ideas/index.html b/ideas/index.html
+index 601d68d..dacd534 100644
+--- a/ideas/index.html
++++ b/ideas/index.html
+@@ -40,6 +40,50 @@ &lt;h1&gt;Potential project ideas&lt;/h1&gt;
+ &lt;p&gt;The idea is there. It just needs implementation.&lt;/p&gt;
+ &lt;/blockquote&gt;
+ &lt;hr&gt;
++&lt;section id=&quot;NAS-options&quot;&gt;
++&lt;h2&gt;NAS options&lt;a href=&quot;#NAS-options&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
++&lt;section id=&quot;Mini-micro-PC-use-m-2-5xSATA-adapter&quot;&gt;
++&lt;h3&gt;Mini/micro PC: use m.2 -&amp;gt; 5xSATA adapter&lt;a href=&quot;#Mini-micro-PC-use-m-2-5xSATA-adapter&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
++&lt;p&gt;Already got an HP EliteDesk 800 Desktop Mini G1, which seems to have m.2 2280
++pcie slot: &lt;a href=&quot;https://h30434.www3.hp.com/t5/Business-PCs-Workstations-and-Point-of-Sale-Systems/HP-EliteDesk-800-G1-SSD-Compatibility/td-p/8335711&quot;&gt;https://h30434.www3.hp.com/t5/Business-PCs-Workstations-and-Point-of-Sale-Systems/HP-EliteDesk-800-G1-SSD-Compatibility/td-p/8335711&lt;/a&gt;&lt;/p&gt;
++&lt;p&gt;Potential shopping list:&lt;/p&gt;
++&lt;ul&gt;
++&lt;li&gt;
++&lt;a href=&quot;https://vi.aliexpress.com/item/1005003010904342.html&quot;&gt;https://vi.aliexpress.com/item/1005003010904342.html&lt;/a&gt; (has data &amp;amp; power wires too)
++&lt;/li&gt;
++&lt;li&gt;
++&lt;a href=&quot;https://www.lazada.vn/products/525-inch-to-5-x-35-inch-sata-hdd-cage-rack-hard-drive-disk-enclosure-disk-tray-adapter-i2421205886-s11929573138.html&quot;&gt;https://www.lazada.vn/products/525-inch-to-5-x-35-inch-sata-hdd-cage-rack-hard-drive-disk-enclosure-disk-tray-adapter-i2421205886-s11929573138.html&lt;/a&gt;
++&lt;/li&gt;
++&lt;li&gt;
++&lt;a href=&quot;https://www.lazada.vn/products/m2-ngff-pcie-b-key-sata-to-sata-30-5-port-expansion-card-6gbps-adapter-card-jmb585-chipset-m2-nvme-to-sata30-i2263128054-s10920588244.html&quot;&gt;https://www.lazada.vn/products/m2-ngff-pcie-b-key-sata-to-sata-30-5-port-expansion-card-6gbps-adapter-card-jmb585-chipset-m2-nvme-to-sata30-i2263128054-s10920588244.html&lt;/a&gt;
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Topton-N5105-build&quot;&gt;
++&lt;h3&gt;Topton N5105 build&lt;a href=&quot;#Topton-N5105-build&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;./sama-im01.jpg&quot;&gt;&lt;/p&gt;
++&lt;ul&gt;
++&lt;li&gt;
++Case: sama im01 &lt;a href=&quot;https://voz.vn/t/tim-vo-case-nao-nho-gon-matx-lap-duoc-2-4-hdd-may-bac.818843/&quot;&gt;https://voz.vn/t/tim-vo-case-nao-nho-gon-matx-lap-duoc-2-4-hdd-may-bac.818843/&lt;/a&gt;
++&lt;/li&gt;
++&lt;li&gt;
++Needs hdd cages
++&lt;/li&gt;
++&lt;li&gt;
++Motherboard: &lt;a href=&quot;https://vi.aliexpress.com/item/1005005398288415.html&quot;&gt;Topton N5105&lt;/a&gt;
++&lt;/li&gt;
++&lt;li&gt;
++PSU: TBD
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Mid-tower-office-PC&quot;&gt;
++&lt;h3&gt;Mid-tower office PC&lt;a href=&quot;#Mid-tower-office-PC&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
++&lt;p&gt;… is self-explanatory. Usually comes with 4-ish 3.5“ brackets out of the box.&lt;/p&gt;
++&lt;p&gt;Or go SFF and still get 2 3.5“ bays:
++&lt;a href=&quot;https://maytinhdongbo.com/p/may-tinh-hp-600-g2-sff-core-i3-ssd-cho-van-phong.htm&quot;&gt;https://maytinhdongbo.com/p/may-tinh-hp-600-g2-sff-core-i3-ssd-cho-van-phong.htm&lt;/a&gt;&lt;/p&gt;
++&lt;/section&gt;
++&lt;/section&gt;
+ &lt;section id=&quot;A-Linux-appliance-with-u-root&quot;&gt;
+ &lt;h2&gt;A Linux appliance with u-root&lt;a href=&quot;#A-Linux-appliance-with-u-root&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Only the kernel and a Go runtime, plus &lt;a href=&quot;https://github.com/u-root/u-root/tree/main/cmds/core&quot;&gt;a bunch&lt;/a&gt; of busybox-like utils.
+diff --git a/ideas/sama-im01.jpg b/ideas/sama-im01.jpg
+new file mode 100644
+index 0000000..c4706c7
+Binary files /dev/null and b/ideas/sama-im01.jpg differ
+</pre></body></html>

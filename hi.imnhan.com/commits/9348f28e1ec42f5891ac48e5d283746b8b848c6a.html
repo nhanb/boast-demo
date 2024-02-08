@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[9348f28e1e] moar update | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 9348f28e1e</strong><hr><pre>commit 9348f28e1ec42f5891ac48e5d283746b8b848c6a
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Tue May 14 23:59:24 2013 +0700
+
+    moar update
+
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 34ebe48..2165426 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -15,11 +15,7 @@
+ CATEGORY_FEED_ATOM = None
+ TRANSLATION_FEED_ATOM = None
+ 
+-## Blogroll
+-#LINKS = ((&#39;Pelican&#39;, &#39;http://getpelican.com/&#39;),
+-         #(&#39;Python.org&#39;, &#39;http://python.org/&#39;),
+-         #(&#39;Jinja2&#39;, &#39;http://jinja.pocoo.org/&#39;)
+-         #)
++STATIC_PATHS = [&#39;images&#39;]
+ 
+ # Copy static files to output
+ FILES_TO_COPY = ((&#39;extra/CNAME&#39;, &#39;CNAME&#39;),
+@@ -31,10 +27,28 @@
+ ARTICLE_LANG_URL = &#39;{date:%Y}/{date:%m}/{slug}-{lang}/&#39;
+ ARTICLE_LANG_SAVE_AS = &#39;{date:%Y}/{date:%m}/{slug}-{lang}/index.html&#39;
+ 
+-DEFAULT_PAGINATION = 10
++PAGE_URL = (&#39;pages/{slug}/&#39;)
++PAGE_SAVE_AS = (&#39;pages/{slug}/index.html&#39;)
++PAGE_LANG_URL = (&#39;pages/{slug}-{lang}/&#39;)
++PAGE_LANG_SAVE_AS = (&#39;pages/{slug}-{lang}/index.html&#39;)
+ 
+-STATIC_PATHS = [&#39;images&#39;]
++AUTHOR_URL = (&#39;author/{slug}/&#39;)
++AUTHOR_SAVE_AS = (&#39;author/{slug}/index.html&#39;)
++
++CATEGORY_URL = (&#39;category/{slug}/&#39;)
++CATEGORY_SAVE_AS = (&#39;category/{slug}/index.html&#39;)
++
++TAG_URL = (&#39;tag/{slug}/&#39;)
++TAG_SAVE_AS = (&#39;tag/{slug}/index.html&#39;)
++
++DEFAULT_PAGINATION = 10
+ 
+ # Social widget
+ #SOCIAL = ((&#39;You can add links in your config file&#39;, &#39;#&#39;),
+           #(&#39;Another social link&#39;, &#39;#&#39;),)
++
++## Blogroll
++#LINKS = ((&#39;Pelican&#39;, &#39;http://getpelican.com/&#39;),
++         #(&#39;Python.org&#39;, &#39;http://python.org/&#39;),
++         #(&#39;Jinja2&#39;, &#39;http://jinja.pocoo.org/&#39;)
++         #)
+</pre></body></html>

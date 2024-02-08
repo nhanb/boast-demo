@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[08a0bf0285] show waiting cursor when doing slow task | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 08a0bf0285</strong><hr><pre>commit 08a0bf0285e8b91e02696e90f2cf087f7702fe91
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun May 17 10:32:37 2020 +0700
+
+    show waiting cursor when doing slow task
+
+diff --git a/src/mcross/gui/controller.py b/src/mcross/gui/controller.py
+index 03acb19..0e4bf45 100644
+--- a/src/mcross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -1,3 +1,4 @@
++import traceback
+ from ssl import SSLCertVerificationError
+ from tkinter import TclError, Tk, messagebox
+ 
+@@ -10,7 +11,7 @@
+     get,
+ )
+ from .model import Model
+-from .view import View
++from .view import WAITING_CURSOR, View
+ 
+ 
+ class Controller:
+@@ -26,7 +27,11 @@ def __init__(self):
+         self.pending_coros = []
+ 
+         def schedule_as_coro(func):
+-            return lambda *args: self.pending_coros.append(curio.spawn(func, *args))
++            def do_schedule(*args):
++                task = curio.spawn(self.show_waiting_cursor_during_task(func, *args))
++                self.pending_coros.append(task)
++
++            return do_schedule
+ 
+         self.view.go_callback = schedule_as_coro(self.go_callback)
+         self.view.link_click_callback = schedule_as_coro(self.link_click_callback)
+@@ -48,21 +53,34 @@ async def main():
+                     for coroutine in self.pending_coros:
+                         await coroutine
+                     self.pending_coros = []
+-                    await curio.sleep(0.05)
++                    await curio.sleep(0.05)  # 50ms
+             except TclError as e:
+                 if &quot;application has been destroyed&quot; not in str(e):
+                     raise
+ 
+         curio.run(main)
+ 
+-    async def go_callback(self, url: str):
+-        # TODO more visual indications
++    async def show_waiting_cursor_during_task(self, func, *args):
++        self.view.text.config(cursor=WAITING_CURSOR)
++        self.root.config(cursor=WAITING_CURSOR)
++        self.view.allow_changing_cursor = False
++
++        try:
++            await func(*args)
++        except Exception:
++            # a catch-all here so that our show_waiting...() coroutine can be yielded
++            traceback.print_exc()
++
++        # reset cursor to default values
++        self.view.text.config(cursor=&quot;xterm&quot;)
++        self.root.config(cursor=&quot;arrow&quot;)
++        self.view.allow_changing_cursor = True
+ 
++    async def go_callback(self, url: str):
+         url = GeminiUrl.parse_absolute_url(url)
+         await self.visit_link(url)
+ 
+     async def link_click_callback(self, raw_url):
+-        # FIXME ugh
+         try:
+             url = GeminiUrl.parse(raw_url, self.model.history.get_current_url())
+             await self.visit_link(url)
+@@ -97,9 +115,9 @@ async def forward_callback(self):
+         self.view.render_page()
+ 
+     async def load_page(self, url: GeminiUrl):
+-        print(&quot;Requesting&quot;, url)
++        # print(&quot;Requesting&quot;, url)
+         resp = await get(url)
+-        print(&quot;Received&quot;, resp)
++        # print(&quot;Received&quot;, resp)
+ 
+         if resp.status.startswith(&quot;2&quot;):
+             self.model.update_content(resp.body.decode())
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index 1b0f801..c8d5244 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -18,12 +18,15 @@
+ if sys.platform == &quot;win32&quot;:
+     TTK_THEME = &quot;vista&quot;
+     POINTER_CURSOR = &quot;center_ptr&quot;
++    WAITING_CURSOR = &quot;wait&quot;
+ elif sys.platform == &quot;darwin&quot;:
+     TTK_THEME = &quot;aqua&quot;
+     POINTER_CURSOR = &quot;pointinghand&quot;
++    WAITING_CURSOR = &quot;wait&quot;
+ else:
+     TTK_THEME = &quot;clam&quot;
+     POINTER_CURSOR = &quot;hand1&quot;
++    WAITING_CURSOR = &quot;watch&quot;
+ 
+ 
+ def pick_font(names):
+@@ -49,6 +52,8 @@ class View:
+     forward_btn: ttk.Button
+     text: Text
+ 
++    allow_changing_cursor = True
++
+     go_callback = None
+     link_click_callback = None
+     back_callback = None
+@@ -153,10 +158,12 @@ def _on_go(self, ev=None):
+             self.go_callback(&quot;gemini://&quot; + self.address_bar.get())
+ 
+     def _on_link_enter(self, ev):
+-        self.text.config(cursor=POINTER_CURSOR)
++        if self.allow_changing_cursor:
++            self.text.config(cursor=POINTER_CURSOR)
+ 
+     def _on_link_leave(self, ev):
+-        self.text.config(cursor=&quot;xterm&quot;)
++        if self.allow_changing_cursor:
++            self.text.config(cursor=&quot;xterm&quot;)
+ 
+     def _on_link_click(self, ev):
+         raw_url = get_content_from_tag_click_event(ev)
+</pre></body></html>

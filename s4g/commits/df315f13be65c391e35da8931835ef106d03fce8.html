@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[df315f13be] make livereload work with multiple browser tabs | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / df315f13be</strong><hr><pre>commit df315f13be65c391e35da8931835ef106d03fce8
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jul 9 01:10:17 2023 +0700
+
+    make livereload work with multiple browser tabs
+
+diff --git a/livereload/livereload.go b/livereload/livereload.go
+index d440790..e7de673 100644
+--- a/livereload/livereload.go
++++ b/livereload/livereload.go
+@@ -12,6 +12,7 @@
+ )
+ 
+ const endpoint = &quot;/_livereload&quot;
++const clientIdHeader = &quot;Client-Id&quot;
+ 
+ //go:embed livereload.html
+ var lrScript []byte
+@@ -20,13 +21,26 @@
+ var dontReload = []byte(&quot;0&quot;)
+ 
+ var state struct {
+-	shouldReload bool
+-	mut          sync.RWMutex
++	// Maps each client ID to whether they should reload on next ajax request.
++	//
++	// Client IDs are generated on client side so that an open tab&#39;s
++	// livereload feature keeps working even when the server is restarted.
++	clients map[string]bool
++	mut     sync.RWMutex
+ }
+ 
+ func init() {
+-	lrScript = bytes.ReplaceAll(lrScript, []byte(&quot;{{LR_ENDPOINT}}&quot;), []byte(endpoint))
+-	lrScript = bytes.ReplaceAll(lrScript, []byte(&quot;{{SHOULD_RELOAD}}&quot;), pleaseReload)
++	state.clients = make(map[string]bool)
++
++	lrScript = bytes.ReplaceAll(
++		lrScript, []byte(&quot;{{LR_ENDPOINT}}&quot;), []byte(endpoint),
++	)
++	lrScript = bytes.ReplaceAll(
++		lrScript, []byte(&quot;{{PLEASE_RELOAD}}&quot;), pleaseReload,
++	)
++	lrScript = bytes.ReplaceAll(
++		lrScript, []byte(&quot;{{CLIENT_ID_HEADER}}&quot;), []byte(clientIdHeader),
++	)
+ }
+ 
+ // For html pages, insert a script tag to enable livereload
+@@ -36,14 +50,26 @@ func Middleware(fsys writablefs.FS, f http.Handler) http.Handler {
+ 
+ 		// Handle AJAX endpoint
+ 		if path == endpoint {
++			clientId := r.Header.Get(clientIdHeader)
+ 			state.mut.RLock()
+-			shouldReload := state.shouldReload
++			shouldReload, ok := state.clients[clientId]
+ 			state.mut.RUnlock()
+ 
++			// New client: add client to state, don&#39;t reload
++			if !ok {
++				//fmt.Println(&quot;New livereload client:&quot;, clientId)
++				state.mut.Lock()
++				state.clients[clientId] = false
++				state.mut.Unlock()
++				w.Write(dontReload)
++				return
++			}
++
++			// Existing client:
+ 			if shouldReload {
+ 				w.Write(pleaseReload)
+ 				state.mut.Lock()
+-				state.shouldReload = false
++				state.clients[clientId] = false
+ 				state.mut.Unlock()
+ 			} else {
+ 				w.Write(dontReload)
+@@ -76,8 +102,10 @@ func Middleware(fsys writablefs.FS, f http.Handler) http.Handler {
+ 
+ func Trigger() {
+ 	state.mut.Lock()
+-	state.shouldReload = true
+-	state.mut.Unlock()
++	defer state.mut.Unlock()
++	for k := range state.clients {
++		state.clients[k] = true
++	}
+ }
+ 
+ func withLiveReload(original []byte) []byte {
+diff --git a/livereload/livereload.html b/livereload/livereload.html
+index 8f35245..d3feba0 100644
+--- a/livereload/livereload.html
++++ b/livereload/livereload.html
+@@ -1,9 +1,12 @@
+ &lt;script&gt;
++  const clientId =
++    Date.now().toString(36) + Math.random().toString(36).substr(2);
++
+   setInterval(() =&gt; {
+-    fetch(&quot;{{LR_ENDPOINT}}&quot;)
++    fetch(&quot;{{LR_ENDPOINT}}&quot;, { headers: { &quot;{{CLIENT_ID_HEADER}}&quot;: clientId } })
+       .then((resp) =&gt; resp.text())
+       .then((text) =&gt; {
+-        if (text === &quot;{{SHOULD_RELOAD}}&quot;) {
++        if (text === &quot;{{PLEASE_RELOAD}}&quot;) {
+           location.reload();
+         }
+       });
+</pre></body></html>

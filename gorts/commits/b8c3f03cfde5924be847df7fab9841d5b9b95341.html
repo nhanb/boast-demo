@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b8c3f03cfd] implement Discard | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / b8c3f03cfd</strong><hr><pre>commit b8c3f03cfde5924be847df7fab9841d5b9b95341
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jun 19 20:21:08 2023 +0700
+
+    implement Discard
+
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index 0031dc9..13d0233 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -83,7 +83,7 @@ ttk::label .c.players.p2teamlbl -text &quot;Team 2&quot;
+ ttk::combobox .c.players.p2team -textvariable scoreboard(p2team)
+ ttk::frame .c.buttons
+ ttk::button .c.buttons.apply -text &quot;▶ Apply&quot; -command applystate
+-ttk::button .c.buttons.discard -text &quot;✖ Discard&quot; -state disabled
++ttk::button .c.buttons.discard -text &quot;✖ Discard&quot; -command discardstate
+ ttk::button .c.buttons.reset -text &quot;↶ Reset scores&quot; -state disabled
+ ttk::button .c.buttons.swap -text &quot;⇄ Swap players&quot; -state disabled
+ ttk::label .c.status -textvariable mainstatus
+@@ -165,6 +165,14 @@ proc applystate {} {
+     update_applied_state
+ }
+ 
++
++proc discardstate {} {
++    foreach key [array names ::scoreboard] {
++        set ::scoreboard($key) $::applied_scoreboard($key)
++        ::checkdiff &quot;&quot; $key &quot;&quot;
++    }
++}
++
+ proc update_applied_state {} {
+     foreach key [array names ::scoreboard] {
+         set ::applied_scoreboard($key) $::scoreboard($key)
+</pre></body></html>

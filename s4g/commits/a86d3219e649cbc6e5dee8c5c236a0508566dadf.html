@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a86d3219e6] simplify front matter separator | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / a86d3219e6</strong><hr><pre>commit a86d3219e649cbc6e5dee8c5c236a0508566dadf
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jul 10 20:42:09 2023 +0700
+
+    simplify front matter separator
+
+diff --git a/djot/djot.go b/djot/djot.go
+index d412c2f..153b645 100644
+--- a/djot/djot.go
++++ b/djot/djot.go
+@@ -72,8 +72,8 @@ func splitAtDelimiter(data []byte, atEOF bool) (advance int, token []byte, err e
+ }
+ 
+ // Not thread-safe.
+-func ToHtml(input string) (result string) {
+-	if _, err := service.writer.WriteString(input); err != nil {
++func ToHtml(input []byte) (result []byte) {
++	if _, err := service.writer.Write(input); err != nil {
+ 		panic(err)
+ 	}
+ 	if err := service.writer.WriteByte(delimiter); err != nil {
+@@ -82,7 +82,10 @@ func ToHtml(input string) (result string) {
+ 	service.writer.Flush()
+ 
+ 	if !service.scanner.Scan() {
+-		panic(&quot;scanner unexpectedly stopped while converting djot to html: &quot; + input[:50])
++		panic(fmt.Sprintf(
++			&quot;scanner unexpectedly stopped while converting djot to html: %s\n&quot;,
++			input[:50],
++		))
+ 	}
+-	return service.scanner.Text()
++	return service.scanner.Bytes()
+ }
+diff --git a/main.go b/main.go
+index 0c0aeb8..80b9632 100644
+--- a/main.go
++++ b/main.go
+@@ -142,7 +142,7 @@ type Article struct {
+ 	Path       string
+ 	OutputPath string
+ 	webPath    string
+-	DjotBody   string
++	DjotBody   []byte
+ 	ArticleMetadata
+ }
+ 
+@@ -254,25 +254,24 @@ func findArticles(fsys writablefs.FS) (result []Article) {
+ 			return nil
+ 		}
+ 
+-		fileContent, err := fs.ReadFile(fsys, path)
++		file, err := fsys.Open(path)
+ 		if err != nil {
+ 			panic(err)
+ 		}
++		defer file.Close()
+ 
+-		parts := strings.SplitN(string(fileContent), &quot;+++&quot;, 3)
+-		if !(len(parts) == 3 &amp;&amp; parts[0] == &quot;&quot;) {
+-			fmt.Printf(&quot;FIXME: Missing metadata in %s - Skipped.\n&quot;, path)
++		metaText, bodyText := SeparateMetadata(file)
++		if len(metaText) == 0 {
++			fmt.Printf(&quot;FIXME: Metadata not found in %s\n&quot;, path)
+ 			return nil
+ 		}
+-		metaText := strings.TrimSpace(parts[1])
+-		bodyText := strings.TrimSpace(parts[2])
+ 
+ 		meta := ArticleMetadata{
+ 			Templates:  []string{&quot;_theme/base.tmpl&quot;, &quot;_theme/post.tmpl&quot;},
+ 			ShowInFeed: true,
+ 			ShowInNav:  false,
+ 		}
+-		err = UnmarshalMetadata([]byte(metaText), &amp;meta)
++		err = UnmarshalMetadata(metaText, &amp;meta)
+ 		if err != nil {
+ 			fmt.Printf(&quot;FIXME: Malformed article metadata in %s: %s\n&quot;, path, err)
+ 			return nil
+diff --git a/metadata.go b/metadata.go
+index 50f138f..a550ef8 100644
+--- a/metadata.go
++++ b/metadata.go
+@@ -1,7 +1,10 @@
+ package main
+ 
+ import (
++	&quot;bufio&quot;
++	&quot;bytes&quot;
+ 	&quot;fmt&quot;
++	&quot;io&quot;
+ 	&quot;io/fs&quot;
+ 	&quot;reflect&quot;
+ 	&quot;strings&quot;
+@@ -127,3 +130,27 @@ func metaTextToMap(s []byte) map[string]string {
+ 	}
+ 	return result
+ }
++
++var frontMatterSep = []byte(&quot;---&quot;)
++
++func SeparateMetadata(r io.Reader) (metadata []byte, body []byte) {
++	s := bufio.NewScanner(r)
++	readingFrontMatter := true
++	var buffer []byte
++	for s.Scan() {
++		line := bytes.TrimSpace(s.Bytes())
++
++		if readingFrontMatter &amp;&amp; bytes.Equal(line, frontMatterSep) {
++			metadata = buffer
++			buffer = body
++			readingFrontMatter = false
++			continue
++		}
++
++		buffer = append(buffer, line...)
++		buffer = append(buffer, &#39;\n&#39;)
++	}
++
++	body = buffer
++	return metadata, body
++}
+diff --git a/www/about/index.dj b/www/about/index.dj
+index a8fe1cf..c040890 100644
+--- a/www/about/index.dj
++++ b/www/about/index.dj
+@@ -1,8 +1,7 @@
+-+++
+ Title: About
+ ShowInFeed: false
+ ShowInNav: true
+-+++
++---
+ 
+ ## About this site
+ 
+diff --git a/www/hello/index.dj b/www/hello/index.dj
+index 03c4e26..7209c9c 100644
+--- a/www/hello/index.dj
++++ b/www/hello/index.dj
+@@ -1,6 +1,5 @@
+-+++
+ Title: Hello
+ PostedAt: 2022-01-02
+-+++
++---
+ 
+ Hello world.
+diff --git a/www/mfws.dj b/www/mfws.dj
+index 0b2dc40..f2aa3ac 100644
+--- a/www/mfws.dj
++++ b/www/mfws.dj
+@@ -1,7 +1,6 @@
+-+++
+ Title: This is a motherfucking website.
+ PostedAt: 2023-04-05
+-+++
++---
+ 
+ And it&#39;s fucking perfect.
+ 
+</pre></body></html>

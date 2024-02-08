@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e853b2bdba] escape Article.WebPath, also cache it | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / e853b2bdba</strong><hr><pre>commit e853b2bdba6b21fbe560d7be55f9960286364047
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jul 10 16:54:32 2023 +0700
+
+    escape Article.WebPath, also cache it
+
+diff --git a/main.go b/main.go
+index f034930..38472a3 100644
+--- a/main.go
++++ b/main.go
+@@ -8,6 +8,7 @@
+ 	&quot;io/fs&quot;
+ 	&quot;log&quot;
+ 	&quot;net/http&quot;
++	&quot;net/url&quot;
+ 	&quot;path/filepath&quot;
+ 	&quot;sort&quot;
+ 	&quot;strings&quot;
+@@ -172,6 +173,7 @@ type Article struct {
+ 	Fs         writablefs.FS
+ 	Path       string
+ 	OutputPath string
++	webPath    string
+ 	DjotBody   string
+ 	ArticleMetadata
+ }
+@@ -186,11 +188,22 @@ type ArticleMetadata struct {
+ }
+ 
+ func (a *Article) WebPath() string {
+-	p := a.OutputPath
+-	if strings.HasSuffix(p, &quot;/index.html&quot;) {
+-		p = strings.TrimSuffix(p, &quot;index.html&quot;)
++	if a.webPath != &quot;&quot; {
++		return a.webPath
+ 	}
+-	return p
++	path := a.OutputPath
++	if strings.HasSuffix(path, &quot;/index.html&quot;) {
++		path = strings.TrimSuffix(path, &quot;index.html&quot;)
++	}
++
++	parts := strings.Split(path, &quot;/&quot;)
++	escaped := make([]string, len(parts))
++	for i := 0; i &lt; len(parts); i++ {
++		escaped[i] = url.PathEscape(parts[i])
++	}
++
++	a.webPath = strings.Join(escaped, &quot;/&quot;)
++	return a.webPath
+ }
+ 
+ func (a *Article) WriteHtmlFile(
+</pre></body></html>

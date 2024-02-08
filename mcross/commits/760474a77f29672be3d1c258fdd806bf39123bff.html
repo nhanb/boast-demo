@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[760474a77f] correctly render text/* mime type | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 760474a77f</strong><hr><pre>commit 760474a77f29672be3d1c258fdd806bf39123bff
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jun 17 20:59:03 2020 +0700
+
+    correctly render text/* mime type
+
+diff --git a/pyproject.toml b/pyproject.toml
+index cf215bc..430e664 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;mcross&quot;
+-version = &quot;0.5.14&quot;
++version = &quot;0.5.15&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+diff --git a/src/mcross/gui/controller.py b/src/mcross/gui/controller.py
+index ca6b684..f65ec4a 100644
+--- a/src/mcross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -161,7 +161,9 @@ async def load_page(self, url: GeminiUrl):
+         )
+ 
+         if resp.status.startswith(&quot;2&quot;):
+-            await self.put_gui_op(self.model.update_content, resp.body.decode())
++            await self.put_gui_op(
++                self.model.update_content, resp.body.decode(), resp.meta
++            )
+         else:
+             await self.put_gui_op(
+                 self.model.update_content,
+@@ -172,5 +174,6 @@ async def load_page(self, url: GeminiUrl):
+                         resp.body.decode() if resp.body else &quot;&quot;,
+                     ]
+                 ),
++                &quot;text/plain&quot;,
+             )
+         return resp
+diff --git a/src/mcross/gui/model.py b/src/mcross/gui/model.py
+index 23667bd..3dedebb 100644
+--- a/src/mcross/gui/model.py
++++ b/src/mcross/gui/model.py
+@@ -77,15 +77,18 @@ class Model:
+     plaintext = &quot;&quot;
+     gemini_nodes = None
+     history: History
++    mime_type = &quot;&quot;
+ 
+     def __init__(self):
+         self.history = History()
+-        self.update_content(DEMO_TEXT)
++        self.update_content(DEMO_TEXT, &quot;text/gemini&quot;)
+ 
+-    def update_content(self, plaintext):
++    def update_content(self, plaintext, mime_type):
+         self.plaintext = plaintext
++        self.mime_type = mime_type
+         self.gemini_nodes = []
+-        try:
+-            self.gemini_nodes = document.parse(plaintext)
+-        except Exception:
+-            print(&quot;Invalid gemini document!&quot;)
++        if mime_type == &quot;text/gemini&quot;:
++            try:
++                self.gemini_nodes = document.parse(plaintext)
++            except Exception:
++                print(&quot;Invalid gemini document!&quot;)
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index 7e5ed33..f61f14a 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -181,6 +181,7 @@ def on_ctrl_l(ev):
+         text.tag_bind(&quot;link&quot;, &quot;&lt;Leave&gt;&quot;, self._on_link_leave)
+         text.tag_bind(&quot;link&quot;, &quot;&lt;Button-1&gt;&quot;, self._on_link_click)
+         text.tag_config(&quot;pre&quot;, font=(mono_font, 13))
++        text.tag_config(&quot;plaintext&quot;, font=(mono_font, 13))
+         text.tag_config(&quot;listitem&quot;, foreground=&quot;#64c664&quot; if dark else &quot;#044604&quot;)
+ 
+         base_heading_font = font.Font(font=text[&quot;font&quot;])
+@@ -245,15 +246,21 @@ def render_page(self):
+             self.address_bar.delete(0, &quot;end&quot;)
+             self.address_bar.insert(0, current_url.without_protocol())
+ 
+-        # Update viewport
++        self.render_viewport()
++
++    def render_viewport(self):
+         self.text.delete(&quot;1.0&quot;, &quot;end&quot;)
+-        if not self.model.gemini_nodes:
+-            self.text.insert(&quot;end&quot;, self.model.plaintext)
+-        else:
++        if self.model.mime_type == &quot;text/gemini&quot;:
+             for node in self.model.gemini_nodes:
+                 render_node(node, self.text)
+             # delete final trailing newline:
+             self.text.delete(&quot;insert-1c&quot;, &quot;insert&quot;)
++        elif self.model.mime_type.startswith(&quot;text/&quot;):
++            self.text.insert(&quot;end&quot;, self.model.plaintext, (&quot;plaintext&quot;,))
++        else:
++            self.text.insert(
++                &quot;end&quot;, f&quot;Unsupported MIME type: {self.model.mime_type}&quot;, (&quot;plaintext&quot;,)
++            )
+ 
+ 
+ def render_node(node: GeminiNode, widget: Text):
+</pre></body></html>

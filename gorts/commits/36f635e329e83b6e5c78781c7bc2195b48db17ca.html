@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[36f635e329] non-blocking ipc PoC | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 36f635e329</strong><hr><pre>commit 36f635e329e83b6e5c78781c7bc2195b48db17ca
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jun 22 10:08:41 2023 +0700
+
+    non-blocking ipc PoC
+
+diff --git a/main.go b/main.go
+index 6ee2a7b..74e89a4 100644
+--- a/main.go
++++ b/main.go
+@@ -92,22 +92,6 @@ func startGUI() {
+ 	scanner := bufio.NewScanner(stdout)
+ 	scanner.Split(netstring.SplitFunc)
+ 
+-	next := func() string {
+-		scanner.Scan()
+-		v := scanner.Text()
+-		println(&quot;--&gt;&quot;, v)
+-		return v
+-	}
+-
+-	respondOld := func(s string) {
+-		debug := &quot;&lt;-- &quot; + s
+-		if len(debug) &gt; 35 {
+-			debug = debug[:35] + &quot;[...]&quot;
+-		}
+-		println(debug)
+-		io.WriteString(stdin, netstring.Encode(s))
+-	}
+-
+ 	respond := func(ss ...string) {
+ 		debug := fmt.Sprintf(&quot;&lt;-- %v&quot;, ss)
+ 		if len(debug) &gt; 35 {
+@@ -183,12 +167,12 @@ func startGUI() {
+ 			}
+ 			respond(names...)
+ 
+-		case &quot;fetchplayers&quot;: // FIXME
+-			startggInputs.Token = next()
+-			startggInputs.Slug = next()
++		case &quot;fetchplayers&quot;:
++			startggInputs.Token = req[1]
++			startggInputs.Slug = req[2]
+ 			time.Sleep(3 * time.Second)
+-			respondOld(&quot;fetchplayers__resp&quot;)
+-			respondOld(&quot;All done.&quot;)
++			fmt.Fprintln(stdin, &quot;fetchplayers__resp&quot;)
++			respond(&quot;All done.&quot;)
+ 			startggInputs.Write(StartggFile)
+ 		}
+ 	}
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index 87935b1..2918868 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -183,12 +183,18 @@ proc initialize {} {
+ 
+ # Very simple IPC system where Tcl client talks to Go server via stdin/stdout
+ # using netstrings as wire format.
+-proc ipc {method args} {
++proc ipc_write {method args} {
+     set payload [concat $method $args]
+     puts -nonewline [netstrings $payload]
+     flush stdout
++}
++proc ipc_read {} {
+     return [decodenetstrings [readnetstring stdin]]
+ }
++proc ipc {method args} {
++    ipc_write $method $args
++    return [ipc_read]
++}
+ 
+ proc loadicon {} {
+     set resp [ipc &quot;geticon&quot;]
+@@ -283,13 +289,11 @@ proc fetchplayers {} {
+     .n.s.token configure -state disabled
+     .n.s.tournamentslug configure -state disabled
+     set ::startgg(msg) &quot;Fetching...&quot;
+-    puts fetchplayers
+-    puts $::startgg(token)
+-    puts $::startgg(slug)
++    ipc_write &quot;fetchplayers&quot; $::startgg(token) $::startgg(slug)
+ }
+ 
+ proc fetchplayers__resp {} {
+-    set ::startgg(msg) [gets stdin]
++    set ::startgg(msg) [lindex [ipc_read] 0]
+     .n.s.fetch configure -state normal
+     .n.s.token configure -state normal
+     .n.s.tournamentslug configure -state normal
+</pre></body></html>

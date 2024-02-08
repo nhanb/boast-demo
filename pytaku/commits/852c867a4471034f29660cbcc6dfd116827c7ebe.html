@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[852c867a44] implement read history | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 852c867a44</strong><hr><pre>commit 852c867a4471034f29660cbcc6dfd116827c7ebe
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 6 22:25:19 2020 +0700
+
+    implement read history
+    
+    Also squashed migrations because I&#39;m a fraud
+
+diff --git a/src/mangoapi/__init__.py b/src/mangoapi/__init__.py
+index 7bb4fa5..fbf49bd 100644
+--- a/src/mangoapi/__init__.py
++++ b/src/mangoapi/__init__.py
+@@ -49,7 +49,7 @@ def get_title(title_id):
+         &quot;descriptions&quot;: md_json[&quot;manga&quot;][&quot;description&quot;].split(&quot;\r\n\r\n&quot;),
+         &quot;chapters&quot;: [
+             {
+-                &quot;id&quot;: chap_id,
++                &quot;id&quot;: str(chap_id),
+                 &quot;name&quot;: chap[&quot;title&quot;],
+                 &quot;volume&quot;: int(chap[&quot;volume&quot;]) if chap[&quot;volume&quot;] else None,
+                 &quot;groups&quot;: _extract_groups(chap),
+diff --git a/src/pytaku/database/common.py b/src/pytaku/database/common.py
+index 34d82bc..f9a36d8 100644
+--- a/src/pytaku/database/common.py
++++ b/src/pytaku/database/common.py
+@@ -5,26 +5,32 @@
+ _conn = None
+ 
+ 
++def _row_trace(cursor, row):
++    &quot;&quot;&quot;
++    Customize each result row&#39;s representation:
++    - If query only asks for 1 field, return that result directly instead of tuple
++    - If more than 1 field, return dict instead of tuple
++    &quot;&quot;&quot;
++    desc = cursor.getdescription()
++    if len(desc) == 1:
++        return row[0]
++    else:
++        return {k[0]: row[i] for i, k in enumerate(desc)}
++
++
+ def get_conn():
+     global _conn
+-
+     if not _conn:
+         _conn = apsw.Connection(DBNAME)
+-
+-        # Apparently you need to enable this pragma _per connection_
++        # Apparently you need to enable this pragma per connection:
+         _conn.cursor().execute(&quot;PRAGMA foreign_keys = ON;&quot;)
+-
+-        # Return rows as dicts instead of tuples
+-        _conn.setrowtrace(
+-            lambda cursor, row: {
+-                k[0]: row[i] for i, k in enumerate(cursor.getdescription())
+-            }
+-        )
+-
++        _conn.setrowtrace(_row_trace)
+     return _conn
+ 
+ 
+ def run_sql(*args, **kwargs):
+-    cursor = get_conn().cursor()
+-    results = cursor.execute(*args, **kwargs)
+-    return list(results)
++    return list(run_sql_on_demand(*args, **kwargs))
++
++
++def run_sql_on_demand(*args, **kwargs):
++    return get_conn().cursor().execute(*args, **kwargs)
+diff --git a/src/pytaku/database/migrations/latest_schema.sql b/src/pytaku/database/migrations/latest_schema.sql
+index cdff562..2d88116 100644
+--- a/src/pytaku/database/migrations/latest_schema.sql
++++ b/src/pytaku/database/migrations/latest_schema.sql
+@@ -26,6 +26,7 @@ CREATE TABLE chapter (
+ 
+     foreign key (title_id, site) references title (id, site),
+     unique(id, title_id, site),
++    unique(id, site),
+     unique(num_major, num_minor, title_id)
+ );
+ CREATE TABLE user (
+@@ -44,3 +45,13 @@ CREATE TABLE follow (
+     foreign key (user_id) references user (id),
+     unique(user_id, title_id, site)
+ );
++CREATE TABLE read (
++    user_id integer not null,
++    chapter_id text not null,
++    site text not null,
++    updated_at text default (datetime(&#39;now&#39;)),
++
++    foreign key (user_id) references user (id),
++    foreign key (chapter_id, site) references chapter (id, site),
++    unique(user_id, chapter_id, site)
++);
+diff --git a/src/pytaku/database/migrations/m0001.sql b/src/pytaku/database/migrations/m0001.sql
+index 7fb82ee..700acf3 100644
+--- a/src/pytaku/database/migrations/m0001.sql
++++ b/src/pytaku/database/migrations/m0001.sql
+@@ -20,9 +20,39 @@ create table chapter (
+     name text,
+     pages text,
+     groups text,
+-    updated_at text default (datetime(&#39;now&#39;)),
++    updated_at text default (datetime(&#39;now&#39;)), is_webtoon boolean,
+ 
+     foreign key (title_id, site) references title (id, site),
+     unique(id, title_id, site),
++    unique(id, site),
+     unique(num_major, num_minor, title_id)
+ );
++
++create table user (
++    id integer primary key,
++    username text unique,
++    password text,
++    created_at text default (datetime(&#39;now&#39;))
++);
++
++create table follow (
++    user_id integer not null,
++    title_id text not null,
++    site text not null,
++    created_at text default (datetime(&#39;now&#39;)),
++
++    foreign key (title_id, site) references title (id, site),
++    foreign key (user_id) references user (id),
++    unique(user_id, title_id, site)
++);
++
++create table read (
++    user_id integer not null,
++    chapter_id text not null,
++    site text not null,
++    updated_at text default (datetime(&#39;now&#39;)),
++
++    foreign key (user_id) references user (id),
++    foreign key (chapter_id, site) references chapter (id, site),
++    unique(user_id, chapter_id, site)
++);
+diff --git a/src/pytaku/database/migrations/m0002.sql b/src/pytaku/database/migrations/m0002.sql
+deleted file mode 100644
+index 442f3d8..0000000
+--- a/src/pytaku/database/migrations/m0002.sql
++++ /dev/null
+@@ -1 +0,0 @@
+-alter table chapter add column is_webtoon boolean;
+diff --git a/src/pytaku/database/migrations/m0003.sql b/src/pytaku/database/migrations/m0003.sql
+deleted file mode 100644
+index 1cd8c9b..0000000
+--- a/src/pytaku/database/migrations/m0003.sql
++++ /dev/null
+@@ -1,18 +0,0 @@
+-create table user (
+-    id integer primary key,
+-    username text unique,
+-    password text,
+-    created_at text default (datetime(&#39;now&#39;))
+-);
+-
+-
+-create table follow (
+-    user_id integer not null,
+-    title_id text not null,
+-    site text not null,
+-    created_at text default (datetime(&#39;now&#39;)),
+-
+-    foreign key (title_id, site) references title (id, site),
+-    foreign key (user_id) references user (id),
+-    unique(user_id, title_id, site)
+-);
+diff --git a/src/pytaku/database/migrator.py b/src/pytaku/database/migrator.py
+index c63519c..b275d64 100644
+--- a/src/pytaku/database/migrator.py
++++ b/src/pytaku/database/migrator.py
+@@ -15,7 +15,7 @@
+ 
+ 
+ def _get_current_version():
+-    return run_sql(&quot;PRAGMA user_version;&quot;)[0][&quot;user_version&quot;]
++    return run_sql(&quot;PRAGMA user_version;&quot;)[0]
+ 
+ 
+ def _get_version(migration: Path):
+diff --git a/src/pytaku/decorators.py b/src/pytaku/decorators.py
+index ff5f4e2..8d7b0bc 100644
+--- a/src/pytaku/decorators.py
++++ b/src/pytaku/decorators.py
+@@ -2,6 +2,8 @@
+ 
+ from flask import redirect, request, session, url_for
+ 
++from .persistence import read
++
+ 
+ def require_login(f):
+     @wraps(f)
+@@ -11,3 +13,22 @@ def decorated_function(*args, **kwargs):
+         return f(*args, **kwargs)
+ 
+     return decorated_function
++
++
++def trigger_has_read(f):
++    &quot;&quot;&quot;
++    Augments a view with the ability to mark a chapter as read if there&#39;s a
++    `?has_read=&lt;chapter_id&gt;` url param.
++    &quot;&quot;&quot;
++
++    @wraps(f)
++    def decorated_function(*args, **kwargs):
++        assert &quot;site&quot; in kwargs  # only use on site-specific views
++        has_read_chapter_id = request.args.get(&quot;has_read&quot;)
++        if has_read_chapter_id:
++            if session.get(&quot;user&quot;):
++                read(session[&quot;user&quot;][&quot;id&quot;], kwargs[&quot;site&quot;], has_read_chapter_id)
++                return redirect(request.url[: request.url.rfind(&quot;?&quot;)])
++        return f(*args, **kwargs)
++
++    return decorated_function
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 170d40a..af04fb9 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -17,7 +17,7 @@
+ 
+ from . import mangadex
+ from .conf import config
+-from .decorators import require_login
++from .decorators import require_login, trigger_has_read
+ from .persistence import (
+     follow,
+     get_followed_titles,
+@@ -155,6 +155,7 @@ def auth_view():
+ 
+ 
+ @app.route(&quot;/title/&lt;site&gt;/&lt;title_id&gt;&quot;)
++@trigger_has_read
+ def title_view(site, title_id):
+     user = session.get(&quot;user&quot;, None)
+     user_id = user[&quot;id&quot;] if user else None
+@@ -171,6 +172,7 @@ def title_view(site, title_id):
+ 
+ 
+ @app.route(&quot;/chapter/&lt;site&gt;/&lt;chapter_id&gt;&quot;)
++@trigger_has_read
+ def chapter_view(site, chapter_id):
+     chapter = load_chapter(site, chapter_id)
+     if not chapter:
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 6792d4a..a03efbd 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -3,7 +3,7 @@
+ import apsw
+ import argon2
+ 
+-from .database.common import run_sql
++from .database.common import run_sql, run_sql_on_demand
+ 
+ 
+ def save_title(title):
+@@ -74,6 +74,23 @@ def load_title(site, title_id, user_id=None):
+                     (user_id, site, title[&quot;id&quot;]),
+                 )
+             )
++
++            chapters_i_read = run_sql(
++                &quot;&quot;&quot;
++                SELECT r.chapter_id
++                FROM read r
++                  INNER JOIN chapter c ON c.id = r.chapter_id AND c.site = r.site
++                WHERE r.user_id = ?
++                  AND c.title_id = ?
++                  AND c.site = ?
++                ORDER BY r.updated_at;
++                &quot;&quot;&quot;,
++                (user_id, title[&quot;id&quot;], title[&quot;site&quot;]),
++            )
++
++            for ch in title[&quot;chapters&quot;]:
++                if ch[&quot;id&quot;] in chapters_i_read:
++                    ch[&quot;is_read&quot;] = True
+         return title
+ 
+ 
+@@ -130,7 +147,10 @@ def load_chapter(site, chapter_id):
+     elif len(result) &gt; 1:
+         raise Exception(f&quot;Found multiple results for chapter_id {chapter_id}!&quot;)
+     else:
+-        return result[0]
++        chapter = result[0]
++        chapter[&quot;pages&quot;] = json.loads(chapter[&quot;pages&quot;])
++        chapter[&quot;groups&quot;] = json.loads(chapter[&quot;groups&quot;])
++        return chapter
+ 
+ 
+ def get_prev_next_chapters(title, chapter):
+@@ -209,9 +229,51 @@ def get_followed_titles(user_id):
+         &quot;&quot;&quot;,
+         (user_id,),
+     )
+-    title_dicts = []
++
+     for t in titles:
+-        t[&quot;chapters&quot;] = json.loads(t[&quot;chapters&quot;])
+-        title_dicts.append(t)
++        chapters = json.loads(t[&quot;chapters&quot;])
++
++        # n+1 queries cuz I don&#39;t give a f- actually I do, but sqlite&#39;s cool with it:
++        # https://www.sqlite.org/np1queryprob.html
++        chapters_i_finished = run_sql_on_demand(
++            &quot;&quot;&quot;
++            SELECT r.chapter_id
++            FROM read r
++                INNER JOIN chapter c ON c.id = r.chapter_id AND c.site = r.site
++            WHERE r.user_id = ?
++                AND c.title_id = ?
++                AND c.site = ?
++            ORDER BY c.num_major desc, c.num_minor desc;
++            &quot;&quot;&quot;,
++            (user_id, t[&quot;id&quot;], t[&quot;site&quot;]),
++        )
++        # Cut off chapter list:
++        # only show chapters newer than the latest chapter that user has finished.
++        # Running a loop here instead of just picking the one latest finished chapter
++        # because source site may have deleted said chapter.
++        for finished_chapter_id in chapters_i_finished:
++            for i, ch in enumerate(chapters):
++                if finished_chapter_id == ch[&quot;id&quot;]:
++                    chapters = chapters[:i]
++                    break
++
++        t[&quot;chapters&quot;] = chapters
++
++    return sorted(titles, key=lambda t: len(t[&quot;chapters&quot;]), reverse=True)
++
+ 
+-    return title_dicts
++def read(user_id, site, chapter_id):
++    run_sql(
++        &quot;&quot;&quot;
++        INSERT INTO read (user_id, site, chapter_id) VALUES (?, ?, ?)
++        ON CONFLICT (user_id, site, chapter_id) DO UPDATE SET updated_at=datetime(&#39;now&#39;)
++        &quot;&quot;&quot;,
++        (user_id, site, chapter_id),
++    )
++
++
++def unread(user_id, site, chapter_id):
++    run_sql(
++        &quot;DELETE FROM read WHERE user_id=? AND site=? AND chapter_id=?;&quot;,
++        (user_id, site, chapter_id),
++    )
+diff --git a/src/pytaku/templates/chapter.html b/src/pytaku/templates/chapter.html
+index b36ffd0..05248bd 100644
+--- a/src/pytaku/templates/chapter.html
++++ b/src/pytaku/templates/chapter.html
+@@ -69,10 +69,21 @@ &lt;h1&gt;{{ self.title() }}&lt;/h1&gt;
+   {{ ibutton(href=url_for(&#39;title_view&#39;, title_id=title_id, site=site), left_icon=&#39;list&#39;, text=&#39;Chapter list&#39;, color=&#39;blue&#39;) }}
+ 
+   {% if next_chapter %}
+-  {{ ibutton(href=url_for(&#39;chapter_view&#39;, site=site, chapter_id=next_chapter[&#39;id&#39;]), right_icon=&#39;chevrons-right&#39;, text=&#39;Next&#39;) }}
++
++    {% set next_url = url_for(&#39;chapter_view&#39;, site=site, chapter_id=next_chapter[&#39;id&#39;]) %}
++    {% if session[&#39;user&#39;] %}
++      {% set next_url = next_url + &#39;?has_read=&#39; + id %}
++    {% endif %}
++    {{ ibutton(href=next_url, right_icon=&#39;chevrons-right&#39;, text=&#39;Next&#39;) }}
++
+   {% else %}
+-  {{ ibutton(right_icon=&#39;chevrons-right&#39;, text=&#39;Next&#39;, disabled=True) }}
++    {% if session[&#39;user&#39;] %}
++    {{ ibutton(href=url_for(&#39;title_view&#39;, site=site, title_id=title_id) + &#39;?has_read=&#39; + id, text=&#39;✓ Finish reading&#39;, color=&#39;green&#39;) }}
++    {% else %}
++    {{ ibutton(right_icon=&#39;chevrons-right&#39;, text=&#39;Next&#39;, disabled=True) }}
++    {% endif %}
+   {% endif %}
++
+ &lt;/div&gt;
+ {% endblock %}
+ 
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index 3ed3462..061a70a 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -44,11 +44,13 @@ &lt;h1&gt;{{ name }}&lt;/h1&gt;
+ 
+ &lt;table&gt;
+   &lt;tr&gt;
++    &lt;th&gt;Finished?&lt;/th&gt;
+     &lt;th&gt;Name&lt;/th&gt;
+     &lt;th&gt;Group&lt;/th&gt;
+   &lt;/tr&gt;
+   {% for chapter in chapters %}
+   &lt;tr&gt;
++    &lt;td&gt;{% if chapter[&#39;is_read&#39;] %}yes{% endif %}&lt;/td&gt;
+     &lt;td&gt;
+       &lt;a href=&quot;{{ url_for(&#39;chapter_view&#39;, chapter_id=chapter[&#39;id&#39;], site=site) }}&quot;&gt;
+         Chapter {{ chapter[&#39;number&#39;] }}
+</pre></body></html>

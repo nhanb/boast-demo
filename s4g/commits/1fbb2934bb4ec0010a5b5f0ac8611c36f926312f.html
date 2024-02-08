@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1fbb2934bb] rename to s4g; remove gui | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 1fbb2934bb</strong><hr><pre>commit 1fbb2934bb4ec0010a5b5f0ac8611c36f926312f
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 6 12:37:08 2023 +0700
+
+    rename to s4g; remove gui
+
+diff --git a/README.md b/README.md
+index 03a3bc8..b308cf2 100644
+--- a/README.md
++++ b/README.md
+@@ -2,12 +2,13 @@
+ 
+ **Warning: work in progress**
+ 
+-WebMaker2000 is an in-place static site generator, meaning processed files are
+-stored right next to their sources. This simplifies composing (source dir
+-layout _is_ finished website layout; static assets no longer need to be moved
+-around) and publishing (simply `rsync`/`git push` your whole dir). It aims to
+-be beginner-friendly while encouraging users to fiddle with html/css. To that
+-end, the core feature set is intentionally simple:
++`s4g` (Stupidly Simple Static Site Generator) is an in-place static site
++generator, meaning processed files are stored right next to their sources.
++This simplifies composing (source dir layout _is_ finished website layout;
++static assets no longer need to be moved around) and publishing
++(simply `rsync`/`git push` your whole dir).
++It aims to be beginner-friendly while encouraging users to fiddle with
++html/css. To that end, the core feature set is intentionally simple:
+ 
+ - [x] Finds all `*.dj` files, generates `*.html` in the same place
+     + Per-page metadata allows using custom template
+@@ -16,15 +17,13 @@
+ - [x] Generates RSS/Atom feed
+ - [x] Generates redirects from a `redirects.txt` file
+ 
+-Quality-of-life features are not neglected:
++Quality-of-life features:
+ 
+ - [x] Livereload with no browser plugin (works but currently polls which is
+   noisy, should probably upgrade to websockets)
+ - [x] Shows user error messages on the livereloaded web page
+-- [ ] Just enough GUI so user doesn&#39;t have to touch a terminal
+-- [ ] 1-click deploy to popular static hosting targets (git push, rsync, etc.)
+ 
+-There&#39;s a sample site up at &lt;https://nhanb.github.io/webmaker2000/about/&gt; which
++There&#39;s a sample site up at &lt;https://nhanb.github.io/s4g/about/&gt; which
+ also further explains why this project exists.
+ 
+ The markup language of choice is [Djot](https://djot.net/) because it&#39;s the
+@@ -37,15 +36,13 @@
+ 
+ ```sh
+ # Install
+-go install go.imnhan.com/webmaker2000@latest
++go install go.imnhan.com/s4g@latest
+ 
+ # Create new site
+-webmaker2000 new -f ~/my-blog
++s4g new -f ~/my-blog
+ 
+ # Run program, which:
+ # - listens to changes and automatically re-generates
+ # - starts a local HTTP server for preview, also livereloads on changes
+-webmaker2000 serve -f ~/my-blog
++s4g serve -f ~/my-blog
+ ```
+-
+-GUI Coming Soon (tm).
+diff --git a/docs/_theme/includes.tmpl b/docs/_theme/includes.tmpl
+index 7f9fdcb..aa3130b 100644
+--- a/docs/_theme/includes.tmpl
++++ b/docs/_theme/includes.tmpl
+@@ -23,7 +23,7 @@
+ {{- if .Site.ShowFooter -}}
+ &lt;footer&gt;
+ © {{if eq .StartYear .Now.Year}}{{.StartYear}}{{else}}{{.StartYear}}–{{.Now.Year}}{{end}} {{.Site.AuthorName}}&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
+ &lt;/footer&gt;
+ {{- end -}}
+ {{- end}}
+diff --git a/docs/about/index.dj b/docs/about/index.dj
+index eed959a..bbe60d5 100644
+--- a/docs/about/index.dj
++++ b/docs/about/index.dj
+@@ -2,7 +2,7 @@ Title: About
+ ShowInFeed: false
+ ---
+ 
+-This is a sample website to demonstrate some features of [WebMaker2000][1].
++This is a sample website to demonstrate some features of [s4g][1].
+ It also doubles as a lazy end-to-end test suite until the core design
+ stablizes. Its source code, as well as output, is in the [/docs/][src] dir.
+ 
+@@ -11,23 +11,10 @@ Don&#39;t worry too much about their actual content.
+ 
+ ## Sales pitch
+ 
+-There are 2 main goals:
+-
+-### 1. Enable more people to Have Opinions On The Internet
+-
+-It&#39;s 2023. Bug-ridden CVE-infested custom-ordered Wordpress sites shouldn&#39;t be
+-the layman&#39;s default option anymore. [Free][gh] [static][gl] [hosting][cf] is
+-[available][nc] everywhere, yet it remains a privilege mostly enjoyed by a
+-selective group of nerds who are already well versed with the command line. I
+-aim to make a user-friendly static site generator that also allows publishing
+-to neocities/git/rsync targets with one click.
+-
+-### 2. Encourage creativity in web design
+-
+-WebMaker2000 strives to assist, not obscure or constrain. It assumes little
+-structure, and encourages personalization. {-The world needs more-} I want more
+-creative, [weird][cozy], [neocities-frontpage-worthy][ncf] websites instead of
+-yet another cookie-cutter jekyll template.
++s4g aims to assist, not obscure. All it does is reading `.dj` files and
++spitting out `.html`s, leaving unrelated files alone. This means the user is
++free to structure their web directory however they want, and relative links
++work out of the box.
+ 
+ ## Features
+ 
+@@ -40,9 +27,8 @@ So far we have:
+ Less obvious features:
+ 
+ - Flexible root dir (the finished site can be served from a subfolder)
+-- Livereload on local server
+-
+-GUI Coming Soon™.
++- Livereload
++- In-browser error messages
+ 
+ ``` =html
+ &lt;style&gt;
+@@ -50,11 +36,5 @@ h3 { font-size: 1em; }
+ &lt;/style&gt;
+ ```
+ 
+-[1]: https://github.com/nhanb/webmaker2000
+-[gh]: https://pages.github.com/
+-[gl]: https://docs.gitlab.com/ee/user/project/pages/
+-[cf]: https://pages.cloudflare.com/
+-[nc]: https://neocities.org/
+-[ncf]: https://neocities.org/browse
+-[cozy]: https://www.cozynet.org/
+-[src]: https://github.com/nhanb/webmaker2000/tree/master/docs
++[1]: https://github.com/nhanb/s4g
++[src]: https://github.com/nhanb/s4g/tree/master/docs
+diff --git a/docs/about/index.html b/docs/about/index.html
+index d1681b2..4099f11 100644
+--- a/docs/about/index.html
++++ b/docs/about/index.html
+@@ -5,16 +5,16 @@
+   &lt;meta charset=&quot;utf-8&quot; /&gt;
+   &lt;title&gt;About | CoolZone&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+-  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/webmaker2000/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/webmaker2000/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/s4g/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/webmaker2000/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+-  &lt;a href=&quot;/webmaker2000/&quot;&gt;Home&lt;/a&gt;
+-  &lt;a href=&quot;/webmaker2000/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/s4g/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/s4g/about/&quot;&gt;About&lt;/a&gt;
+ 
+ &lt;/nav&gt;
+ &lt;hr class=&quot;nav-hr&quot;&gt;
+@@ -22,30 +22,17 @@
+ 
+ &lt;main&gt;
+ &lt;h1&gt;About&lt;/h1&gt;
+-&lt;p&gt;This is a sample website to demonstrate some features of &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;.
++&lt;p&gt;This is a sample website to demonstrate some features of &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;.
+ It also doubles as a lazy end-to-end test suite until the core design
+-stablizes. Its source code, as well as output, is in the &lt;a href=&quot;https://github.com/nhanb/webmaker2000/tree/master/docs&quot;&gt;/docs/&lt;/a&gt; dir.&lt;/p&gt;
++stablizes. Its source code, as well as output, is in the &lt;a href=&quot;https://github.com/nhanb/s4g/tree/master/docs&quot;&gt;/docs/&lt;/a&gt; dir.&lt;/p&gt;
+ &lt;p&gt;The articles themselves are just, uh, &lt;em&gt;colorful&lt;/em&gt; lorem ipsums.
+ Don’t worry too much about their actual content.&lt;/p&gt;
+ &lt;section id=&quot;Sales-pitch&quot;&gt;
+ &lt;h2&gt;Sales pitch&lt;/h2&gt;
+-&lt;p&gt;There are 2 main goals:&lt;/p&gt;
+-&lt;section id=&quot;1-Enable-more-people-to-Have-Opinions-On-The-Internet&quot;&gt;
+-&lt;h3&gt;1. Enable more people to Have Opinions On The Internet&lt;/h3&gt;
+-&lt;p&gt;It’s 2023. Bug-ridden CVE-infested custom-ordered Wordpress sites shouldn’t be
+-the layman’s default option anymore. &lt;a href=&quot;https://pages.github.com/&quot;&gt;Free&lt;/a&gt; &lt;a href=&quot;https://docs.gitlab.com/ee/user/project/pages/&quot;&gt;static&lt;/a&gt; &lt;a href=&quot;https://pages.cloudflare.com/&quot;&gt;hosting&lt;/a&gt; is
+-&lt;a href=&quot;https://neocities.org/&quot;&gt;available&lt;/a&gt; everywhere, yet it remains a privilege mostly enjoyed by a
+-selective group of nerds who are already well versed with the command line. I
+-aim to make a user-friendly static site generator that also allows publishing
+-to neocities/git/rsync targets with one click.&lt;/p&gt;
+-&lt;/section&gt;
+-&lt;section id=&quot;2-Encourage-creativity-in-web-design&quot;&gt;
+-&lt;h3&gt;2. Encourage creativity in web design&lt;/h3&gt;
+-&lt;p&gt;WebMaker2000 strives to assist, not obscure or constrain. It assumes little
+-structure, and encourages personalization. &lt;del&gt;The world needs more&lt;/del&gt; I want more
+-creative, &lt;a href=&quot;https://www.cozynet.org/&quot;&gt;weird&lt;/a&gt;, &lt;a href=&quot;https://neocities.org/browse&quot;&gt;neocities-frontpage-worthy&lt;/a&gt; websites instead of
+-yet another cookie-cutter jekyll template.&lt;/p&gt;
+-&lt;/section&gt;
++&lt;p&gt;s4g aims to assist, not obscure. All it does is reading &lt;code&gt;.dj&lt;/code&gt; files and
++spitting out &lt;code&gt;.html&lt;/code&gt;s, leaving unrelated files alone. This means the user is
++free to structure their web directory however they want, and relative links
++work out of the box.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Features&quot;&gt;
+ &lt;h2&gt;Features&lt;/h2&gt;
+@@ -67,10 +54,12 @@ &lt;h2&gt;Features&lt;/h2&gt;
+ Flexible root dir (the finished site can be served from a subfolder)
+ &lt;/li&gt;
+ &lt;li&gt;
+-Livereload on local server
++Livereload
++&lt;/li&gt;
++&lt;li&gt;
++In-browser error messages
+ &lt;/li&gt;
+ &lt;/ul&gt;
+-&lt;p&gt;GUI Coming Soon™.&lt;/p&gt;
+ &lt;style&gt;
+ h3 { font-size: 1em; }
+ &lt;/style&gt;
+@@ -80,7 +69,7 @@ &lt;h2&gt;Features&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2008–2023 Coolio McCool&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/docs/feed.xml b/docs/feed.xml
+index 4947aba..1d62a92 100644
+--- a/docs/feed.xml
++++ b/docs/feed.xml
+@@ -1,7 +1,7 @@
+ &lt;feed xmlns=&quot;http://www.w3.org/2005/Atom&quot;&gt;
+   &lt;title&gt;CoolZone&lt;/title&gt;
+   &lt;id&gt;https://coolzone.example.com/&lt;/id&gt;
+-  &lt;link rel=&quot;self&quot; href=&quot;/webmaker2000/feed.xml&quot;&gt;&lt;/link&gt;
++  &lt;link rel=&quot;self&quot; href=&quot;/s4g/feed.xml&quot;&gt;&lt;/link&gt;
+   &lt;updated&gt;2023-04-05T00:00:00+07:00&lt;/updated&gt;
+   &lt;author&gt;
+     &lt;name&gt;Coolio McCool&lt;/name&gt;
+@@ -10,15 +10,15 @@
+   &lt;/author&gt;
+   &lt;entry&gt;
+     &lt;title&gt;This is a motherfucking website.&lt;/title&gt;
+-    &lt;id&gt;https://coolzone.example.com/webmaker2000/mfws.html&lt;/id&gt;
+-    &lt;link href=&quot;https://coolzone.example.com/webmaker2000/mfws.html&quot;&gt;&lt;/link&gt;
++    &lt;id&gt;https://coolzone.example.com/s4g/mfws.html&lt;/id&gt;
++    &lt;link href=&quot;https://coolzone.example.com/s4g/mfws.html&quot;&gt;&lt;/link&gt;
+     &lt;published&gt;2023-04-05T00:00:00+07:00&lt;/published&gt;
+     &lt;updated&gt;2023-04-05T00:00:00+07:00&lt;/updated&gt;
+   &lt;/entry&gt;
+   &lt;entry&gt;
+     &lt;title&gt;I&amp;#39;m Going To Scale My Foot Up Your Ass&lt;/title&gt;
+-    &lt;id&gt;https://coolzone.example.com/webmaker2000/scale/&lt;/id&gt;
+-    &lt;link href=&quot;https://coolzone.example.com/webmaker2000/scale/&quot;&gt;&lt;/link&gt;
++    &lt;id&gt;https://coolzone.example.com/s4g/scale/&lt;/id&gt;
++    &lt;link href=&quot;https://coolzone.example.com/s4g/scale/&quot;&gt;&lt;/link&gt;
+     &lt;published&gt;2008-04-24T00:00:00+07:00&lt;/published&gt;
+     &lt;updated&gt;2008-04-24T00:00:00+07:00&lt;/updated&gt;
+   &lt;/entry&gt;
+diff --git a/docs/index.html b/docs/index.html
+index 839474d..5387fce 100644
+--- a/docs/index.html
++++ b/docs/index.html
+@@ -5,8 +5,8 @@
+   &lt;meta charset=&quot;utf-8&quot; /&gt;
+   &lt;title&gt;Home | CoolZone&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+-  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/webmaker2000/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/webmaker2000/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/s4g/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+@@ -19,10 +19,10 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ &lt;hr&gt;
+ 
+ &lt;div class=&quot;pages&quot;&gt;
+-  &lt;a href=&quot;/webmaker2000/&quot;&gt;Home&lt;/a&gt;
+-  &lt;a href=&quot;/webmaker2000/about/&quot;&gt;About&lt;/a&gt;
+-  &lt;a class=&quot;feed-link&quot; href=&quot;/webmaker2000/feed.xml&quot;&gt;
+-    &lt;img src=&quot;/webmaker2000/_theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
++  &lt;a href=&quot;/s4g/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/s4g/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a class=&quot;feed-link&quot; href=&quot;/s4g/feed.xml&quot;&gt;
++    &lt;img src=&quot;/s4g/_theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
+   &lt;/a&gt;
+ &lt;/div&gt;
+ 
+@@ -35,12 +35,12 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ &lt;ul&gt;
+   &lt;li&gt;
+     &lt;span class=&quot;time-prefix&quot;&gt;2023-04-05 — &lt;/span&gt;
+-    &lt;a href=&quot;/webmaker2000/mfws.html&quot;&gt;This is a motherfucking website.&lt;/a&gt;
++    &lt;a href=&quot;/s4g/mfws.html&quot;&gt;This is a motherfucking website.&lt;/a&gt;
+     &lt;span class=&quot;time-suffix&quot;&gt;(2023-04-05)&lt;/span&gt;
+   &lt;/li&gt;
+   &lt;li&gt;
+     &lt;span class=&quot;time-prefix&quot;&gt;2008-04-24 — &lt;/span&gt;
+-    &lt;a href=&quot;/webmaker2000/scale/&quot;&gt;I&amp;#39;m Going To Scale My Foot Up Your Ass&lt;/a&gt;
++    &lt;a href=&quot;/s4g/scale/&quot;&gt;I&amp;#39;m Going To Scale My Foot Up Your Ass&lt;/a&gt;
+     &lt;span class=&quot;time-suffix&quot;&gt;(2008-04-24)&lt;/span&gt;
+   &lt;/li&gt;
+ &lt;/ul&gt;
+@@ -96,7 +96,7 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ 
+ &lt;footer&gt;
+ © 2008–2023 Coolio McCool&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ 
+diff --git a/docs/mfws.html b/docs/mfws.html
+index a45d28d..c3d0595 100644
+--- a/docs/mfws.html
++++ b/docs/mfws.html
+@@ -5,16 +5,16 @@
+   &lt;meta charset=&quot;utf-8&quot; /&gt;
+   &lt;title&gt;This is a motherfucking website. | CoolZone&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+-  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/webmaker2000/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/webmaker2000/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/s4g/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/webmaker2000/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+-  &lt;a href=&quot;/webmaker2000/&quot;&gt;Home&lt;/a&gt;
+-  &lt;a href=&quot;/webmaker2000/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/s4g/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/s4g/about/&quot;&gt;About&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2023-04-05&quot;&gt;
+@@ -123,7 +123,7 @@ &lt;h2&gt;Epilogue&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2008–2023 Coolio McCool&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/docs/mfws/index.html b/docs/mfws/index.html
+index d3ca5e5..23fa9ae 100644
+--- a/docs/mfws/index.html
++++ b/docs/mfws/index.html
+@@ -1,10 +1,10 @@
+ &lt;!DOCTYPE html&gt;
+ &lt;html lang=&quot;en&quot;&gt;
+   &lt;head&gt;
+-    &lt;title&gt;Redirecting to /webmaker2000/mfws.html&lt;/title&gt;
+-    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/webmaker2000/mfws.html&quot; /&gt;
++    &lt;title&gt;Redirecting to /s4g/mfws.html&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/s4g/mfws.html&quot; /&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+-    The page you&#39;re looking for has been moved to &lt;a href=&quot;/webmaker2000/mfws.html&quot;&gt;/webmaker2000/mfws.html&lt;/a&gt;.
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/s4g/mfws.html&quot;&gt;/s4g/mfws.html&lt;/a&gt;.
+   &lt;/body&gt;
+ &lt;/html&gt;
+diff --git a/docs/scale.html b/docs/scale.html
+index df77cf9..03d8901 100644
+--- a/docs/scale.html
++++ b/docs/scale.html
+@@ -1,10 +1,10 @@
+ &lt;!DOCTYPE html&gt;
+ &lt;html lang=&quot;en&quot;&gt;
+   &lt;head&gt;
+-    &lt;title&gt;Redirecting to /webmaker2000/scale/&lt;/title&gt;
+-    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/webmaker2000/scale/&quot; /&gt;
++    &lt;title&gt;Redirecting to /s4g/scale/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/s4g/scale/&quot; /&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+-    The page you&#39;re looking for has been moved to &lt;a href=&quot;/webmaker2000/scale/&quot;&gt;/webmaker2000/scale/&lt;/a&gt;.
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/s4g/scale/&quot;&gt;/s4g/scale/&lt;/a&gt;.
+   &lt;/body&gt;
+ &lt;/html&gt;
+diff --git a/docs/scale/index.html b/docs/scale/index.html
+index c22f440..e931c97 100644
+--- a/docs/scale/index.html
++++ b/docs/scale/index.html
+@@ -5,16 +5,16 @@
+   &lt;meta charset=&quot;utf-8&quot; /&gt;
+   &lt;title&gt;I&amp;#39;m Going To Scale My Foot Up Your Ass | CoolZone&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+-  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/webmaker2000/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/webmaker2000/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/s4g/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ &lt;div class=&quot;navbar-container&quot;&gt;
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/webmaker2000/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+-  &lt;a href=&quot;/webmaker2000/&quot;&gt;Home&lt;/a&gt;
+-  &lt;a href=&quot;/webmaker2000/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/s4g/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/s4g/about/&quot;&gt;About&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2008-04-24&quot;&gt;
+@@ -96,7 +96,7 @@ &lt;h2&gt;tl;dr&lt;/h2&gt;
+ &lt;div class=&quot;footer-container&quot;&gt;
+ &lt;footer&gt;
+ © 2008–2023 Coolio McCool&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
+ &lt;/footer&gt;
+ &lt;/div&gt;
+ 
+diff --git a/docs/website.wbmkr2k b/docs/website.s4g
+similarity index 91%
+rename from docs/website.wbmkr2k
+rename to docs/website.s4g
+index cf91244..d2055b0 100644
+--- a/docs/website.wbmkr2k
++++ b/docs/website.s4g
+@@ -1,7 +1,7 @@
+ Address: https://coolzone.example.com
+ Name: CoolZone
+ Tagline: Cool people only.
+-Root: /webmaker2000/
++Root: /s4g/
+ NavbarLinks: index.dj, about/index.dj
+ 
+ AuthorName: Coolio McCool
+diff --git a/errs/errs.go b/errs/errs.go
+index 2614757..6a674f6 100644
+--- a/errs/errs.go
++++ b/errs/errs.go
+@@ -5,7 +5,7 @@
+ 	&quot;html/template&quot;
+ )
+ 
+-// Represents a user input error, which in webmaker2000&#39;s case is almost
++// Represents a user input error, which in s4g&#39;s case is almost
+ // always some malformed file.
+ type UserErr struct {
+ 	File string
+diff --git a/go.mod b/go.mod
+index 622f03d..af3c911 100644
+--- a/go.mod
++++ b/go.mod
+@@ -1,4 +1,4 @@
+-module go.imnhan.com/webmaker2000
++module go.imnhan.com/s4g
+ 
+ go 1.20
+ 
+diff --git a/gui/gui.go b/gui/gui.go
+deleted file mode 100644
+index cb3ec50..0000000
+--- a/gui/gui.go
++++ /dev/null
+@@ -1,128 +0,0 @@
+-package gui
+-
+-import (
+-	&quot;bufio&quot;
+-	_ &quot;embed&quot;
+-	&quot;fmt&quot;
+-	&quot;io&quot;
+-	&quot;os/exec&quot;
+-	&quot;path/filepath&quot;
+-	&quot;strings&quot;
+-
+-	&quot;go.imnhan.com/webmaker2000/gui/ipc&quot;
+-)
+-
+-//go:embed tcl/main.tcl
+-var tclMain []byte
+-
+-//go:embed tcl/choose-task.tcl
+-var tclChooseTask []byte
+-
+-func Main(tclPath string) {
+-	interp := newInterp(tclPath)
+-
+-	go func() {
+-		errscanner := bufio.NewScanner(interp.stderr)
+-		for errscanner.Scan() {
+-			errtext := errscanner.Text()
+-			fmt.Printf(&quot;XXX %s\n&quot;, errtext)
+-		}
+-	}()
+-
+-	_, err := interp.stdin.Write(tclMain)
+-	if err != nil {
+-		panic(err)
+-	}
+-	println(&quot;Loaded main tcl script.&quot;)
+-
+-	fmt.Fprintln(interp.stdin, &quot;initialize&quot;)
+-
+-	respond := func(values ...string) {
+-		ipc.Respond(interp.stdin, values)
+-	}
+-
+-	for req := range ipc.Requests(interp.stdout) {
+-		switch req.Method {
+-
+-		case &quot;forcefocus&quot;:
+-			//err := forceFocus(req.Args[0])
+-			//if err != nil {
+-			//fmt.Printf(&quot;forcefocus: %s\n&quot;, err)
+-			//}
+-			respond(&quot;ok&quot;)
+-		}
+-
+-	}
+-
+-	println(&quot;Tcl process terminated.&quot;)
+-}
+-
+-type Task string
+-
+-const (
+-	TaskOpen   Task = &quot;open&quot;
+-	TaskCreate Task = &quot;create&quot;
+-)
+-
+-func ChooseTask(tclPath string) (task Task, path string, ok bool) {
+-	interp := newInterp(tclPath)
+-	interp.stdin.Write(tclChooseTask)
+-	interp.stdin.Close()
+-	resp, err := io.ReadAll(interp.stdout)
+-	if err != nil {
+-		panic(err)
+-	}
+-
+-	action, path, found := strings.Cut(strings.TrimSpace(string(resp)), &quot; &quot;)
+-	if !found {
+-		fmt.Println(&quot;No task chosen&quot;)
+-		return &quot;&quot;, &quot;&quot;, false
+-	}
+-
+-	switch action {
+-	case string(TaskOpen):
+-		return TaskOpen, filepath.Dir(path), true
+-	case string(TaskCreate):
+-		return TaskCreate, path, true
+-	default:
+-		fmt.Printf(&quot;Unexpected tclChooseTask output: %s\n&quot;, string(resp))
+-		return &quot;&quot;, &quot;&quot;, false
+-	}
+-}
+-
+-type tclInterp struct {
+-	cmd    *exec.Cmd
+-	stdin  io.WriteCloser
+-	stdout io.ReadCloser
+-	stderr io.ReadCloser
+-}
+-
+-func newInterp(tclPath string) *tclInterp {
+-	cmd := exec.Command(tclPath, &quot;-encoding&quot;, &quot;utf-8&quot;)
+-	stdout, err := cmd.StdoutPipe()
+-	if err != nil {
+-		panic(err)
+-	}
+-
+-	stdin, err := cmd.StdinPipe()
+-	if err != nil {
+-		panic(err)
+-	}
+-
+-	stderr, err := cmd.StderrPipe()
+-	if err != nil {
+-		panic(err)
+-	}
+-
+-	err = cmd.Start()
+-	if err != nil {
+-		panic(err)
+-	}
+-
+-	return &amp;tclInterp{
+-		cmd:    cmd,
+-		stdin:  stdin,
+-		stdout: stdout,
+-		stderr: stderr,
+-	}
+-}
+diff --git a/gui/gui_linux.go b/gui/gui_linux.go
+deleted file mode 100644
+index 877416f..0000000
+--- a/gui/gui_linux.go
++++ /dev/null
+@@ -1,7 +0,0 @@
+-//go:build linux
+-
+-package gui
+-
+-const DefaultTclPath = &quot;tclsh&quot;
+-
+-func forceFocus(handle string) error { return nil }
+diff --git a/gui/gui_windows.go b/gui/gui_windows.go
+deleted file mode 100644
+index f4cf208..0000000
+--- a/gui/gui_windows.go
++++ /dev/null
+@@ -1,25 +0,0 @@
+-//go:build windows
+-
+-package gui
+-
+-import (
+-	&quot;fmt&quot;
+-	&quot;strconv&quot;
+-
+-	&quot;github.com/lxn/win&quot;
+-)
+-
+-const DefaultTclPath = &quot;./IronTcl/bin/wish86t.exe&quot;
+-
+-func forceFocus(handle string) error {
+-	hex := handle[2:] // trim the &quot;0x&quot; prefix
+-	uintHandle, err := strconv.ParseUint(hex, 16, 64)
+-	if err != nil {
+-		return fmt.Errorf(&quot;failed to parse handle: %w&quot;, err)
+-	}
+-
+-	h := win.HWND(uintptr(uintHandle))
+-	win.SetForegroundWindow(h)
+-	win.SetFocus(h)
+-	return nil
+-}
+diff --git a/gui/ipc/ipc.go b/gui/ipc/ipc.go
+deleted file mode 100644
+index 2a8f426..0000000
+--- a/gui/ipc/ipc.go
++++ /dev/null
+@@ -1,80 +0,0 @@
+-package ipc
+-
+-import (
+-	&quot;bufio&quot;
+-	&quot;fmt&quot;
+-	&quot;io&quot;
+-	&quot;log&quot;
+-	&quot;strconv&quot;
+-	&quot;strings&quot;
+-)
+-
+-type Request struct {
+-	Method string
+-	Args   []string
+-}
+-
+-func debug(prefix string, msg string) {
+-	out := prefix + &quot; &quot; + msg
+-	if len(out) &gt; 35 {
+-		out = out[:35] + &quot;[...]&quot;
+-	}
+-	fmt.Println(out)
+-}
+-
+-func Requests(r io.Reader) chan Request {
+-	scanner := bufio.NewScanner(r)
+-	ch := make(chan Request)
+-	next := func() string {
+-		scanner.Scan()
+-		v := scanner.Text()
+-		debug(&quot;--&gt;&quot;, v)
+-		return v
+-	}
+-
+-	go func() {
+-		for scanner.Scan() {
+-			line := scanner.Text()
+-			debug(&quot;--&gt;&quot;, line)
+-			request := strings.SplitN(line, &quot; &quot;, 2)
+-			method := request[0]
+-			numArgs, err := strconv.Atoi(request[1])
+-			if err != nil {
+-				panic(err)
+-			}
+-			args := make([]string, numArgs)
+-			for i := 0; i &lt; numArgs; i++ {
+-				args[i] = next()
+-			}
+-
+-			ch &lt;- Request{Method: method, Args: args}
+-		}
+-		if err := scanner.Err(); err != nil {
+-			log.Fatal(err)
+-		}
+-
+-		close(ch)
+-	}()
+-
+-	return ch
+-}
+-
+-func Respond(w io.Writer, values []string) {
+-	numValues := strconv.Itoa(len(values))
+-	debug(&quot;&lt;--&quot;, numValues)
+-	fmt.Fprintln(w, numValues)
+-	for i, val := range values {
+-		// Only print debug message for the first 10 items
+-		if i &lt;= 10 {
+-			var msg string
+-			if i &lt; 10 {
+-				msg = val
+-			} else if i == 10 {
+-				msg = &quot;[...]&quot;
+-			}
+-			debug(&quot;&lt;--&quot;, msg)
+-		}
+-
+-		fmt.Fprintln(w, val)
+-	}
+-}
+diff --git a/gui/tcl/choose-task.tcl b/gui/tcl/choose-task.tcl
+deleted file mode 100644
+index 74f92e2..0000000
+--- a/gui/tcl/choose-task.tcl
++++ /dev/null
+@@ -1,41 +0,0 @@
+-package require Tk
+-
+-wm title . &quot;Create or Open?&quot;
+-
+-set OS [lindex $tcl_platform(os) 0]
+-if {$OS == &quot;Windows&quot;} {
+-    ttk::style theme use vista
+-} elseif {$OS == &quot;Darwin&quot;} {
+-    ttk::style theme use aqua
+-} else {
+-    ttk::style theme use clam
+-}
+-
+-set types {
+-    {{WebMaker2000 Files} {.wbmkr2k}}
+-}
+-
+-ttk::frame .c -padding &quot;10&quot;
+-ttk::label .c.label -text {Would you like to create a new blog, or open an existing one?}
+-ttk::button .c.createBtn -text &quot;Create...&quot; -padding 5 -command {
+-    #set filename [tk_getSaveFile -title &quot;Create&quot; -filetypes $types]
+-    set filename [tk_chooseDirectory]
+-    if {$filename != &quot;&quot;} {
+-        puts &quot;create ${filename}&quot;
+-        exit
+-    }
+-}
+-ttk::button .c.openBtn -text &quot;Open...&quot; -padding 5 -command {
+-    set filename [tk_getOpenFile -filetypes $types]
+-    if {$filename != &quot;&quot;} {
+-        puts &quot;open ${filename}&quot;
+-        exit
+-    }
+-}
+-
+-grid .c -column 0 -row 0
+-grid .c.label -column 0 -row 0 -columnspan 2 -pady &quot;0 10&quot;
+-grid .c.createBtn -column 0 -row 1 -padx 10
+-grid .c.openBtn -column 1 -row 1 -padx 10
+-
+-tk::PlaceWindow . center
+diff --git a/gui/tcl/main.tcl b/gui/tcl/main.tcl
+deleted file mode 100644
+index 7dbf5ea..0000000
+--- a/gui/tcl/main.tcl
++++ /dev/null
+@@ -1,225 +0,0 @@
+-# Tcl on Windows has unfortunate defaults:
+-#   - cp1252 encoding, which will mangle utf-8 source code
+-#   - crlf linebreaks instead of unix-style lf
+-# Let&#39;s be consistent cross-platform to avoid surprises:
+-encoding system &quot;utf-8&quot;
+-foreach p {stdin stdout stderr} {
+-    fconfigure $p -encoding &quot;utf-8&quot;
+-    fconfigure $p -translation lf
+-}
+-
+-package require Tk
+-
+-wm title . &quot;WebMaker2000&quot;
+-tk appname webmaker2000
+-
+-set OS [lindex $tcl_platform(os) 0]
+-if {$OS == &quot;Windows&quot;} {
+-    ttk::style theme use vista
+-} elseif {$OS == &quot;Darwin&quot;} {
+-    ttk::style theme use aqua
+-} else {
+-    ttk::style theme use clam
+-}
+-
+-wm protocol . WM_DELETE_WINDOW {
+-    exit 0
+-}
+-
+-proc initialize {} {
+-    # By default this window is not focused and not even brought to
+-    # foreground on Windows. I suspect it&#39;s because tcl is exec&#39;ed from Go.
+-    # The old &quot;iconify, deiconify&quot; trick no longer seems to work, so this time
+-    # I&#39;m passing it to Go to call the winapi&#39;s SetForegroundWindow directly.
+-    if {$::tcl_platform(platform) == &quot;windows&quot;} {
+-        windows_forcefocus
+-    }
+-}
+-
+-# Very simple line-based IPC system where Tcl client talks to Go server
+-# via stdin/stdout
+-proc ipc_write {method args} {
+-    puts &quot;$method [llength $args]&quot;
+-    foreach a $args {
+-        puts &quot;$a&quot;
+-    }
+-}
+-proc ipc_read {} {
+-    set results {}
+-    set numlines [gets stdin]
+-    for {set i 0} {$i &lt; $numlines} {incr i} {
+-        lappend results [gets stdin]
+-    }
+-    return $results
+-}
+-proc ipc {method args} {
+-    ipc_write $method {*}$args
+-    return [ipc_read]
+-}
+-
+-proc windows_forcefocus {} {
+-    # First call winapi&#39;s SetForegroundWindow()
+-    set handle [winfo id .]
+-    ipc &quot;forcefocus&quot; $handle
+-    # Then call force focus on tcl side
+-    focus -force .
+-    # We must do both in order to properly focus on main tk window.
+-    # Don&#39;t ask me why - that&#39;s just how it works.
+-    #
+-    # Alternatively we can try making Tcl our entrypoint instead of exec-ing
+-    # Tcl from Go. Maybe some other time.
+-}
+-
+-proc loadicon {} {
+-    set iconblob [image create photo -file gorts.png]
+-    wm iconphoto . -default $iconblob
+-}
+-
+-proc loadstartgg {} {
+-    set resp [ipc &quot;getstartgg&quot;]
+-    set ::startgg(token) [lindex $resp 0]
+-    set ::startgg(slug) [lindex $resp 1]
+-}
+-
+-proc loadwebmsg {} {
+-    set resp [ipc &quot;getwebport&quot;]
+-    set webport [lindex $resp 0]
+-    set ::mainstatus &quot;Point your OBS browser source to http://localhost:${webport}&quot;
+-}
+-
+-proc loadcountrycodes {} {
+-    set codes [ipc &quot;getcountrycodes&quot;]
+-    .n.m.players.p1country configure -values $codes
+-    .n.m.players.p2country configure -values $codes
+-}
+-
+-proc loadscoreboard {} {
+-    set sb [ipc &quot;getscoreboard&quot;]
+-    set ::scoreboard(description) [lindex $sb 0]
+-    set ::scoreboard(subtitle) [lindex $sb 1]
+-    set ::scoreboard(p1name) [lindex $sb 2]
+-    set ::scoreboard(p1country) [lindex $sb 3]
+-    set ::scoreboard(p1score) [lindex $sb 4]
+-    set ::scoreboard(p1team) [lindex $sb 5]
+-    set ::scoreboard(p2name) [lindex $sb 6]
+-    set ::scoreboard(p2country) [lindex $sb 7]
+-    set ::scoreboard(p2score) [lindex $sb 8]
+-    set ::scoreboard(p2team) [lindex $sb 9]
+-    update_applied_scoreboard
+-}
+-
+-proc applyscoreboard {} {
+-    set sb [ \
+-        ipc &quot;applyscoreboard&quot; \
+-        $::scoreboard(description) \
+-        $::scoreboard(subtitle) \
+-        $::scoreboard(p1name) \
+-        $::scoreboard(p1country) \
+-        $::scoreboard(p1score) \
+-        $::scoreboard(p1team) \
+-        $::scoreboard(p2name) \
+-        $::scoreboard(p2country) \
+-        $::scoreboard(p2score) \
+-        $::scoreboard(p2team) \
+-    ]
+-    update_applied_scoreboard
+-}
+-
+-proc loadplayernames {} {
+-    set playernames [ipc &quot;searchplayers&quot; &quot;&quot;]
+-    .n.m.players.p1name configure -values $playernames
+-    .n.m.players.p2name configure -values $playernames
+-}
+-
+-proc setupplayersuggestion {} {
+-    proc update_suggestions {_ key _} {
+-        if {!($key == &quot;p1name&quot; || $key == &quot;p2name&quot;)} {
+-            return
+-        }
+-        set newvalue $::scoreboard($key)
+-        set widget .n.m.players.$key
+-        set matches [ipc &quot;searchplayers&quot; $newvalue]
+-        $widget configure -values $matches
+-
+-        if {[llength matches] == 1 &amp;&amp; [lindex $matches 0] == $newvalue} {
+-            set countryvar &quot;p[string index $key 1]country&quot;
+-            set country [lindex [ipc &quot;getplayercountry&quot; $newvalue] 0]
+-            set ::scoreboard($countryvar) $country
+-        }
+-    }
+-    trace add variable ::scoreboard write update_suggestions
+-}
+-
+-proc fetchplayers {} {
+-    if {$::startgg(token) == &quot;&quot; || $::startgg(slug) == &quot;&quot;} {
+-        set ::startgg(msg) &quot;Please enter token &amp; slug first.&quot;
+-        return
+-    }
+-    .n.s.buttons.fetch configure -state disabled
+-    .n.s.buttons.clear configure -state disabled
+-    .n.s.token configure -state disabled
+-    .n.s.tournamentslug configure -state disabled
+-    .n state disabled
+-    set ::startgg(msg) &quot;Fetching...&quot;
+-    ipc_write &quot;fetchplayers&quot; $::startgg(token) $::startgg(slug)
+-}
+-
+-proc fetchplayers__resp {} {
+-    set resp [ipc_read]
+-    set status [lindex $resp 0]
+-    set msg [lindex $resp 1]
+-
+-    set ::startgg(msg) $msg
+-
+-    if {$status == &quot;ok&quot;} {
+-        loadplayernames
+-    }
+-
+-    .n.s.buttons.fetch configure -state normal
+-    .n.s.buttons.clear configure -state normal
+-    .n.s.token configure -state normal
+-    .n.s.tournamentslug configure -state normal
+-    .n state !disabled
+-}
+-
+-proc clearstartgg {} {
+-    set ::startgg(token) &quot;&quot;
+-    set ::startgg(slug) &quot;&quot;
+-    set ::startgg(msg) &quot;&quot;
+-    ipc_write &quot;clearstartgg&quot;
+-}
+-
+-proc discardscoreboard {} {
+-    foreach key [array names ::scoreboard] {
+-        set ::scoreboard($key) $::applied_scoreboard($key)
+-    }
+-    # Country is updated whenever player name is updated,
+-    # so make sure we set countries last.
+-    set ::scoreboard(p1country) $::applied_scoreboard(p1country)
+-    set ::scoreboard(p2country) $::applied_scoreboard(p2country)
+-}
+-
+-proc update_applied_scoreboard {} {
+-    foreach key [array names ::scoreboard] {
+-        set ::applied_scoreboard($key) $::scoreboard($key)
+-    }
+-}
+-
+-proc setupdiffcheck {} {
+-    # Define styling for &quot;dirty&quot;
+-    foreach x {TEntry TCombobox TSpinbox} {
+-        ttk::style configure &quot;Dirty.$x&quot; -fieldbackground #dffcde
+-    }
+-
+-    trace add variable ::scoreboard write ::checkdiff
+-    trace add variable ::applied_scoreboard write ::checkdiff
+-}
+-
+-proc checkdiff {_ key _} {
+-    set widget $::var_to_widget($key)
+-    if {$::scoreboard($key) == $::applied_scoreboard($key)} {
+-        $widget configure -style [winfo class $widget]
+-    } else {
+-        $widget configure -style &quot;Dirty.[winfo class $widget]&quot;
+-    }
+-}
+diff --git a/livereload/error.go b/livereload/error.go
+index 5750618..30b3d42 100644
+--- a/livereload/error.go
++++ b/livereload/error.go
+@@ -7,7 +7,7 @@
+ 	&quot;html/template&quot;
+ 	&quot;net/http&quot;
+ 
+-	&quot;go.imnhan.com/webmaker2000/errs&quot;
++	&quot;go.imnhan.com/s4g/errs&quot;
+ )
+ 
+ //go:embed error.html
+diff --git a/livereload/livereload.go b/livereload/livereload.go
+index 4eb7615..e73eaeb 100644
+--- a/livereload/livereload.go
++++ b/livereload/livereload.go
+@@ -8,7 +8,7 @@
+ 	&quot;strings&quot;
+ 	&quot;sync&quot;
+ 
+-	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
++	&quot;go.imnhan.com/s4g/writablefs&quot;
+ )
+ 
+ const endpoint = &quot;/_livereload&quot;
+diff --git a/livereload/livereload.html b/livereload/livereload.html
+index 0333797..7f97f80 100644
+--- a/livereload/livereload.html
++++ b/livereload/livereload.html
+@@ -1,5 +1,5 @@
+ &lt;!-- Start LiveReload script
+-This &lt;script&gt; tag is injected by WebMaker2000&#39;s local server to force the
++This &lt;script&gt; tag is injected by s4g&#39;s local server to force the
+ browser tab to refresh whenever you make a change to your website folder.
+ It will not appear in your published website.
+ --&gt;
+diff --git a/main.go b/main.go
+index b429160..82713a2 100644
+--- a/main.go
++++ b/main.go
+@@ -17,22 +17,21 @@
+ 	&quot;sync&quot;
+ 	&quot;time&quot;
+ 
+-	&quot;go.imnhan.com/webmaker2000/djot&quot;
+-	&quot;go.imnhan.com/webmaker2000/errs&quot;
+-	&quot;go.imnhan.com/webmaker2000/gui&quot;
+-	&quot;go.imnhan.com/webmaker2000/livereload&quot;
+-	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
++	&quot;go.imnhan.com/s4g/djot&quot;
++	&quot;go.imnhan.com/s4g/errs&quot;
++	&quot;go.imnhan.com/s4g/livereload&quot;
++	&quot;go.imnhan.com/s4g/writablefs&quot;
+ )
+ 
+ const DjotExt = &quot;.dj&quot;
+-const SiteExt = &quot;.wbmkr2k&quot;
++const SiteExt = &quot;.s4g&quot;
+ const SiteFileName = &quot;website&quot; + SiteExt
+ const FeedPath = &quot;feed.xml&quot;
+ const RedirectsPath = &quot;redirects.txt&quot;
+ 
+ func main() {
+ 	invalidCommand := func() {
+-		fmt.Println(&quot;Usage: webfolder2000 new|serve|gui [...]&quot;)
++		fmt.Println(&quot;Usage: s4g new|serve [...]&quot;)
+ 		os.Exit(1)
+ 	}
+ 
+@@ -40,7 +39,7 @@ func main() {
+ 	var cmd string
+ 	var args []string
+ 	if len(os.Args) &lt; 2 {
+-		cmd = &quot;gui&quot;
++		cmd = &quot;serve&quot;
+ 		args = os.Args[1:]
+ 	} else {
+ 		cmd = os.Args[1]
+@@ -63,8 +62,6 @@ func main() {
+ 	case &quot;serve&quot;:
+ 		serveCmd.Parse(args)
+ 		handleServeCmd(serveFolder, servePort)
+-	case &quot;gui&quot;:
+-		handleGuiCmd()
+ 	default:
+ 		invalidCommand()
+ 	}
+@@ -78,22 +75,6 @@ func handleNewCmd(folder string) {
+ 	}
+ }
+ 
+-func handleGuiCmd() {
+-	task, path, ok := gui.ChooseTask(gui.DefaultTclPath)
+-	if !ok {
+-		return
+-	}
+-
+-	switch task {
+-	case gui.TaskOpen:
+-		fmt.Println(task, path)
+-	case gui.TaskCreate:
+-		fmt.Println(task, path)
+-	default:
+-		panic(task)
+-	}
+-}
+-
+ func handleServeCmd(folder, port string) {
+ 	djot.StartService()
+ 	fmt.Println(&quot;Started djot.js service&quot;)
+diff --git a/manifest.go b/manifest.go
+index 42c23f7..e8d2cab 100644
+--- a/manifest.go
++++ b/manifest.go
+@@ -6,12 +6,12 @@
+ 	&quot;sort&quot;
+ 	&quot;strings&quot;
+ 
+-	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
++	&quot;go.imnhan.com/s4g/writablefs&quot;
+ )
+ 
+ const ManifestPath = &quot;manifest.txt&quot;
+ 
+-// Write list of files generated by webmaker2000
++// Write list of files generated by s4g
+ func WriteManifest(fsys writablefs.FS, files map[string]bool) {
+ 	lines := make([]string, 0, len(files))
+ 	for path := range files {
+diff --git a/metadata.go b/metadata.go
+index 0b5a3f4..ea68c76 100644
+--- a/metadata.go
++++ b/metadata.go
+@@ -11,8 +11,8 @@
+ 	&quot;strings&quot;
+ 	&quot;time&quot;
+ 
+-	&quot;go.imnhan.com/webmaker2000/errs&quot;
+-	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
++	&quot;go.imnhan.com/s4g/errs&quot;
++	&quot;go.imnhan.com/s4g/writablefs&quot;
+ )
+ 
+ type SiteMetadata struct {
+diff --git a/redirects.go b/redirects.go
+index a02e42c..603a3bb 100644
+--- a/redirects.go
++++ b/redirects.go
+@@ -9,8 +9,8 @@
+ 	&quot;path/filepath&quot;
+ 	&quot;strings&quot;
+ 
+-	&quot;go.imnhan.com/webmaker2000/errs&quot;
+-	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
++	&quot;go.imnhan.com/s4g/errs&quot;
++	&quot;go.imnhan.com/s4g/writablefs&quot;
+ )
+ 
+ // Returns list of generated files
+diff --git a/theme/includes.tmpl b/theme/includes.tmpl
+index 7f9fdcb..aa3130b 100644
+--- a/theme/includes.tmpl
++++ b/theme/includes.tmpl
+@@ -23,7 +23,7 @@
+ {{- if .Site.ShowFooter -}}
+ &lt;footer&gt;
+ © {{if eq .StartYear .Now.Year}}{{.StartYear}}{{else}}{{.StartYear}}–{{.Now.Year}}{{end}} {{.Site.AuthorName}}&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
+ &lt;/footer&gt;
+ {{- end -}}
+ {{- end}}
+diff --git a/watcher.go b/watcher.go
+index e9e1e47..b7c3e2a 100644
+--- a/watcher.go
++++ b/watcher.go
+@@ -9,7 +9,7 @@
+ 	&quot;time&quot;
+ 
+ 	&quot;github.com/fsnotify/fsnotify&quot;
+-	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
++	&quot;go.imnhan.com/s4g/writablefs&quot;
+ )
+ 
+ var WatchedExts = []string{DjotExt, SiteExt, &quot;.tmpl&quot;}
+</pre></body></html>

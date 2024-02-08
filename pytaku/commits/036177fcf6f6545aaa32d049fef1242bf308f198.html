@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[036177fcf6] use mangadex&#39;s new API | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 036177fcf6</strong><hr><pre>commit 036177fcf6f6545aaa32d049fef1242bf308f198
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Sep 3 12:54:43 2021 +0700
+
+    use mangadex&#39;s new API
+
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index 85e06e4..7340e19 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -1,13 +1,12 @@
+ import html
+ import re
+-import time
+ 
+ import bbcode
+ 
+-from mangoapi.base_site import Site, requires_login
++from mangoapi.base_site import Site
+ 
+ MANGAPLUS_GROUP_ID = 9097
+-LONG_STRIP_TAG_ID = 36
++WEB_COMIC_TAG_ID = &quot;e197df38-d0e7-43b5-9b09-2842d0c326dd&quot;
+ 
+ _bbparser = bbcode.Parser()
+ _bbparser.add_simple_formatter(
+@@ -17,129 +16,136 @@
+ 
+ class Mangadex(Site):
+     def get_title(self, title_id):
+-        url = f&quot;https://mangadex.org/api/v2/manga/{title_id}?include=chapters&quot;
+-        md_resp = self.http_get(url)
++        md_resp = self.http_get(
++            f&quot;https://api.mangadex.org/manga/{title_id}&quot;,
++            params={&quot;includes[]&quot;: &quot;cover_art&quot;},
++        )
++        assert md_resp.status_code == 200
+         md_json = md_resp.json()
+-        assert md_json[&quot;status&quot;] == &quot;OK&quot;
+-        manga = md_json[&quot;data&quot;][&quot;manga&quot;]
+-        chapters = md_json[&quot;data&quot;][&quot;chapters&quot;]
+-        groups = md_json[&quot;data&quot;][&quot;groups&quot;]
+-        groups_dict = {group[&quot;id&quot;]: group[&quot;name&quot;] for group in groups}
++        attrs = md_json[&quot;data&quot;][&quot;attributes&quot;]
+ 
+-        cover = manga[&quot;mainCover&quot;].split(&quot;/&quot;)[-1]
+-        ext_start_index = cover.find(&quot;.&quot;) + 1
+-        url_params_index = cover.rfind(&quot;?&quot;)
+-        ext_end_index = url_params_index if url_params_index != -1 else None
+-        cover_ext = cover[ext_start_index:ext_end_index]
++        is_web_comic = False
++        for tag in attrs[&quot;tags&quot;]:
++            if tag[&quot;id&quot;] == WEB_COMIC_TAG_ID:
++                is_web_comic = True
++                break
+ 
+-        current_timestamp = time.time()
++        cover = None
++        for rel in md_json[&quot;relationships&quot;]:
++            if rel[&quot;type&quot;] == &quot;cover_art&quot;:
++                cover = rel[&quot;attributes&quot;][&quot;fileName&quot;]
+ 
+         title = {
+             &quot;id&quot;: title_id,
+-            &quot;name&quot;: manga[&quot;title&quot;],
++            &quot;name&quot;: attrs[&quot;title&quot;][&quot;en&quot;],
+             &quot;site&quot;: &quot;mangadex&quot;,
+-            &quot;cover_ext&quot;: cover_ext,
+-            &quot;alt_names&quot;: manga[&quot;altTitles&quot;],
++            &quot;cover_ext&quot;: cover,
++            &quot;alt_names&quot;: [alt[&quot;en&quot;] for alt in attrs[&quot;altTitles&quot;]],
+             &quot;descriptions&quot;: [
+-                _bbparser.format(html.unescape(manga[&quot;description&quot;]).strip())
++                _bbparser.format(html.unescape(attrs[&quot;description&quot;][&quot;en&quot;]).strip())
+             ],
+             &quot;descriptions_format&quot;: &quot;html&quot;,
+-            &quot;is_webtoon&quot;: LONG_STRIP_TAG_ID in manga[&quot;tags&quot;],
+-            &quot;chapters&quot;: [
++            &quot;is_webtoon&quot;: is_web_comic,
++            &quot;chapters&quot;: self.get_chapters_list(title_id),
++        }
++        return title
++
++    def get_chapters_list(self, title_id):
++        resp = self.http_get(
++            f&quot;https://api.mangadex.org/manga/{title_id}/aggregate&quot;,
++            params={&quot;translatedLanguage[]&quot;: &quot;en&quot;},
++        )
++        assert resp.status_code == 200
++        volumes: dict = resp.json()[&quot;volumes&quot;]
++        chapters = []
++
++        # Counting on python&#39;s spanking new key-order-preserving dicts here.
++        # But WHY THE ACTUAL FUCK would you (mangadex) depend on JSON&#39;s key-value pairs ordering?
++        # A JSON object&#39;s keys is supposed to be unordered FFS.
++        # If it actually becomes a problem I&#39;ll do chapter sorting later. Soon. Ish.
++        for vol in volumes.values():
++            chapters += [
+                 {
+-                    &quot;id&quot;: str(chap[&quot;id&quot;]),
+-                    &quot;name&quot;: chap[&quot;title&quot;],
+-                    &quot;volume&quot;: int(chap[&quot;volume&quot;]) if chap[&quot;volume&quot;] else None,
+-                    &quot;groups&quot;: [
+-                        html.unescape(groups_dict[group_id])
+-                        for group_id in chap[&quot;groups&quot;]
+-                    ],
++                    &quot;id&quot;: chap[&quot;id&quot;],
++                    &quot;name&quot;: &quot;&quot;,
++                    &quot;groups&quot;: [],  # TODO
++                    &quot;volume&quot;: None if vol[&quot;volume&quot;] == &quot;none&quot; else int(vol[&quot;volume&quot;]),
+                     **_parse_chapter_number(chap[&quot;chapter&quot;]),
+                 }
+-                for chap in chapters
+-                if chap[&quot;language&quot;] == &quot;gb&quot;
+-                and MANGAPLUS_GROUP_ID not in chap[&quot;groups&quot;]
+-                and chap[&quot;timestamp&quot;] &lt;= current_timestamp
+-                # ^ Chapter may be listed but with access delayed for a certain amount
+-                # of time set by uploader, in which case we just filter it out. God I
+-                # hate this generation of Patreon &quot;scanlators&quot;.
+-            ],
+-        }
+-        return title
++                for chap in vol[&quot;chapters&quot;].values()  # again, fucking yikes
++            ]
++
++        return chapters
+ 
+     def get_chapter(self, title_id, chapter_id):
+-        md_resp = self.http_get(
+-            f&quot;https://mangadex.org/api/v2/chapter/{chapter_id}?saver=0&quot;
+-        )
++        md_resp = self.http_get(f&quot;https://api.mangadex.org/chapter/{chapter_id}&quot;)
++        assert md_resp.status_code == 200
+         md_json = md_resp.json()
+-        assert md_json[&quot;status&quot;] == &quot;OK&quot;
+         data = md_json[&quot;data&quot;]
+ 
+-        # 2 cases:
+-        # - If &#39;serverFallback&#39; is absent, it means &#39;server&#39; points to MD&#39;s own server
+-        #   e.g. s5.mangadex.org...
+-        # - Otherwise, &#39;server&#39; points to a likely ephemeral MD@H node, while
+-        # &#39;serverFallback&#39; now points to MD&#39;s own server.
+-        #
+-        # MD&#39;s own links apparently go dead sometimes, but MD@H links seem to expire
+-        # quickly all the time, so it&#39;s probably a good idea to store both anyway.
+-
+-        server_fallback = data.get(&quot;serverFallback&quot;)
+-        if server_fallback:
+-            md_server = server_fallback
+-            mdah_server = data[&quot;server&quot;]
+-        else:
+-            md_server = data[&quot;server&quot;]
+-            mdah_server = None
++        title_id = None
++        for rel in data[&quot;relationships&quot;]:
++            if rel[&quot;type&quot;] == &quot;manga&quot;:
++                title_id = rel[&quot;id&quot;]
++                break
++
++        chapter_hash = data[&quot;attributes&quot;][&quot;hash&quot;]
++        filenames = data[&quot;attributes&quot;][&quot;data&quot;]
++        md_server = &quot;https://uploads.mangadex.org&quot;
++
++        mdah_server = self._get_md_at_home_server(chapter_id)
++        if mdah_server != md_server:
++            print(&quot;&gt;&gt; MDAH-server:&quot;, mdah_server)
+ 
+         chapter = {
+             &quot;id&quot;: chapter_id,
+-            &quot;title_id&quot;: str(data[&quot;mangaId&quot;]),
++            &quot;title_id&quot;: title_id,
+             &quot;site&quot;: &quot;mangadex&quot;,
+-            &quot;name&quot;: data[&quot;title&quot;],
+-            &quot;pages&quot;: [f&quot;{md_server}{data[&#39;hash&#39;]}/{page}&quot; for page in data[&quot;pages&quot;]],
++            &quot;name&quot;: data[&quot;attributes&quot;][&quot;title&quot;],
++            &quot;pages&quot;: [
++                f&quot;{md_server}/data/{chapter_hash}/{filename}&quot; for filename in filenames
++            ],
+             &quot;pages_alt&quot;: [
+-                f&quot;{mdah_server}{data[&#39;hash&#39;]}/{page}&quot; for page in data[&quot;pages&quot;]
++                f&quot;{mdah_server}/data/{chapter_hash}/{filename}&quot;
++                for filename in filenames
+             ]
+-            if mdah_server
++            if mdah_server is not None and mdah_server != md_server
+             else [],
+-            &quot;groups&quot;: [html.unescape(group[&quot;name&quot;]) for group in data[&quot;groups&quot;]],
+-            **_parse_chapter_number(data[&quot;chapter&quot;]),
++            &quot;groups&quot;: [],  # TODO
++            **_parse_chapter_number(data[&quot;attributes&quot;][&quot;chapter&quot;]),
+         }
+         return chapter
+ 
+-    @requires_login
++    def _get_md_at_home_server(self, chapter_id):
++        resp = self.http_get(f&quot;https://api.mangadex.org/at-home/server/{chapter_id}&quot;)
++        return resp.json()[&quot;baseUrl&quot;] if resp.status_code == 200 else None
++
+     def search_title(self, query):
+-        md_resp = self.http_get(f&quot;https://mangadex.org/quick_search/{query}&quot;)
+-
+-        matches = TITLES_PATTERN.findall(md_resp.text)
+-        titles = [
+-            {
+-                &quot;id&quot;: id,
+-                &quot;name&quot;: name.strip(),
+-                &quot;site&quot;: &quot;mangadex&quot;,
+-                &quot;thumbnail&quot;: f&quot;https://mangadex.org/images/manga/{id}.large.jpg&quot;,
+-            }
+-            for id, name in matches
+-        ]
+-        return titles
++        params = {&quot;limit&quot;: 100, &quot;title&quot;: query, &quot;includes[]&quot;: &quot;cover_art&quot;}
++        md_resp = self.http_get(&quot;https://api.mangadex.org/manga&quot;, params=params)
++        assert md_resp.status_code == 200
++        results = md_resp.json()[&quot;results&quot;]
++
++        titles = []
++        for result in results:
++            data = result[&quot;data&quot;]
++            cover = None
++            for rel in result[&quot;relationships&quot;]:
++                if rel[&quot;type&quot;] == &quot;cover_art&quot;:
++                    cover = rel[&quot;attributes&quot;][&quot;fileName&quot;]
++            titles.append(
++                {
++                    &quot;id&quot;: data[&quot;id&quot;],
++                    &quot;name&quot;: data[&quot;attributes&quot;][&quot;title&quot;][&quot;en&quot;],
++                    &quot;site&quot;: &quot;mangadex&quot;,
++                    &quot;thumbnail&quot;: f&quot;https://uploads.mangadex.org/covers/{data[&#39;id&#39;]}/{cover}.256.jpg&quot;,
++                }
++            )
+ 
+-    def login(self, username, password):
+-        form_data = {
+-            &quot;login_username&quot;: username,
+-            &quot;login_password&quot;: password,
+-            &quot;two_factor&quot;: &quot;&quot;,
+-            &quot;remember_me&quot;: &quot;1&quot;,
+-        }
+-        self.http_post(
+-            &quot;https://mangadex.org/ajax/actions.ajax.php?function=login&quot;,
+-            data=form_data,
+-            headers={&quot;X-Requested-With&quot;: &quot;XMLHttpRequest&quot;},
+-        )
+-        self.is_logged_in = True
++        return titles
+ 
+     def title_cover(self, title_id, cover_ext):
+-        return f&quot;https://mangadex.org/images/manga/{title_id}.{cover_ext}&quot;
++        return f&quot;https://uploads.mangadex.org/covers/{title_id}/{cover_ext}.256.jpg&quot;
+ 
+     def title_thumbnail(self, title_id):
+         return f&quot;https://mangadex.org/images/manga/{title_id}.large.jpg&quot;
+@@ -156,7 +162,7 @@ def title_source_url(self, title_id):
+ 
+ 
+ def _parse_chapter_number(string):
+-    if string == &quot;&quot;:
++    if string == &quot;none&quot;:
+         # most likely a oneshot
+         return {&quot;number&quot;: &quot;&quot;}
+     nums = string.split(&quot;.&quot;)
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 88e51d1..8096c12 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -74,7 +74,7 @@ def _decode_proxy_url(b64_url):
+ 
+ def _is_manga_img_url(
+     url,
+-    cover_pattern=re.compile(r&quot;^https://([\w-]+\.)?mangadex\.org/images&quot;),
++    cover_pattern=re.compile(r&quot;^https://([\w-]+\.)?mangadex\.org/(images|covers)&quot;),
+ ):
+     &quot;&quot;&quot;
+     Check if either a cover or page img url.
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index 43efd93..ea8d676 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -335,7 +335,7 @@ .search--result-text {
+ 
+ /* Title route */
+ .title--cover {
+-  width: 400px;
++  max-width: 400px;
+   border: 1px solid black;
+ }
+ 
+diff --git a/tests/mangoapi/test_mangadex.py b/tests/mangoapi/test_mangadex.py
+index 74f3c30..886a20e 100644
+--- a/tests/mangoapi/test_mangadex.py
++++ b/tests/mangoapi/test_mangadex.py
+@@ -1,127 +1,108 @@
+ from mangoapi.mangadex import Mangadex
+-from pytaku.conf import config
+ 
+ 
+ def test_get_title():
+-    title = Mangadex().get_title(&quot;2597&quot;)
++    title = Mangadex().get_title(&quot;8af3ad21-3e7e-4fb5-b344-d0044ec154fc&quot;)
++    chapters = title.pop(&quot;chapters&quot;)
+     assert title == {
+-        &quot;id&quot;: &quot;2597&quot;,
+-        &quot;name&quot;: &quot;Sayonara Football&quot;,
++        &quot;id&quot;: &quot;8af3ad21-3e7e-4fb5-b344-d0044ec154fc&quot;,
++        &quot;name&quot;: &quot;Beelzebub&quot;,
+         &quot;site&quot;: &quot;mangadex&quot;,
+-        &quot;cover_ext&quot;: &quot;jpg&quot;,
+-        &quot;alt_names&quot;: [&quot;Adiós al fútbol&quot;, &quot;さよならフットボール&quot;, &quot;再见足球&quot;],
+-        &quot;is_webtoon&quot;: False,
+-        &quot;descriptions&quot;: [
+-            &quot;Nozomi wants to enter the newcomer&#39;s competition. But the coach is against it, because their club is a boy&#39;s football club and she&#39;s... a she. Will she be able to enter the match she wants to play in?&quot;
++        &quot;cover_ext&quot;: &quot;bab3ccbf-7479-4117-ad92-4dedced54ceb.jpg&quot;,
++        &quot;alt_names&quot;: [
++            &quot;Beruzebabu&quot;,
++            &quot;Вельзевул&quot;,
++            &quot;เด็กพันธุ์นรกสั่งลุย&quot;,
++            &quot;べるぜバブ&quot;,
++            &quot;恶魔奶爸&quot;,
++            &quot;惡魔奶爸&quot;,
++            &quot;바알세불&quot;,
+         ],
+-        &quot;chapters&quot;: [
+-            {
+-                &quot;id&quot;: &quot;84598&quot;,
+-                &quot;name&quot;: &quot;Epilogue&quot;,
+-                &quot;volume&quot;: 2,
+-                &quot;groups&quot;: [&quot;Shoujo Crusade&quot;],
+-                &quot;number&quot;: &quot;8&quot;,
+-                &quot;num_major&quot;: 8,
+-            },
+-            {
+-                &quot;id&quot;: &quot;84596&quot;,
+-                &quot;name&quot;: &quot;Football Under the Blue Sky&quot;,
+-                &quot;volume&quot;: 2,
+-                &quot;groups&quot;: [&quot;Shoujo Crusade&quot;],
+-                &quot;number&quot;: &quot;7&quot;,
+-                &quot;num_major&quot;: 7,
+-            },
+-            {
+-                &quot;id&quot;: &quot;84594&quot;,
+-                &quot;name&quot;: &quot;Everyone in a Crisis&quot;,
+-                &quot;volume&quot;: 2,
+-                &quot;groups&quot;: [&quot;Shoujo Crusade&quot;],
+-                &quot;number&quot;: &quot;6&quot;,
+-                &quot;num_major&quot;: 6,
+-            },
+-            {
+-                &quot;id&quot;: &quot;84592&quot;,
+-                &quot;name&quot;: &quot;Clash and Decide&quot;,
+-                &quot;volume&quot;: 2,
+-                &quot;groups&quot;: [&quot;Shoujo Crusade&quot;],
+-                &quot;number&quot;: &quot;5&quot;,
+-                &quot;num_major&quot;: 5,
+-            },
+-            {
+-                &quot;id&quot;: &quot;84590&quot;,
+-                &quot;name&quot;: &quot;And There&#39;s the Whistle&quot;,
+-                &quot;volume&quot;: 1,
+-                &quot;groups&quot;: [&quot;Shoujo Crusade&quot;],
+-                &quot;number&quot;: &quot;4&quot;,
+-                &quot;num_major&quot;: 4,
+-            },
+-            {
+-                &quot;id&quot;: &quot;84589&quot;,
+-                &quot;name&quot;: &quot;A Plan to Become a Regular&quot;,
+-                &quot;volume&quot;: 1,
+-                &quot;groups&quot;: [&quot;Shoujo Crusade&quot;],
+-                &quot;number&quot;: &quot;3&quot;,
+-                &quot;num_major&quot;: 3,
+-            },
+-            {
+-                &quot;id&quot;: &quot;84587&quot;,
+-                &quot;name&quot;: &quot;Her Determination at That Time&quot;,
+-                &quot;volume&quot;: 1,
+-                &quot;groups&quot;: [&quot;Shoujo Crusade&quot;],
+-                &quot;number&quot;: &quot;2&quot;,
+-                &quot;num_major&quot;: 2,
+-            },
+-            {
+-                &quot;id&quot;: &quot;84585&quot;,
+-                &quot;name&quot;: &quot;The Entry of an Unmanageable Woman&quot;,
+-                &quot;volume&quot;: 1,
+-                &quot;groups&quot;: [&quot;Shoujo Crusade&quot;],
+-                &quot;number&quot;: &quot;1&quot;,
+-                &quot;num_major&quot;: 1,
+-            },
++        &quot;descriptions&quot;: [
++            &quot;Ishiyama High is a school populated entirely by &quot;
++            &quot;delinquents, where nonstop violence and lawlessness are the &quot;
++            &quot;norm. However, there is one universally acknowledged &quot;
++            &quot;rule—don&amp;#39;t cross first year student Tatsumi Oga, &quot;
++            &quot;Ishiyama&amp;#39;s most vicious fighter.&lt;br /&gt;&lt;br /&gt;One day, &quot;
++            &quot;Oga is by a riverbed when he encounters a man floating down &quot;
++            &quot;the river. After being retrieved by Oga, the man splits &quot;
++            &quot;down the middle to reveal a baby, which crawls onto &quot;
++            &quot;Oga&amp;#39;s back and immediately forms an attachment to him. &quot;
++            &quot;Though he doesn&amp;#39;t know it yet, this baby is named &quot;
++            &quot;Kaiser de Emperana Beelzebub IV, or &amp;quot;Baby Beel&amp;quot; &quot;
++            &quot;for short—the son of the Demon Lord!&lt;br /&gt;&lt;br /&gt;As if &quot;
++            &quot;finding the future Lord of the Underworld isn&amp;#39;t enough, &quot;
++            &quot;Oga is also confronted by Hildegard, Beel&amp;#39;s demon maid &quot;
++            &quot;who insists he take responsibility as Beel&amp;#39;s guardian. &quot;
++            &quot;Together they attempt to raise Baby Beel—although &quot;
++            &quot;surrounded by juvenile delinquents and demonic powers, the &quot;
++            &quot;two of them may be in for more of a challenge than they can &quot;
++            &quot;imagine.&lt;br /&gt;&lt;hr /&gt;&quot;
+         ],
++        &quot;descriptions_format&quot;: &quot;html&quot;,
++        &quot;is_webtoon&quot;: False,
++    }
++
++    assert len(chapters) == 252
++    assert chapters[1] == {
++        &quot;id&quot;: &quot;dfd3fd5a-a20f-460f-b726-e9cb168bfe3d&quot;,
++        &quot;name&quot;: &quot;&quot;,
++        &quot;volume&quot;: 28,
++        &quot;groups&quot;: [],
++        &quot;number&quot;: &quot;245&quot;,
++        &quot;num_major&quot;: 245,
+     }
+ 
+ 
+ def test_get_title_webtoon():
+-    title = Mangadex().get_title(&quot;1&quot;)
++    title = Mangadex().get_title(&quot;6e3553b9-ddb5-4d37-b7a3-99998044774e&quot;)
+     assert title[&quot;is_webtoon&quot;] is True
+ 
+ 
+-def test_get_title_no_url_params():
+-    title = Mangadex().get_title(&quot;23801&quot;)
+-    assert title[&quot;cover_ext&quot;] == &quot;jpg&quot;
+-
+-
+ def test_get_chapter():
+-    chap = Mangadex().get_chapter(&quot;doesn&#39;t matter&quot;, &quot;696882&quot;)
++    chap = Mangadex().get_chapter(&quot;_&quot;, &quot;7f49d795-d525-4b65-9fd8-ddb58425683e&quot;)
+     pages = chap.pop(&quot;pages&quot;)
+     pages_alt = chap.pop(&quot;pages_alt&quot;)
+     assert chap == {
+-        &quot;id&quot;: &quot;696882&quot;,
+-        &quot;title_id&quot;: &quot;12088&quot;,
++        &quot;id&quot;: &quot;7f49d795-d525-4b65-9fd8-ddb58425683e&quot;,
++        &quot;title_id&quot;: &quot;6e3553b9-ddb5-4d37-b7a3-99998044774e&quot;,
+         &quot;site&quot;: &quot;mangadex&quot;,
+-        &quot;name&quot;: &quot;Extras&quot;,
+-        &quot;groups&quot;: [&quot;Träumerei Scans&quot;, &quot;GlassChair&quot;],
+-        &quot;number&quot;: &quot;81.5&quot;,
+-        &quot;num_major&quot;: 81,
++        &quot;name&quot;: &quot;Volume 15 Extras (Epilogue &amp; Prologue)&quot;,
++        &quot;groups&quot;: [],
++        &quot;number&quot;: &quot;222.5&quot;,
++        &quot;num_major&quot;: 222,
+         &quot;num_minor&quot;: 5,
+     }
+-    assert len(pages) == 16
+-    assert len(pages_alt) == 16
++    assert len(pages) == 53
++    assert len(pages_alt) == 0
+ 
+ 
+ def test_search():
+     md = Mangadex()
+-    md.username = config.MANGADEX_USERNAME
+-    md.password = config.MANGADEX_PASSWORD
+-
+-    results = md.search_title(&quot;sayonara football&quot;)
++    results = md.search_title(&quot;beelzebub&quot;)
+     assert results == [
+         {
+-            &quot;id&quot;: &quot;2597&quot;,
+-            &quot;name&quot;: &quot;Sayonara Football&quot;,
++            &quot;id&quot;: &quot;8af3ad21-3e7e-4fb5-b344-d0044ec154fc&quot;,
++            &quot;name&quot;: &quot;Beelzebub&quot;,
++            &quot;site&quot;: &quot;mangadex&quot;,
++            &quot;thumbnail&quot;: &quot;https://uploads.mangadex.org/covers/8af3ad21-3e7e-4fb5-b344-d0044ec154fc/bab3ccbf-7479-4117-ad92-4dedced54ceb.jpg.256.jpg&quot;,
++        },
++        {
++            &quot;id&quot;: &quot;b4320039-9b91-44a7-a60d-c7ba8c0684e7&quot;,
++            &quot;name&quot;: &quot;Beelzebub-jou no Oki ni Mesu mama.&quot;,
++            &quot;site&quot;: &quot;mangadex&quot;,
++            &quot;thumbnail&quot;: &quot;https://uploads.mangadex.org/covers/b4320039-9b91-44a7-a60d-c7ba8c0684e7/ed566a45-c9f2-4f7e-84f8-ae7fc328ab15.jpg.256.jpg&quot;,
++        },
++        {
++            &quot;id&quot;: &quot;a453af66-0dac-4966-b246-b37c96b27245&quot;,
++            &quot;name&quot;: &quot;Makai kara Kita Maid-san&quot;,
++            &quot;site&quot;: &quot;mangadex&quot;,
++            &quot;thumbnail&quot;: &quot;https://uploads.mangadex.org/covers/a453af66-0dac-4966-b246-b37c96b27245/7e50b22d-b027-4ee1-bd15-94f05fa6cecb.jpg.256.jpg&quot;,
++        },
++        {
++            &quot;id&quot;: &quot;72378871-9afc-47bd-902f-0d8116adb390&quot;,
++            &quot;name&quot;: &quot;Beelzebub - Digital Colored Comics&quot;,
+             &quot;site&quot;: &quot;mangadex&quot;,
+-            &quot;thumbnail&quot;: &quot;https://mangadex.org/images/manga/2597.large.jpg&quot;,
+-        }
++            &quot;thumbnail&quot;: &quot;https://uploads.mangadex.org/covers/72378871-9afc-47bd-902f-0d8116adb390/c8b9b385-b7b9-4101-bf71-4f0d66fc35ff.jpg.256.jpg&quot;,
++        },
+     ]
+</pre></body></html>

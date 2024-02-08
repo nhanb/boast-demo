@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ffc1fbef84] stop embedding tcl script into go binary | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / ffc1fbef84</strong><hr><pre>commit ffc1fbef8406f420848af673e85eb177aa34f170
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jun 21 23:43:27 2023 +0700
+
+    stop embedding tcl script into go binary
+
+diff --git a/Makefile b/Makefile
+index 31971fd..9bc32b6 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,12 +1,18 @@
+ windows:
+ 	CGO_ENABLED=0 GOOS=windows \
+ 		go build -o dist/windows/gorts.exe -ldflags -H=windowsgui
++	rm -rf dist/windows/web
+ 	cp -r web dist/windows/web
++	rm -rf dist/windows/tcl
++	cp -r tcl dist/windows/tcl
+ 	cp players.sample.csv dist/windows/
+ 
+ linux:
+ 	CGO_ENABLED=0 GOOS=linux go build -o dist/linux/gorts
++	rm -rf dist/linux/web
+ 	cp -r web dist/linux/web
++	rm -rf dist/linux/tcl
++	cp -r tcl dist/linux/tcl
+ 	cp players.sample.csv dist/linux/
+ 
+ dist/GORTS-Windows.zip: windows
+diff --git a/main.go b/main.go
+index 2dd7465..6ee2a7b 100644
+--- a/main.go
++++ b/main.go
+@@ -26,9 +26,6 @@
+ const PlayersFile = &quot;players.csv&quot;
+ const StartggFile = &quot;creds-start.gg&quot;
+ 
+-//go:embed tcl/main.tcl
+-var mainTcl string
+-
+ //go:embed gorts.png
+ var gortsPngIcon []byte
+ 
+@@ -54,7 +51,7 @@ func startGUI() {
+ 		tclPath = &quot;./tclkit.exe&quot;
+ 	}
+ 
+-	cmd := exec.Command(tclPath)
++	cmd := exec.Command(tclPath, &quot;-encoding&quot;, &quot;utf-8&quot;)
+ 	stdout, err := cmd.StdoutPipe()
+ 	if err != nil {
+ 		panic(err)
+@@ -83,7 +80,7 @@ func startGUI() {
+ 		}
+ 	}()
+ 
+-	fmt.Fprintln(stdin, mainTcl)
++	fmt.Fprintln(stdin, `source -encoding &quot;utf-8&quot; tcl/main.tcl`)
+ 	println(&quot;Loaded main tcl script.&quot;)
+ 
+ 	allplayers := players.FromFile(PlayersFile)
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index 9944ef1..87935b1 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -8,7 +8,7 @@ foreach p {stdin stdout stderr} {
+     fconfigure $p -translation lf
+ }
+ 
+-source tcl/netstring.tcl
++source -encoding &quot;utf-8&quot; tcl/netstring.tcl
+ 
+ package require Tk
+ 
+</pre></body></html>

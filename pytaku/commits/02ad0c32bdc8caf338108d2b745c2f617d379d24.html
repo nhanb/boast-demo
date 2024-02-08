@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[02ad0c32bd] more compact empty titles | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 02ad0c32bd</strong><hr><pre>commit 02ad0c32bdc8caf338108d2b745c2f617d379d24
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Aug 7 22:34:47 2020 +0700
+
+    more compact empty titles
+
+diff --git a/src/pytaku/templates/follows.html b/src/pytaku/templates/follows.html
+index e166017..a3ccba1 100644
+--- a/src/pytaku/templates/follows.html
++++ b/src/pytaku/templates/follows.html
+@@ -13,6 +13,12 @@
+   margin-bottom: var(--body-padding);
+   background-color: #efefef;
+ }
++.title.empty {
++  display: inline-flex;
++}
++.title.empty .chapters {
++  display: none;
++}
+ 
+ .cover {
+   border: 1px solid #777;
+@@ -59,7 +65,7 @@
+ 
+ {% for title in titles %}
+ {% set title_url = url_for(&#39;title_view&#39;, site=title[&#39;site&#39;], title_id=title[&#39;id&#39;]) %}
+-&lt;div class=&quot;title&quot;&gt;
++&lt;div class=&quot;title {% if title[&#39;chapters&#39;]|length == 0 %}empty{% endif %}&quot;&gt;
+   &lt;div&gt;
+     &lt;a href=&quot;{{ title_url }}&quot;&gt;
+       &lt;img class=&quot;cover&quot;
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index 061a70a..c5ecc47 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -44,7 +44,7 @@ &lt;h1&gt;{{ name }}&lt;/h1&gt;
+ 
+ &lt;table&gt;
+   &lt;tr&gt;
+-    &lt;th&gt;Finished?&lt;/th&gt;
++    &lt;th&gt;Done&lt;/th&gt;
+     &lt;th&gt;Name&lt;/th&gt;
+     &lt;th&gt;Group&lt;/th&gt;
+   &lt;/tr&gt;
+</pre></body></html>

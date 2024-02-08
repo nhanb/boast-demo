@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[2fa78ecb86] add systemd unit files, automate deployment | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 2fa78ecb86</strong><hr><pre>commit 2fa78ecb86d2f2f79f63faebb1a218c3bd9ef6a3
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 8 22:41:03 2020 +0700
+
+    add systemd unit files, automate deployment
+
+diff --git a/.builds/ubuntu.yml b/.builds/ubuntu.yml
+index f76388d..bc4db4a 100644
+--- a/.builds/ubuntu.yml
++++ b/.builds/ubuntu.yml
+@@ -5,6 +5,8 @@ secrets:
+   - 89816c8b-4416-4a78-84ee-3ad77b485912
+   # PyPI token for pytaku:
+   - 8c42b8a6-d1b7-4af7-82f2-b8f1b6e085e2
++  # ssh key for dev.pytaku.com:
++  - 2d6e3246-5adc-41c2-bebe-01dacda9d0c8
+ 
+ environment:
+   # Ugly hack to prepend to PATH:
+@@ -32,8 +34,6 @@ tasks:
+       source ~/venv/bin/activate
+       curl https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py
+       python get-poetry.py -y
+-      cd pytaku
+-      poetry install
+ 
+   - build: |
+       cd pytaku
+@@ -43,10 +43,30 @@ tasks:
+   # Builds.sr.ht doesn&#39;t support tag or even branch detection yet:
+   # &gt; https://todo.sr.ht/~sircmpwn/builds.sr.ht/170
+   # So here I manually check for it:
+-  - check-publish: |
+-      cd pytaku
+-      git describe --exact-match HEAD || complete-build
++  #- check-publish: |
++      #cd pytaku
++      #git describe --exact-match HEAD || complete-build
+ 
+   - publish: |
+       cd pytaku
+       poetry publish
++
++  - deploy-dev: |
++      # I&#39;m not installing pytaku from pypi here because it may
++      # take a loooong time for the new version to appear.
++      cd pytaku
++      echo &quot;dev.pytaku.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBAQ1jWerB3GUGRhaZZzgpRyCSwo7PRi1cPbokaAwwsAKts1dkXSdCtR9xoTXKdvhASX5xafdzHZqbyFzpc0RleM=&quot; &gt;&gt; ~/.ssh/known_hosts
++      # Clean up old stuff just in case
++      ssh -i ~/.ssh/2d6e3246-5adc-41c2-bebe-01dacda9d0c8 pytaku@dev.pytaku.com &#39;rm -f /home/pytaku/pytaku*.whl&#39;
++      # Copy wheel &amp; systemd service files over
++      scp -i ~/.ssh/2d6e3246-5adc-41c2-bebe-01dacda9d0c8 dist/pytaku*.whl pytaku@dev.pytaku.com:/home/pytaku/
++      scp -i ~/.ssh/2d6e3246-5adc-41c2-bebe-01dacda9d0c8 contrib/systemd/*.service pytaku@dev.pytaku.com:/home/pytaku/.config/systemd/user/
++      # Install &amp; restart serivces
++      ssh -i ~/.ssh/2d6e3246-5adc-41c2-bebe-01dacda9d0c8 pytaku@dev.pytaku.com &quot;
++        ~/.local/bin/pip install --user pytaku*.whl
++        systemctl --user daemon-reload
++        systemctl --user restart pytaku
++        systemctl --user restart pytaku-scheduler
++        rm pytaku*.whl
++        echo &#39;All done.&#39;
++      &quot;
+diff --git a/contrib/systemd/pytaku-scheduler.service b/contrib/systemd/pytaku-scheduler.service
+new file mode 100644
+index 0000000..d7fc3e7
+--- /dev/null
++++ b/contrib/systemd/pytaku-scheduler.service
+@@ -0,0 +1,17 @@
++# this goes in ~/.config/systemd/user/pytaku-scheduler.service
++
++# systemctl --user daemon-reload
++# systemctl --user enable pytaku-scheduler
++# systemctl --user restart pytaku-scheduler
++# loginctl enable-linger &lt;username&gt;
++
++[Unit]
++Description=Pytaku scheduler
++
++[Service]
++Environment=&quot;PYTHONUNBUFFERED=1&quot;
++ExecStart=/home/pytaku/.local/bin/pytaku-scheduler
++WorkingDirectory=/home/pytaku/pytaku
++
++[Install]
++WantedBy=default.target
+diff --git a/contrib/systemd/pytaku.service b/contrib/systemd/pytaku.service
+new file mode 100644
+index 0000000..70bd657
+--- /dev/null
++++ b/contrib/systemd/pytaku.service
+@@ -0,0 +1,17 @@
++# this goes in ~/.config/systemd/user/pytaku.service
++
++# systemctl --user daemon-reload
++# systemctl --user enable pytaku
++# systemctl --user restart pytaku
++# loginctl enable-linger &lt;username&gt;
++
++[Unit]
++Description=Pytaku server
++
++[Service]
++Environment=&quot;PYTHONUNBUFFERED=1&quot;
++ExecStart=/bin/bash -c &#39;export PATH=$PATH:$HOME/.local/bin; pytaku -w 10 -b 0.0.0.0:5001&#39;
++WorkingDirectory=/home/pytaku/pytaku
++
++[Install]
++WantedBy=default.target
+diff --git a/pyproject.toml b/pyproject.toml
+index 17c5d63..03f6414 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.2.10&quot;
++version = &quot;0.2.11&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+</pre></body></html>

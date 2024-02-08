@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[5b53ca85e9] more reasonable cache defaults | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 5b53ca85e9</strong><hr><pre>commit 5b53ca85e9f1c8fddf5ef339791235e3ba6b80be
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 30 16:51:28 2020 +0700
+
+    more reasonable cache defaults
+
+diff --git a/src/pytaku/conf.py b/src/pytaku/conf.py
+index 3ceb731..5fe3d0e 100644
+--- a/src/pytaku/conf.py
++++ b/src/pytaku/conf.py
+@@ -11,8 +11,8 @@ class Config(GoodConf):
+     PROXY_PREFIX = Value(default=&quot;&quot;)
+     # ^ use this to e.g. point to a CDN&#39;s domain
+     PROXY_CACHE_DIR = Value(default=&quot;proxy_cache&quot;)
+-    PROXY_CACHE_MAX_SIZE = Value(default=1024 * 1024 * 1024)  # 1GiB in bytes
+-    PROXY_CACHE_MAX_AGE = Value(default=3600 * 24 * 7)  # 7 weeks in seconds
++    PROXY_CACHE_MAX_SIZE = Value(default=1024 * 1024 * 1024 * 5)  # 5GiB in bytes
++    PROXY_CACHE_MAX_AGE = Value(default=3600 * 24 * 2)  # 2 days in seconds
+ 
+ 
+ config = Config(default_files=[&quot;pytaku.conf.json&quot;])
+</pre></body></html>

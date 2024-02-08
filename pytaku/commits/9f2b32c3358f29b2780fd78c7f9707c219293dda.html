@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[9f2b32c335] mithril &quot;follows&quot; route | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 9f2b32c335</strong><hr><pre>commit 9f2b32c3358f29b2780fd78c7f9707c219293dda
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Aug 18 23:02:46 2020 +0700
+
+    mithril &quot;follows&quot; route
+
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index b73dc0e..0791098 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -435,4 +435,10 @@ def api_logout():
+ @app.route(&quot;/api/follows&quot;, methods=[&quot;GET&quot;])
+ @require_token
+ def api_follows():
+-    return jsonify({&quot;message&quot;: &quot;TODO&quot;})
++    titles = get_followed_titles(request.user_id)
++    for title in titles:
++        thumbnail = title_thumbnail(title[&quot;site&quot;], title[&quot;id&quot;])
++        if title[&quot;site&quot;] == &quot;mangadex&quot;:
++            thumbnail = url_for(&quot;proxy_view&quot;, b64_url=_encode_proxy_url(thumbnail))
++        title[&quot;thumbnail&quot;] = thumbnail
++    return jsonify({&quot;titles&quot;: titles})
+diff --git a/src/pytaku/static/js/routes/follows.js b/src/pytaku/static/js/routes/follows.js
+index cd4e18f..06679fc 100644
+--- a/src/pytaku/static/js/routes/follows.js
++++ b/src/pytaku/static/js/routes/follows.js
+@@ -1,29 +1,112 @@
+ import { Auth } from &quot;../models.js&quot;;
+ 
++const truncate = (input) =&gt;
++  input.length &gt; 20 ? `${input.substring(0, 20)}...` : input;
++
++function fullChapterName(chapter) {
++  let result = &quot;Chapter &quot; + chapter.num_major;
++  if (chapter.num_minor) {
++    result += &quot;.&quot; + chapter.num_minor;
++  }
++  if (chapter.volume) {
++    result += &quot; Volume &quot; + chapter.volume;
++  }
++  if (chapter.name) {
++    result += &quot; - &quot; + chapter.name;
++  }
++  return result;
++}
++
++const Title = {
++  view: (vnode) =&gt; {
++    const title = vnode.attrs.title;
++    const numChaptersToDisplay = 4;
++
++    return m(
++      &quot;div.follows--title&quot; + (title.chapters.length === 0 ? &quot;.empty&quot; : &quot;&quot;),
++      [
++        m(&quot;div&quot;, [
++          m(m.route.Link, { href: `/m/${title.site}/${title.id}` }, [
++            m(&quot;img.follows--cover&quot;, { src: title.thumbnail, alt: title.name }),
++          ]),
++        ]),
++        m(&quot;div.follows--chapters&quot;, [
++          title.chapters.length &gt; numChaptersToDisplay
++            ? m(
++                m.route.Link,
++                {
++                  href: `/m/${title.site}/${title.id}`,
++                  class: &quot;follows--chapter follows--more&quot;,
++                },
++                `and ${title.chapters.length - numChaptersToDisplay} more...`
++              )
++            : &quot;&quot;,
++          title.chapters.slice(-numChaptersToDisplay).map((chapter) =&gt;
++            m(
++              m.route.Link,
++              {
++                href: `/m/${title.site}/${title.id}/${chapter.id}`,
++                class: &quot;follows--chapter&quot;,
++              },
++              [
++                fullChapterName(chapter),
++                chapter.groups.map((group) =&gt; {
++                  m(&quot;span.follows--group&quot;, truncate(group));
++                }),
++              ]
++            )
++          ),
++        ]),
++      ]
++    );
++  },
++};
++
+ function Follows(initialVNode) {
+   let titles = [];
++  let isLoading = false;
++
+   return {
+     oninit: () =&gt; {
++      isLoading = true;
+       Auth.request({
+         method: &quot;GET&quot;,
+         url: &quot;/api/follows&quot;,
+-      });
++      })
++        .then((resp) =&gt; {
++          titles = resp.titles;
++        })
++        .catch((err) =&gt; {
++          alert(&quot;TODO&quot;);
++          console.log(err);
++        })
++        .finally(() =&gt; {
++          isLoading = false;
++        });
+     },
++
+     oncreate: (vnode) =&gt; {
+       document.title = &quot;Stuff I follow - Pytaku&quot;;
+     },
++
+     view: (vnode) =&gt; {
+-      return m(&quot;div.content&quot;, [
+-        titles.map((title) =&gt;
+-          m(&quot;div.title&quot;, [
+-            m(&quot;div&quot;, [
+-              m(&quot;a&quot;, { href: &quot;TODO&quot; }, [
+-                m(&quot;img.cover&quot;, { src: title.thumbnail, alt: title.name }),
+-              ]),
+-            ]),
+-          ])
+-        ),
+-      ]);
++      let content = &quot;&quot;;
++
++      if (isLoading) {
++        return m(
++          &quot;div.content&quot;,
++          m(&quot;h2.blink&quot;, [m(&quot;i.icon.icon-loader.spin&quot;), &quot; loading...&quot;])
++        );
++      }
++
++      if (titles.length === 0) {
++        return m(
++          &quot;div.content&quot;,
++          &quot;You&#39;re not following any title yet. Try searching for some.&quot;
++        );
++      }
++
++      return m(&quot;div.content&quot;, [titles.map((title) =&gt; m(Title, { title }))]);
+     },
+   };
+ }
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index ec92e72..4d9eec0 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -1,3 +1,41 @@
++/* --- Utilities --- */
++
++/* spinner */
++.spin {
++  display: inline-block;
++  animation-name: spin;
++  animation-duration: 1s;
++  animation-iteration-count: infinite;
++  animation-timing-function: linear;
++}
++@keyframes spin {
++  from {
++    transform: rotate(0deg);
++  }
++  to {
++    transform: rotate(360deg);
++  }
++}
++
++/* blinker */
++.blink {
++  display: inline-block;
++  animation-name: blink;
++  animation-duration: 700ms;
++  animation-iteration-count: infinite;
++  animation-timing-function: linear;
++}
++@keyframes blink {
++  from {
++    opacity: 0.2;
++  }
++  to {
++    opacity: 1;
++  }
++}
++
++/* --- End Utilities --- */
++
+ /* Navbar */
+ nav {
+   background-color: var(--bg-black);
+@@ -121,3 +159,64 @@ .auth--form--message-success {
+ .auth--form--message-error {
+   color: red;
+ }
++
++/* Follows route */
++
++.follows--title {
++  display: flex;
++  flex-direction: row;
++  flex-wrap: wrap;
++  margin-bottom: var(--body-padding);
++  background-color: #efefef;
++}
++.follows--title.empty {
++  display: inline-flex;
++}
++.follows--title.empty .chapters {
++  display: none;
++}
++
++.follows--cover {
++  border: 1px solid #777;
++  margin-right: 0.5rem;
++  max-width: 150px;
++}
++.follows--cover:hover {
++  box-shadow: 0 0 3px black;
++}
++
++.follows--chapters {
++  padding: 0.5rem 0.5rem 0.5rem 0;
++}
++
++.follows--chapter {
++  display: block;
++  margin-bottom: 0.5rem;
++  background-color: white;
++  border: 1px solid #999;
++  padding: 6px;
++  border-radius: 5px;
++  text-decoration: none;
++  color: black;
++}
++.follows--chapter:hover {
++  background-color: #eee;
++}
++.follows--chapter:last-child::after {
++  content: &quot;← resume here&quot;;
++  background-color: cornsilk;
++  white-space: nowrap;
++}
++
++.follows--group {
++  font-size: 0.9em;
++  background-color: #ddd;
++  border-radius: 3px;
++  white-space: nowrap;
++  padding: 2px 5px;
++}
++
++.follows--more {
++  display: inline-block;
++  font-style: italic;
++}
+</pre></body></html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[2c01b7918b] go mod tidy + loicense | iwpick | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">iwpick</a> / 2c01b7918b</strong><hr><pre>commit 2c01b7918b314561a9dc10388b8651b270305989
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 28 20:28:17 2022 +0700
+
+    go mod tidy + loicense
+
+diff --git a/LICENSE b/LICENSE
+new file mode 100644
+index 0000000..23f46c3
+--- /dev/null
++++ b/LICENSE
+@@ -0,0 +1,19 @@
++Copyright 2022 Bùi Thành Nhân
++
++Permission is hereby granted, free of charge, to any person obtaining a copy of
++this software and associated documentation files (the &quot;Software&quot;), to deal in
++the Software without restriction, including without limitation the rights to
++use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
++of the Software, and to permit persons to whom the Software is furnished to do
++so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.
+diff --git a/README.md b/README.md
+index 775d1be..3d2bd26 100644
+--- a/README.md
++++ b/README.md
+@@ -21,6 +21,10 @@ # Install
+   WIFI_DEVICE const and run `make` to recompile. Bonus points if you make it a
+   [flag][3] and send me a pull request :^)
+ 
++# License
++
++... is MIT. See LICENSE for the full text.
++
+ [1]: https://wiki.archlinux.org/title/iwd
+ [2]: https://twitter.com/nhanbt/status/1551734935471284226
+ [3]: https://pkg.go.dev/flag
+diff --git a/go.mod b/go.mod
+index 571a719..4c2369d 100644
+--- a/go.mod
++++ b/go.mod
+@@ -2,11 +2,13 @@ module go.imnhan.com/iwpick
+ 
+ go 1.19
+ 
+-require github.com/rivo/tview v0.0.0-20220812085834-0e6b21a48e96
++require (
++	github.com/gdamore/tcell/v2 v2.4.1-0.20210905002822-f057f0a857a1
++	github.com/rivo/tview v0.0.0-20220812085834-0e6b21a48e96
++)
+ 
+ require (
+ 	github.com/gdamore/encoding v1.0.0 // indirect
+-	github.com/gdamore/tcell/v2 v2.4.1-0.20210905002822-f057f0a857a1 // indirect
+ 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
+ 	github.com/mattn/go-runewidth v0.0.13 // indirect
+ 	github.com/rivo/uniseg v0.3.4 // indirect
+</pre></body></html>

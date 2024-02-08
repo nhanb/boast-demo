@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1724434831] somewhere pleasant &quot;follows&quot; grid | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 1724434831</strong><hr><pre>commit 172443483158fcaf6d0880c3b72b295053391578
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 30 18:34:19 2020 +0700
+
+    somewhere pleasant &quot;follows&quot; grid
+
+diff --git a/src/pytaku/static/js/routes/follows.js b/src/pytaku/static/js/routes/follows.js
+index eef5e95..1e39485 100644
+--- a/src/pytaku/static/js/routes/follows.js
++++ b/src/pytaku/static/js/routes/follows.js
+@@ -7,12 +7,18 @@ const Title = {
+     const numChaptersToDisplay = 3;
+ 
+     return m(
+-      &quot;div.follows--title&quot; + (title.chapters.length === 0 ? &quot;.empty&quot; : &quot;&quot;),
++      &quot;div.follows--title&quot; +
++        (title.chapters.length === 0 ? &quot;.empty&quot; : &quot;.non-empty&quot;),
+       [
+         m(&quot;div&quot;, [
+-          m(m.route.Link, { href: `/m/${title.site}/${title.id}` }, [
+-            m(&quot;img.follows--cover&quot;, { src: title.thumbnail, alt: title.name }),
+-          ]),
++          m(
++            m.route.Link,
++            {
++              href: `/m/${title.site}/${title.id}`,
++              title: `${title.name} - ${title.site}`,
++            },
++            [m(&quot;img.follows--cover&quot;, { src: title.thumbnail, alt: title.name })]
++          ),
+         ]),
+         m(&quot;div.follows--chapters&quot;, [
+           title.chapters.length &gt; numChaptersToDisplay
+@@ -80,7 +86,9 @@ function Follows(initialVNode) {
+         ]);
+       }
+ 
+-      return m(&quot;div.content&quot;, [titles.map((title) =&gt; m(Title, { title }))]);
++      return m(&quot;div.follows.content&quot;, [
++        titles.map((title) =&gt; m(Title, { title })),
++      ]);
+     },
+   };
+ }
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index 0a0d385..9e65918 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -175,14 +175,22 @@ .auth--form--message-error {
+ 
+ /* Follows route */
+ 
++.follows.content {
++  display: flex;
++  flex-wrap: wrap;
++}
+ .follows--title {
+   display: flex;
+   flex-direction: row;
+   margin-bottom: var(--body-padding);
++}
++.follows--title.non-empty {
++  flex-basis: 100%;
+   background-color: #efefef;
+ }
+ .follows--title.empty {
+   display: inline-flex;
++  flex-grow: 1;
+ }
+ .follows--title.empty .chapters {
+   display: none;
+</pre></body></html>

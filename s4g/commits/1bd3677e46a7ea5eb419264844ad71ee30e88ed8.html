@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1bd3677e46] replace page/post distinction with explicit flags | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 1bd3677e46</strong><hr><pre>commit 1bd3677e46a7ea5eb419264844ad71ee30e88ed8
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jul 6 17:03:30 2023 +0700
+
+    replace page/post distinction with explicit flags
+    
+    Seems much cleaner and flexible tbh.
+
+diff --git a/main.go b/main.go
+index b3001a3..3b84b8b 100644
+--- a/main.go
++++ b/main.go
+@@ -33,30 +33,46 @@ func main() {
+ 	fsys := WriteDirFS(absolutePath)
+ 	site := readSiteMetadata(fsys)
+ 
+-	posts, pages := findArticles(fsys)
++	articles := findArticles(fsys)
+ 
+-	// Sort posts, newest first
+-	sort.Slice(posts, func(i int, j int) bool {
+-		return posts[i].PostedAt.Compare(posts[j].PostedAt) &gt; 0
++	// Sort articles, newest first
++	sort.Slice(articles, func(i int, j int) bool {
++		return articles[i].PostedAt.Compare(articles[j].PostedAt) &gt; 0
+ 	})
+ 
+-	startYear := posts[len(posts)-1].PostedAt.Year()
++	var startYear int
+ 
+-	fmt.Printf(&quot;Found %d posts, %d pages:\n&quot;, len(posts), len(pages))
+-	for _, a := range posts {
+-		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Title)
+-		a.WriteHtmlFile(&amp;site, pages, startYear)
++	var articlesInNav, articlesInFeed []Article
++	for _, a := range articles {
++		if a.ShowInNav {
++			articlesInNav = append(articlesInNav, a)
++		}
++		if a.ShowInFeed {
++			articlesInFeed = append(articlesInFeed, a)
++		}
++		if !a.PostedAt.IsZero() {
++			startYear = a.PostedAt.Year()
++		}
++	}
++
++	if startYear == 0 {
++		startYear = time.Now().Year()
+ 	}
+-	for _, a := range pages {
++
++	fmt.Printf(&quot;Found %d articles:\n&quot;, len(articles))
++	for _, a := range articles {
+ 		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Title)
+-		a.WriteHtmlFile(&amp;site, pages, startYear)
++		a.WriteHtmlFile(&amp;site, articlesInNav, startYear)
+ 	}
+ 
+ 	if site.GenerateHome {
+-		WriteHomePage(fsys, site, posts, pages, startYear)
++		WriteHomePage(fsys, site, articlesInFeed, articlesInNav, startYear)
+ 	}
+ 
+-	fsys.WriteFile(FEED_PATH, generateFeed(site, posts, site.HomePath+FEED_PATH))
++	fsys.WriteFile(
++		FEED_PATH,
++		generateFeed(site, articlesInFeed, site.HomePath+FEED_PATH),
++	)
+ 
+ 	println(&quot;Serving local website at http://localhost:&quot; + port)
+ 	http.Handle(&quot;/&quot;, http.FileServer(http.FS(fsys)))
+@@ -102,14 +118,19 @@ type Article struct {
+ }
+ 
+ type ArticleMetadata struct {
+-	Title     string
+-	IsPage    bool
+-	IsDraft   bool
+-	PostedAt  time.Time
+-	Templates []string
++	Title      string
++	IsDraft    bool
++	PostedAt   time.Time
++	Templates  []string
++	ShowInFeed bool
++	ShowInNav  bool
+ }
+ 
+-func (a *Article) WriteHtmlFile(site *SiteMetadata, pages []Article, startYear int) {
++func (a *Article) WriteHtmlFile(
++	site *SiteMetadata,
++	articlesInNav []Article,
++	startYear int,
++) {
+ 	// First generate the main content in html
+ 	contentHtml := djot.ToHtml(a.DjotBody)
+ 
+@@ -118,23 +139,23 @@ func (a *Article) WriteHtmlFile(site *SiteMetadata, pages []Article, startYear i
+ 	// TODO: should probably reuse the template object for common cases
+ 	tmpl := template.Must(template.ParseFS(a.Fs, a.Templates...))
+ 	err := tmpl.Execute(&amp;buf, struct {
+-		Site      *SiteMetadata
+-		Content   template.HTML
+-		Title     string
+-		Post      *Article
+-		Pages     []Article
+-		Feed      string
+-		Now       time.Time
+-		StartYear int
++		Site          *SiteMetadata
++		Content       template.HTML
++		Title         string
++		Post          *Article
++		ArticlesInNav []Article
++		Feed          string
++		Now           time.Time
++		StartYear     int
+ 	}{
+-		Site:      site,
+-		Content:   template.HTML(contentHtml),
+-		Title:     fmt.Sprintf(&quot;%s | %s&quot;, a.Title, site.Name),
+-		Post:      a,
+-		Pages:     pages,
+-		Feed:      site.HomePath + FEED_PATH,
+-		Now:       time.Now(),
+-		StartYear: startYear,
++		Site:          site,
++		Content:       template.HTML(contentHtml),
++		Title:         fmt.Sprintf(&quot;%s | %s&quot;, a.Title, site.Name),
++		Post:          a,
++		ArticlesInNav: articlesInNav,
++		Feed:          site.HomePath + FEED_PATH,
++		Now:           time.Now(),
++		StartYear:     startYear,
+ 	})
+ 	if err != nil {
+ 		fmt.Println(&quot;Error in WriteHtmlFile:&quot;, err)
+@@ -152,7 +173,7 @@ func (a *Article) WriteHtmlFile(site *SiteMetadata, pages []Article, startYear i
+ func WriteHomePage(
+ 	fsys WritableFS,
+ 	site SiteMetadata,
+-	posts, pages []Article,
++	articlesInFeed, articlesInNav []Article,
+ 	startYear int,
+ ) {
+ 	var buf bytes.Buffer
+@@ -164,21 +185,21 @@ func WriteHomePage(
+ 		),
+ 	)
+ 	err := tmpl.Execute(&amp;buf, struct {
+-		Site      *SiteMetadata
+-		Title     string
+-		Posts     []Article
+-		Pages     []Article
+-		Feed      string
+-		Now       time.Time
+-		StartYear int
++		Site           *SiteMetadata
++		Title          string
++		ArticlesInFeed []Article
++		ArticlesInNav  []Article
++		Feed           string
++		Now            time.Time
++		StartYear      int
+ 	}{
+-		Site:      &amp;site,
+-		Title:     fmt.Sprintf(&quot;%s - %s&quot;, site.Name, site.Tagline),
+-		Posts:     posts,
+-		Pages:     pages,
+-		Feed:      site.HomePath + FEED_PATH,
+-		Now:       time.Now(),
+-		StartYear: startYear,
++		Site:           &amp;site,
++		Title:          fmt.Sprintf(&quot;%s - %s&quot;, site.Name, site.Tagline),
++		ArticlesInFeed: articlesInFeed,
++		ArticlesInNav:  articlesInNav,
++		Feed:           site.HomePath + FEED_PATH,
++		Now:            time.Now(),
++		StartYear:      startYear,
+ 	})
+ 	if err != nil {
+ 		fmt.Println(&quot;Error in WriteHtmlFile:&quot;, err)
+@@ -187,7 +208,7 @@ func WriteHomePage(
+ 	fsys.WriteFile(&quot;index.html&quot;, buf.Bytes())
+ }
+ 
+-func findArticles(fsys WritableFS) (posts, pages []Article) {
++func findArticles(fsys WritableFS) (result []Article) {
+ 
+ 	fs.WalkDir(fsys, &quot;.&quot;, func(path string, d fs.DirEntry, err error) error {
+ 		if d.IsDir() || !strings.HasSuffix(d.Name(), DJOT_EXT) {
+@@ -208,7 +229,9 @@ func findArticles(fsys WritableFS) (posts, pages []Article) {
+ 		bodyText := strings.TrimSpace(parts[2])
+ 
+ 		meta := ArticleMetadata{
+-			Templates: []string{&quot;_theme/base.tmpl&quot;, &quot;_theme/post.tmpl&quot;},
++			Templates:  []string{&quot;_theme/base.tmpl&quot;, &quot;_theme/post.tmpl&quot;},
++			ShowInFeed: true,
++			ShowInNav:  false,
+ 		}
+ 		_, err = toml.Decode(metaText, &amp;meta)
+ 		if err != nil {
+@@ -223,11 +246,7 @@ func findArticles(fsys WritableFS) (posts, pages []Article) {
+ 			DjotBody:        bodyText,
+ 			ArticleMetadata: meta,
+ 		}
+-		if article.IsPage {
+-			pages = append(pages, article)
+-		} else {
+-			posts = append(posts, article)
+-		}
++		result = append(result, article)
+ 		return nil
+ 	})
+ 	return
+diff --git a/www/_theme/home.tmpl b/www/_theme/home.tmpl
+index aaa8ca8..295c1c7 100644
+--- a/www/_theme/home.tmpl
++++ b/www/_theme/home.tmpl
+@@ -10,7 +10,7 @@
+ 
+ &lt;div class=&quot;pages&quot;&gt;
+   &lt;a href=&quot;{{.Site.HomePath}}&quot;&gt;Home&lt;/a&gt;
+-{{- range .Pages}}
++{{- range .ArticlesInNav}}
+   &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+ {{- end}}
+   &lt;a class=&quot;feed-link&quot; href=&quot;{{.Feed}}&quot;&gt;
+@@ -23,7 +23,7 @@
+ &lt;p&gt;All posts, newest first:&lt;/p&gt;
+ 
+ &lt;ul&gt;
+-  {{- range .Posts}}
++  {{- range .ArticlesInFeed}}
+   {{- if not .IsDraft}}
+   &lt;li&gt;
+     {{.PostedAt.Local.Format &quot;2006-01-02&quot;}} —
+diff --git a/www/_theme/post.tmpl b/www/_theme/post.tmpl
+index b6e7dc0..88f0eff 100644
+--- a/www/_theme/post.tmpl
++++ b/www/_theme/post.tmpl
+@@ -5,7 +5,7 @@
+ {{define &quot;body&quot;}}
+ &lt;nav&gt;
+   &lt;a href=&quot;{{.Site.HomePath}}&quot;&gt;Home&lt;/a&gt;
+-  {{- range .Pages}}
++  {{- range .ArticlesInNav}}
+   &lt;a href=&quot;{{$.Site.HomePath}}{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+   {{- end}}
+ 
+diff --git a/www/about/index.dj b/www/about/index.dj
+index ddca31c..685af49 100644
+--- a/www/about/index.dj
++++ b/www/about/index.dj
+@@ -1,6 +1,7 @@
+ +++
+ Title = &quot;About&quot;
+-IsPage = true
++ShowInFeed = false
++ShowInNav = true
+ +++
+ 
+ ## About this site
+</pre></body></html>

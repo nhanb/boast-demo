@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[0265fd4c7f] use slots | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 0265fd4c7f</strong><hr><pre>commit 0265fd4c7f50a6fff0f10fe61e4998df3a225023
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon May 18 08:39:34 2020 +0700
+
+    use slots
+
+diff --git a/pyproject.toml b/pyproject.toml
+index b8dd165..566be1e 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;mcross&quot;
+-version = &quot;0.5.4&quot;
++version = &quot;0.5.5&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+diff --git a/src/mcross/document.py b/src/mcross/document.py
+index d5f6864..821f673 100644
+--- a/src/mcross/document.py
++++ b/src/mcross/document.py
+@@ -6,6 +6,7 @@
+ 
+ 
+ class GeminiNode:
++    __slots__ = (&quot;text&quot;,)
+     text: str
+ 
+     def __init__(self, text):
+@@ -36,6 +37,7 @@ class H3Node(GeminiNode):
+ 
+ 
+ class LinkNode(GeminiNode):
++    __slots__ = (&quot;url&quot;, &quot;name&quot;)
+     url: str
+     name: str
+ 
+diff --git a/src/mcross/transport.py b/src/mcross/transport.py
+index 0af07a0..1b1d547 100644
+--- a/src/mcross/transport.py
++++ b/src/mcross/transport.py
+@@ -8,10 +8,6 @@
+ MAX_REDIRECTS = 3
+ 
+ 
+-# Wanted to use a dataclass here but ofc it doesn&#39;t allow a slotted class to
+-# have fields with default values:
+-# https://stackoverflow.com/questions/50180735/how-can-dataclasses-be-made-to-work-better-with-slots
+-# Maaaaybe I should just use attrs and call it a day.
+ class Response:
+     __slots__ = (&quot;status&quot;, &quot;meta&quot;, &quot;body&quot;, &quot;url&quot;)
+ 
+@@ -47,6 +43,7 @@ class NonAbsoluteUrlWithoutContextError(Exception):
+ 
+ class GeminiUrl:
+     PROTOCOL = &quot;gemini&quot;
++    __slots__ = (&quot;host&quot;, &quot;port&quot;, &quot;path&quot;)
+     host: str
+     port: int
+     path: str
+</pre></body></html>

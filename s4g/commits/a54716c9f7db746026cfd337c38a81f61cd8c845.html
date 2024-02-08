@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a54716c9f7] add OpenGraph/Twitter meta tags | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / a54716c9f7</strong><hr><pre>commit a54716c9f7db746026cfd337c38a81f61cd8c845
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 21 22:57:32 2023 +0700
+
+    add OpenGraph/Twitter meta tags
+
+diff --git a/README.md b/README.md
+index 414befd..572e277 100644
+--- a/README.md
++++ b/README.md
+@@ -49,8 +49,6 @@ # - starts a local HTTP server for preview, also livereloads on changes
+ # TODOs
+ 
+ - When cleaning up outdated files from manifest, delete empty dirs too.
+-- Open Graph, Twitter tags (make use of Thumb metadata field too)
+ - Checked internal links (link to other article, to other article&#39;s asset)
+ - Warn when linking to redirected content
+-- Home page: align multi-line article title
+ - Minify/prettify HTML (optional?)
+diff --git a/docs/_s4g/theme/base.tmpl b/docs/_s4g/theme/base.tmpl
+index 3dd855a..f27d1ad 100644
+--- a/docs/_s4g/theme/base.tmpl
++++ b/docs/_s4g/theme/base.tmpl
+@@ -7,6 +7,25 @@
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;{{.Feed}}&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.ThemePath}}/base.css&quot;&gt;
++
++  &lt;meta property=&quot;og:title&quot; content=&quot;{{.Post.Title}}&quot; /&gt;
++  &lt;meta name=&quot;twitter:title&quot; content=&quot;{{.Post.Title}}&quot; /&gt;
++  &lt;meta name=&quot;twitter:card&quot; content=&quot;summary&quot; /&gt;
++  {{- if .Post.Description -}}
++    &lt;meta property=&quot;og:description&quot; content=&quot;{{.Post.Description}}&quot; /&gt;
++    &lt;meta name=&quot;twitter:description&quot; content=&quot;{{.Post.Description}}&quot; /&gt;
++  {{- end -}}
++  {{- if .Post.Thumb -}}
++    &lt;meta property=&quot;og:image&quot; content=&quot;{{.Post.Thumb}}&quot; /&gt;
++    &lt;meta name=&quot;twitter:image&quot; content=&quot;{{.Post.Thumb}}&quot; /&gt;
++  {{- else if .Site.DefaultThumb -}}
++    &lt;meta property=&quot;og:image&quot; content=&quot;{{.Site.Root}}{{.Site.DefaultThumb}}&quot; /&gt;
++    &lt;meta name=&quot;twitter:image&quot; content=&quot;{{.Site.Root}}{{.Site.DefaultThumb}}&quot; /&gt;
++  {{- end }}
++  {{- if .Site.AuthorTwitter -}}
++    &lt;meta name=&quot;twitter:site&quot; content=&quot;{{.Site.AuthorTwitter}}&quot; /&gt;
++  {{- end }}
++
+   {{- template &quot;head&quot; .}}
+ &lt;/head&gt;
+ 
+diff --git a/docs/about/index.html b/docs/about/index.html
+index 46ec36f..d761c95 100644
+--- a/docs/about/index.html
++++ b/docs/about/index.html
+@@ -7,6 +7,10 @@
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/s4g/feed.xml&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_s4g/theme/base.css&quot;&gt;
++
++  &lt;meta property=&quot;og:title&quot; content=&quot;About&quot; /&gt;
++  &lt;meta name=&quot;twitter:title&quot; content=&quot;About&quot; /&gt;
++  &lt;meta name=&quot;twitter:card&quot; content=&quot;summary&quot; /&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+diff --git a/docs/index.html b/docs/index.html
+index 2e20956..519a861 100644
+--- a/docs/index.html
++++ b/docs/index.html
+@@ -7,6 +7,10 @@
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/s4g/feed.xml&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_s4g/theme/base.css&quot;&gt;
++
++  &lt;meta property=&quot;og:title&quot; content=&quot;Home&quot; /&gt;
++  &lt;meta name=&quot;twitter:title&quot; content=&quot;Home&quot; /&gt;
++  &lt;meta name=&quot;twitter:card&quot; content=&quot;summary&quot; /&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+diff --git a/docs/mfws.html b/docs/mfws.html
+index a9cd041..3bb6415 100644
+--- a/docs/mfws.html
++++ b/docs/mfws.html
+@@ -7,6 +7,10 @@
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/s4g/feed.xml&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_s4g/theme/base.css&quot;&gt;
++
++  &lt;meta property=&quot;og:title&quot; content=&quot;This is a motherfucking website.&quot; /&gt;
++  &lt;meta name=&quot;twitter:title&quot; content=&quot;This is a motherfucking website.&quot; /&gt;
++  &lt;meta name=&quot;twitter:card&quot; content=&quot;summary&quot; /&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+diff --git a/docs/scale/index.html b/docs/scale/index.html
+index 183fa76..acb415e 100644
+--- a/docs/scale/index.html
++++ b/docs/scale/index.html
+@@ -7,6 +7,10 @@
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/s4g/feed.xml&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_s4g/theme/base.css&quot;&gt;
++
++  &lt;meta property=&quot;og:title&quot; content=&quot;I&amp;#39;m Going To Scale My Foot Up Your Ass&quot; /&gt;
++  &lt;meta name=&quot;twitter:title&quot; content=&quot;I&amp;#39;m Going To Scale My Foot Up Your Ass&quot; /&gt;
++  &lt;meta name=&quot;twitter:card&quot; content=&quot;summary&quot; /&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+diff --git a/metadata.go b/metadata.go
+index 1756f77..bf9e52e 100644
+--- a/metadata.go
++++ b/metadata.go
+@@ -16,23 +16,27 @@
+ )
+ 
+ type SiteMetadata struct {
+-	Address     string
+-	Name        string
+-	Tagline     string
+-	Root        string
+-	ShowFooter  bool
+-	NavbarLinks []string
+-	AuthorName  string
+-	AuthorURI   string
+-	AuthorEmail string
++	Address       string
++	Name          string
++	Tagline       string
++	Root          string
++	ShowFooter    bool
++	NavbarLinks   []string
++	DefaultThumb  string
++	AuthorName    string
++	AuthorURI     string
++	AuthorEmail   string
++	AuthorTwitter string
+ }
+ 
+ type ArticleMetadata struct {
+-	Title      string
+-	IsDraft    bool
+-	PostedAt   time.Time
+-	Templates  []string
+-	ShowInFeed bool
++	Title       string
++	Description string
++	IsDraft     bool
++	PostedAt    time.Time
++	Templates   []string
++	ShowInFeed  bool
++	Thumb       string
+ }
+ 
+ func NewSiteMetadata() SiteMetadata {
+@@ -61,6 +65,15 @@ func ReadSiteMetadata(fsys writablefs.FS) (*SiteMetadata, error) {
+ 		sm.Root = fmt.Sprintf(&quot;/%s/&quot;, trimmed)
+ 	}
+ 
++	// make sure AuthorTwitter starts with an &quot;@&quot;
++	if len(sm.AuthorTwitter) &gt; 0 &amp;&amp; sm.AuthorTwitter[0] != &#39;@&#39; {
++		sm.AuthorTwitter = &quot;@&quot; + sm.AuthorTwitter
++	}
++
++	// trim leading &quot;/&quot; because DefaultThumb will be prepended with web root
++	// path when used.
++	sm.DefaultThumb = strings.TrimPrefix(sm.DefaultThumb, &quot;/&quot;)
++
+ 	return &amp;sm, nil
+ }
+ 
+diff --git a/theme/base.tmpl b/theme/base.tmpl
+index 3dd855a..f27d1ad 100644
+--- a/theme/base.tmpl
++++ b/theme/base.tmpl
+@@ -7,6 +7,25 @@
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;{{.Feed}}&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.ThemePath}}/base.css&quot;&gt;
++
++  &lt;meta property=&quot;og:title&quot; content=&quot;{{.Post.Title}}&quot; /&gt;
++  &lt;meta name=&quot;twitter:title&quot; content=&quot;{{.Post.Title}}&quot; /&gt;
++  &lt;meta name=&quot;twitter:card&quot; content=&quot;summary&quot; /&gt;
++  {{- if .Post.Description -}}
++    &lt;meta property=&quot;og:description&quot; content=&quot;{{.Post.Description}}&quot; /&gt;
++    &lt;meta name=&quot;twitter:description&quot; content=&quot;{{.Post.Description}}&quot; /&gt;
++  {{- end -}}
++  {{- if .Post.Thumb -}}
++    &lt;meta property=&quot;og:image&quot; content=&quot;{{.Post.Thumb}}&quot; /&gt;
++    &lt;meta name=&quot;twitter:image&quot; content=&quot;{{.Post.Thumb}}&quot; /&gt;
++  {{- else if .Site.DefaultThumb -}}
++    &lt;meta property=&quot;og:image&quot; content=&quot;{{.Site.Root}}{{.Site.DefaultThumb}}&quot; /&gt;
++    &lt;meta name=&quot;twitter:image&quot; content=&quot;{{.Site.Root}}{{.Site.DefaultThumb}}&quot; /&gt;
++  {{- end }}
++  {{- if .Site.AuthorTwitter -}}
++    &lt;meta name=&quot;twitter:site&quot; content=&quot;{{.Site.AuthorTwitter}}&quot; /&gt;
++  {{- end }}
++
+   {{- template &quot;head&quot; .}}
+ &lt;/head&gt;
+ 
+</pre></body></html>

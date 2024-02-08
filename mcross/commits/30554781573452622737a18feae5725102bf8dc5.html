@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[3055478157] mirror to github | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 3055478157</strong><hr><pre>commit 30554781573452622737a18feae5725102bf8dc5
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri May 15 23:35:48 2020 +0700
+
+    mirror to github
+
+diff --git a/.builds/debian.yml b/.builds/debian.yml
+new file mode 100644
+index 0000000..6f54bfc
+--- /dev/null
++++ b/.builds/debian.yml
+@@ -0,0 +1,14 @@
++image: debian/buster
++
++secrets:
++  - f08d0f23-4aea-42d8-ad14-0b9e0a67aac5
++
++
++tasks:
++  - mirror-to-github: |
++      cd ~/mcross
++      mkdir -p ~/.ssh
++      echo -e &quot;\nHost github.com\n  IdentityFile /home/build/.ssh/f08d0f23-4aea-42d8-ad14-0b9e0a67aac5\n  IdentitiesOnly yes\n  BatchMode yes&quot; &gt;&gt; ~/.ssh/config
++      echo &quot;github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==&quot; &gt;&gt; ~/.ssh/known_hosts
++      git remote add github git@github.com:nhanb/mcross.git
++      git push -f github &#39;*:*&#39; --follow-tags
+</pre></body></html>

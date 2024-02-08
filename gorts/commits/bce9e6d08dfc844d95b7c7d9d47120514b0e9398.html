@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[bce9e6d08d] fix hut usage | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / bce9e6d08d</strong><hr><pre>commit bce9e6d08dfc844d95b7c7d9d47120514b0e9398
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jun 18 14:36:08 2023 +0700
+
+    fix hut usage
+
+diff --git a/.build.yml b/.build.yml
+index 3307e4c..349eed4 100644
+--- a/.build.yml
++++ b/.build.yml
+@@ -1,5 +1,5 @@
+ image: archlinux
+-oauth: git.sr.ht/REPOSITORIES:RW
++oauth: git.sr.ht/OBJECTS:RW
+ 
+ packages:
+   - curl
+@@ -29,8 +29,9 @@ tasks:
+       git describe --exact-match HEAD || complete-build
+ 
+   - release: |
+-      hut git artifact upload gorts/dist/GORTS-Linux.zip
+-      hut git artifact upload gorts/dist/GORTS-Windows.zip
++      cd gorts
++      hut git artifact upload dist/GORTS-Linux.zip
++      hut git artifact upload dist/GORTS-Windows.zip
+ 
+ artifacts:
+   - gorts/dist/GORTS-Linux.zip
+</pre></body></html>

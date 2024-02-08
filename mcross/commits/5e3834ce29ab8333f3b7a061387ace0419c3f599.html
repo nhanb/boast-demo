@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[5e3834ce29] implement list items &amp; headings | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 5e3834ce29</strong><hr><pre>commit 5e3834ce29ab8333f3b7a061387ace0419c3f599
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri May 15 20:34:58 2020 +0700
+
+    implement list items &amp; headings
+
+diff --git a/README.md b/README.md
+index 918ad98..166f7a2 100644
+--- a/README.md
++++ b/README.md
+@@ -3,7 +3,7 @@
+ 
+ It currently looks like this:
+ 
+-![](https://p.caophim.net/85.png)
++![](https://p.caophim.net/87.png)
+ 
+ Happy-path surfing and link-visiting already works.
+ The UX is still terrible though (see feature checklist below).
+@@ -45,7 +45,7 @@ # Feature checklist
+ - [x] back-forward buttons
+ - [ ] separate I/O thread to avoid blocking GUI
+ - [ ] more visual indicators - maybe a status bar at the bottom
+-- [ ] parse gemini&#39;s advanced line types
++- [x] parse gemini&#39;s advanced line types
+ - [ ] configurable document styling
+ - [ ] configurable TLS to accomodate self-signed sites?
+ 
+diff --git a/pyproject.toml b/pyproject.toml
+index 29d7446..93f8340 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;mcross&quot;
+-version = &quot;0.3.0&quot;
++version = &quot;0.4.0&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+diff --git a/src/mcross/document.py b/src/mcross/document.py
+index 37af176..d5f6864 100644
+--- a/src/mcross/document.py
++++ b/src/mcross/document.py
+@@ -2,6 +2,7 @@
+ 
+ NEWLINE = &quot;\n&quot;
+ LINK_LINE_PATTERN = re.compile(r&quot;^=&gt;[ \t]+(\S+)([ \t]+(.+))?$&quot;)
++HEADING_LINE_PATTERN = re.compile(r&quot;^(#{1,3})\s+(.+)$&quot;)
+ 
+ 
+ class GeminiNode:
+@@ -18,6 +19,22 @@ class TextNode(GeminiNode):
+     pass
+ 
+ 
++class ListItemNode(GeminiNode):
++    pass
++
++
++class H1Node(GeminiNode):
++    pass
++
++
++class H2Node(GeminiNode):
++    pass
++
++
++class H3Node(GeminiNode):
++    pass
++
++
+ class LinkNode(GeminiNode):
+     url: str
+     name: str
+@@ -69,6 +86,24 @@ def parse(text):
+             name = match.group(3)  # may be None
+             nodes.append(LinkNode(text=line, url=url, name=name))
+ 
++        elif line.startswith(&quot;*&quot;):
++            nodes.append(ListItemNode(line))
++
++        elif line.startswith(&quot;#&quot;):
++            match = HEADING_LINE_PATTERN.match(line)
++            if not match:
++                nodes.append(TextNode(line))
++                continue
++            # heading_text = match.group(2)  # not used yet
++            hashes = match.group(1)
++            level = len(hashes)
++            if level == 1:
++                nodes.append(H1Node(line))
++            elif level == 2:
++                nodes.append(H2Node(line))
++            elif level == 3:
++                nodes.append(H3Node(line))
++
+         else:
+             nodes.append(TextNode(line))
+ 
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index 99ac122..c5c237d 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -1,7 +1,16 @@
+ import sys
+ from tkinter import Text, Tk, font, ttk
+ 
+-from ..document import GeminiNode, LinkNode, PreformattedNode, TextNode
++from ..document import (
++    GeminiNode,
++    H1Node,
++    H2Node,
++    H3Node,
++    LinkNode,
++    ListItemNode,
++    PreformattedNode,
++    TextNode,
++)
+ from .model import Model
+ from .widgets import ReadOnlyText
+ 
+@@ -102,12 +111,24 @@ def __init__(self, root: Tk, model: Model):
+             # prevent verticle scrollbar from disappearing when window gets small:
+             width=1,
+         )
++        text.pack(side=&quot;left&quot;, fill=&quot;both&quot;, expand=True)
+         text.tag_config(&quot;link&quot;, foreground=&quot;brown&quot;)
+         text.tag_bind(&quot;link&quot;, &quot;&lt;Enter&gt;&quot;, self._on_link_enter)
+         text.tag_bind(&quot;link&quot;, &quot;&lt;Leave&gt;&quot;, self._on_link_leave)
+         text.tag_bind(&quot;link&quot;, &quot;&lt;Button-1&gt;&quot;, self._on_link_click)
+         text.tag_config(&quot;pre&quot;, font=(mono_font, 13))
+-        text.pack(side=&quot;left&quot;, fill=&quot;both&quot;, expand=True)
++        text.tag_config(&quot;listitem&quot;, foreground=&quot;#044604&quot;)
++
++        base_heading_font = font.Font(font=text[&quot;font&quot;])
++        base_heading_font.config(weight=&quot;bold&quot;)
++        h1_font = font.Font(font=base_heading_font)
++        h1_font.config(size=h1_font[&quot;size&quot;] + 8)
++        text.tag_config(&quot;h1&quot;, font=h1_font)
++        h2_font = font.Font(font=base_heading_font)
++        h2_font.config(size=h2_font[&quot;size&quot;] + 4)
++        text.tag_config(&quot;h2&quot;, font=h2_font)
++        h3_font = font.Font(font=base_heading_font)
++        text.tag_config(&quot;h3&quot;, font=h3_font)
+ 
+         text_scrollbar = ttk.Scrollbar(row2, command=text.yview)
+         text[&quot;yscrollcommand&quot;] = text_scrollbar.set
+@@ -162,17 +183,26 @@ def render_page(self):
+ def render_node(node: GeminiNode, widget: Text):
+     nodetype = type(node)
+     if nodetype is TextNode:
+-        widget.insert(&quot;end&quot;, node.text + &quot;\n&quot;)
++        widget.insert(&quot;end&quot;, node.text)
+     elif nodetype is LinkNode:
+         widget.insert(&quot;end&quot;, &quot;=&gt; &quot;)
+-        widget.insert(&quot;end&quot;, f&quot;{node.url}&quot;, (&quot;link&quot;,))
++        widget.insert(&quot;end&quot;, node.url, (&quot;link&quot;,))
+         if node.name:
+             widget.insert(&quot;end&quot;, f&quot; {node.name}&quot;)
+-        widget.insert(&quot;end&quot;, &quot;\n&quot;)
+     elif nodetype is PreformattedNode:
+-        widget.insert(&quot;end&quot;, f&quot;```\n{node.text}\n```\n&quot;, (&quot;pre&quot;,))
++        widget.insert(&quot;end&quot;, f&quot;```\n{node.text}\n```&quot;, (&quot;pre&quot;,))
++    elif nodetype is ListItemNode:
++        widget.insert(&quot;end&quot;, node.text, (&quot;listitem&quot;,))
++    elif nodetype is H1Node:
++        widget.insert(&quot;end&quot;, node.text, (&quot;h1&quot;,))
++    elif nodetype is H2Node:
++        widget.insert(&quot;end&quot;, node.text, (&quot;h2&quot;,))
++    elif nodetype is H3Node:
++        widget.insert(&quot;end&quot;, node.text, (&quot;h3&quot;,))
+     else:
+-        widget.insert(&quot;end&quot;, node.text + &quot;\n&quot;)
++        widget.insert(&quot;end&quot;, node.text)
++
++    widget.insert(&quot;end&quot;, &quot;\n&quot;)
+ 
+ 
+ def get_content_from_tag_click_event(event):
+</pre></body></html>

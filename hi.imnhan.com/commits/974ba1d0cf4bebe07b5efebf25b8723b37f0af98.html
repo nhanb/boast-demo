@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[974ba1d0cf] fix echo command in italic terminal article | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 974ba1d0cf</strong><hr><pre>commit 974ba1d0cf4bebe07b5efebf25b8723b37f0af98
+Author: nhanb &lt;nhan@nerdyweekly.com&gt;
+Date:   Tue Mar 31 21:58:14 2015 +0700
+
+    fix echo command in italic terminal article
+    
+    Although the command works fine in zsh, the blackslashes won&#39;t be
+    interpreted in bash without the `-e` flag.
+
+diff --git a/content/italic-text-in-vim-tmux-gnome-terminal.md b/content/italic-text-in-vim-tmux-gnome-terminal.md
+index 18afd38..c569131 100644
+--- a/content/italic-text-in-vim-tmux-gnome-terminal.md
++++ b/content/italic-text-in-vim-tmux-gnome-terminal.md
+@@ -30,7 +30,7 @@ ## gnome-terminal
+ does support it, run this command:
+ 
+ ```bash
+-$ echo &quot;\e[3m foo \e[23m&quot;
++$ echo -e &quot;\e[3m foo \e[23m&quot;
+ ```
+ 
+ If your version of gnome-terminal supports it, an italic *foo* will appear. If not, upgrade it! :)
+</pre></body></html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[689b1806b7] syncmd.py script to migrate to new mangadex ids | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 689b1806b7</strong><hr><pre>commit 689b1806b7c38e2ef18e650c17e7f1d689206283
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Sep 3 17:01:55 2021 +0700
+
+    syncmd.py script to migrate to new mangadex ids
+    
+    Since we don&#39;t have enough data to migrate the &quot;read&quot; records, let&#39;s
+    just drop them. We still have the follows though.
+
+diff --git a/.gitignore b/.gitignore
+index 8a05ea8..1055b65 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -8,3 +8,5 @@ __pycache__
+ *.egg-info
+ /dist/
+ /src/pytaku/static/js/
++/*.csv
++/*.log
+diff --git a/syncmd.py b/syncmd.py
+new file mode 100644
+index 0000000..ac23297
+--- /dev/null
++++ b/syncmd.py
+@@ -0,0 +1,166 @@
++import csv
++import html
++import os.path
++import re
++import time
++from pprint import pprint
++
++import requests
++
++from pytaku.database.common import get_conn, run_sql
++
++CSV_FILE_NAME = &quot;names.csv&quot;
++
++
++def populate_csv():
++    &quot;&quot;&quot;
++    Running this as main script entry will:
++    - Query all existing mangadex titles in db (around 370 at the moment)
++    - For each title, throw its name into MD&#39;s new search API
++        + iterate through possible results, normalize them (replace all non-alphanumeric
++          chars with single space), compare for exact match on normalized form, grab the
++          new uuid.
++        + save (id, name, new_id) in csv
++
++    This script is resumable.
++    &quot;&quot;&quot;
++    titles = find_mangadex_titles()
++    dones = done_ids()
++    pending_titles = [t for t in titles if t[&quot;id&quot;] not in dones]
++    lazy_rows = rows_generator(pending_titles)
++    write_csv(lazy_rows)
++
++
++def migrate_title_ids():
++    &quot;&quot;&quot;
++    After running populate_csv(), open up the csv, fill any blanks, then run this: it
++    will update title IDs in all affected tables
++    &quot;&quot;&quot;
++    with open(CSV_FILE_NAME, &quot;r&quot;, newline=&quot;&quot;) as csvfile:
++        reader = csv.DictReader(csvfile)
++        cur = get_conn().cursor()
++        cur.execute(&quot;PRAGMA foreign_keys = off;&quot;)
++        cur.execute(&quot;BEGIN TRANSACTION;&quot;)
++        for row in reader:
++            old = row[&quot;id&quot;]
++            new = row[&quot;new_id&quot;]
++            print(f&quot;{old} =&gt; {new}&quot;)
++            cur.execute(&quot;UPDATE title SET id=? WHERE id=?;&quot;, (new, old))
++            cur.execute(
++                &quot;UPDATE chapter SET title_id=? WHERE title_id=? and site=&#39;mangadex&#39;;&quot;,
++                (new, old),
++            )
++            cur.execute(
++                &quot;UPDATE read SET title_id=? WHERE title_id=? and site=&#39;mangadex&#39;;&quot;,
++                (new, old),
++            )
++            cur.execute(
++                &quot;UPDATE follow SET title_id=? WHERE title_id=? and site=&#39;mangadex&#39;;&quot;,
++                (new, old),
++            )
++        cur.execute(&quot;PRAGMA foreign_key_check;&quot;)
++        cur.execute(&quot;COMMIT;&quot;)
++        cur.execute(&quot;PRAGMA foreign_keys = on;&quot;)
++
++
++def rows_generator(titles):
++    for title in titles:
++        old_id = title[&quot;id&quot;]
++        name = title[&quot;name&quot;]
++        new_id = look_for_match(name) or &quot;&quot;
++
++        yield {
++            &quot;id&quot;: old_id,
++            &quot;name&quot;: name,
++            &quot;new_id&quot;: new_id,
++        }
++
++
++def write_csv(rows):
++    is_resuming = os.path.isfile(CSV_FILE_NAME)
++    print(&quot;Is resuming:&quot;, is_resuming)
++
++    with open(CSV_FILE_NAME, &quot;a&quot;, newline=&quot;&quot;) as csvfile:
++        fieldnames = [&quot;id&quot;, &quot;name&quot;, &quot;new_id&quot;]
++        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
++        if not is_resuming:
++            writer.writeheader()
++
++        for row in rows:
++            print()
++            pprint(row)
++            print()
++            writer.writerow(row)
++
++
++def done_ids():
++    with open(CSV_FILE_NAME, &quot;r&quot;, newline=&quot;&quot;) as csvfile:
++        reader = csv.DictReader(csvfile)
++        return {row[&quot;id&quot;] for row in reader}
++
++
++def look_for_match(old_title):
++    offset = 0
++    limit = 100
++    total = 999_999
++    normalized_old_title = normalize(old_title)
++
++    while True:
++        print(f&quot;-- Searching {old_title}, offset={offset}&quot;)
++        resp = requests.get(
++            &quot;https://api.mangadex.org/manga&quot;,
++            params={
++                &quot;limit&quot;: limit,
++                &quot;offset&quot;: offset,
++                &quot;title&quot;: old_title,
++                &quot;order[title]&quot;: &quot;asc&quot;,
++            },
++        )
++
++        if resp.status_code == 400 and resp.json()[&quot;errors&quot;][0][&quot;detail&quot;].startswith(
++            &quot;Result window is too large&quot;
++        ):
++            return None
++
++        assert resp.status_code == 200, (resp.status_code, resp.content)
++
++        resp_json = resp.json()
++        total = resp_json[&quot;total&quot;]
++
++        for result in resp_json[&quot;results&quot;]:
++            titles = result[&quot;data&quot;][&quot;attributes&quot;][&quot;title&quot;]
++            title = titles.get(&quot;en&quot;) or titles.get(&quot;jp&quot;) or titles.get(&quot;ja&quot;, &quot;&quot;)
++            if not title:
++                print(&quot;&gt;&gt; Weird title lang:&quot;, titles)
++            normalized_title = normalize(title)
++            if normalized_old_title == normalized_title:
++                return result[&quot;data&quot;][&quot;id&quot;]
++
++        offset += limit
++        if offset &gt;= total:
++            break
++        else:
++            time.sleep(0.25)
++
++    return None
++
++
++def normalize(title: str):
++    title = title.lower()
++    title = re.sub(&quot;[^0-9a-zA-Z]+&quot;, &quot; &quot;, title)
++    return title.strip()
++
++
++def find_mangadex_titles():
++    &quot;&quot;&quot;
++    Returns list of dict: {&quot;id&quot;, &quot;name&quot;}
++    &quot;&quot;&quot;
++    results = run_sql(&quot;SELECT id, name FROM title WHERE site=&#39;mangadex&#39; order by name;&quot;)
++    for result in results:
++        result[&quot;name&quot;] = html.unescape(result[&quot;name&quot;])
++
++    return results
++
++
++if __name__ == &quot;__main__&quot;:
++    migrate_title_ids()
+</pre></body></html>

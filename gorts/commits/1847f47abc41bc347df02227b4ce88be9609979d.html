@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1847f47abc] avoid nested dir in zip files | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 1847f47abc</strong><hr><pre>commit 1847f47abc41bc347df02227b4ce88be9609979d
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jun 18 01:47:39 2023 +0700
+
+    avoid nested dir in zip files
+
+diff --git a/.build.yml b/.build.yml
+index 3f71bc5..6dc53e8 100644
+--- a/.build.yml
++++ b/.build.yml
+@@ -10,16 +10,16 @@ tasks:
+       tar -xf go.tar.gz &amp;&amp; rm go.tar.gz
+       cd gorts
+       PATH=$PATH:~/go/bin make dist-linux
+-      cd dist
+-      zip -r gorts-linux.zip linux
++      cd dist/linux
++      zip -r ../GORTS-Linux.zip .
+ 
+   - make-windows: |
+       cd gorts
+       PATH=$PATH:~/go/bin make dist-windows
+-      cd dist
+-      curl -L &#39;https://tclkits.rkeene.org/fossil/raw/tclkit-8.6.3-win32-x86_64.exe?name=403c507437d0b10035c7839f22f5bb806ec1f491&#39; &gt; windows/tclkit.exe
+-      zip -r gorts-windows.zip windows
++      cd dist/windows
++      curl -L &#39;https://tclkits.rkeene.org/fossil/raw/tclkit-8.6.3-win32-x86_64.exe?name=403c507437d0b10035c7839f22f5bb806ec1f491&#39; &gt; tclkit.exe
++      zip -r ../GORTS-Windows.zip .
+ 
+ artifacts:
+-  - gorts/dist/gorts-linux.zip
+-  - gorts/dist/gorts-windows.zip
++  - gorts/dist/GORTS-Linux.zip
++  - gorts/dist/GORTS-Windows.zip
+</pre></body></html>

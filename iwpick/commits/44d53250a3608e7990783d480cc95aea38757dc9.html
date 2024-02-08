@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[44d53250a3] connect on Enter | iwpick | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">iwpick</a> / 44d53250a3</strong><hr><pre>commit 44d53250a3608e7990783d480cc95aea38757dc9
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 29 01:52:37 2022 +0700
+
+    connect on Enter
+
+diff --git a/Makefile b/Makefile
+index d1e789c..884d6a0 100644
+--- a/Makefile
++++ b/Makefile
+@@ -6,3 +6,6 @@ run:
+ 
+ watch:
+ 	find . -name &#39;*.go&#39; | entr make run
++
++install:
++	go build -o ~/binaries/iwpick
+diff --git a/main.go b/main.go
+index 3c71e47..f4308c6 100644
+--- a/main.go
++++ b/main.go
+@@ -5,6 +5,7 @@
+ 	&quot;bytes&quot;
+ 	&quot;fmt&quot;
+ 	&quot;log&quot;
++	&quot;os&quot;
+ 	&quot;os/exec&quot;
+ 	&quot;strings&quot;
+ 
+@@ -93,18 +94,20 @@ func drawListItems(networks []Network, list *tview.List, query string) {
+ 		itemName := fmt.Sprintf(
+ 			&quot;[%d]%s %s (%s)&quot;, nw.Strength, currentStr, nw.SSID, nw.Security,
+ 		)
+-		list.AddItem(itemName, &quot;&quot;, 0, nil)
++		list.AddItem(itemName, nw.SSID, 0, nil)
+ 	}
+ }
+ 
+ func main() {
+ 	networks := GetNetworks()
+-	fmt.Println(networks)
+ 
+ 	app := tview.NewApplication().EnableMouse(false)
+ 
+ 	input := tview.NewInputField().SetLabel(&quot;Filter: &quot;)
++	input.SetFieldBackgroundColor(tcell.ColorBlack)
++	input.SetFieldTextColor(tcell.ColorWhite)
+ 	list := tview.NewList().ShowSecondaryText(false)
++
+ 	drawListItems(networks, list, &quot;&quot;)
+ 
+ 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
+@@ -122,6 +125,18 @@ func main() {
+ 			list.SetCurrentItem(list.GetCurrentItem() + 1)
+ 		case tcell.KeyEsc:
+ 			app.Stop()
++		case tcell.KeyEnter:
++			_, ssid := list.GetItemText(list.GetCurrentItem())
++			app.Suspend(func() {
++				cmd := exec.Command(&quot;iwctl&quot;, &quot;station&quot;, &quot;wlan0&quot;, &quot;connect&quot;, ssid)
++				cmd.Stdout = os.Stdout
++				cmd.Stdin = os.Stdin
++				cmd.Stderr = os.Stderr
++				if err := cmd.Run(); err != nil {
++					log.Fatal(err)
++				}
++				app.Stop()
++			})
+ 		}
+ 		return event
+ 	})
+</pre></body></html>

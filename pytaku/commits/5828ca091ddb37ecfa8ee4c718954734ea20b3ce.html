@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[5828ca091d] remove redundant `rm` command | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 5828ca091d</strong><hr><pre>commit 5828ca091ddb37ecfa8ee4c718954734ea20b3ce
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 10 23:50:55 2020 +0700
+
+    remove redundant `rm` command
+    
+    Also it would be wrong, because the wheel file is 1 level up.
+
+diff --git a/.builds/ubuntu.yml b/.builds/ubuntu.yml
+index 207c7cb..f30e4ef 100644
+--- a/.builds/ubuntu.yml
++++ b/.builds/ubuntu.yml
+@@ -69,6 +69,5 @@ tasks:
+         systemctl --user daemon-reload &amp;&amp;
+         systemctl --user restart pytaku &amp;&amp;
+         systemctl --user restart pytaku-scheduler &amp;&amp;
+-        rm pytaku*.whl &amp;&amp;
+         echo &#39;All done.&#39;
+       &quot;
+diff --git a/pyproject.toml b/pyproject.toml
+index 39a4dee..ce9d770 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.2.15&quot;
++version = &quot;0.2.16&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+</pre></body></html>

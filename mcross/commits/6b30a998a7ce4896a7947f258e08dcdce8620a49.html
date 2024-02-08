@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[6b30a998a7] text widget styling and un-break ctrl+c, ctrl+v | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 6b30a998a7</strong><hr><pre>commit 6b30a998a7ce4896a7947f258e08dcdce8620a49
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu May 14 09:53:13 2020 +0700
+
+    text widget styling and un-break ctrl+c, ctrl+v
+
+diff --git a/README.md b/README.md
+index 0d2a282..d346404 100644
+--- a/README.md
++++ b/README.md
+@@ -5,6 +5,12 @@ # WIP
+ 
+ It currently looks like this: https://junk.imnhan.com/beans.mp4
+ 
++# Deps
++
++- python3.7+
++- idlelib (it&#39;s supposed to be in the standard lib but Ubuntu for example
++  splits it into a separate package)
++
+ # Server bugs/surprises
+ 
+ ## Forces gemini:// in request
+diff --git a/gui.py b/gui.py
+index c357d57..b0ea23b 100644
+--- a/gui.py
++++ b/gui.py
+@@ -1,13 +1,29 @@
+ import sys
+-from tkinter import Text, Tk, ttk
++from tkinter import Text, Tk, font, ttk
+ 
+ import client
++from gui_widgets import ReadOnlyText
+ 
+ 
+ class Model:
+     plaintext = &quot;Nothing to see here... yet.&quot;
+ 
+ 
++def pick_font(names):
++    available = font.families()
++    picked = None
++    for name in names:
++        if name in available:
++            picked = name
++            break
++
++    if not picked:
++        picked = &quot;TkTextFont&quot;
++
++    print(&quot;Picked font:&quot;, picked)
++    return picked
++
++
+ class View:
+     model: Model
+     address_bar: ttk.Entry
+@@ -51,10 +67,28 @@ def __init__(self, root: Tk, model: Model):
+         viewport.pack(fill=&quot;both&quot;, expand=True)
+ 
+         # Viewport content: just do text for now
+-        text = Text(viewport)
++        text = ReadOnlyText(viewport)
+         self.text = text
+         self.render_page()
+-        text.pack(fill=&quot;both&quot;, expand=True)
++        text_font = pick_font(
++            [
++                &quot;Charis SIL&quot;,
++                &quot;Source Serif Pro&quot;,
++                &quot;Cambria&quot;,
++                &quot;Georgia&quot;,
++                &quot;DejaVu Serif&quot;,
++                &quot;Times New Roman&quot;,
++                &quot;Times&quot;,
++            ]
++        )
++        text.config(
++            font=(text_font, 13), bg=&quot;#fff8dc&quot;, fg=&quot;black&quot;, padx=5, pady=5,
++        )
++        text.pack(side=&quot;left&quot;, fill=&quot;both&quot;, expand=True)
++
++        text_scrollbar = ttk.Scrollbar(viewport, command=text.yview)
++        text[&quot;yscrollcommand&quot;] = text_scrollbar.set
++        text_scrollbar.pack(side=&quot;left&quot;, fill=&quot;y&quot;)
+ 
+         style = ttk.Style()
+         if sys.platform == &quot;win32&quot;:
+@@ -69,10 +103,8 @@ def _on_go(self, ev=None):
+             self.go_callback(&quot;gemini://&quot; + self.address_bar.get())
+ 
+     def render_page(self):
+-        self.text.config(state=&quot;normal&quot;)
+         self.text.delete(&quot;1.0&quot;, &quot;end&quot;)
+         self.text.insert(&quot;end&quot;, self.model.plaintext)
+-        self.text.config(state=&quot;disabled&quot;)
+ 
+ 
+ class Controller:
+diff --git a/gui_widgets.py b/gui_widgets.py
+new file mode 100644
+index 0000000..c9a8b5a
+--- /dev/null
++++ b/gui_widgets.py
+@@ -0,0 +1,14 @@
++from idlelib.redirector import WidgetRedirector
++from tkinter import Text
++
++
++# Can&#39;t just use a Text widget with state=&#39;disabled&#39; because that would
++# also disable Ctrl+C / Ctrl+V.
++# Further low-level reading:
++# https://wiki.tcl-lang.org/page/Read%2Donly+text+widget
++class ReadOnlyText(Text):
++    def __init__(self, *args, **kwargs):
++        Text.__init__(self, *args, **kwargs)
++        self.redirector = WidgetRedirector(self)
++        self.insert = self.redirector.register(&quot;insert&quot;, lambda *args, **kw: &quot;break&quot;)
++        self.delete = self.redirector.register(&quot;delete&quot;, lambda *args, **kw: &quot;break&quot;)
+</pre></body></html>

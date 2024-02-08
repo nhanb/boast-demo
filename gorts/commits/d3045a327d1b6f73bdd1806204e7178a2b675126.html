@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[d3045a327d] add github download instructions | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / d3045a327d</strong><hr><pre>commit d3045a327d1b6f73bdd1806204e7178a2b675126
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jun 19 00:37:47 2023 +0700
+
+    add github download instructions
+
+diff --git a/.github/workflows/build.yml b/.github/workflows/release.yml
+similarity index 97%
+rename from .github/workflows/build.yml
+rename to .github/workflows/release.yml
+index 8b3cedd..5d38df5 100644
+--- a/.github/workflows/build.yml
++++ b/.github/workflows/release.yml
+@@ -1,4 +1,4 @@
+-name: Go
++name: GORTS
+ on:
+   push:
+     tags:
+diff --git a/README.md b/README.md
+index dab8671..2da7b5d 100644
+--- a/README.md
++++ b/README.md
+@@ -3,6 +3,7 @@ # GORTS
+ ![](gorts.png)
+ 
+ [![builds.sr.ht status](https://builds.sr.ht/~nhanb/gorts/commits/master.svg)](https://builds.sr.ht/~nhanb/gorts/commits/master?)
++[![github status](https://github.com/nhanb/gorts/actions/workflows/release.yml/badge.svg?branch=master)](https://github.com/nhanb/gorts/actions/workflows/releaseyml)
+ 
+ ... is [ORTS][1] but in pure Go and pure Tcl/Tk
+ passing messages through good ole pipes, the way Bell Labs intended.
+@@ -13,8 +14,20 @@ # GORTS
+ 
+ # Download
+ 
++You can either download from SourceHut or GitHub.
++
++## SourceHut
++
+ Go to &lt;https://git.sr.ht/~nhanb/gorts/refs&gt;, click on the latest version
+-(vX.X.X), download either `GORTS-Linux.zip` or `GORTS-Windows.zip`.
++(vX.X.X), download either `GORTS-Linux-vX.X.X.zip` or
++`GORTS-Windows-vX.X.X.zip`.
++
++## GitHub (downloads faster in my experience)
++
++Go to &lt;https://github.com/nhanb/gorts/releases/latest&gt;, download either
++`GORTS-Linux.zip` or `GORTS-Windows.zip`.
++
++# Use
+ 
+ ## Windows
+ 
+</pre></body></html>

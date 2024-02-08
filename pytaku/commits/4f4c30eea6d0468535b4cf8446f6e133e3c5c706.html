@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[4f4c30eea6] auth page (todo: persist login state) | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 4f4c30eea6</strong><hr><pre>commit 4f4c30eea6d0468535b4cf8446f6e133e3c5c706
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 16 20:18:36 2020 +0700
+
+    auth page (todo: persist login state)
+
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 89624d9..2e37c3a 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -6,40 +6,17 @@
+ from typing import List, Tuple
+ 
+ import requests
+-from flask import (
+-    Flask,
+-    flash,
+-    make_response,
+-    redirect,
+-    render_template,
+-    request,
+-    session,
+-    url_for,
+-)
++from flask import (Flask, flash, jsonify, make_response, redirect,
++                   render_template, request, session, url_for)
+ 
+ from .conf import config
+ from .decorators import require_login, toggle_has_read
+-from .persistence import (
+-    follow,
+-    get_followed_titles,
+-    get_prev_next_chapters,
+-    import_follows,
+-    load_chapter,
+-    load_title,
+-    register_user,
+-    save_chapter,
+-    save_title,
+-    unfollow,
+-    verify_username_password,
+-)
+-from .source_sites import (
+-    get_chapter,
+-    get_title,
+-    search_title_all_sites,
+-    title_cover,
+-    title_source_url,
+-    title_thumbnail,
+-)
++from .persistence import (follow, get_followed_titles, get_prev_next_chapters,
++                          import_follows, load_chapter, load_title,
++                          register_user, save_chapter, save_title, unfollow,
++                          verify_username_password)
++from .source_sites import (get_chapter, get_title, search_title_all_sites,
++                           title_cover, title_source_url, title_thumbnail)
+ 
+ config.load()
+ 
+@@ -360,10 +337,53 @@ def ensure_titles(site_title_pairs: List[Tuple[str, str]]):
+ 
+ @app.route(&quot;/&quot;)
+ @app.route(&quot;/h&quot;)
++@app.route(&quot;/a&quot;)
++@app.route(&quot;/f&quot;)
+ def home_view():
+     return render_template(&quot;spa.html&quot;)
+ 
+ 
+-@app.route(&quot;/f&quot;)
+-def f_view():
+-    return render_template(&quot;spa.html&quot;)
++@app.route(&quot;/api/register&quot;, methods=[&quot;POST&quot;])
++def api_register():
++    username = request.json[&quot;username&quot;].strip()
++    password = request.json[&quot;password&quot;]
++    message = None
++    if not (username and password):
++        message = &quot;Empty field(s) spotted. Protip: spaces don&#39;t count.&quot;
++        status_code = 400
++    elif (
++        len(username) &lt; 2
++        or len(username) &gt; 15
++        or len(password) &lt; 5
++        or len(password) &gt; 50
++    ):
++        message = &quot;Invalid username/password length. Username length should be 2~15, password 5~50.&quot;
++        status_code = 400
++    else:  # success!
++        err = register_user(username, password)
++        if err:
++            message = err
++            status_code = 400
++        else:
++            message = &quot;Registration successful! You can login now.&quot;
++            status_code = 200
++    return (jsonify({&quot;message&quot;: message}), status_code)
++
++
++@app.route(&quot;/api/login&quot;, methods=[&quot;POST&quot;])
++def api_login():
++    username = request.json[&quot;username&quot;].strip()
++    password = request.json[&quot;password&quot;]
++    remember = request.json[&quot;remember&quot;]
++
++    if not (username and password):
++        return (
++            jsonify({&quot;message&quot;: &quot;Empty field(s) spotted. Protip: spaces don&#39;t count.&quot;}),
++            400,
++        )
++
++    user_id = verify_username_password(username, password)
++    if user_id:
++        return jsonify({&quot;user_id&quot;: user_id}), 200
++    else:
++        return jsonify({&quot;message&quot;: &quot;Wrong username/password combination.&quot;}), 400
+diff --git a/src/pytaku/static/main.js b/src/pytaku/static/main.js
+deleted file mode 100644
+index f9e74f8..0000000
+--- a/src/pytaku/static/main.js
++++ /dev/null
+@@ -1,49 +0,0 @@
+-/* Top-level Components */
+-
+-let Home = {
+-  view: (vnode) =&gt; {
+-    return m(&quot;div&quot;, { class: &quot;main&quot; }, [
+-      m(Navbar),
+-      m(&quot;div.content&quot;, [
+-        m(&quot;p&quot;, &quot;Try searching for some manga title using the box above.&quot;),
+-        m(&quot;p&quot;, &quot;Logging in allows you to follow manga titles.&quot;),
+-      ]),
+-    ]);
+-  },
+-};
+-
+-let Following = {
+-  view: (vnode) =&gt; {
+-    return &quot;Follows&quot;;
+-  },
+-};
+-
+-let Navbar = {
+-  view: (vnode) =&gt; {
+-    return m(&quot;nav&quot;, [
+-      m(m.route.Link, { class: &quot;nav--logo&quot;, href: &quot;/&quot; }, [
+-        m(&quot;img.nav--logo--img&quot;, {
+-          src: &quot;/static/pytaku.svg&quot;,
+-          alt: &quot;home&quot;,
+-        }),
+-      ]),
+-      m(&quot;form.nav--search-form&quot;, [
+-        m(&quot;input&quot;, { placeholder: &quot;search title name&quot; }),
+-        m(&quot;button&quot;, { type: &quot;submit&quot; }, [m(&quot;i.icon.icon-search&quot;)]),
+-      ]),
+-      m(m.route.Link, { class: &quot;nav--link&quot;, href: &quot;/l&quot; }, [
+-        m(&quot;i.icon.icon-log-in&quot;),
+-        &quot;login / register&quot;,
+-      ]),
+-    ]);
+-  },
+-};
+-
+-/* Entry point */
+-
+-root = document.getElementById(&quot;spa-root&quot;);
+-m.route.prefix = &quot;&quot;;
+-m.route(root, &quot;/h&quot;, {
+-  &quot;/h&quot;: Home,
+-  &quot;/f&quot;: Following,
+-});
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index a1b33d2..34ad26f 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -1,10 +1,14 @@
+ /* Navbar */
+ nav {
+   background-color: var(--bg-black);
+-  padding: var(--body-padding);
++  padding: 0 var(--body-padding);
+   display: flex;
+   flex-wrap: wrap;
+ }
++nav &gt; * {
++  margin: var(--body-padding) 0;
++  flex: 1 auto 0;
++}
+ .nav--logo {
+   width: 150px;
+   margin-right: var(--body-padding);
+@@ -17,14 +21,21 @@ .nav--search-form {
+   display: inline-flex;
+   align-items: stretch;
+ }
++.nav--search-form &gt; input {
++  width: 15rem;
++}
+ .nav--link {
+   color: white;
+   text-decoration: none;
+   display: inline-flex;
+   align-items: center;
++  padding: 0 0.5rem;
++  line-height: 1.5rem;
+ }
+ .nav--link:hover {
+-  text-decoration: underline;
++  color: black;
++  background-color: white;
++  border-radius: 4px;
+ }
+ .nav--link:last-child {
+   margin-left: auto;
+@@ -68,3 +79,37 @@ #spa-root {
+ footer {
+   flex-shrink: 0;
+ }
++
++/* Authentication route */
++
++.auth.content {
++  display: flex;
++  flex-wrap: wrap;
++  max-width: 700px;
++  margin: auto;
++  justify-content: space-evenly;
++}
++.auth--form {
++  display: inline-flex;
++  flex-direction: column;
++  margin: 0.5rem;
++  max-width: 100%;
++}
++.auth--form &gt; * {
++  margin-bottom: 0.8rem;
++}
++.auth--form &gt; h1 {
++  margin-bottom: 1.5rem;
++}
++.auth--checkbox-label {
++  display: flex;
++}
++#auth--remember {
++  margin-right: 0.3rem;
++}
++.auth--form--message-success {
++  color: green;
++}
++.auth--form--message-error {
++  color: red;
++}
+diff --git a/src/pytaku/static/spa.js b/src/pytaku/static/spa.js
+new file mode 100644
+index 0000000..b7cecb8
+--- /dev/null
++++ b/src/pytaku/static/spa.js
+@@ -0,0 +1,222 @@
++/* Top-level Components */
++
++const Home = {
++  view: (vnode) =&gt; {
++    return m(&quot;div.main&quot;, [
++      m(Navbar),
++      m(&quot;div.content&quot;, [
++        m(&quot;p&quot;, &quot;Try searching for some manga title using the box above.&quot;),
++        m(&quot;p&quot;, &quot;Logging in allows you to follow manga titles.&quot;),
++      ]),
++    ]);
++  },
++};
++
++function Authentication(initialVNode) {
++  let loginUsername = &quot;admin&quot;;
++  let loginPassword = &quot;admin&quot;;
++  let rememberMe = false;
++  let loginErrorMessage = &quot;&quot;;
++
++  let registerUsername = &quot;admin&quot;;
++  let registerPassword = &quot;admin&quot;;
++  let confirmPassword = &quot;admin&quot;;
++  let registerMessage = &quot;&quot;;
++  let registerSuccess = false;
++
++  let registering = false;
++  let loggingIn = false;
++
++  return {
++    view: (vnode) =&gt; {
++      return m(&quot;div.main&quot;, [
++        m(Navbar),
++        m(&quot;div.content.auth&quot;, [
++          m(
++            &quot;form.auth--form&quot;,
++            {
++              onsubmit: (e) =&gt; {
++                e.preventDefault();
++                loginErrorMessage = &quot;&quot;;
++                loggingIn = true;
++                m.redraw();
++
++                m.request({
++                  method: &quot;POST&quot;,
++                  url: &quot;/api/login&quot;,
++                  body: {
++                    username: loginUsername,
++                    password: loginPassword,
++                    remember: rememberMe,
++                  },
++                })
++                  .then((result) =&gt; {
++                    loggingIn = false;
++                    console.log(&quot;Success:&quot;, result);
++                    alert(&quot;TODO&quot;);
++                  })
++                  .catch((e) =&gt; {
++                    loggingIn = false;
++                    loginErrorMessage = e.response.message;
++                  });
++              },
++            },
++            [
++              m(&quot;h1&quot;, &quot;Login&quot;),
++              m(&quot;input[placeholder=username][name=username][required]&quot;, {
++                value: loginUsername,
++                oninput: (e) =&gt; {
++                  loginUsername = e.target.value;
++                },
++              }),
++              m(
++                &quot;input[placeholder=password][name=password][type=password][required]&quot;,
++                {
++                  value: loginPassword,
++                  oninput: (e) =&gt; {
++                    loginPassword = e.target.value;
++                  },
++                }
++              ),
++              m(&quot;label[for=auth--remember].auth--checkbox-label&quot;, [
++                m(&quot;input[type=checkbox][name=remember][id=auth--remember]&quot;, {
++                  checked: rememberMe,
++                  onchange: (e) =&gt; {
++                    rememberMe = e.target.checked;
++                  },
++                }),
++                &quot; Remember me&quot;,
++              ]),
++              m(
++                &quot;button[type=submit]&quot;,
++                {
++                  disabled: loggingIn ? &quot;disabled&quot; : null,
++                },
++                [
++                  m(&quot;i.icon.icon-log-in&quot;),
++                  loggingIn ? &quot; Logging in...&quot; : &quot; Log in&quot;,
++                ]
++              ),
++              m(&quot;p.auth--form--error-message&quot;, loginErrorMessage),
++            ]
++          ),
++          m(
++            &quot;form.auth--form&quot;,
++            {
++              onsubmit: (e) =&gt; {
++                e.preventDefault();
++                registerMessage = &quot;&quot;;
++                m.redraw();
++
++                if (registerPassword !== confirmPassword) {
++                  registerMessage = &quot;Password confirmation didn&#39;t match!&quot;;
++                  registerSuccess = false;
++                  return;
++                }
++
++                registering = true;
++                m.redraw();
++                m.request({
++                  method: &quot;POST&quot;,
++                  url: &quot;/api/register&quot;,
++                  body: {
++                    username: registerUsername,
++                    password: registerPassword,
++                  },
++                })
++                  .then((result) =&gt; {
++                    registering = false;
++                    registerSuccess = true;
++                    registerMessage = result.message;
++                    loginUsername = registerUsername;
++                    loginPassword = registerPassword;
++                  })
++                  .catch((e) =&gt; {
++                    registering = false;
++                    registerMessage = e.response.message;
++                    registerSuccess = false;
++                  });
++              },
++            },
++            [
++              m(&quot;h1&quot;, &quot;Register&quot;),
++              m(&quot;input[placeholder=username][name=username][required]&quot;, {
++                value: registerUsername,
++                oninput: (e) =&gt; {
++                  registerUsername = e.target.value;
++                },
++              }),
++              m(
++                &quot;input[placeholder=password][name=password][type=password][required]&quot;,
++                {
++                  value: registerPassword,
++                  oninput: (e) =&gt; {
++                    registerPassword = e.target.value;
++                  },
++                }
++              ),
++              m(
++                &quot;input[placeholder=confirm password][name=confirm][type=password][required]&quot;,
++                {
++                  value: confirmPassword,
++                  oninput: (e) =&gt; {
++                    confirmPassword = e.target.value;
++                  },
++                }
++              ),
++              m(
++                &quot;button[type=submit]&quot;,
++                {
++                  disabled: registering ? &quot;disabled&quot; : null,
++                },
++                [
++                  m(&quot;i.icon.icon-user-plus&quot;),
++                  registering ? &quot; Registering...&quot; : &quot; Register&quot;,
++                ]
++              ),
++              m(
++                &quot;p&quot;,
++                {
++                  class:
++                    &quot;auth--form--message-&quot; +
++                    (registerSuccess ? &quot;success&quot; : &quot;error&quot;),
++                },
++                registerMessage
++              ),
++            ]
++          ),
++        ]),
++      ]);
++    },
++  };
++}
++
++const Navbar = {
++  view: (vnode) =&gt; {
++    return m(&quot;nav&quot;, [
++      m(m.route.Link, { class: &quot;nav--logo&quot;, href: &quot;/&quot; }, [
++        m(&quot;img.nav--logo--img&quot;, {
++          src: &quot;/static/pytaku.svg&quot;,
++          alt: &quot;home&quot;,
++        }),
++      ]),
++      m(&quot;form.nav--search-form&quot;, [
++        m(&quot;input&quot;, { placeholder: &quot;search title name&quot; }),
++        m(&quot;button&quot;, { type: &quot;submit&quot; }, [m(&quot;i.icon.icon-search&quot;)]),
++      ]),
++      m(m.route.Link, { class: &quot;nav--link&quot;, href: &quot;/a&quot; }, [
++        m(&quot;i.icon.icon-log-in&quot;),
++        &quot;login / register&quot;,
++      ]),
++    ]);
++  },
++};
++
++/* Entry point */
++
++root = document.getElementById(&quot;spa-root&quot;);
++m.route.prefix = &quot;&quot;;
++m.route(root, &quot;/h&quot;, {
++  &quot;/h&quot;: Home,
++  &quot;/a&quot;: Authentication,
++});
+diff --git a/src/pytaku/static/vendored/mithril.min.js b/src/pytaku/static/vendored/mithril.min.js
+new file mode 100644
+index 0000000..544dca2
+--- /dev/null
++++ b/src/pytaku/static/vendored/mithril.min.js
+@@ -0,0 +1 @@
++!function(){&quot;use strict&quot;;function e(e,t,n,r,o,l){return{tag:e,key:t,attrs:n,children:r,text:o,dom:l,domSize:void 0,state:void 0,events:void 0,instance:void 0}}e.normalize=function(t){return Array.isArray(t)?e(&quot;[&quot;,void 0,void 0,e.normalizeChildren(t),void 0,void 0):null==t||&quot;boolean&quot;==typeof t?null:&quot;object&quot;==typeof t?t:e(&quot;#&quot;,void 0,void 0,String(t),void 0,void 0)},e.normalizeChildren=function(t){var n=[];if(t.length){for(var r=null!=t[0]&amp;&amp;null!=t[0].key,o=1;o&lt;t.length;o++)if((null!=t[o]&amp;&amp;null!=t[o].key)!==r)throw new TypeError(&quot;Vnodes must either always have keys or never have keys!&quot;);for(o=0;o&lt;t.length;o++)n[o]=e.normalize(t[o])}return n};var t=function(){var t,n=arguments[this],r=this+1;if(null==n?n={}:(&quot;object&quot;!=typeof n||null!=n.tag||Array.isArray(n))&amp;&amp;(n={},r=this),arguments.length===r+1)t=arguments[r],Array.isArray(t)||(t=[t]);else for(t=[];r&lt;arguments.length;)t.push(arguments[r++]);return e(&quot;&quot;,n.key,n,t)},n=/(?:(^|#|\.)([^#\.\[\]]+))|(\[(.+?)(?:\s*=\s*(&quot;|&#39;|)((?:\\[&quot;&#39;\]]|.)*?)\5)?\])/g,r={},o={}.hasOwnProperty;function l(e){for(var t in e)if(o.call(e,t))return!1;return!0}function i(i){if(null==i||&quot;string&quot;!=typeof i&amp;&amp;&quot;function&quot;!=typeof i&amp;&amp;&quot;function&quot;!=typeof i.view)throw Error(&quot;The selector must be either a string or a component.&quot;);var a=t.apply(1,arguments);return&quot;string&quot;==typeof i&amp;&amp;(a.children=e.normalizeChildren(a.children),&quot;[&quot;!==i)?function(t,n){var r=n.attrs,i=e.normalizeChildren(n.children),a=o.call(r,&quot;class&quot;),u=a?r.class:r.className;if(n.tag=t.tag,n.attrs=null,n.children=void 0,!l(t.attrs)&amp;&amp;!l(r)){var s={};for(var c in r)o.call(r,c)&amp;&amp;(s[c]=r[c]);r=s}for(var c in t.attrs)o.call(t.attrs,c)&amp;&amp;&quot;className&quot;!==c&amp;&amp;!o.call(r,c)&amp;&amp;(r[c]=t.attrs[c]);for(var c in null==u&amp;&amp;null==t.attrs.className||(r.className=null!=u?null!=t.attrs.className?String(t.attrs.className)+&quot; &quot;+String(u):u:null!=t.attrs.className?t.attrs.className:null),a&amp;&amp;(r.class=null),r)if(o.call(r,c)&amp;&amp;&quot;key&quot;!==c){n.attrs=r;break}return Array.isArray(i)&amp;&amp;1===i.length&amp;&amp;null!=i[0]&amp;&amp;&quot;#&quot;===i[0].tag?n.text=i[0].children:n.children=i,n}(r[i]||function(e){for(var t,o=&quot;div&quot;,l=[],i={};t=n.exec(e);){var a=t[1],u=t[2];if(&quot;&quot;===a&amp;&amp;&quot;&quot;!==u)o=u;else if(&quot;#&quot;===a)i.id=u;else if(&quot;.&quot;===a)l.push(u);else if(&quot;[&quot;===t[3][0]){var s=t[6];s&amp;&amp;(s=s.replace(/\\([&quot;&#39;])/g,&quot;$1&quot;).replace(/\\\\/g,&quot;\\&quot;)),&quot;class&quot;===t[4]?l.push(s):i[t[4]]=&quot;&quot;===s?s:s||!0}}return l.length&gt;0&amp;&amp;(i.className=l.join(&quot; &quot;)),r[e]={tag:o,attrs:i}}(i),a):(a.tag=i,a)}if(i.trust=function(t){return null==t&amp;&amp;(t=&quot;&quot;),e(&quot;&lt;&quot;,void 0,void 0,t,void 0,void 0)},i.fragment=function(){var n=t.apply(0,arguments);return n.tag=&quot;[&quot;,n.children=e.normalizeChildren(n.children),n},(a=function(e){if(!(this instanceof a))throw new Error(&quot;Promise must be called with `new`&quot;);if(&quot;function&quot;!=typeof e)throw new TypeError(&quot;executor must be a function&quot;);var t=this,n=[],r=[],o=s(n,!0),l=s(r,!1),i=t._instance={resolvers:n,rejectors:r},u=&quot;function&quot;==typeof setImmediate?setImmediate:setTimeout;function s(e,o){return function a(s){var f;try{if(!o||null==s||&quot;object&quot;!=typeof s&amp;&amp;&quot;function&quot;!=typeof s||&quot;function&quot;!=typeof(f=s.then))u(function(){o||0!==e.length||console.error(&quot;Possible unhandled promise rejection:&quot;,s);for(var t=0;t&lt;e.length;t++)e[t](s);n.length=0,r.length=0,i.state=o,i.retry=function(){a(s)}});else{if(s===t)throw new TypeError(&quot;Promise can&#39;t be resolved w/ itself&quot;);c(f.bind(s))}}catch(e){l(e)}}}function c(e){var t=0;function n(e){return function(n){t++&gt;0||e(n)}}var r=n(l);try{e(n(o),r)}catch(e){r(e)}}c(e)}).prototype.then=function(e,t){var n,r,o=this._instance;function l(e,t,l,i){t.push(function(t){if(&quot;function&quot;!=typeof e)l(t);else try{n(e(t))}catch(e){r&amp;&amp;r(e)}}),&quot;function&quot;==typeof o.retry&amp;&amp;i===o.state&amp;&amp;o.retry()}var i=new a(function(e,t){n=e,r=t});return l(e,o.resolvers,n,!0),l(t,o.rejectors,r,!1),i},a.prototype.catch=function(e){return this.then(null,e)},a.prototype.finally=function(e){return this.then(function(t){return a.resolve(e()).then(function(){return t})},function(t){return a.resolve(e()).then(function(){return a.reject(t)})})},a.resolve=function(e){return e instanceof a?e:new a(function(t){t(e)})},a.reject=function(e){return new a(function(t,n){n(e)})},a.all=function(e){return new a(function(t,n){var r=e.length,o=0,l=[];if(0===e.length)t([]);else for(var i=0;i&lt;e.length;i++)!function(i){function a(e){o++,l[i]=e,o===r&amp;&amp;t(l)}null==e[i]||&quot;object&quot;!=typeof e[i]&amp;&amp;&quot;function&quot;!=typeof e[i]||&quot;function&quot;!=typeof e[i].then?a(e[i]):e[i].then(a,n)}(i)})},a.race=function(e){return new a(function(t,n){for(var r=0;r&lt;e.length;r++)e[r].then(t,n)})},&quot;undefined&quot;!=typeof window){void 0===window.Promise?window.Promise=a:window.Promise.prototype.finally||(window.Promise.prototype.finally=a.prototype.finally);var a=window.Promise}else if(&quot;undefined&quot;!=typeof global){void 0===global.Promise?global.Promise=a:global.Promise.prototype.finally||(global.Promise.prototype.finally=a.prototype.finally);a=global.Promise}var u=function(t){var n,r=t&amp;&amp;t.document,o={svg:&quot;http://www.w3.org/2000/svg&quot;,math:&quot;http://www.w3.org/1998/Math/MathML&quot;};function l(e){return e.attrs&amp;&amp;e.attrs.xmlns||o[e.tag]}function i(e,t){if(e.state!==t)throw new Error(&quot;`vnode.state` must not be modified&quot;)}function a(e){var t=e.state;try{return this.apply(t,arguments)}finally{i(e,t)}}function u(){try{return r.activeElement}catch(e){return null}}function s(e,t,n,r,o,l,i){for(var a=n;a&lt;r;a++){var u=t[a];null!=u&amp;&amp;c(e,u,o,i,l)}}function c(t,n,o,i,u){var f=n.tag;if(&quot;string&quot;==typeof f)switch(n.state={},null!=n.attrs&amp;&amp;R(n.attrs,n,o),f){case&quot;#&quot;:!function(e,t,n){t.dom=r.createTextNode(t.children),w(e,t.dom,n)}(t,n,u);break;case&quot;&lt;&quot;:d(t,n,i,u);break;case&quot;[&quot;:!function(e,t,n,o,l){var i=r.createDocumentFragment();if(null!=t.children){var a=t.children;s(i,a,0,a.length,n,null,o)}t.dom=i.firstChild,t.domSize=i.childNodes.length,w(e,i,l)}(t,n,o,i,u);break;default:!function(t,n,o,i,a){var u=n.tag,c=n.attrs,f=c&amp;&amp;c.is,d=(i=l(n)||i)?f?r.createElementNS(i,u,{is:f}):r.createElementNS(i,u):f?r.createElement(u,{is:f}):r.createElement(u);if(n.dom=d,null!=c&amp;&amp;function(e,t,n){for(var r in t)j(e,r,null,t[r],n)}(n,c,i),w(t,d,a),!b(n)&amp;&amp;(null!=n.text&amp;&amp;(&quot;&quot;!==n.text?d.textContent=n.text:n.children=[e(&quot;#&quot;,void 0,void 0,n.text,void 0,void 0)]),null!=n.children)){var h=n.children;s(d,h,0,h.length,o,null,i),&quot;select&quot;===n.tag&amp;&amp;null!=c&amp;&amp;function(e,t){if(&quot;value&quot;in t)if(null===t.value)-1!==e.dom.selectedIndex&amp;&amp;(e.dom.value=null);else{var n=&quot;&quot;+t.value;e.dom.value===n&amp;&amp;-1!==e.dom.selectedIndex||(e.dom.value=n)}&quot;selectedIndex&quot;in t&amp;&amp;j(e,&quot;selectedIndex&quot;,null,t.selectedIndex,void 0)}(n,c)}}(t,n,o,i,u)}else!function(t,n,r,o,l){(function(t,n){var r;if(&quot;function&quot;==typeof t.tag.view){if(t.state=Object.create(t.tag),null!=(r=t.state.view).$$reentrantLock$$)return;r.$$reentrantLock$$=!0}else{if(t.state=void 0,null!=(r=t.tag).$$reentrantLock$$)return;r.$$reentrantLock$$=!0,t.state=null!=t.tag.prototype&amp;&amp;&quot;function&quot;==typeof t.tag.prototype.view?new t.tag(t):t.tag(t)}if(R(t.state,t,n),null!=t.attrs&amp;&amp;R(t.attrs,t,n),t.instance=e.normalize(a.call(t.state.view,t)),t.instance===t)throw Error(&quot;A view cannot return the vnode it received as argument&quot;);r.$$reentrantLock$$=null})(n,r),null!=n.instance?(c(t,n.instance,r,o,l),n.dom=n.instance.dom,n.domSize=null!=n.dom?n.instance.domSize:0):n.domSize=0}(t,n,o,i,u)}var f={caption:&quot;table&quot;,thead:&quot;table&quot;,tbody:&quot;table&quot;,tfoot:&quot;table&quot;,tr:&quot;tbody&quot;,th:&quot;tr&quot;,td:&quot;tr&quot;,colgroup:&quot;table&quot;,col:&quot;colgroup&quot;};function d(e,t,n,o){var l=t.children.match(/^\s*?&lt;(\w+)/im)||[],i=r.createElement(f[l[1]]||&quot;div&quot;);&quot;http://www.w3.org/2000/svg&quot;===n?(i.innerHTML=&#39;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;&#39;+t.children+&quot;&lt;/svg&gt;&quot;,i=i.firstChild):i.innerHTML=t.children,t.dom=i.firstChild,t.domSize=i.childNodes.length,t.instance=[];for(var a,u=r.createDocumentFragment();a=i.firstChild;)t.instance.push(a),u.appendChild(a);w(e,u,o)}function h(e,t,n,r,o,l){if(t!==n&amp;&amp;(null!=t||null!=n))if(null==t||0===t.length)s(e,n,0,n.length,r,o,l);else if(null==n||0===n.length)x(e,t,0,t.length);else{var i=null!=t[0]&amp;&amp;null!=t[0].key,a=null!=n[0]&amp;&amp;null!=n[0].key,u=0,f=0;if(!i)for(;f&lt;t.length&amp;&amp;null==t[f];)f++;if(!a)for(;u&lt;n.length&amp;&amp;null==n[u];)u++;if(null===a&amp;&amp;null==i)return;if(i!==a)x(e,t,f,t.length),s(e,n,u,n.length,r,o,l);else if(a){for(var d,h,w,b,E,S=t.length-1,C=n.length-1;S&gt;=f&amp;&amp;C&gt;=u&amp;&amp;(w=t[S],b=n[C],w.key===b.key);)w!==b&amp;&amp;p(e,w,b,r,o,l),null!=b.dom&amp;&amp;(o=b.dom),S--,C--;for(;S&gt;=f&amp;&amp;C&gt;=u&amp;&amp;(d=t[f],h=n[u],d.key===h.key);)f++,u++,d!==h&amp;&amp;p(e,d,h,r,y(t,f,o),l);for(;S&gt;=f&amp;&amp;C&gt;=u&amp;&amp;u!==C&amp;&amp;d.key===b.key&amp;&amp;w.key===h.key;)g(e,w,E=y(t,f,o)),w!==h&amp;&amp;p(e,w,h,r,E,l),++u&lt;=--C&amp;&amp;g(e,d,o),d!==b&amp;&amp;p(e,d,b,r,o,l),null!=b.dom&amp;&amp;(o=b.dom),f++,w=t[--S],b=n[C],d=t[f],h=n[u];for(;S&gt;=f&amp;&amp;C&gt;=u&amp;&amp;w.key===b.key;)w!==b&amp;&amp;p(e,w,b,r,o,l),null!=b.dom&amp;&amp;(o=b.dom),C--,w=t[--S],b=n[C];if(u&gt;C)x(e,t,f,S+1);else if(f&gt;S)s(e,n,u,C+1,r,o,l);else{var j,z,A=o,O=C-u+1,N=new Array(O),T=0,P=0,$=2147483647,I=0;for(P=0;P&lt;O;P++)N[P]=-1;for(P=C;P&gt;=u;P--){null==j&amp;&amp;(j=v(t,f,S+1));var L=j[(b=n[P]).key];null!=L&amp;&amp;($=L&lt;$?L:-1,N[P-u]=L,w=t[L],t[L]=null,w!==b&amp;&amp;p(e,w,b,r,o,l),null!=b.dom&amp;&amp;(o=b.dom),I++)}if(o=A,I!==S-f+1&amp;&amp;x(e,t,f,S+1),0===I)s(e,n,u,C+1,r,o,l);else if(-1===$)for(T=(z=function(e){for(var t=[0],n=0,r=0,o=0,l=m.length=e.length,o=0;o&lt;l;o++)m[o]=e[o];for(var o=0;o&lt;l;++o)if(-1!==e[o]){var i=t[t.length-1];if(e[i]&lt;e[o])m[o]=i,t.push(o);else{for(n=0,r=t.length-1;n&lt;r;){var a=(n&gt;&gt;&gt;1)+(r&gt;&gt;&gt;1)+(n&amp;r&amp;1);e[t[a]]&lt;e[o]?n=a+1:r=a}e[o]&lt;e[t[n]]&amp;&amp;(n&gt;0&amp;&amp;(m[o]=t[n-1]),t[n]=o)}}for(n=t.length,r=t[n-1];n-- &gt;0;)t[n]=r,r=m[r];return m.length=0,t}(N)).length-1,P=C;P&gt;=u;P--)h=n[P],-1===N[P-u]?c(e,h,r,l,o):z[T]===P-u?T--:g(e,h,o),null!=h.dom&amp;&amp;(o=n[P].dom);else for(P=C;P&gt;=u;P--)h=n[P],-1===N[P-u]&amp;&amp;c(e,h,r,l,o),null!=h.dom&amp;&amp;(o=n[P].dom)}}else{var R=t.length&lt;n.length?t.length:n.length;for(u=u&lt;f?u:f;u&lt;R;u++)(d=t[u])===(h=n[u])||null==d&amp;&amp;null==h||(null==d?c(e,h,r,l,y(t,u+1,o)):null==h?k(e,d):p(e,d,h,r,y(t,u+1,o),l));t.length&gt;R&amp;&amp;x(e,t,u,t.length),n.length&gt;R&amp;&amp;s(e,n,u,n.length,r,o,l)}}}function p(t,n,r,o,i,u){var s=n.tag;if(s===r.tag){if(r.state=n.state,r.events=n.events,function(e,t){do{if(null!=e.attrs&amp;&amp;&quot;function&quot;==typeof e.attrs.onbeforeupdate){var n=a.call(e.attrs.onbeforeupdate,e,t);if(void 0!==n&amp;&amp;!n)break}if(&quot;string&quot;!=typeof e.tag&amp;&amp;&quot;function&quot;==typeof e.state.onbeforeupdate){var n=a.call(e.state.onbeforeupdate,e,t);if(void 0!==n&amp;&amp;!n)break}return!1}while(0);return e.dom=t.dom,e.domSize=t.domSize,e.instance=t.instance,e.attrs=t.attrs,e.children=t.children,e.text=t.text,!0}(r,n))return;if(&quot;string&quot;==typeof s)switch(null!=r.attrs&amp;&amp;_(r.attrs,r,o),s){case&quot;#&quot;:!function(e,t){e.children.toString()!==t.children.toString()&amp;&amp;(e.dom.nodeValue=t.children),t.dom=e.dom}(n,r);break;case&quot;&lt;&quot;:!function(e,t,n,r,o){t.children!==n.children?(E(e,t),d(e,n,r,o)):(n.dom=t.dom,n.domSize=t.domSize,n.instance=t.instance)}(t,n,r,u,i);break;case&quot;[&quot;:!function(e,t,n,r,o,l){h(e,t.children,n.children,r,o,l);var i=0,a=n.children;if(n.dom=null,null!=a){for(var u=0;u&lt;a.length;u++){var s=a[u];null!=s&amp;&amp;null!=s.dom&amp;&amp;(null==n.dom&amp;&amp;(n.dom=s.dom),i+=s.domSize||1)}1!==i&amp;&amp;(n.domSize=i)}}(t,n,r,o,i,u);break;default:!function(t,n,r,o){var i=n.dom=t.dom;o=l(n)||o,&quot;textarea&quot;===n.tag&amp;&amp;(null==n.attrs&amp;&amp;(n.attrs={}),null!=n.text&amp;&amp;(n.attrs.value=n.text,n.text=void 0)),function(e,t,n,r){if(null!=n)for(var o in n)j(e,o,t&amp;&amp;t[o],n[o],r);var l;if(null!=t)for(var o in t)null==(l=t[o])||null!=n&amp;&amp;null!=n[o]||z(e,o,l,r)}(n,t.attrs,n.attrs,o),b(n)||(null!=t.text&amp;&amp;null!=n.text&amp;&amp;&quot;&quot;!==n.text?t.text.toString()!==n.text.toString()&amp;&amp;(t.dom.firstChild.nodeValue=n.text):(null!=t.text&amp;&amp;(t.children=[e(&quot;#&quot;,void 0,void 0,t.text,void 0,t.dom.firstChild)]),null!=n.text&amp;&amp;(n.children=[e(&quot;#&quot;,void 0,void 0,n.text,void 0,void 0)]),h(i,t.children,n.children,r,null,o)))}(n,r,o,u)}else!function(t,n,r,o,l,i){if(r.instance=e.normalize(a.call(r.state.view,r)),r.instance===r)throw Error(&quot;A view cannot return the vnode it received as argument&quot;);_(r.state,r,o),null!=r.attrs&amp;&amp;_(r.attrs,r,o),null!=r.instance?(null==n.instance?c(t,r.instance,o,i,l):p(t,n.instance,r.instance,o,l,i),r.dom=r.instance.dom,r.domSize=r.instance.domSize):null!=n.instance?(k(t,n.instance),r.dom=void 0,r.domSize=0):(r.dom=n.dom,r.domSize=n.domSize)}(t,n,r,o,i,u)}else k(t,n),c(t,r,o,u,i)}function v(e,t,n){for(var r=Object.create(null);t&lt;n;t++){var o=e[t];if(null!=o){var l=o.key;null!=l&amp;&amp;(r[l]=t)}}return r}var m=[];function y(e,t,n){for(;t&lt;e.length;t++)if(null!=e[t]&amp;&amp;null!=e[t].dom)return e[t].dom;return n}function g(e,t,n){var o=r.createDocumentFragment();!function e(t,n,r){for(;null!=r.dom&amp;&amp;r.dom.parentNode===t;){if(&quot;string&quot;!=typeof r.tag){if(null!=(r=r.instance))continue}else if(&quot;&lt;&quot;===r.tag)for(var o=0;o&lt;r.instance.length;o++)n.appendChild(r.instance[o]);else if(&quot;[&quot;!==r.tag)n.appendChild(r.dom);else if(1===r.children.length){if(null!=(r=r.children[0]))continue}else for(var o=0;o&lt;r.children.length;o++){var l=r.children[o];null!=l&amp;&amp;e(t,n,l)}break}}(e,o,t),w(e,o,n)}function w(e,t,n){null!=n?e.insertBefore(t,n):e.appendChild(t)}function b(e){if(null==e.attrs||null==e.attrs.contenteditable&amp;&amp;null==e.attrs.contentEditable)return!1;var t=e.children;if(null!=t&amp;&amp;1===t.length&amp;&amp;&quot;&lt;&quot;===t[0].tag){var n=t[0].children;e.dom.innerHTML!==n&amp;&amp;(e.dom.innerHTML=n)}else if(null!=e.text||null!=t&amp;&amp;0!==t.length)throw new Error(&quot;Child node of a contenteditable must be trusted&quot;);return!0}function x(e,t,n,r){for(var o=n;o&lt;r;o++){var l=t[o];null!=l&amp;&amp;k(e,l)}}function k(e,t){var n,r,o,l=0,u=t.state;if(&quot;string&quot;!=typeof t.tag&amp;&amp;&quot;function&quot;==typeof t.state.onbeforeremove&amp;&amp;null!=(o=a.call(t.state.onbeforeremove,t))&amp;&amp;&quot;function&quot;==typeof o.then&amp;&amp;(l=1,n=o),t.attrs&amp;&amp;&quot;function&quot;==typeof t.attrs.onbeforeremove&amp;&amp;null!=(o=a.call(t.attrs.onbeforeremove,t))&amp;&amp;&quot;function&quot;==typeof o.then&amp;&amp;(l|=2,r=o),i(t,u),l){if(null!=n){var s=function(){1&amp;l&amp;&amp;((l&amp;=2)||c())};n.then(s,s)}null!=r&amp;&amp;(s=function(){2&amp;l&amp;&amp;((l&amp;=1)||c())},r.then(s,s))}else C(t),S(e,t);function c(){i(t,u),C(t),S(e,t)}}function E(e,t){for(var n=0;n&lt;t.instance.length;n++)e.removeChild(t.instance[n])}function S(e,t){for(;null!=t.dom&amp;&amp;t.dom.parentNode===e;){if(&quot;string&quot;!=typeof t.tag){if(null!=(t=t.instance))continue}else if(&quot;&lt;&quot;===t.tag)E(e,t);else{if(&quot;[&quot;!==t.tag&amp;&amp;(e.removeChild(t.dom),!Array.isArray(t.children)))break;if(1===t.children.length){if(null!=(t=t.children[0]))continue}else for(var n=0;n&lt;t.children.length;n++){var r=t.children[n];null!=r&amp;&amp;S(e,r)}}break}}function C(e){if(&quot;string&quot;!=typeof e.tag&amp;&amp;&quot;function&quot;==typeof e.state.onremove&amp;&amp;a.call(e.state.onremove,e),e.attrs&amp;&amp;&quot;function&quot;==typeof e.attrs.onremove&amp;&amp;a.call(e.attrs.onremove,e),&quot;string&quot;!=typeof e.tag)null!=e.instance&amp;&amp;C(e.instance);else{var t=e.children;if(Array.isArray(t))for(var n=0;n&lt;t.length;n++){var r=t[n];null!=r&amp;&amp;C(r)}}}function j(e,t,n,o,l){if(&quot;key&quot;!==t&amp;&amp;&quot;is&quot;!==t&amp;&amp;null!=o&amp;&amp;!A(t)&amp;&amp;(n!==o||function(e,t){return&quot;value&quot;===t||&quot;checked&quot;===t||&quot;selectedIndex&quot;===t||&quot;selected&quot;===t&amp;&amp;e.dom===u()||&quot;option&quot;===e.tag&amp;&amp;e.dom.parentNode===r.activeElement}(e,t)||&quot;object&quot;==typeof o)){if(&quot;o&quot;===t[0]&amp;&amp;&quot;n&quot;===t[1])return L(e,t,o);if(&quot;xlink:&quot;===t.slice(0,6))e.dom.setAttributeNS(&quot;http://www.w3.org/1999/xlink&quot;,t.slice(6),o);else if(&quot;style&quot;===t)$(e.dom,n,o);else if(O(e,t,l)){if(&quot;value&quot;===t){if((&quot;input&quot;===e.tag||&quot;textarea&quot;===e.tag)&amp;&amp;e.dom.value===&quot;&quot;+o&amp;&amp;e.dom===u())return;if(&quot;select&quot;===e.tag&amp;&amp;null!==n&amp;&amp;e.dom.value===&quot;&quot;+o)return;if(&quot;option&quot;===e.tag&amp;&amp;null!==n&amp;&amp;e.dom.value===&quot;&quot;+o)return}&quot;input&quot;===e.tag&amp;&amp;&quot;type&quot;===t?e.dom.setAttribute(t,o):e.dom[t]=o}else&quot;boolean&quot;==typeof o?o?e.dom.setAttribute(t,&quot;&quot;):e.dom.removeAttribute(t):e.dom.setAttribute(&quot;className&quot;===t?&quot;class&quot;:t,o)}}function z(e,t,n,r){if(&quot;key&quot;!==t&amp;&amp;&quot;is&quot;!==t&amp;&amp;null!=n&amp;&amp;!A(t))if(&quot;o&quot;!==t[0]||&quot;n&quot;!==t[1]||A(t))if(&quot;style&quot;===t)$(e.dom,n,null);else if(!O(e,t,r)||&quot;className&quot;===t||&quot;value&quot;===t&amp;&amp;(&quot;option&quot;===e.tag||&quot;select&quot;===e.tag&amp;&amp;-1===e.dom.selectedIndex&amp;&amp;e.dom===u())||&quot;input&quot;===e.tag&amp;&amp;&quot;type&quot;===t){var o=t.indexOf(&quot;:&quot;);-1!==o&amp;&amp;(t=t.slice(o+1)),!1!==n&amp;&amp;e.dom.removeAttribute(&quot;className&quot;===t?&quot;class&quot;:t)}else e.dom[t]=null;else L(e,t,void 0)}function A(e){return&quot;oninit&quot;===e||&quot;oncreate&quot;===e||&quot;onupdate&quot;===e||&quot;onremove&quot;===e||&quot;onbeforeremove&quot;===e||&quot;onbeforeupdate&quot;===e}function O(e,t,n){return void 0===n&amp;&amp;(e.tag.indexOf(&quot;-&quot;)&gt;-1||null!=e.attrs&amp;&amp;e.attrs.is||&quot;href&quot;!==t&amp;&amp;&quot;list&quot;!==t&amp;&amp;&quot;form&quot;!==t&amp;&amp;&quot;width&quot;!==t&amp;&amp;&quot;height&quot;!==t)&amp;&amp;t in e.dom}var N=/[A-Z]/g;function T(e){return&quot;-&quot;+e.toLowerCase()}function P(e){return&quot;-&quot;===e[0]&amp;&amp;&quot;-&quot;===e[1]?e:&quot;cssFloat&quot;===e?&quot;float&quot;:e.replace(N,T)}function $(e,t,n){if(t===n);else if(null==n)e.style.cssText=&quot;&quot;;else if(&quot;object&quot;!=typeof n)e.style.cssText=n;else if(null==t||&quot;object&quot;!=typeof t)for(var r in e.style.cssText=&quot;&quot;,n)null!=(o=n[r])&amp;&amp;e.style.setProperty(P(r),String(o));else{for(var r in n){var o;null!=(o=n[r])&amp;&amp;(o=String(o))!==String(t[r])&amp;&amp;e.style.setProperty(P(r),o)}for(var r in t)null!=t[r]&amp;&amp;null==n[r]&amp;&amp;e.style.removeProperty(P(r))}}function I(){this._=n}function L(e,t,n){if(null!=e.events){if(e.events[t]===n)return;null==n||&quot;function&quot;!=typeof n&amp;&amp;&quot;object&quot;!=typeof n?(null!=e.events[t]&amp;&amp;e.dom.removeEventListener(t.slice(2),e.events,!1),e.events[t]=void 0):(null==e.events[t]&amp;&amp;e.dom.addEventListener(t.slice(2),e.events,!1),e.events[t]=n)}else null==n||&quot;function&quot;!=typeof n&amp;&amp;&quot;object&quot;!=typeof n||(e.events=new I,e.dom.addEventListener(t.slice(2),e.events,!1),e.events[t]=n)}function R(e,t,n){&quot;function&quot;==typeof e.oninit&amp;&amp;a.call(e.oninit,t),&quot;function&quot;==typeof e.oncreate&amp;&amp;n.push(a.bind(e.oncreate,t))}function _(e,t,n){&quot;function&quot;==typeof e.onupdate&amp;&amp;n.push(a.bind(e.onupdate,t))}return I.prototype=Object.create(null),I.prototype.handleEvent=function(e){var t,n=this[&quot;on&quot;+e.type];&quot;function&quot;==typeof n?t=n.call(e.currentTarget,e):&quot;function&quot;==typeof n.handleEvent&amp;&amp;n.handleEvent(e),this._&amp;&amp;!1!==e.redraw&amp;&amp;(0,this._)(),!1===t&amp;&amp;(e.preventDefault(),e.stopPropagation())},function(t,r,o){if(!t)throw new TypeError(&quot;Ensure the DOM element being passed to m.route/m.mount/m.render is not undefined.&quot;);var l=[],i=u(),a=t.namespaceURI;null==t.vnodes&amp;&amp;(t.textContent=&quot;&quot;),r=e.normalizeChildren(Array.isArray(r)?r:[r]);var s=n;try{n=&quot;function&quot;==typeof o?o:void 0,h(t,t.vnodes,r,l,null,&quot;http://www.w3.org/1999/xhtml&quot;===a?void 0:a)}finally{n=s}t.vnodes=r,null!=i&amp;&amp;u()!==i&amp;&amp;&quot;function&quot;==typeof i.focus&amp;&amp;i.focus();for(var c=0;c&lt;l.length;c++)l[c]()}}(window),s=function(t,n,r){var o=[],l=!1,i=!1;function a(){if(l)throw new Error(&quot;Nested m.redraw.sync() call&quot;);l=!0;for(var n=0;n&lt;o.length;n+=2)try{t(o[n],e(o[n+1]),u)}catch(e){r.error(e)}l=!1}function u(){i||(i=!0,n(function(){i=!1,a()}))}return u.sync=a,{mount:function(n,r){if(null!=r&amp;&amp;null==r.view&amp;&amp;&quot;function&quot;!=typeof r)throw new TypeError(&quot;m.mount(element, component) expects a component, not a vnode&quot;);var l=o.indexOf(n);l&gt;=0&amp;&amp;(o.splice(l,2),t(n,[],u)),null!=r&amp;&amp;(o.push(n,r),t(n,e(r),u))},redraw:u}}(u,requestAnimationFrame,console),c=function(e){if(&quot;[object Object]&quot;!==Object.prototype.toString.call(e))return&quot;&quot;;var t=[];for(var n in e)r(n,e[n]);return t.join(&quot;&amp;&quot;);function r(e,n){if(Array.isArray(n))for(var o=0;o&lt;n.length;o++)r(e+&quot;[&quot;+o+&quot;]&quot;,n[o]);else if(&quot;[object Object]&quot;===Object.prototype.toString.call(n))for(var o in n)r(e+&quot;[&quot;+o+&quot;]&quot;,n[o]);else t.push(encodeURIComponent(e)+(null!=n&amp;&amp;&quot;&quot;!==n?&quot;=&quot;+encodeURIComponent(n):&quot;&quot;))}},f=Object.assign||function(e,t){t&amp;&amp;Object.keys(t).forEach(function(n){e[n]=t[n]})},d=function(e,t){if(/:([^\/\.-]+)(\.{3})?:/.test(e))throw new SyntaxError(&quot;Template parameter names *must* be separated&quot;);if(null==t)return e;var n=e.indexOf(&quot;?&quot;),r=e.indexOf(&quot;#&quot;),o=r&lt;0?e.length:r,l=n&lt;0?o:n,i=e.slice(0,l),a={};f(a,t);var u=i.replace(/:([^\/\.-]+)(\.{3})?/g,function(e,n,r){return delete a[n],null==t[n]?e:r?t[n]:encodeURIComponent(String(t[n]))}),s=u.indexOf(&quot;?&quot;),d=u.indexOf(&quot;#&quot;),h=d&lt;0?u.length:d,p=s&lt;0?h:s,v=u.slice(0,p);n&gt;=0&amp;&amp;(v+=e.slice(n,o)),s&gt;=0&amp;&amp;(v+=(n&lt;0?&quot;?&quot;:&quot;&amp;&quot;)+u.slice(s,h));var m=c(a);return m&amp;&amp;(v+=(n&lt;0&amp;&amp;s&lt;0?&quot;?&quot;:&quot;&amp;&quot;)+m),r&gt;=0&amp;&amp;(v+=e.slice(r)),d&gt;=0&amp;&amp;(v+=(r&lt;0?&quot;&quot;:&quot;&amp;&quot;)+u.slice(d)),v},h=function(e,t,n){var r=0;function o(e){return new t(e)}function l(e){return function(r,l){&quot;string&quot;!=typeof r?(l=r,r=r.url):null==l&amp;&amp;(l={});var i=new t(function(t,n){e(d(r,l.params),l,function(e){if(&quot;function&quot;==typeof l.type)if(Array.isArray(e))for(var n=0;n&lt;e.length;n++)e[n]=new l.type(e[n]);else e=new l.type(e);t(e)},n)});if(!0===l.background)return i;var a=0;function u(){0==--a&amp;&amp;&quot;function&quot;==typeof n&amp;&amp;n()}return function e(t){var n=t.then;return t.constructor=o,t.then=function(){a++;var r=n.apply(t,arguments);return r.then(u,function(e){if(u(),0===a)throw e}),e(r)},t}(i)}}function i(e,t){for(var n in e.headers)if({}.hasOwnProperty.call(e.headers,n)&amp;&amp;t.test(n))return!0;return!1}return o.prototype=t.prototype,o.__proto__=t,{request:l(function(t,n,r,o){var l,a=null!=n.method?n.method.toUpperCase():&quot;GET&quot;,u=n.body,s=!(null!=n.serialize&amp;&amp;n.serialize!==JSON.serialize||u instanceof e.FormData),c=n.responseType||(&quot;function&quot;==typeof n.extract?&quot;&quot;:&quot;json&quot;),f=new e.XMLHttpRequest,d=!1,h=f,p=f.abort;for(var v in f.abort=function(){d=!0,p.call(this)},f.open(a,t,!1!==n.async,&quot;string&quot;==typeof n.user?n.user:void 0,&quot;string&quot;==typeof n.password?n.password:void 0),s&amp;&amp;null!=u&amp;&amp;!i(n,/^content0-type1$/i)&amp;&amp;f.setRequestHeader(&quot;Content-Type&quot;,&quot;application/json; charset=utf-8&quot;),&quot;function&quot;==typeof n.deserialize||i(n,/^accept$/i)||f.setRequestHeader(&quot;Accept&quot;,&quot;application/json, text/*&quot;),n.withCredentials&amp;&amp;(f.withCredentials=n.withCredentials),n.timeout&amp;&amp;(f.timeout=n.timeout),f.responseType=c,n.headers)({}).hasOwnProperty.call(n.headers,v)&amp;&amp;f.setRequestHeader(v,n.headers[v]);f.onreadystatechange=function(e){if(!d&amp;&amp;4===e.target.readyState)try{var l,i=e.target.status&gt;=200&amp;&amp;e.target.status&lt;300||304===e.target.status||/^file:\/\//i.test(t),a=e.target.response;if(&quot;json&quot;===c?e.target.responseType||&quot;function&quot;==typeof n.extract||(a=JSON.parse(e.target.responseText)):c&amp;&amp;&quot;text&quot;!==c||null==a&amp;&amp;(a=e.target.responseText),&quot;function&quot;==typeof n.extract?(a=n.extract(e.target,n),i=!0):&quot;function&quot;==typeof n.deserialize&amp;&amp;(a=n.deserialize(a)),i)r(a);else{try{l=e.target.responseText}catch(e){l=a}var u=new Error(l);u.code=e.target.status,u.response=a,o(u)}}catch(e){o(e)}},&quot;function&quot;==typeof n.config&amp;&amp;(f=n.config(f,n,t)||f)!==h&amp;&amp;(l=f.abort,f.abort=function(){d=!0,l.call(this)}),null==u?f.send():&quot;function&quot;==typeof n.serialize?f.send(n.serialize(u)):u instanceof e.FormData?f.send(u):f.send(JSON.stringify(u))}),jsonp:l(function(t,n,o,l){var i=n.callbackName||&quot;_mithril_&quot;+Math.round(1e16*Math.random())+&quot;_&quot;+r++,a=e.document.createElement(&quot;script&quot;);e[i]=function(t){delete e[i],a.parentNode.removeChild(a),o(t)},a.onerror=function(){delete e[i],a.parentNode.removeChild(a),l(new Error(&quot;JSONP request failed&quot;))},a.src=t+(t.indexOf(&quot;?&quot;)&lt;0?&quot;?&quot;:&quot;&amp;&quot;)+encodeURIComponent(n.callbackKey||&quot;callback&quot;)+&quot;=&quot;+encodeURIComponent(i),e.document.documentElement.appendChild(a)})}}(window,a,s.redraw),p=s,v=function(){return i.apply(this,arguments)};v.m=i,v.trust=i.trust,v.fragment=i.fragment,v.mount=p.mount;var m=i,y=a,g=function(e){if(&quot;&quot;===e||null==e)return{};&quot;?&quot;===e.charAt(0)&amp;&amp;(e=e.slice(1));for(var t=e.split(&quot;&amp;&quot;),n={},r={},o=0;o&lt;t.length;o++){var l=t[o].split(&quot;=&quot;),i=decodeURIComponent(l[0]),a=2===l.length?decodeURIComponent(l[1]):&quot;&quot;;&quot;true&quot;===a?a=!0:&quot;false&quot;===a&amp;&amp;(a=!1);var u=i.split(/\]\[?|\[/),s=r;i.indexOf(&quot;[&quot;)&gt;-1&amp;&amp;u.pop();for(var c=0;c&lt;u.length;c++){var f=u[c],d=u[c+1],h=&quot;&quot;==d||!isNaN(parseInt(d,10));if(&quot;&quot;===f)null==n[i=u.slice(0,c).join()]&amp;&amp;(n[i]=Array.isArray(s)?s.length:0),f=n[i]++;else if(&quot;__proto__&quot;===f)break;if(c===u.length-1)s[f]=a;else{var p=Object.getOwnPropertyDescriptor(s,f);null!=p&amp;&amp;(p=p.value),null==p&amp;&amp;(s[f]=p=h?[]:{}),s=p}}}return r},w=function(e){var t=e.indexOf(&quot;?&quot;),n=e.indexOf(&quot;#&quot;),r=n&lt;0?e.length:n,o=t&lt;0?r:t,l=e.slice(0,o).replace(/\/{2,}/g,&quot;/&quot;);return l?(&quot;/&quot;!==l[0]&amp;&amp;(l=&quot;/&quot;+l),l.length&gt;1&amp;&amp;&quot;/&quot;===l[l.length-1]&amp;&amp;(l=l.slice(0,-1))):l=&quot;/&quot;,{path:l,params:t&lt;0?{}:g(e.slice(t+1,r))}},b=function(e){var t=w(e),n=Object.keys(t.params),r=[],o=new RegExp(&quot;^&quot;+t.path.replace(/:([^\/.-]+)(\.{3}|\.(?!\.)|-)?|[\\^$*+.()|\[\]{}]/g,function(e,t,n){return null==t?&quot;\\&quot;+e:(r.push({k:t,r:&quot;...&quot;===n}),&quot;...&quot;===n?&quot;(.*)&quot;:&quot;.&quot;===n?&quot;([^/]+)\\.&quot;:&quot;([^/]+)&quot;+(n||&quot;&quot;))})+&quot;$&quot;);return function(e){for(var l=0;l&lt;n.length;l++)if(t.params[n[l]]!==e.params[n[l]])return!1;if(!r.length)return o.test(e.path);var i=o.exec(e.path);if(null==i)return!1;for(l=0;l&lt;r.length;l++)e.params[r[l].k]=r[l].r?i[l+1]:decodeURIComponent(i[l+1]);return!0}},x={};v.route=function(t,n){var r;function o(e,n,o){if(e=d(e,n),null!=r){r();var l=o?o.state:null,i=o?o.title:null;o&amp;&amp;o.replace?t.history.replaceState(l,i,h.prefix+e):t.history.pushState(l,i,h.prefix+e)}else t.location.href=h.prefix+e}var l,i,a,u,s=x,c=h.SKIP={};function h(d,p,v){if(null==d)throw new Error(&quot;Ensure the DOM element that was passed to `m.route` is not undefined&quot;);var m,g=0,k=Object.keys(v).map(function(e){if(&quot;/&quot;!==e[0])throw new SyntaxError(&quot;Routes must start with a `/`&quot;);if(/:([^\/\.-]+)(\.{3})?:/.test(e))throw new SyntaxError(&quot;Route parameter names must be separated with either `/`, `.`, or `-`&quot;);return{route:e,component:v[e],check:b(e)}}),E=&quot;function&quot;==typeof setImmediate?setImmediate:setTimeout,S=y.resolve(),C=!1;if(r=null,null!=p){var j=w(p);if(!k.some(function(e){return e.check(j)}))throw new ReferenceError(&quot;Default route doesn&#39;t match any known routes&quot;)}function z(){C=!1;var e=t.location.hash;&quot;#&quot;!==h.prefix[0]&amp;&amp;(e=t.location.search+e,&quot;?&quot;!==h.prefix[0]&amp;&amp;&quot;/&quot;!==(e=t.location.pathname+e)[0]&amp;&amp;(e=&quot;/&quot;+e));var r=e.concat().replace(/(?:%[a-f89][a-f0-9])+/gim,decodeURIComponent).slice(h.prefix.length),d=w(r);function v(){if(r===p)throw new Error(&quot;Could not resolve default route &quot;+p);o(p,null,{replace:!0})}f(d.params,t.history.state),function e(t){for(;t&lt;k.length;t++)if(k[t].check(d)){var o=k[t].component,f=k[t].route,h=o,p=u=function(f){if(p===u){if(f===c)return e(t+1);l=null==f||&quot;function&quot;!=typeof f.view&amp;&amp;&quot;function&quot;!=typeof f?&quot;div&quot;:f,i=d.params,a=r,u=null,s=o.render?o:null,2===g?n.redraw():(g=2,n.redraw.sync())}};return void(o.view||&quot;function&quot;==typeof o?(o={},p(h)):o.onmatch?S.then(function(){return o.onmatch(d.params,r,f)}).then(p,v):p(&quot;div&quot;))}v()}(0)}return r=function(){C||(C=!0,E(z))},&quot;function&quot;==typeof t.history.pushState?(m=function(){t.removeEventListener(&quot;popstate&quot;,r,!1)},t.addEventListener(&quot;popstate&quot;,r,!1)):&quot;#&quot;===h.prefix[0]&amp;&amp;(r=null,m=function(){t.removeEventListener(&quot;hashchange&quot;,z,!1)},t.addEventListener(&quot;hashchange&quot;,z,!1)),n.mount(d,{onbeforeupdate:function(){return!(!(g=g?2:1)||x===s)},oncreate:z,onremove:m,view:function(){if(g&amp;&amp;x!==s){var t=[e(l,i.key,i)];return s&amp;&amp;(t=s.render(t[0])),t}}})}return h.set=function(e,t,n){null!=u&amp;&amp;((n=n||{}).replace=!0),u=null,o(e,t,n)},h.get=function(){return a},h.prefix=&quot;#!&quot;,h.Link={view:function(e){var t,n,r=e.attrs.options,o={};f(o,e.attrs),o.selector=o.options=o.key=o.oninit=o.oncreate=o.onbeforeupdate=o.onupdate=o.onbeforeremove=o.onremove=null;var l=m(e.attrs.selector||&quot;a&quot;,o,e.children);return(l.attrs.disabled=Boolean(l.attrs.disabled))?(l.attrs.href=null,l.attrs[&quot;aria-disabled&quot;]=&quot;true&quot;,l.attrs.onclick=null):(t=l.attrs.onclick,n=l.attrs.href,l.attrs.href=h.prefix+n,l.attrs.onclick=function(e){var o;&quot;function&quot;==typeof t?o=t.call(e.currentTarget,e):null==t||&quot;object&quot;!=typeof t||&quot;function&quot;==typeof t.handleEvent&amp;&amp;t.handleEvent(e),!1===o||e.defaultPrevented||0!==e.button&amp;&amp;0!==e.which&amp;&amp;1!==e.which||e.currentTarget.target&amp;&amp;&quot;_self&quot;!==e.currentTarget.target||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey||(e.preventDefault(),e.redraw=!1,h.set(n,null,r))}),l}},h.param=function(e){return i&amp;&amp;null!=e?i[e]:i},h}(window,p),v.render=u,v.redraw=p.redraw,v.request=h.request,v.jsonp=h.jsonp,v.parseQueryString=g,v.buildQueryString=c,v.parsePathname=w,v.buildPathname=d,v.vnode=e,v.PromisePolyfill=a,&quot;undefined&quot;!=typeof module?module.exports=v:window.m=v}();
+\ No newline at end of file
+diff --git a/src/pytaku/templates/spa.html b/src/pytaku/templates/spa.html
+index ce3b087..62ad43b 100644
+--- a/src/pytaku/templates/spa.html
++++ b/src/pytaku/templates/spa.html
+@@ -43,7 +43,7 @@
+     &lt;/footer&gt;
+ 
+     &lt;script&gt;const initialState = &quot;{{ initial_state }}&quot;;&lt;/script&gt;
+-    &lt;script src=&quot;https://unpkg.com/mithril/mithril.js&quot;&gt;&lt;/script&gt;
+-    &lt;script src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;main.js&#39;) }}&quot;&gt;&lt;/script&gt;
++    &lt;script src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;vendored/mithril.min.js&#39;) }}&quot;&gt;&lt;/script&gt;
++    &lt;script src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;spa.js&#39;) }}&quot;&gt;&lt;/script&gt;
+   &lt;/body&gt;
+ &lt;/html&gt;
+</pre></body></html>

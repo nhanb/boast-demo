@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[da1abaf95e] always deploy master to dev server | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / da1abaf95e</strong><hr><pre>commit da1abaf95e7a1650f24815d963989fd948c26582
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jan 25 11:33:34 2021 +0700
+
+    always deploy master to dev server
+    
+    I&#39;ve had enough of all this tagging business.
+
+diff --git a/.builds/ubuntu.yml b/.builds/ubuntu.yml
+index d792a40..1e04c6e 100644
+--- a/.builds/ubuntu.yml
++++ b/.builds/ubuntu.yml
+@@ -67,13 +67,13 @@ tasks:
+   # Builds.sr.ht doesn&#39;t support tag or even branch detection yet:
+   # &gt; https://todo.sr.ht/~sircmpwn/builds.sr.ht/170
+   # So here I manually check for it:
+-  - check-publish: |
++  - check-master: |
+       cd pytaku
+-      git describe --exact-match HEAD || complete-build
+-
+-  - publish: |
+-      cd pytaku
+-      poetry publish
++      # Stop if not master branch, meaning we&#39;re automatically deploying to
++      # dev server for every push to master.
++      if [ &quot;$(git rev-parse master)&quot; != &quot;$(git rev-parse HEAD)&quot; ]; then \
++        complete-build; \
++      fi
+ 
+   - deploy-dev: |
+       cd pytaku
+@@ -87,7 +87,7 @@ tasks:
+       scp -i ~/.ssh/2d6e3246-5adc-41c2-bebe-01dacda9d0c8 contrib/systemd/*.service pytaku@dev.pytaku.com:/home/pytaku/.config/systemd/user/
+       # Install &amp; restart serivces
+       ssh -i ~/.ssh/2d6e3246-5adc-41c2-bebe-01dacda9d0c8 pytaku@dev.pytaku.com &quot;
+-        ~/.local/bin/pip install --user pytaku*.whl &amp;&amp;
++        ~/.local/bin/pip install --user --force-reinstall pytaku*.whl &amp;&amp;
+         cd ~/pytaku &amp;&amp;
+         ~/.local/bin/pytaku-migrate &amp;&amp;
+         rm -r static &amp;&amp;
+@@ -97,3 +97,13 @@ tasks:
+         systemctl --user restart pytaku-scheduler &amp;&amp;
+         echo &#39;All done.&#39;
+       &quot;
++
++  - check-tag: |
++      # Stop if HEAD is not a tagged commit.
++      cd pytaku
++      git describe --exact-match HEAD || complete-build
++
++  - publish: |
++      cd pytaku
++      source ~/venv/bin/activate
++      poetry publish
+</pre></body></html>

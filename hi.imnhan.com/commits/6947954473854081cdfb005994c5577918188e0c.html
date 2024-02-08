@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[6947954473] add png favicon, remove unecessary variables | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 6947954473</strong><hr><pre>commit 6947954473854081cdfb005994c5577918188e0c
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Sat Sep 7 13:29:50 2013 +0700
+
+    add png favicon, remove unecessary variables
+
+diff --git a/content/extra/favicon.png b/content/extra/favicon.png
+new file mode 100644
+index 0000000..f17ef0e
+Binary files /dev/null and b/content/extra/favicon.png differ
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 08fd289..a22ce7e 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -24,6 +24,7 @@
+ FILES_TO_COPY = ((&#39;extra/CNAME&#39;, &#39;CNAME&#39;),
+                  (&#39;extra/README.markdown&#39;, &#39;README.markdown&#39;),
+                  (&#39;extra/favicon.ico&#39;, &#39;favicon.ico&#39;),
++                 (&#39;extra/favicon.png&#39;, &#39;favicon.png&#39;),
+                  (&#39;extra/cal.html&#39;, &#39;calendar/index.html&#39;),
+                  (&#39;extra/google3f40dbd543a603fa.html&#39;,
+                   &#39;google3f40dbd543a603fa.html&#39;),
+@@ -52,9 +53,6 @@
+ 
+ #THEME = &quot;/home/nhanb/Dropbox/dev/pelican-simplicity-theme&quot;
+ 
+-GITHUB_USERNAME = &quot;nhanb&quot;
+-FACEBOOK_USERNAME = &quot;thanhnhanb&quot;
+-
+ AUTHOR_NAME = &quot;Bùi Thành Nhân&quot;
+ AUTHOR_SLUG = &quot;nhanb&quot;
+ 
+@@ -70,3 +68,5 @@
+          #(&#39;Python.org&#39;, &#39;http://python.org/&#39;),
+          #(&#39;Jinja2&#39;, &#39;http://jinja.pocoo.org/&#39;)
+          #)
++
++THEME_STATIC_PATHS = [&#39;static&#39;]
+</pre></body></html>

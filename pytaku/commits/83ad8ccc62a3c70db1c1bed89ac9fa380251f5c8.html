@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[83ad8ccc62] more granular pageMaxWidth; use sessionStorage | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 83ad8ccc62</strong><hr><pre>commit 83ad8ccc62a3c70db1c1bed89ac9fa380251f5c8
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Oct 2 22:48:00 2023 +0700
+
+    more granular pageMaxWidth; use sessionStorage
+    
+    I think anything more persistent than sessionStorage will be more
+    annoying that it&#39;s worth.
+
+diff --git a/src/pytaku/js-src/routes/chapter.js b/src/pytaku/js-src/routes/chapter.js
+index 285972a..6f5bb11 100644
+--- a/src/pytaku/js-src/routes/chapter.js
++++ b/src/pytaku/js-src/routes/chapter.js
+@@ -79,20 +79,25 @@ function Chapter(initialVNode) {
+   let nextChapterPendingPages = null;
+   let nextChapterLoadedPages = [];
+ 
+-  let pageMaxWidth = 100; // in percent
++  const pageMaxWidthKey = &quot;chapter--pageMaxWidth&quot;;
++  // in percent:
++  let pageMaxWidth = Number(sessionStorage.getItem(pageMaxWidthKey) || &quot;100&quot;);
+ 
+   function onKeyPress(event) {
+     if (event.target.tagName === &quot;INPUT&quot;) return;
+ 
+     switch (event.keyCode) {
+       case KEYCODE_PLUS:
+-        if (pageMaxWidth &lt;= 85) pageMaxWidth += 15;
++        if (pageMaxWidth &lt;= 90) pageMaxWidth += 10;
++        sessionStorage.setItem(pageMaxWidthKey, pageMaxWidth.toString());
+         break;
+       case KEYCODE_MINUS:
+-        if (pageMaxWidth &gt; 15) pageMaxWidth -= 15;
++        if (pageMaxWidth &gt; 20) pageMaxWidth -= 10;
++        sessionStorage.setItem(pageMaxWidthKey, pageMaxWidth.toString());
+         break;
+       case KEYCODE_ZERO:
+         pageMaxWidth = 100;
++        sessionStorage.setItem(pageMaxWidthKey, pageMaxWidth.toString());
+         break;
+       case KEYCODE_QUESTION_MARK:
+         window.alert(`Keyboard shortcuts:
+@@ -196,7 +201,7 @@ function Chapter(initialVNode) {
+               class: &quot;touch-friendly chapter--prev-button&quot;,
+               href: `/m/${site}/${titleId}/${prev.id}`,
+             },
+-            [m(&quot;i.icon.icon-chevrons-left&quot;), m(&quot;span&quot;, &quot;prev&quot;)]
++            [m(&quot;i.icon.icon-chevrons-left&quot;), m(&quot;span&quot;, &quot;prev&quot;)],
+           )
+         : m(Button, {
+             class: &quot;chapter--prev-button&quot;,
+@@ -210,7 +215,7 @@ function Chapter(initialVNode) {
+           class: &quot;touch-friendly&quot;,
+           href: `/m/${site}/${titleId}`,
+         },
+-        [m(&quot;i.icon.icon-list&quot;), m(&quot;span&quot;, &quot; chapter list&quot;)]
++        [m(&quot;i.icon.icon-list&quot;), m(&quot;span&quot;, &quot; chapter list&quot;)],
+       ),
+       m(
+         m.route.Link,
+@@ -247,12 +252,12 @@ function Chapter(initialVNode) {
+               ? &quot;next&quot;
+               : isMarkingLastChapterAsRead
+               ? &quot;finishing...&quot;
+-              : &quot;finish&quot;
++              : &quot;finish&quot;,
+           ),
+           isMarkingLastChapterAsRead
+             ? null
+             : m(&quot;i.icon.icon-&quot; + (next ? &quot;chevrons-right&quot; : &quot;check-circle&quot;)),
+-        ]
++        ],
+       ),
+     ]);
+   }
+@@ -356,14 +361,14 @@ function Chapter(initialVNode) {
+                     ? m(
+                         &quot;div&quot;,
+                         { style: { &quot;margin-bottom&quot;: &quot;.5rem&quot; } },
+-                        m(RetryImgButton, { page })
++                        m(RetryImgButton, { page }),
+                       )
+                     : null,
+-                ]
+-              )
++                ],
++              ),
+             ),
+             pendingPages.map(() =&gt; m(PendingPlaceholder)),
+-          ]
++          ],
+         ),
+         buttonsView(site, prev, next),
+         nextChapterLoadedPages.map((page) =&gt;
+@@ -373,7 +378,7 @@ function Chapter(initialVNode) {
+             onerror: preloadNextChapterPage,
+             src: page.src,
+             altsrc: page.altsrc,
+-          })
++          }),
+         ),
+       ]);
+     },
+</pre></body></html>

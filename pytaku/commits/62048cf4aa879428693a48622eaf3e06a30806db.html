@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[62048cf4aa] 0.2.12, first tag to be deployed properly from ci | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 62048cf4aa</strong><hr><pre>commit 62048cf4aa879428693a48622eaf3e06a30806db
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 9 00:08:24 2020 +0700
+
+    0.2.12, first tag to be deployed properly from ci
+
+diff --git a/.builds/ubuntu.yml b/.builds/ubuntu.yml
+index bc4db4a..ffe00d3 100644
+--- a/.builds/ubuntu.yml
++++ b/.builds/ubuntu.yml
+@@ -43,22 +43,22 @@ tasks:
+   # Builds.sr.ht doesn&#39;t support tag or even branch detection yet:
+   # &gt; https://todo.sr.ht/~sircmpwn/builds.sr.ht/170
+   # So here I manually check for it:
+-  #- check-publish: |
+-      #cd pytaku
+-      #git describe --exact-match HEAD || complete-build
++  - check-publish: |
++      cd pytaku
++      git describe --exact-match HEAD || complete-build
+ 
+   - publish: |
+       cd pytaku
+       poetry publish
+ 
+   - deploy-dev: |
+-      # I&#39;m not installing pytaku from pypi here because it may
+-      # take a loooong time for the new version to appear.
+       cd pytaku
+       echo &quot;dev.pytaku.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBAQ1jWerB3GUGRhaZZzgpRyCSwo7PRi1cPbokaAwwsAKts1dkXSdCtR9xoTXKdvhASX5xafdzHZqbyFzpc0RleM=&quot; &gt;&gt; ~/.ssh/known_hosts
+       # Clean up old stuff just in case
+       ssh -i ~/.ssh/2d6e3246-5adc-41c2-bebe-01dacda9d0c8 pytaku@dev.pytaku.com &#39;rm -f /home/pytaku/pytaku*.whl&#39;
+-      # Copy wheel &amp; systemd service files over
++      # Copy wheel &amp; systemd service files over.
++      # I&#39;m not installing pytaku from pypi here because it may
++      # take a loooong time for the new version to appear.
+       scp -i ~/.ssh/2d6e3246-5adc-41c2-bebe-01dacda9d0c8 dist/pytaku*.whl pytaku@dev.pytaku.com:/home/pytaku/
+       scp -i ~/.ssh/2d6e3246-5adc-41c2-bebe-01dacda9d0c8 contrib/systemd/*.service pytaku@dev.pytaku.com:/home/pytaku/.config/systemd/user/
+       # Install &amp; restart serivces
+diff --git a/pyproject.toml b/pyproject.toml
+index 03f6414..68b798e 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.2.11&quot;
++version = &quot;0.2.12&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+</pre></body></html>

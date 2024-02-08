@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[6df7fc77f8] keyboard shortcuts to adjust page size | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 6df7fc77f8</strong><hr><pre>commit 6df7fc77f84e4ae8e35925f175f3916d622ab6d7
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Sep 6 20:32:13 2021 +0700
+
+    keyboard shortcuts to adjust page size
+
+diff --git a/README.md b/README.md
+index 69c7bde..9b30a0a 100644
+--- a/README.md
++++ b/README.md
+@@ -20,6 +20,10 @@ # Pytaku
+   provides a good baseline of SPA functionality without having to pull in the
+   Rube Goldberg machine that is &quot;&quot;&quot;modern&quot;&quot;&quot; JS devtools.
+ 
++# Keyboard shortcuts
++
++On Chapter page, press `?` to show keyboard shortcuts.
++
+ # Development
+ 
+ ```sh
+diff --git a/src/pytaku/js-src/routes/chapter.js b/src/pytaku/js-src/routes/chapter.js
+index fa150ec..2d19e54 100644
+--- a/src/pytaku/js-src/routes/chapter.js
++++ b/src/pytaku/js-src/routes/chapter.js
+@@ -1,6 +1,11 @@
+ import { Auth, ChapterModel } from &quot;../models.js&quot;;
+ import { LoadingMessage, fullChapterName, Button } from &quot;../utils.js&quot;;
+ 
++const KEYCODE_PLUS = 43;
++const KEYCODE_MINUS = 45;
++const KEYCODE_ZERO = 48;
++const KEYCODE_QUESTION_MARK = 63;
++
+ const LoadingPlaceholder = {
+   view: () =&gt; m(&quot;h2&quot;, [m(&quot;i.icon.icon-loader.spin&quot;)]),
+ };
+@@ -70,6 +75,29 @@ function Chapter(initialVNode) {
+   let nextChapterPendingPages = null;
+   let nextChapterLoadedPages = [];
+ 
++  let imgMaxWidth = 100; // in percent
++
++  function onKeyPress(event) {
++    switch (event.keyCode) {
++      case KEYCODE_PLUS:
++        imgMaxWidth += 20;
++        break;
++      case KEYCODE_MINUS:
++        if (imgMaxWidth &gt; 20) imgMaxWidth -= 20;
++        break;
++      case KEYCODE_ZERO:
++        imgMaxWidth = 100;
++        break;
++      case KEYCODE_QUESTION_MARK:
++        window.alert(`Keyboard shortcuts:
++    + to increase page size
++    - to decrease page size
++    0 (zero) to reset page size`);
++        break;
++    }
++    m.redraw();
++  }
++
+   function loadNextPage() {
+     if (pendingPages.length &gt; 0) {
+       let [src, altsrc] = pendingPages.splice(0, 1)[0];
+@@ -202,6 +230,12 @@ function Chapter(initialVNode) {
+   }
+ 
+   return {
++    oncreate: (vnode) =&gt; {
++      document.addEventListener(&quot;keypress&quot;, onKeyPress);
++    },
++    onremove: (vnode) =&gt; {
++      document.removeEventListener(&quot;keypress&quot;, onKeyPress);
++    },
+     oninit: (vnode) =&gt; {
+       document.title = &quot;Manga chapter&quot;;
+       site = vnode.attrs.site;
+@@ -267,6 +301,7 @@ function Chapter(initialVNode) {
+                   style: {
+                     display:
+                       page.status === ImgStatus.SUCCEEDED ? &quot;block&quot; : &quot;none&quot;,
++                    maxWidth: `${imgMaxWidth}%`,
+                   },
+                   onload: (ev) =&gt; {
+                     page.status = ImgStatus.SUCCEEDED;
+</pre></body></html>

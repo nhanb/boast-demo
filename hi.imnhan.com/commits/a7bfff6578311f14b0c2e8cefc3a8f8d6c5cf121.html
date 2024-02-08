@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a7bfff6578] update calendar | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / a7bfff6578</strong><hr><pre>commit a7bfff6578311f14b0c2e8cefc3a8f8d6c5cf121
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Fri Jun 14 20:42:00 2013 +0700
+
+    update calendar
+
+diff --git a/content/extra/cal.html b/content/extra/cal.html
+new file mode 100644
+index 0000000..d4a461f
+--- /dev/null
++++ b/content/extra/cal.html
+@@ -0,0 +1,10 @@
++&lt;style type=&quot;text/css&quot;&gt;
++
++iframe {
++    width: 100%;
++    height: 95%;
++}
++
++&lt;/style&gt;
++
++&lt;iframe src=&quot;https://www.google.com/calendar/embed?title=Nhan&#39;s%20Calendar&amp;amp;mode=WEEK&amp;amp;height=600&amp;amp;wkst=2&amp;amp;bgcolor=%23FFFFFF&amp;amp;src=6sa929h4a1h7o000g28f5eaq4c%40group.calendar.google.com&amp;amp;color=%23875509&amp;amp;src=thanhnhan483%40gmail.com&amp;amp;color=%232952A3&amp;amp;src=hei267e0fnqprtcla140cdu46o%40group.calendar.google.com&amp;amp;color=%2328754E&amp;amp;ctz=Asia%2FSaigon&quot; style=&quot; border-width:0 &quot; width=&quot;800&quot; height=&quot;600&quot; frameborder=&quot;0&quot; scrolling=&quot;no&quot;&gt;&lt;/iframe&gt;
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 8d3c839..32a8a38 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -22,7 +22,9 @@
+ # Copy static files to output
+ FILES_TO_COPY = ((&#39;extra/CNAME&#39;, &#39;CNAME&#39;),
+                  (&#39;extra/README.markdown&#39;, &#39;README.markdown&#39;),
+-                 (&#39;extra/favicon.ico&#39;, &#39;favicon.ico&#39;))
++                 (&#39;extra/favicon.ico&#39;, &#39;favicon.ico&#39;),
++                 (&#39;extra/cal.html&#39;, &#39;calendar/index.html&#39;)
++                 )
+ 
+ ARTICLE_URL = &#39;{date:%Y}/{date:%m}/{slug}/&#39;
+ ARTICLE_SAVE_AS = &#39;{date:%Y}/{date:%m}/{slug}/index.html&#39;
+</pre></body></html>

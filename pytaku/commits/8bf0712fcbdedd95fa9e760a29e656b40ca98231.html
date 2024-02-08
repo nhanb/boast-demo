@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[8bf0712fcb] enforce black/isort conf, use abc for workers | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 8bf0712fcb</strong><hr><pre>commit 8bf0712fcbdedd95fa9e760a29e656b40ca98231
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 20 22:21:05 2020 +0700
+
+    enforce black/isort conf, use abc for workers
+
+diff --git a/.isort.cfg b/.isort.cfg
+new file mode 100644
+index 0000000..ba2778d
+--- /dev/null
++++ b/.isort.cfg
+@@ -0,0 +1,6 @@
++[settings]
++multi_line_output=3
++include_trailing_comma=True
++force_grid_wrap=0
++use_parentheses=True
++line_length=88
+diff --git a/pyproject.toml b/pyproject.toml
+index ca51916..da61574 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -31,3 +31,7 @@ ipdb = &quot;^0.13.3&quot;
+ [build-system]
+ requires = [&quot;poetry&gt;=0.12&quot;]
+ build-backend = &quot;poetry.masonry.api&quot;
++
++[tool.black]
++line-length = 88
++target-version = [&#39;py37&#39;]
+diff --git a/src/pytaku/__init__.py b/src/pytaku/__init__.py
+index 39751a3..f320f42 100644
+--- a/src/pytaku/__init__.py
++++ b/src/pytaku/__init__.py
+@@ -35,6 +35,7 @@ def dev():
+ 
+ def migrate():
+     import argparse
++
+     from .database.migrator import migrate
+ 
+     argparser = argparse.ArgumentParser()
+diff --git a/src/pytaku/database/migrator.py b/src/pytaku/database/migrator.py
+index 58603a9..f9a1909 100644
+--- a/src/pytaku/database/migrator.py
++++ b/src/pytaku/database/migrator.py
+@@ -6,7 +6,6 @@
+ from . import migrations
+ from .common import DBNAME, get_conn, run_sql
+ 
+-
+ &quot;&quot;&quot;
+ Forward-only DB migration scheme held together by duct tape.
+ 
+diff --git a/src/pytaku/scheduler.py b/src/pytaku/scheduler.py
+index d65fa33..d6183d2 100644
+--- a/src/pytaku/scheduler.py
++++ b/src/pytaku/scheduler.py
+@@ -1,11 +1,8 @@
+ import time
++from abc import ABC, abstractmethod
+ from datetime import datetime, timedelta
+ 
+-from .persistence import (
+-    delete_expired_tokens,
+-    find_outdated_titles,
+-    save_title,
+-)
++from .persistence import delete_expired_tokens, find_outdated_titles, save_title
+ from .source_sites import get_title
+ 
+ now = datetime.now
+@@ -23,7 +20,7 @@ def main_loop():
+         time.sleep(5)
+ 
+ 
+-class Worker:
++class Worker(ABC):
+     interval = timedelta(days=1)
+ 
+     def __init__(self):
+@@ -32,8 +29,9 @@ def __init__(self):
+     def should_run(self):
+         return now() - self.last_run &gt;= self.interval
+ 
++    @abstractmethod
+     def run(self):
+-        raise NotImplementedError()
++        pass
+ 
+     def after_run(self):
+         self.last_run = now()
+</pre></body></html>

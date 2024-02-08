@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[c5c5aa9fcc] safer arrow characters I guess | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / c5c5aa9fcc</strong><hr><pre>commit c5c5aa9fccb812613e3ea5b98c85b62b747be4ec
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun May 17 20:18:39 2020 +0700
+
+    safer arrow characters I guess
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 9d475b3..7dfef1e 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;mcross&quot;
+-version = &quot;0.5.3&quot;
++version = &quot;0.5.4&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index 0eab0db..17bf065 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -91,10 +91,10 @@ def __init__(self, root: Tk, model: Model):
+ 
+         # Back/Forward buttons
+         back_btn = ttk.Button(
+-            row1, text=&quot;🡄&quot;, width=3, command=lambda: self.back_callback()
++            row1, text=&quot;◀&quot;, width=3, command=lambda: self.back_callback()
+         )
+         forward_btn = ttk.Button(
+-            row1, text=&quot;🡆&quot;, width=3, command=lambda: self.forward_callback()
++            row1, text=&quot;▶&quot;, width=3, command=lambda: self.forward_callback()
+         )
+         back_btn.pack(side=&quot;left&quot;, padx=2)
+         forward_btn.pack(side=&quot;left&quot;, padx=2)
+</pre></body></html>

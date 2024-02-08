@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[3e45993563] add virtualenvwrapper post | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 3e45993563</strong><hr><pre>commit 3e459935630eebfc37c190adfd003333d17c24cc
+Author: nhanb &lt;nhan@nerdyweekly.com&gt;
+Date:   Tue Dec 16 21:52:23 2014 +0700
+
+    add virtualenvwrapper post
+
+diff --git a/content/virtualenvwrapper-with-python2-python3.md b/content/virtualenvwrapper-with-python2-python3.md
+new file mode 100644
+index 0000000..abf774d
+--- /dev/null
++++ b/content/virtualenvwrapper-with-python2-python3.md
+@@ -0,0 +1,32 @@
++Title: Virtualenv(wrapper), python2 and python3
++Date: 2014-12-16 21:35
++Category: tutorials
++Tags: linux, vim, python
++Slug: virtualenwrapper-python2-python3
++Summary: TL;DR: Install virtualenv via `apt-get`, not `pip`, then `mkvirtualenv -p /path/to/python/executable`.
++
++
++Virtualenv and virtualenvwrapper make it super easy to have a sandboxed python environment for each
++of your projects, no doubt about it (if you&#39;re not using them already, feel free to google how to
++get started).
++
++By default, `mkvirtualenv my-env-name` will create a virtualenv using the OS&#39;s default python
++version (in Ubuntu&#39;s case, that&#39;s python2). If you want a virtualenv that has `python` mapped to
++python3 instead, use the `-p` argument:
++
++```bash
++$ mkvirtualenv -p `which python3` my-env-name
++# assumming you have python3 installed already, of course!
++```
++
++However, on Ubuntu this will fail if you installed virtualenv as a pip package. If that&#39;s the case,
++simply remove it and install the Ubuntu package instead. It goes like this for Ubuntu 14.04:
++
++```bash
++$ sudo pip uninstall virtualenv
++$ sudo apt-get install python-virtualenv
++$ sudo pip install virtualenvwrapper  # yes, you can install virtualenvwrapper via pip
++$ mkvirtualenv -p `which python3` my-env-name
++```
++
++Neat, eh?
+</pre></body></html>

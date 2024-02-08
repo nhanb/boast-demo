@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a7cddf265c] move old templates to old/ | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / a7cddf265c</strong><hr><pre>commit a7cddf265c42188544e2f1048e0d46f9254b40dc
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 15 14:31:58 2020 +0700
+
+    move old templates to old/
+    
+    Useful to keep them around for quick references I guess
+
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index d7a3288..ba140a5 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -55,7 +55,7 @@
+ def home_view():
+     if session.get(&quot;user&quot;):
+         return redirect(url_for(&quot;follows_view&quot;))
+-    return render_template(&quot;home.html&quot;)
++    return render_template(&quot;old/home.html&quot;)
+ 
+ 
+ @app.route(&quot;/following&quot;, methods=[&quot;GET&quot;])
+@@ -67,7 +67,7 @@ def follows_view():
+         if title[&quot;site&quot;] == &quot;mangadex&quot;:
+             thumbnail = url_for(&quot;proxy_view&quot;, b64_url=_encode_proxy_url(thumbnail))
+         title[&quot;thumbnail&quot;] = thumbnail
+-    return render_template(&quot;follows.html&quot;, titles=titles)
++    return render_template(&quot;old/follows.html&quot;, titles=titles)
+ 
+ 
+ @app.route(&quot;/follow/&lt;site&gt;/&lt;title_id&gt;&quot;, methods=[&quot;POST&quot;])
+@@ -129,7 +129,7 @@ def auth_view():
+                     status_code = 200
+             return (
+                 render_template(
+-                    &quot;auth.html&quot;,
++                    &quot;old/auth.html&quot;,
+                     register_username=username,
+                     register_password=password,
+                     register_confirm_password=confirm_password,
+@@ -159,7 +159,7 @@ def auth_view():
+ 
+             return (
+                 render_template(
+-                    &quot;auth.html&quot;,
++                    &quot;old/auth.html&quot;,
+                     login_username=username,
+                     login_password=password,
+                     login_remember=remember,
+@@ -170,7 +170,7 @@ def auth_view():
+             )
+ 
+     # Just a plain ol&#39; GET request:
+-    return render_template(&quot;auth.html&quot;)
++    return render_template(&quot;old/auth.html&quot;)
+ 
+ 
+ @app.route(&quot;/m/&lt;site&gt;/&lt;title_id&gt;&quot;)
+@@ -192,7 +192,7 @@ def title_view(site, title_id):
+             &quot;proxy_view&quot;, b64_url=_encode_proxy_url(title[&quot;cover&quot;])
+         )
+     title[&quot;source_url&quot;] = title_source_url(site, title_id)
+-    return render_template(&quot;title.html&quot;, **title)
++    return render_template(&quot;old/title.html&quot;, **title)
+ 
+ 
+ @app.route(&quot;/m/&lt;site&gt;/&lt;title_id&gt;/&lt;chapter_id&gt;&quot;)
+@@ -224,7 +224,7 @@ def chapter_view(site, title_id, chapter_id):
+     chapter[&quot;next_chapter&quot;] = next_chapter
+ 
+     chapter[&quot;site&quot;] = site
+-    return render_template(&quot;chapter.html&quot;, title=title, **chapter)
++    return render_template(&quot;old/chapter.html&quot;, title=title, **chapter)
+ 
+ 
+ @app.route(&quot;/search&quot;)
+@@ -239,7 +239,7 @@ def search_view():
+             title[&quot;thumbnail&quot;] = url_for(
+                 &quot;proxy_view&quot;, b64_url=_encode_proxy_url(title[&quot;thumbnail&quot;])
+             )
+-    return render_template(&quot;search.html&quot;, results=results, query=query)
++    return render_template(&quot;old/search.html&quot;, results=results, query=query)
+ 
+ 
+ @app.route(&quot;/proxy/&lt;b64_url&gt;&quot;)
+@@ -304,7 +304,7 @@ def import_view():
+ 
+             flash(f&quot;Added {len(site_title_pairs)} follows.&quot;)
+ 
+-    return render_template(&quot;import.html&quot;)
++    return render_template(&quot;old/import.html&quot;)
+ 
+ 
+ def read_tachiyomi_follows(text: str) -&gt; List[Tuple[str, str]]:
+diff --git a/src/pytaku/templates/auth.html b/src/pytaku/templates/old/auth.html
+similarity index 100%
+rename from src/pytaku/templates/auth.html
+rename to src/pytaku/templates/old/auth.html
+diff --git a/src/pytaku/templates/chapter.html b/src/pytaku/templates/old/chapter.html
+similarity index 100%
+rename from src/pytaku/templates/chapter.html
+rename to src/pytaku/templates/old/chapter.html
+diff --git a/src/pytaku/templates/follows.html b/src/pytaku/templates/old/follows.html
+similarity index 100%
+rename from src/pytaku/templates/follows.html
+rename to src/pytaku/templates/old/follows.html
+diff --git a/src/pytaku/templates/home.html b/src/pytaku/templates/old/home.html
+similarity index 100%
+rename from src/pytaku/templates/home.html
+rename to src/pytaku/templates/old/home.html
+diff --git a/src/pytaku/templates/import.html b/src/pytaku/templates/old/import.html
+similarity index 100%
+rename from src/pytaku/templates/import.html
+rename to src/pytaku/templates/old/import.html
+diff --git a/src/pytaku/templates/search.html b/src/pytaku/templates/old/search.html
+similarity index 100%
+rename from src/pytaku/templates/search.html
+rename to src/pytaku/templates/old/search.html
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/old/title.html
+similarity index 100%
+rename from src/pytaku/templates/title.html
+rename to src/pytaku/templates/old/title.html
+</pre></body></html>

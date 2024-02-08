@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[0a5521e900] revise about page | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 0a5521e900</strong><hr><pre>commit 0a5521e9005d857292cf13f3f42ce0dddb607ff1
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat May 23 16:53:23 2020 +0700
+
+    revise about page
+
+diff --git a/content/pages/about.md b/content/pages/about.md
+index d3388a4..33ec0f6 100644
+--- a/content/pages/about.md
++++ b/content/pages/about.md
+@@ -5,28 +5,24 @@ ## About me
+ 
+ ![My face](/images/nhan.jpg)
+ 
+-My name is **Bùi Thành Nhân**. I&#39;m a Vietnamese software developer with a keen interest in DevOps.
+-
+-When I&#39;m not working, I tend to lurk around GitHub, go swimming, or try to [literally gamify][5] my
+-excercise plan (with questionable results). I also recently got into [fighting games][7].  Give me
+-a shout if you&#39;re in Hồ Chí Minh City and would like some Street Fighter or Guilty Gear action!
++Hi, I&#39;m Nhân. I make web&lt;strike&gt;shit&lt;/strike&gt;stuff for a living.
+ 
+ ## About this blog
+ 
+ My mind is a sad mess that cannot hold much information after a couple of
+-months or so. This blog is where I write down interesting things I discover. On occasional bad days
+-I might throw all my ramblings here too, but hopefully those will be rare.
++months or so. This blog is where I write down interesting things I discover.
++On occasional bad days I might throw all my ramblings here too, but hopefully
++those will be rare.
+ 
+-This blog is generated using [Pelican][1] and hosted on Github Pages. All the markdown files can
+-also be found on my [github repo][3]. The Pelican theme I wrote for this blog can be found
+-[here][2].
++This blog is generated using [Pelican][1] and hosted on Github Pages.
++Its source code can be found on my [github repo][2].
+ 
+-I always appreciate feedback and further discussion on my posts, so feel free to point out if you
+-think I said something stupid. :)
++I make a point not to include 3rd-party javascript on the page, with the
++exception of [Disqus][3], which is not loaded by default - you&#39;ll need to
++explicitly click on the &quot;show comments&quot; button below each post if you want to
++view or write comments. I think that&#39;s a reasonable compromise.
+ 
+ 
+ [1]: http://getpelican.com
+-[2]: https://github.com/nhanb/motherfucking-pelican-theme
+-[3]: https://github.com/nhanb/imnhan.com
+-[5]: http://www.stepmania.com/
+-[7]: http://www.sirlin.net/ptw
++[2]: https://github.com/nhanb/imnhan.com
++[3]: https://disqus.com/
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 3e41312..9a3f5e7 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -108,6 +108,6 @@
+ CURRENT_YEAR = date.today().year
+ 
+ FOOTER_TEXT = &quot;&quot;&quot;
+-Built with &amp;#9829; and lots of
+-&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://caudatfarm.com/&quot;&gt;Cầu Đất coffee&lt;/a&gt;.
++Built with &amp;#9829; and probably too much
++&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://trungnguyenlegend.com/g7/&quot;&gt;G7 X2&lt;/a&gt;.
+ &quot;&quot;&quot;
+</pre></body></html>

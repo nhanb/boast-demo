@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[24ea7bbe53] debugging message | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 24ea7bbe53</strong><hr><pre>commit 24ea7bbe53c984aff8d302935e1454ea32847e1f
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jun 29 00:48:56 2022 +0700
+
+    debugging message
+
+diff --git a/main.go b/main.go
+index 4dcf045..ced738d 100644
+--- a/main.go
++++ b/main.go
+@@ -107,11 +107,19 @@ func (g *Game) Draw(screen *ebiten.Image) {
+ 				),
+ 			)
+ 	*/
++	debugStr := &quot;&quot;
++	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
++		debugStr += &quot;Dragging\n&quot;
++	}
++	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
++		debugStr += &quot;Right click\n&quot;
++	}
++	ebitenutil.DebugPrint(screen, debugStr)
+ 	screen.DrawImage(g.CurrentAnim.Frames[g.CurrentFrame], nil)
+ }
+ 
+ func (g *Game) Layout(outsideWidth, outsideHeight int) (w, h int) {
+-	return outsideWidth / 2, outsideHeight / 2
++	return outsideWidth / 3, outsideHeight / 3
+ }
+ 
+ func NewAnim(sprites embed.FS, subdir string) *Anim {
+@@ -141,7 +149,7 @@ func main() {
+ 	var game Game
+ 	game.CurrentAnim = Idle
+ 
+-	ebiten.SetWindowSize(360, 360)
++	ebiten.SetWindowSize(500, 540)
+ 	ebiten.SetWindowTitle(&quot;Shark!&quot;)
+ 	ebiten.SetWindowDecorated(false)
+ 	ebiten.SetScreenTransparent(true)
+</pre></body></html>

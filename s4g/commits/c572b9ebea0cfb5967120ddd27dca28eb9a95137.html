@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[c572b9ebea] implement redirects | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / c572b9ebea</strong><hr><pre>commit c572b9ebea0cfb5967120ddd27dca28eb9a95137
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jul 22 14:21:26 2023 +0700
+
+    implement redirects
+
+diff --git a/docs/manifest.txt b/docs/manifest.txt
+index 207b13f..c0da3ca 100644
+--- a/docs/manifest.txt
++++ b/docs/manifest.txt
+@@ -2,4 +2,6 @@ about/index.html
+ feed.xml
+ index.html
+ mfws.html
++mfws/index.html
++scale.html
+ scale/index.html
+\ No newline at end of file
+diff --git a/docs/mfws/index.html b/docs/mfws/index.html
+new file mode 100644
+index 0000000..d3ca5e5
+--- /dev/null
++++ b/docs/mfws/index.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /webmaker2000/mfws.html&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/webmaker2000/mfws.html&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/webmaker2000/mfws.html&quot;&gt;/webmaker2000/mfws.html&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/docs/redirects.txt b/docs/redirects.txt
+new file mode 100644
+index 0000000..c20f396
+--- /dev/null
++++ b/docs/redirects.txt
+@@ -0,0 +1,2 @@
++mfws/index.html -&gt; mfws.html
++scale.html -&gt; scale/
+diff --git a/docs/scale.html b/docs/scale.html
+new file mode 100644
+index 0000000..df77cf9
+--- /dev/null
++++ b/docs/scale.html
+@@ -0,0 +1,10 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to /webmaker2000/scale/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/webmaker2000/scale/&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/webmaker2000/scale/&quot;&gt;/webmaker2000/scale/&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/main.go b/main.go
+index be06e87..b429160 100644
+--- a/main.go
++++ b/main.go
+@@ -28,6 +28,7 @@
+ const SiteExt = &quot;.wbmkr2k&quot;
+ const SiteFileName = &quot;website&quot; + SiteExt
+ const FeedPath = &quot;feed.xml&quot;
++const RedirectsPath = &quot;redirects.txt&quot;
+ 
+ func main() {
+ 	invalidCommand := func() {
+@@ -255,6 +256,15 @@ func regenerate(fsys writablefs.FS) (site *SiteMetadata, err error) {
+ 		fmt.Println(&quot;Generated&quot;, FeedPath)
+ 	}
+ 
++	redirects, uerr := generateRedirects(fsys, RedirectsPath, site.Root)
++	if uerr != nil {
++		return nil, fmt.Errorf(&quot;generate redirects: %w&quot;, uerr)
++	}
++	for _, p := range redirects {
++		generatedFiles[p] = true
++		fmt.Println(&quot;Generated&quot;, p)
++	}
++
+ 	DeleteOldGeneratedFiles(fsys, generatedFiles)
+ 	WriteManifest(fsys, generatedFiles)
+ 
+diff --git a/redirects.go b/redirects.go
+new file mode 100644
+index 0000000..5c1c54e
+--- /dev/null
++++ b/redirects.go
+@@ -0,0 +1,102 @@
++package main
++
++import (
++	&quot;bufio&quot;
++	&quot;bytes&quot;
++	&quot;fmt&quot;
++	&quot;html/template&quot;
++	&quot;io/fs&quot;
++	&quot;path/filepath&quot;
++	&quot;strings&quot;
++
++	&quot;go.imnhan.com/webmaker2000/errs&quot;
++	&quot;go.imnhan.com/webmaker2000/writablefs&quot;
++)
++
++// Returns list of generated files
++func generateRedirects(fsys writablefs.FS, path string, root string) ([]string, *errs.UserErr) {
++	f, err := fsys.Open(path)
++	if err != nil {
++		panic(err)
++	}
++
++	var sources, dests []string
++
++	s := bufio.NewScanner(f)
++	lineNo := 0
++	for s.Scan() {
++		lineNo++
++		line := strings.TrimSpace(s.Text())
++		if line == &quot;&quot; || line[0] == &#39;#&#39; {
++			continue
++		}
++		src, dest, found := strings.Cut(line, &quot;-&gt;&quot;)
++		if !found {
++			return nil, &amp;errs.UserErr{
++				File: path,
++				Line: lineNo,
++				Msg:  fmt.Sprintf(`Expected &quot;src -&gt; dest&quot;, found &quot;%s&quot;`, line),
++			}
++		}
++
++		src = strings.TrimPrefix(strings.TrimSpace(src), &quot;/&quot;)
++		dest = strings.TrimPrefix(strings.TrimSpace(dest), &quot;/&quot;)
++
++		if strings.HasSuffix(src, &quot;/&quot;) {
++			return nil, &amp;errs.UserErr{
++				File: path,
++				Line: lineNo,
++				Msg:  fmt.Sprintf(`Source must not end with a &quot;/&quot; (found &quot;%s&quot;)`, line),
++			}
++		}
++
++		srcStat, err := fs.Stat(fsys, src)
++		if err == nil {
++			if srcStat.IsDir() {
++				return nil, &amp;errs.UserErr{
++					File: path,
++					Line: lineNo,
++					Msg:  fmt.Sprintf(`Source must not be a folder (found &quot;%s&quot;)`, line),
++				}
++			}
++		}
++
++		sources = append(sources, src)
++		dests = append(dests, dest)
++	}
++
++	for i, src := range sources {
++		srcDir := filepath.Dir(src)
++		err := fsys.MkdirAll(srcDir)
++		if err != nil {
++			panic(err)
++		}
++
++		var srcBuf bytes.Buffer
++		err = srcTmpl.Execute(&amp;srcBuf, root+dests[i])
++		if err != nil {
++			panic(err)
++		}
++
++		err = fsys.WriteFile(src, srcBuf.Bytes())
++		if err != nil {
++			panic(err)
++		}
++
++		fmt.Printf(&quot;Redirect: %s -&gt; %s\n&quot;, src, dests[i])
++	}
++
++	return sources, nil
++}
++
++var srcTmpl = template.Must(template.New(&quot;src&quot;).Parse(`&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;title&gt;Redirecting to {{.}}&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL={{.}}&quot; /&gt;
++  &lt;/head&gt;
++  &lt;body&gt;
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;{{.}}&quot;&gt;{{.}}&lt;/a&gt;.
++  &lt;/body&gt;
++&lt;/html&gt;
++`))
+diff --git a/writablefs/writablefs.go b/writablefs/writablefs.go
+index d99a1f6..de6ca63 100644
+--- a/writablefs/writablefs.go
++++ b/writablefs/writablefs.go
+@@ -10,6 +10,7 @@ type FS interface {
+ 	fs.FS
+ 	WriteFile(path string, content []byte) error
+ 	RemoveAll(path string) error
++	MkdirAll(path string) error
+ 	Path() string
+ }
+ 
+@@ -36,3 +37,8 @@ func (w writeDirFS) WriteFile(path string, content []byte) error {
+ func (w writeDirFS) Path() string {
+ 	return string(w)
+ }
++
++func (w writeDirFS) MkdirAll(path string) error {
++	fullPath := filepath.Join(string(w), path)
++	return os.MkdirAll(fullPath, 0755)
++}
+</pre></body></html>

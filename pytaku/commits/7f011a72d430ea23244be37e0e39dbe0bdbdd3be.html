@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[7f011a72d4] try preloading a list instead of single imgs | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 7f011a72d4</strong><hr><pre>commit 7f011a72d430ea23244be37e0e39dbe0bdbdd3be
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 30 15:56:14 2020 +0700
+
+    try preloading a list instead of single imgs
+    
+    For some reason the preloaded images didn&#39;t get reused when user
+    actually visited next chapter. Maybe this helps?
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 4a5cb5b..152be7e 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.13&quot;
++version = &quot;0.3.14&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/static/js/routes/chapter.js b/src/pytaku/static/js/routes/chapter.js
+index 987086e..34ef7f8 100644
+--- a/src/pytaku/static/js/routes/chapter.js
++++ b/src/pytaku/static/js/routes/chapter.js
+@@ -44,7 +44,7 @@ function Chapter(initialVNode) {
+   let site, titleId; // these are written on init
+   let nextChapterPromise = null;
+   let nextChapterPendingPages = null;
+-  let nextChapterLoadedPage = &quot;&quot;;
++  let nextChapterLoadedPages = [];
+ 
+   function loadNextPage() {
+     if (pendingPages.length &gt; 0) {
+@@ -71,7 +71,7 @@ function Chapter(initialVNode) {
+   function preloadNextChapterPage() {
+     if (nextChapterPendingPages !== null) {
+       if (nextChapterPendingPages.length &gt; 0) {
+-        nextChapterLoadedPage = nextChapterPendingPages.splice(0, 1)[0];
++        nextChapterLoadedPages.push(nextChapterPendingPages.splice(0, 1)[0]);
+       } else {
+         console.log(&quot;Completely preloaded next chapter.&quot;);
+       }
+@@ -215,12 +215,14 @@ function Chapter(initialVNode) {
+           ]
+         ),
+         buttons,
+-        m(&quot;img.chapter--preloader&quot;, {
+-          style: { display: &quot;none&quot; },
+-          onload: preloadNextChapterPage,
+-          onerror: preloadNextChapterPage,
+-          src: nextChapterLoadedPage,
+-        }),
++        nextChapterLoadedPages.map((page) =&gt;
++          m(&quot;img.chapter--preloader&quot;, {
++            style: { display: &quot;none&quot; },
++            onload: preloadNextChapterPage,
++            onerror: preloadNextChapterPage,
++            src: page,
++          })
++        ),
+       ]);
+     },
+   };
+</pre></body></html>

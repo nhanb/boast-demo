@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[d625cb7baa] sharper icons: 256 on Windows, 512 on macOS | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / d625cb7baa</strong><hr><pre>commit d625cb7baa85c7373f2942717cb6eac0a9d5ed8c
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jul 11 00:04:11 2022 +0700
+
+    sharper icons: 256 on Windows, 512 on macOS
+
+diff --git a/.gitignore b/.gitignore
+index 9b1c8b1..94c0d5f 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1 +1,3 @@
+ /dist
++/icon256.ico
++/icon512.png
+diff --git a/Makefile b/Makefile
+index 149aeed..2043a3b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -15,8 +15,21 @@ macos:
+ 	./scripts/make-mac-bundle.sh dist/shark-macos
+ 
+ clean:
+-	rm -rf dist/*
++	rm -rf dist/* icon256.ico icon512.png
+ 
+ # https://ebiten.org/documents/install.html#Debian_/_Ubuntu
+ deps-debian:
+ 	sudo apt install libc6-dev libglu1-mesa-dev libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libxxf86vm-dev libasound2-dev pkg-config
++
++icon256.ico: icon.png
++	magick convert icon.png -filter point -resize &#39;800%&#39; icon256.ico
++
++icon512.png: icon.png
++	magick convert icon.png -filter point -resize &#39;1600%&#39; PNG24:icon512.png
++
++shark.syso: icon256.ico
++	# needs `go install github.com/akavel/rsrc@latest`
++	~/go/bin/rsrc -ico icon256.ico -o shark.syso
++
++icon.icns: icon512.png
++	png2icns icon.icns icon512.png
+diff --git a/icon.icns b/icon.icns
+index 857c955..c589ae2 100644
+Binary files a/icon.icns and b/icon.icns differ
+diff --git a/shark.syso b/shark.syso
+index f6f9806..fd9653b 100644
+Binary files a/shark.syso and b/shark.syso differ
+</pre></body></html>

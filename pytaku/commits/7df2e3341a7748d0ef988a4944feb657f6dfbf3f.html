@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[7df2e3341a] fix missing &#39;site&#39; key and proxy mangadex covers | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 7df2e3341a</strong><hr><pre>commit 7df2e3341a7748d0ef988a4944feb657f6dfbf3f
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 10 23:43:18 2020 +0700
+
+    fix missing &#39;site&#39; key and proxy mangadex covers
+
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index cc56e68..542a80e 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -19,6 +19,7 @@ def get_title(self, title_id):
+         title = {
+             &quot;id&quot;: title_id,
+             &quot;name&quot;: md_json[&quot;manga&quot;][&quot;title&quot;],
++            &quot;site&quot;: &quot;mangadex&quot;,
+             &quot;cover_ext&quot;: cover_ext,
+             &quot;alt_names&quot;: md_json[&quot;manga&quot;][&quot;alt_names&quot;],
+             &quot;descriptions&quot;: md_json[&quot;manga&quot;][&quot;description&quot;].split(&quot;\r\n\r\n&quot;),
+@@ -50,6 +51,7 @@ def get_chapter(self, title_id, chapter_id):
+         chapter = {
+             &quot;id&quot;: chapter_id,
+             &quot;title_id&quot;: md_json[&quot;manga_id&quot;],
++            &quot;site&quot;: &quot;mangadex&quot;,
+             &quot;name&quot;: md_json[&quot;title&quot;],
+             &quot;pages&quot;: [f&quot;{img_path}/{page}&quot; for page in md_json[&quot;page_array&quot;]],
+             &quot;groups&quot;: _extract_groups(md_json),
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+index 8abaa99..ac96f69 100644
+--- a/src/mangoapi/mangasee.py
++++ b/src/mangoapi/mangasee.py
+@@ -66,6 +66,7 @@ def get_chapter(self, title_id, chapter_id):
+         result = {
+             &quot;id&quot;: chapter_id,
+             &quot;title_id&quot;: title_id,
++            &quot;site&quot;: &quot;mangasee&quot;,
+             &quot;name&quot;: chapter_data[&quot;ChapterName&quot;] or &quot;&quot;,
+             &quot;pages&quot;: [
+                 _generate_img_src(img_server, title_id, chapter_data[&quot;Chapter&quot;], p)
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 38b2754..cfa7e78 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -58,7 +58,10 @@ def home_view():
+ def follows_view():
+     titles = get_followed_titles(session[&quot;user&quot;][&quot;id&quot;])
+     for title in titles:
+-        title[&quot;thumbnail&quot;] = title_thumbnail(title[&quot;site&quot;], title[&quot;id&quot;])
++        thumbnail = title_thumbnail(title[&quot;site&quot;], title[&quot;id&quot;])
++        if title[&quot;site&quot;] == &quot;mangadex&quot;:
++            thumbnail = url_for(&quot;proxy_view&quot;, b64_url=_encode_proxy_url(thumbnail))
++        title[&quot;thumbnail&quot;] = thumbnail
+     return render_template(&quot;follows.html&quot;, titles=titles)
+ 
+ 
+@@ -183,8 +186,11 @@ def title_view(site, title_id):
+         save_title(title)
+     else:
+         print(&quot;Loading title&quot;, title_id, &quot;from db&quot;)
+-    title[&quot;site&quot;] = site
+     title[&quot;cover&quot;] = title_cover(site, title_id, title[&quot;cover_ext&quot;])
++    if site == &quot;mangadex&quot;:
++        title[&quot;cover&quot;] = url_for(
++            &quot;proxy_view&quot;, b64_url=_encode_proxy_url(title[&quot;cover&quot;])
++        )
+     title[&quot;source_url&quot;] = title_source_url(site, title_id)
+     return render_template(&quot;title.html&quot;, **title)
+ 
+@@ -225,6 +231,12 @@ def search_view():
+     results = {}
+     if query:
+         results = search_title_all_sites(query)
++
++    if &quot;mangadex&quot; in results:
++        for title in results[&quot;mangadex&quot;]:
++            title[&quot;thumbnail&quot;] = url_for(
++                &quot;proxy_view&quot;, b64_url=_encode_proxy_url(title[&quot;thumbnail&quot;])
++            )
+     return render_template(&quot;search.html&quot;, results=results, query=query)
+ 
+ 
+@@ -252,7 +264,7 @@ def _decode_proxy_url(b64_url):
+ def _is_manga_img_url(
+     url,
+     pattern=re.compile(
+-        r&quot;^https://([\w_-]+\.)?(mangadex\.org/data|mangabeast\d{0,4}.com/manga)/&quot;
++        r&quot;^https://([\w_-]+\.)?(mangadex\.org/(data|images)|mangabeast\d{0,4}.com/manga)/&quot;
+     ),
+ ):
+     return pattern.match(url)
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 6cedcf4..2a636ab 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -1,8 +1,9 @@
+ import json
+ 
+-import apsw
+ import argon2
+ 
++import apsw
++
+ from .database.common import run_sql, run_sql_on_demand
+ 
+ 
+@@ -135,7 +136,7 @@ def save_chapter(chapter):
+ def load_chapter(site, title_id, chapter_id):
+     result = run_sql(
+         &quot;&quot;&quot;
+-        SELECT id, title_id, num_major, num_minor, name, pages, groups, is_webtoon
++        SELECT id, title_id, site, num_major, num_minor, name, pages, groups, is_webtoon
+         FROM chapter
+         WHERE site=? AND title_id=? AND id=?;
+         &quot;&quot;&quot;,
+</pre></body></html>

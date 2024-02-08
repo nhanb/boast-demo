@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e920e1798d] simpler flexbox-based navbar | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / e920e1798d</strong><hr><pre>commit e920e1798d3844c55d9b3d836439945f29037d2d
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 1 19:51:33 2020 +0700
+
+    simpler flexbox-based navbar
+    
+    (that&#39;s now also &quot;responsive&quot;)
+
+diff --git a/src/pytaku/static/base.css b/src/pytaku/static/base.css
+index bc1863a..e4558ac 100644
+--- a/src/pytaku/static/base.css
++++ b/src/pytaku/static/base.css
+@@ -87,14 +87,13 @@ .button &gt; img {
+ /* Grid layout */
+ 
+ nav {
+-  display: grid;
+-  grid-gap: 0.5rem;
+-  grid-template-areas: &quot;logo search links&quot;;
++  display: flex;
++  gap: 1rem;
++  flex-wrap: wrap;
+   padding: var(--body-padding);
+ }
+ 
+ .logo {
+-  grid-area: logo;
+   width: 150px;
+ }
+ .logo img {
+@@ -103,12 +102,11 @@ .logo img {
+ }
+ 
+ .search {
+-  grid-area: search;
+   display: flex;
+ }
+ 
+ .links {
+-  grid-area: links;
++  margin-left: auto; /* to pull to the right */
+   display: inline-flex;
+   gap: 1rem;
+   justify-content: center;
+</pre></body></html>

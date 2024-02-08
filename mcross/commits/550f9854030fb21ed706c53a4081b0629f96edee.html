@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[550f985403] parse and correctly use mimetype+charset from meta | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 550f985403</strong><hr><pre>commit 550f9854030fb21ed706c53a4081b0629f96edee
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jun 17 21:33:58 2020 +0700
+
+    parse and correctly use mimetype+charset from meta
+
+diff --git a/src/mcross/gui/controller.py b/src/mcross/gui/controller.py
+index f65ec4a..0749068 100644
+--- a/src/mcross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -160,9 +160,27 @@ async def load_page(self, url: GeminiUrl):
+             f&quot;{resp.status} {resp.meta} (took {request_time:.2f}s)&quot;,
+         )
+ 
++        # Support whatever encoding that python supports
++        try:
++            body_string = resp.body.decode(resp.charset)
++        except LookupError:
++            await self.put_gui_op(
++                self.model.update_content,
++                &quot;\n&quot;.join(
++                    [
++                        &quot;Error:&quot;,
++                        f&quot;{resp.status} {resp.meta}&quot;,
++                        f&quot;Unsupported charset: {resp.charset}&quot;,
++                    ]
++                ),
++                &quot;text/plain&quot;,
++            )
++            return resp
++
++        # Sucessfully decoded body string!
+         if resp.status.startswith(&quot;2&quot;):
+             await self.put_gui_op(
+-                self.model.update_content, resp.body.decode(), resp.meta
++                self.model.update_content, body_string, resp.mime_type
+             )
+         else:
+             await self.put_gui_op(
+@@ -171,7 +189,7 @@ async def load_page(self, url: GeminiUrl):
+                     [
+                         &quot;Error:&quot;,
+                         f&quot;{resp.status} {resp.meta}&quot;,
+-                        resp.body.decode() if resp.body else &quot;&quot;,
++                        body_string if resp.body else &quot;&quot;,
+                     ]
+                 ),
+                 &quot;text/plain&quot;,
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index f61f14a..06fdd1f 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -250,7 +250,7 @@ def render_page(self):
+ 
+     def render_viewport(self):
+         self.text.delete(&quot;1.0&quot;, &quot;end&quot;)
+-        if self.model.mime_type == &quot;text/gemini&quot;:
++        if self.model.mime_type.startswith(&quot;text/gemini&quot;):
+             for node in self.model.gemini_nodes:
+                 render_node(node, self.text)
+             # delete final trailing newline:
+diff --git a/src/mcross/transport.py b/src/mcross/transport.py
+index 68dcaef..3eb448d 100644
+--- a/src/mcross/transport.py
++++ b/src/mcross/transport.py
+@@ -11,16 +11,20 @@
+ 
+ 
+ class Response:
+-    __slots__ = (&quot;status&quot;, &quot;meta&quot;, &quot;body&quot;, &quot;url&quot;)
++    __slots__ = (&quot;status&quot;, &quot;meta&quot;, &quot;body&quot;, &quot;url&quot;, &quot;mime_type&quot;, &quot;charset&quot;)
+ 
+-    def __init__(self, status: str, meta: str, url, body: bytes = None):
++    def __init__(
++        self, status: str, meta: str, url, mime_type, charset, body: bytes = None
++    ):
+         self.status = status
+         self.meta = meta
+         self.body = body
+         self.url = url
++        self.mime_type = mime_type
++        self.charset = charset
+ 
+     def __repr__(self):
+-        return f&quot;Response(status={repr(self.status)}, meta={repr(self.meta)})&quot;
++        return f&quot;Response(status={repr(self.status)}, mime_type={repr(self.mime_type)}, charset={repr(self.charset)})&quot;
+ 
+ 
+ def _parse_resp_header(header, pattern=re.compile(r&quot;^(\d\d)\s+(.{,1024})\r\n$&quot;)):
+@@ -133,7 +137,27 @@ async def raw_get(url: GeminiUrl):
+                 break
+ 
+         status, meta = _parse_resp_header(header.decode())
+-        resp = Response(status=status, meta=meta, url=url)
++
++        # If success, extract mime type &amp; charset from meta
++        mime_type = None
++        charset = None
++        if status.startswith(&quot;2&quot;):
++            if not meta:
++                mime_type = &quot;text/gemini&quot;
++                charset = &quot;utf-8&quot;
++            else:
++                meta_parts = meta.split(&quot;;&quot;)
++                mime_type = meta_parts[0].strip() or &quot;text/gemini&quot;
++                charset = &quot;&quot;
++                if len(meta_parts) == 2:
++                    charset_part = meta_parts[1].strip()
++                    if charset_part.startswith(&quot;charset=&quot;):
++                        charset = charset_part[len(&quot;charset=&quot;) :]
++                charset = charset or &quot;utf-8&quot;
++
++        resp = Response(
++            status=status, meta=meta, url=url, mime_type=mime_type, charset=charset
++        )
+ 
+         if status.startswith(&quot;2&quot;):
+             body = remainder
+</pre></body></html>

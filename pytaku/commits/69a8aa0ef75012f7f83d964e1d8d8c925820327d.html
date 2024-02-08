@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[69a8aa0ef7] render search results | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 69a8aa0ef7</strong><hr><pre>commit 69a8aa0ef75012f7f83d964e1d8d8c925820327d
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 1 21:59:32 2020 +0700
+
+    render search results
+
+diff --git a/README.md b/README.md
+index bccf335..c45f7c9 100644
+--- a/README.md
++++ b/README.md
+@@ -6,4 +6,7 @@
+       --global-option=build --global-option=--enable-all-extensions
+ 
+ FLASK_ENV=development FLASK_APP=pytaku.main:app flask run
++
++pytaku-generate-config &gt; pytaku.conf.json
++# fill stuff as needed
+ ```
+diff --git a/poetry.lock b/poetry.lock
+index 4654731..da61531 100644
+--- a/poetry.lock
++++ b/poetry.lock
+@@ -1,56 +1,66 @@
+ [[package]]
+-category = &quot;main&quot;
+-description = &quot;Python package for providing Mozilla&#39;s CA Bundle.&quot;
+ name = &quot;certifi&quot;
++version = &quot;2020.6.20&quot;
++description = &quot;Python package for providing Mozilla&#39;s CA Bundle.&quot;
++category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+-version = &quot;2020.6.20&quot;
+ 
+ [[package]]
+-category = &quot;main&quot;
+-description = &quot;Universal encoding detector for Python 2 and 3&quot;
+ name = &quot;chardet&quot;
++version = &quot;3.0.4&quot;
++description = &quot;Universal encoding detector for Python 2 and 3&quot;
++category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+-version = &quot;3.0.4&quot;
+ 
+ [[package]]
+-category = &quot;main&quot;
+-description = &quot;Composable command line interface toolkit&quot;
+ name = &quot;click&quot;
++version = &quot;7.1.2&quot;
++description = &quot;Composable command line interface toolkit&quot;
++category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
+-version = &quot;7.1.2&quot;
+ 
+ [[package]]
+-category = &quot;main&quot;
+-description = &quot;A simple framework for building complex web applications.&quot;
+ name = &quot;flask&quot;
++version = &quot;1.1.2&quot;
++description = &quot;A simple framework for building complex web applications.&quot;
++category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
+-version = &quot;1.1.2&quot;
+-
+-[package.dependencies]
+-Jinja2 = &quot;&gt;=2.10.1&quot;
+-Werkzeug = &quot;&gt;=0.15&quot;
+-click = &quot;&gt;=5.1&quot;
+-itsdangerous = &quot;&gt;=0.24&quot;
+ 
+ [package.extras]
+ dev = [&quot;pytest&quot;, &quot;coverage&quot;, &quot;tox&quot;, &quot;sphinx&quot;, &quot;pallets-sphinx-themes&quot;, &quot;sphinxcontrib-log-cabinet&quot;, &quot;sphinx-issues&quot;]
+ docs = [&quot;sphinx&quot;, &quot;pallets-sphinx-themes&quot;, &quot;sphinxcontrib-log-cabinet&quot;, &quot;sphinx-issues&quot;]
+ dotenv = [&quot;python-dotenv&quot;]
+ 
++[package.dependencies]
++click = &quot;&gt;=5.1&quot;
++itsdangerous = &quot;&gt;=0.24&quot;
++Jinja2 = &quot;&gt;=2.10.1&quot;
++Werkzeug = &quot;&gt;=0.15&quot;
++
+ [[package]]
++name = &quot;goodconf&quot;
++version = &quot;1.0.0&quot;
++description = &quot;Load configuration variables from a file or environment&quot;
+ category = &quot;main&quot;
+-description = &quot;WSGI HTTP Server for UNIX&quot;
++optional = false
++python-versions = &quot;*&quot;
++
++[package.extras]
++maintainer = [&quot;zest.releaser&quot;]
++tests = [&quot;django (&lt;2.1)&quot;, &quot;ruamel.yaml&quot;, &quot;pytest (3.5.0)&quot;, &quot;pytest-cov (2.5.1)&quot;, &quot;pytest-mock (1.7.1)&quot;]
++yaml = [&quot;ruamel.yaml&quot;]
++
++[[package]]
+ name = &quot;gunicorn&quot;
++version = &quot;20.0.4&quot;
++description = &quot;WSGI HTTP Server for UNIX&quot;
++category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=3.4&quot;
+-version = &quot;20.0.4&quot;
+-
+-[package.dependencies]
+-setuptools = &quot;&gt;=3.0&quot;
+ 
+ [package.extras]
+ eventlet = [&quot;eventlet (&gt;=0.9.7)&quot;]
+@@ -58,51 +68,58 @@ gevent = [&quot;gevent (&gt;=0.13)&quot;]
+ setproctitle = [&quot;setproctitle&quot;]
+ tornado = [&quot;tornado (&gt;=0.2)&quot;]
+ 
++[package.dependencies]
++setuptools = &quot;&gt;=3.0&quot;
++
+ [[package]]
+-category = &quot;main&quot;
+-description = &quot;Internationalized Domain Names in Applications (IDNA)&quot;
+ name = &quot;idna&quot;
++version = &quot;2.10&quot;
++description = &quot;Internationalized Domain Names in Applications (IDNA)&quot;
++category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
+-version = &quot;2.10&quot;
+ 
+ [[package]]
+-category = &quot;main&quot;
+-description = &quot;Various helpers to pass data to untrusted environments and back.&quot;
+ name = &quot;itsdangerous&quot;
++version = &quot;1.1.0&quot;
++description = &quot;Various helpers to pass data to untrusted environments and back.&quot;
++category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
+-version = &quot;1.1.0&quot;
+ 
+ [[package]]
+-category = &quot;main&quot;
+-description = &quot;A very fast and expressive template engine.&quot;
+ name = &quot;jinja2&quot;
++version = &quot;2.11.2&quot;
++description = &quot;A very fast and expressive template engine.&quot;
++category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
+-version = &quot;2.11.2&quot;
+-
+-[package.dependencies]
+-MarkupSafe = &quot;&gt;=0.23&quot;
+ 
+ [package.extras]
+ i18n = [&quot;Babel (&gt;=0.8)&quot;]
+ 
++[package.dependencies]
++MarkupSafe = &quot;&gt;=0.23&quot;
++
+ [[package]]
+-category = &quot;main&quot;
+-description = &quot;Safely add untrusted strings to HTML/XML markup.&quot;
+ name = &quot;markupsafe&quot;
++version = &quot;1.1.1&quot;
++description = &quot;Safely add untrusted strings to HTML/XML markup.&quot;
++category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*&quot;
+-version = &quot;1.1.1&quot;
+ 
+ [[package]]
+-category = &quot;main&quot;
+-description = &quot;Python HTTP for Humans.&quot;
+ name = &quot;requests&quot;
++version = &quot;2.24.0&quot;
++description = &quot;Python HTTP for Humans.&quot;
++category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
+-version = &quot;2.24.0&quot;
++
++[package.extras]
++security = [&quot;pyOpenSSL (&gt;=0.14)&quot;, &quot;cryptography (&gt;=1.3.4)&quot;]
++socks = [&quot;PySocks (&gt;=1.5.6,&lt;1.5.7 || &gt;1.5.7)&quot;, &quot;win-inet-pton&quot;]
+ 
+ [package.dependencies]
+ certifi = &quot;&gt;=2017.4.17&quot;
+@@ -110,17 +127,13 @@ chardet = &quot;&gt;=3.0.2,&lt;4&quot;
+ idna = &quot;&gt;=2.5,&lt;3&quot;
+ urllib3 = &quot;&gt;=1.21.1,&lt;1.25.0 || &gt;1.25.0,&lt;1.25.1 || &gt;1.25.1,&lt;1.26&quot;
+ 
+-[package.extras]
+-security = [&quot;pyOpenSSL (&gt;=0.14)&quot;, &quot;cryptography (&gt;=1.3.4)&quot;]
+-socks = [&quot;PySocks (&gt;=1.5.6,&lt;1.5.7 || &gt;1.5.7)&quot;, &quot;win-inet-pton&quot;]
+-
+ [[package]]
+-category = &quot;main&quot;
+-description = &quot;HTTP library with thread-safe connection pooling, file post, and more.&quot;
+ name = &quot;urllib3&quot;
++version = &quot;1.25.10&quot;
++description = &quot;HTTP library with thread-safe connection pooling, file post, and more.&quot;
++category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, &lt;4&quot;
+-version = &quot;1.25.10&quot;
+ 
+ [package.extras]
+ brotli = [&quot;brotlipy (&gt;=0.6.0)&quot;]
+@@ -128,21 +141,21 @@ secure = [&quot;certifi&quot;, &quot;cryptography (&gt;=1.3.4)&quot;, &quot;idna (&gt;=2.0.0)&quot;, &quot;pyOpenSSL (&gt;=0
+ socks = [&quot;PySocks (&gt;=1.5.6,&lt;1.5.7 || &gt;1.5.7,&lt;2.0)&quot;]
+ 
+ [[package]]
+-category = &quot;main&quot;
+-description = &quot;The comprehensive WSGI web application library.&quot;
+ name = &quot;werkzeug&quot;
++version = &quot;1.0.1&quot;
++description = &quot;The comprehensive WSGI web application library.&quot;
++category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
+-version = &quot;1.0.1&quot;
+ 
+ [package.extras]
+ dev = [&quot;pytest&quot;, &quot;pytest-timeout&quot;, &quot;coverage&quot;, &quot;tox&quot;, &quot;sphinx&quot;, &quot;pallets-sphinx-themes&quot;, &quot;sphinx-issues&quot;]
+ watchdog = [&quot;watchdog&quot;]
+ 
+ [metadata]
+-content-hash = &quot;c1d5cedfcf8897fb539d7bbd395966ad5c864b9a57737ae54e9ae099e9600026&quot;
+ lock-version = &quot;1.0&quot;
+ python-versions = &quot;^3.7&quot;
++content-hash = &quot;4c5557f7eb25c9e75ce9983a3ba5cabcddb59a6d26ff11185732aa13f954a326&quot;
+ 
+ [metadata.files]
+ certifi = [
+@@ -161,6 +174,10 @@ flask = [
+     {file = &quot;Flask-1.1.2-py2.py3-none-any.whl&quot;, hash = &quot;sha256:8a4fdd8936eba2512e9c85df320a37e694c93945b33ef33c89946a340a238557&quot;},
+     {file = &quot;Flask-1.1.2.tar.gz&quot;, hash = &quot;sha256:4efa1ae2d7c9865af48986de8aeb8504bf32c7f3d6fdc9353d34b21f4b127060&quot;},
+ ]
++goodconf = [
++    {file = &quot;goodconf-1.0.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:beb2f9ed734015e1becd4338d8b1e363cf51fb52e2f794f4e85e8c59d097442e&quot;},
++    {file = &quot;goodconf-1.0.0.tar.gz&quot;, hash = &quot;sha256:2c33460b4d9859ffacff32355b7effb1a922a16c1d54e8edd6452503bd8e809b&quot;},
++]
+ gunicorn = [
+     {file = &quot;gunicorn-20.0.4-py2.py3-none-any.whl&quot;, hash = &quot;sha256:cd4a810dd51bf497552cf3f863b575dabd73d6ad6a91075b65936b151cbf4f9c&quot;},
+     {file = &quot;gunicorn-20.0.4.tar.gz&quot;, hash = &quot;sha256:1904bb2b8a43658807108d59c3f3d56c2b6121a701161de0ddf9ad140073c626&quot;},
+diff --git a/pyproject.toml b/pyproject.toml
+index cf9cb6b..37c1cb5 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -11,12 +11,14 @@ packages = [
+ 
+ [tool.poetry.scripts]
+ pytaku-migrate = &quot;pytaku:migrate&quot;
++pytaku-generate-config = &quot;pytaku:generate_config&quot;
+ 
+ [tool.poetry.dependencies]
+ python = &quot;^3.7&quot;
+ flask = &quot;^1.1.2&quot;
+ gunicorn = &quot;^20.0.4&quot;
+ requests = &quot;^2.24.0&quot;
++goodconf = &quot;^1.0.0&quot;
+ 
+ [tool.poetry.dev-dependencies]
+ 
+diff --git a/src/pytaku/__init__.py b/src/pytaku/__init__.py
+index 53b1563..bd3e1b9 100644
+--- a/src/pytaku/__init__.py
++++ b/src/pytaku/__init__.py
+@@ -1,3 +1,6 @@
++from pytaku.conf import config
++
++
+ def migrate():
+     import argparse
+     from .database.migrator import migrate
+@@ -12,3 +15,7 @@ def migrate():
+     args = argparser.parse_args()
+ 
+     migrate(overwrite_latest_schema=args.dev)
++
++
++def generate_config():
++    print(config.generate_json(DEBUG=True))
+diff --git a/src/pytaku/conf.py b/src/pytaku/conf.py
+new file mode 100644
+index 0000000..dc1786e
+--- /dev/null
++++ b/src/pytaku/conf.py
+@@ -0,0 +1,9 @@
++from goodconf import GoodConf, Value
++
++
++class Config(GoodConf):
++    MANGADEX_USERNAME = Value()
++    MANGADEX_PASSWORD = Value()
++
++
++config = Config(default_files=[&quot;pytaku.conf.json&quot;], load=True)
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 9bba60e..8eb9d23 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -2,9 +2,11 @@
+ import re
+ 
+ import requests
+-from flask import Flask, make_response, render_template, url_for
++from flask import Flask, make_response, render_template, request, url_for
+ 
+-from mangoapi import get_chapter, get_title
++from mangoapi import get_chapter, get_title, search_title
++
++from . import mangadex
+ 
+ app = Flask(__name__)
+ 
+@@ -31,7 +33,12 @@ def chapter_view(chapter_id):
+ 
+ @app.route(&quot;/search&quot;)
+ def search_view():
+-    return &quot;TODO&quot;
++    query = request.args.get(&quot;q&quot;, &quot;&quot;).strip()
++    titles = []
++    if query:
++        cookies = mangadex.get_cookies()
++        titles = search_title(cookies, query)
++    return render_template(&quot;search.html&quot;, titles=titles, query=query)
+ 
+ 
+ @app.route(&quot;/proxy/&lt;b64_url&gt;&quot;)
+diff --git a/src/pytaku/mangadex.py b/src/pytaku/mangadex.py
+new file mode 100644
+index 0000000..df5156a
+--- /dev/null
++++ b/src/pytaku/mangadex.py
+@@ -0,0 +1,17 @@
++from mangoapi import login
++from pytaku.conf import config
++
++assert config.MANGADEX_USERNAME
++assert config.MANGADEX_PASSWORD
++
++_cookies = None
++
++
++def get_cookies():
++    global _cookies
++    if _cookies is None:
++        print(&quot;Logging in to mangadex&quot;)
++        _cookies = login(config.MANGADEX_USERNAME, config.MANGADEX_PASSWORD)
++    else:
++        print(&quot;Reusing mangadex cookies&quot;)
++    return _cookies
+diff --git a/src/pytaku/static/base.css b/src/pytaku/static/base.css
+index f2211b1..c694ac3 100644
+--- a/src/pytaku/static/base.css
++++ b/src/pytaku/static/base.css
+@@ -157,7 +157,6 @@ .links a:hover {
+ 
+ .content {
+   margin: auto;
+-  max-width: 800px;
+   padding: var(--body-padding);
+ }
+ .content &gt; * {
+diff --git a/src/pytaku/templates/base.html b/src/pytaku/templates/base.html
+index 05b0b50..94e7a47 100644
+--- a/src/pytaku/templates/base.html
++++ b/src/pytaku/templates/base.html
+@@ -39,8 +39,8 @@
+   &lt;body&gt;
+     &lt;nav&gt;
+       &lt;a class=&quot;logo&quot; href=&quot;/&quot;&gt;&lt;img src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;pytaku.svg&#39;)}}&quot; alt=&quot;home&quot; /&gt;&lt;/a&gt;
+-      &lt;form class=&quot;search&quot; action=&quot;{{ url_for(&#39;search_view&#39;) }}&quot;&gt;
+-        &lt;input type=&quot;text&quot; placeholder=&quot;search manga&quot; /&gt;&lt;button class=&quot;red button&quot;&gt;
++      &lt;form class=&quot;search&quot; action=&quot;{{ url_for(&#39;search_view&#39;) }}&quot; method=&quot;GET&quot;&gt;
++        &lt;input type=&quot;text&quot; placeholder=&quot;search manga&quot; name=&quot;q&quot; value=&quot;{{ query }}&quot; /&gt;&lt;button class=&quot;red button&quot;&gt;
+           &lt;img src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;icons/search.svg&#39;)}}&quot; alt=&quot;search&quot;&gt;
+         &lt;/button&gt;
+       &lt;/form&gt;
+diff --git a/src/pytaku/templates/chapter.html b/src/pytaku/templates/chapter.html
+index c39eb8a..aa11159 100644
+--- a/src/pytaku/templates/chapter.html
++++ b/src/pytaku/templates/chapter.html
+@@ -12,7 +12,6 @@
+   }
+ 
+   .content {
+-    max-width: 100%;
+     padding: var(--body-padding) 0;
+     text-align: center;
+   }
+diff --git a/src/pytaku/templates/search.html b/src/pytaku/templates/search.html
+new file mode 100644
+index 0000000..f5240e6
+--- /dev/null
++++ b/src/pytaku/templates/search.html
+@@ -0,0 +1,60 @@
++{% extends &#39;base.html&#39; %}
++
++{% block title %}
++  {% if query %}
++    &quot;{{ query }}&quot; search results
++  {% else %}
++    Search
++  {% endif %}
++{% endblock %}
++
++{% block head %}
++&lt;style&gt;
++  .results {
++    display: flex;
++    flex-direction: row;
++    flex-wrap: wrap;
++  }
++  .result {
++    display: inline-flex;
++    flex-direction: column;
++    border: 1px solid var(--bg-black);
++    margin: 0 1rem 1rem 0;
++    background-color: var(--bg-black);
++    color: white;
++    text-decoration: none;
++  }
++  .result span {
++    padding: .5rem;
++    width: 0;
++    min-width: 100%;
++  }
++&lt;/style&gt;
++{% endblock %}
++
++{% block content %}
++
++{% if not query %}
++  &lt;h1&gt;Please enter a search query above.&lt;/h1&gt;
++
++{% else %}
++  {% if titles %}
++  &lt;h1&gt;Showing {{ titles | length }} result(s) for &quot;{{ query }}&quot;:&lt;/h1&gt;
++  {% else %}
++  &lt;h1&gt;No results for &quot;{{ query }}&quot;.&lt;/h1&gt;
++  {% endif %}
++
++  &lt;div class=&quot;results&quot;&gt;
++  {% for title in titles %}
++    &lt;a class=&quot;result&quot; href=&quot;{{ url_for(&#39;title_view&#39;, title_id=title[&#39;id&#39;]) }}&quot;
++       title=&quot;{{ title[&#39;name&#39;] }}&quot;&gt;
++      &lt;img src=&quot;https://mangadex.org/images/manga/{{ title[&#39;id&#39;] }}.large.jpg&quot; alt=&quot;&quot;&gt;
++      &lt;span&gt;{{ title[&#39;name&#39;] | truncate(50) }}&lt;/span&gt;
++    &lt;/a&gt;
++  {% endfor %}
++  &lt;/div&gt;
++
++{% endif %}
++
++
++{% endblock %}
+</pre></body></html>

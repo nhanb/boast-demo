@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[cd5b9b92d4] fix custom template: global vs local path | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / cd5b9b92d4</strong><hr><pre>commit cd5b9b92d45d7db262c3ad497fd006f0154391b8
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jul 11 13:45:04 2023 +0700
+
+    fix custom template: global vs local path
+    
+    &quot;Global&quot; path starts with a $ and tells the program to look from the web
+    root dir. Otherwise, &quot;local&quot; looks for templates from the article&#39;s dir.
+
+diff --git a/main.go b/main.go
+index 80b9632..cb5f423 100644
+--- a/main.go
++++ b/main.go
+@@ -141,9 +141,10 @@ type Article struct {
+ 	Fs         writablefs.FS
+ 	Path       string
+ 	OutputPath string
+-	webPath    string
+ 	DjotBody   []byte
+ 	ArticleMetadata
++	webPath       string
++	templatePaths []string
+ }
+ 
+ func (a *Article) WebPath() string {
+@@ -165,6 +166,24 @@ func (a *Article) WebPath() string {
+ 	return a.webPath
+ }
+ 
++func (a *Article) TemplatePaths() []string {
++	if len(a.templatePaths) &gt; 0 {
++		return a.templatePaths
++	}
++	paths := make([]string, len(a.Templates))
++	for i := 0; i &lt; len(paths); i++ {
++		p := a.Templates[i]
++		if strings.HasPrefix(p, &quot;$&quot;) {
++			paths[i] = strings.TrimPrefix(p, &quot;$&quot;)
++		} else {
++			paths[i] = filepath.Join(filepath.Dir(a.Path), p)
++		}
++	}
++
++	a.templatePaths = paths
++	return paths
++}
++
+ func (a *Article) WriteHtmlFile(
+ 	site *SiteMetadata,
+ 	articlesInNav []Article,
+@@ -176,7 +195,7 @@ func (a *Article) WriteHtmlFile(
+ 	// Then insert that content into the main template
+ 	var buf bytes.Buffer
+ 	// TODO: should probably reuse the template object for common cases
+-	tmpl := template.Must(template.ParseFS(a.Fs, a.Templates...))
++	tmpl := template.Must(template.ParseFS(a.Fs, a.TemplatePaths()...))
+ 	err := tmpl.Execute(&amp;buf, struct {
+ 		Site          *SiteMetadata
+ 		Content       template.HTML
+@@ -267,7 +286,7 @@ func findArticles(fsys writablefs.FS) (result []Article) {
+ 		}
+ 
+ 		meta := ArticleMetadata{
+-			Templates:  []string{&quot;_theme/base.tmpl&quot;, &quot;_theme/post.tmpl&quot;},
++			Templates:  []string{&quot;$_theme/base.tmpl&quot;, &quot;$_theme/post.tmpl&quot;},
+ 			ShowInFeed: true,
+ 			ShowInNav:  false,
+ 		}
+</pre></body></html>

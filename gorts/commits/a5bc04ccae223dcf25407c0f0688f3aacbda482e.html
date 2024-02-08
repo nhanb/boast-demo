@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a5bc04ccae] implement readvars method on tcl client | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / a5bc04ccae</strong><hr><pre>commit a5bc04ccae223dcf25407c0f0688f3aacbda482e
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Jun 16 15:20:19 2023 +0700
+
+    implement readvars method on tcl client
+
+diff --git a/tk/main.tcl b/tcl/main.tcl
+similarity index 61%
+rename from tk/main.tcl
+rename to tcl/main.tcl
+index bed22c0..2f54050 100644
+--- a/tk/main.tcl
++++ b/tcl/main.tcl
+@@ -12,26 +12,52 @@ if {$OS == &quot;Windows&quot;} {
+     ttk::style theme use clam
+ }
+ 
++# Very simple line-based RPC where Tcl client talks to Go server
++# via stdin/stdout.
++#
++# For this &quot;readvars&quot; method, the Go server returns multiple lines
++# where each line starts with variable name, followed by a space,
++# with the rest of the line being its value. When done, the server
++# sends a literal &quot;end&quot; line.
++#
++# =&gt; readvars
++# &lt;= description Saigon Cup 2023
++# &lt;= p1name BST Diego Umejuarez
++# &lt;= p1score 0
++# [etc.]
++# &lt;= end
++puts &quot;readvars&quot;
++set line [gets stdin]
++while {$line != &quot;end&quot;} {
++    set spaceindex [string first &quot; &quot; $line]
++    set key [string range $line 0 $spaceindex-1]
++    set val [string range $line $spaceindex+1 end]
++    set ${key} $val
++    set line [gets stdin]
++}
++
++# GUI
++
+ ttk::frame .c -padding 5
+ ttk::frame .c.description
+ ttk::label .c.description.lbl -text &quot;Match description&quot;
+-ttk::entry .c.description.entry
++ttk::entry .c.description.entry -textvariable description
+ ttk::frame .c.players
+ ttk::label .c.players.p1lbl -text &quot;Player 1&quot;
+-ttk::combobox .c.players.p1name -width 35
+-ttk::combobox .c.players.p1country -width 5
+-ttk::spinbox .c.players.p1score -from 0 -to 999 -width 4
++ttk::combobox .c.players.p1name -textvariable p1name -width 35
++ttk::combobox .c.players.p1country -textvariable p1country -width 5
++ttk::spinbox .c.players.p1score -textvariable p1score -from 0 -to 999 -width 4
+ ttk::button .c.players.p1win -text &quot;▲ Win&quot; -width 5
+ ttk::label .c.players.p1teamlbl -text &quot;Team 1&quot;
+-ttk::combobox .c.players.p1teamname
++ttk::combobox .c.players.p1team -textvariable p1team
+ ttk::separator .c.players.separator -orient horizontal
+ ttk::label .c.players.p2lbl -text &quot;Player 2&quot;
+-ttk::combobox .c.players.p2name -width 35
+-ttk::combobox .c.players.p2country -width 5
+-ttk::spinbox .c.players.p2score -from 0 -to 999 -width 4
++ttk::combobox .c.players.p2name -textvariable p2name -width 35
++ttk::combobox .c.players.p2country -textvariable p2country -width 5
++ttk::spinbox .c.players.p2score -textvariable p2score -from 0 -to 999 -width 4
+ ttk::button .c.players.p2win -text &quot;▲ Win&quot; -width 5
+ ttk::label .c.players.p2teamlbl -text &quot;Team 2&quot;
+-ttk::combobox .c.players.p2teamname
++ttk::combobox .c.players.p2team -textvariable p2team
+ ttk::frame .c.buttons
+ ttk::button .c.buttons.apply -text &quot;▶ Apply&quot;
+ ttk::button .c.buttons.discard -text &quot;✖ Discard&quot;
+@@ -50,7 +76,7 @@ grid .c.players.p1country -row 0 -column 2
+ grid .c.players.p1score -row 0 -column 3
+ grid .c.players.p1win -row 0 -column 4 -padx {5 0} -rowspan 2 -sticky NS
+ grid .c.players.p1teamlbl -row 1 -column 0
+-grid .c.players.p1teamname -row 1 -column 1 -columnspan 3 -sticky EW
++grid .c.players.p1team -row 1 -column 1 -columnspan 3 -sticky EW
+ grid .c.players.separator -row 2 -column 0 -columnspan 5 -pady 10 -sticky EW
+ grid .c.players.p2lbl -row 3 -column 0
+ grid .c.players.p2name -row 3 -column 1
+@@ -58,7 +84,7 @@ grid .c.players.p2country -row 3 -column 2
+ grid .c.players.p2score -row 3 -column 3
+ grid .c.players.p2win -row 3 -column 4 -padx {5 0} -rowspan 2 -sticky NS
+ grid .c.players.p2teamlbl -row 4 -column 0
+-grid .c.players.p2teamname -row 4 -column 1 -columnspan 3 -sticky EW
++grid .c.players.p2team -row 4 -column 1 -columnspan 3 -sticky EW
+ grid .c.buttons -row 5 -column 0 -sticky W -pady {10 0}
+ grid .c.buttons.apply -row 0 -column 0
+ grid .c.buttons.discard -row 0 -column 1
+</pre></body></html>

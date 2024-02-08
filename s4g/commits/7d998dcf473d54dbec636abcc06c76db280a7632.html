@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[7d998dcf47] metadata: support unmarshalling []string | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 7d998dcf47</strong><hr><pre>commit 7d998dcf473d54dbec636abcc06c76db280a7632
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jul 10 21:32:41 2023 +0700
+
+    metadata: support unmarshalling []string
+
+diff --git a/metadata.go b/metadata.go
+index a550ef8..f7fcc42 100644
+--- a/metadata.go
++++ b/metadata.go
+@@ -86,6 +86,14 @@ func UnmarshalMetadata(data []byte, dest any) error {
+ 				}
+ 				s.Field(i).Set(reflect.ValueOf(tVal))
+ 
++			case &quot;[]string&quot;:
++				parts := strings.Split(val, &quot;,&quot;)
++				trimmed := make([]string, len(parts))
++				for i := 0; i &lt; len(parts); i++ {
++					trimmed[i] = strings.TrimSpace(parts[i])
++				}
++				s.Field(i).Set(reflect.ValueOf(trimmed))
++
+ 			default:
+ 				panic(fmt.Sprintf(
+ 					&quot;unsupported metadata field type: %s&quot;,
+</pre></body></html>

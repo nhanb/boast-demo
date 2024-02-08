@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[075d95a887] tweak makefile, add &quot;watch&quot; target | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 075d95a887</strong><hr><pre>commit 075d95a8874f6742270a89a2031e2cf9331e1fc4
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jun 19 20:15:38 2023 +0700
+
+    tweak makefile, add &quot;watch&quot; target
+
+diff --git a/Makefile b/Makefile
+index 9419560..f75ed60 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,22 +1,23 @@
+-all: dist-linux dist-windows
+-
+-dist-linux:
+-	CGO_ENABLED=0 GOOS=linux go build -o dist/linux/gorts
+-	cp -r web dist/linux/web
+-
+-dist-windows:
++windows:
+ 	CGO_ENABLED=0 GOOS=windows \
+ 		go build -o dist/windows/gorts.exe -ldflags -H=windowsgui
+ 	cp -r web dist/windows/web
+ 
+-dist/GORTS-Linux.zip: dist-linux
+-	cd dist/linux; zip -r ../GORTS-Linux.zip .
++linux:
++	CGO_ENABLED=0 GOOS=linux go build -o dist/linux/gorts
++	cp -r web dist/linux/web
+ 
+-dist/GORTS-Windows.zip: dist-windows
++dist/GORTS-Windows.zip: windows
+ 	cd dist/windows; \
+ 		curl -L &#39;https://tclkits.rkeene.org/fossil/raw/tclkit-8.6.3-win32-x86_64.exe?name=403c507437d0b10035c7839f22f5bb806ec1f491&#39; &gt; tclkit.exe; \
+ 		zip -r ../GORTS-Windows.zip .
+ 
++dist/GORTS-Linux.zip: linux
++	cd dist/linux; zip -r ../GORTS-Linux.zip .
++
++watch:
++	find . -name &#39;*.go&#39; -o -name &#39;*.tcl&#39; | entr -rc go run .
++
+ gorts.png: gorts.svg
+ 	convert -background transparent -density 300 -resize 256x256 gorts.svg gorts.png
+ 
+</pre></body></html>

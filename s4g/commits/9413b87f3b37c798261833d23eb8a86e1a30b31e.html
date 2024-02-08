@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[9413b87f3b] better newtab indicator | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 9413b87f3b</strong><hr><pre>commit 9413b87f3b37c798261833d23eb8a86e1a30b31e
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 31 18:04:01 2023 +0700
+
+    better newtab indicator
+    
+    Make the arrow not part of the tag, but an ::after.
+    Also have the suffix in metadata an ASCII &quot;^&quot; instead
+    of the hard-to-type arrow.
+
+diff --git a/docs/_s4g/theme/base.css b/docs/_s4g/theme/base.css
+index 90ac997..c5cb7f3 100644
+--- a/docs/_s4g/theme/base.css
++++ b/docs/_s4g/theme/base.css
+@@ -14,6 +14,10 @@ ol {
+   line-height: 1.35rem;
+ }
+ 
++a[target=&quot;_blank&quot;]::after {
++  content: &quot;↗&quot;;
++}
++
+ main img,
+ main video {
+   max-width: 100%;
+diff --git a/main.go b/main.go
+index 8ac0a1b..2e1f95c 100644
+--- a/main.go
++++ b/main.go
+@@ -189,7 +189,7 @@ type Link struct {
+ 	NewTab bool
+ }
+ 
+-const NewTabSuffix = &quot;↗&quot;
++const NewTabSuffix = &quot;^&quot;
+ 
+ func regenerate(fsys writablefs.FS) (site *SiteMetadata, err error) {
+ 	defer timer(&quot;Took %s&quot;)()
+@@ -223,6 +223,7 @@ func regenerate(fsys writablefs.FS) (site *SiteMetadata, err error) {
+ 			link.Text, link.Url, _ = strings.Cut(item[1:], &quot;#&quot;)
+ 			if strings.HasSuffix(link.Text, NewTabSuffix) {
+ 				link.NewTab = true
++				link.Text = strings.TrimSuffix(link.Text, NewTabSuffix)
+ 			}
+ 			navLinks = append(navLinks, link)
+ 			continue
+diff --git a/theme/base.css b/theme/base.css
+index 90ac997..c5cb7f3 100644
+--- a/theme/base.css
++++ b/theme/base.css
+@@ -14,6 +14,10 @@ ol {
+   line-height: 1.35rem;
+ }
+ 
++a[target=&quot;_blank&quot;]::after {
++  content: &quot;↗&quot;;
++}
++
+ main img,
+ main video {
+   max-width: 100%;
+</pre></body></html>

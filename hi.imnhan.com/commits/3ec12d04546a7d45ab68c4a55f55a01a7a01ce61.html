@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[3ec12d0454] Enable both atom and RSS feeds | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 3ec12d0454</strong><hr><pre>commit 3ec12d04546a7d45ab68c4a55f55a01a7a01ce61
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Wed Feb 5 10:44:04 2014 +0700
+
+    Enable both atom and RSS feeds
+
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 8a5e753..532a84c 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -57,11 +57,13 @@
+ AUTHOR_SLUG = &quot;nhanb&quot;
+ 
+ # Social widget
+-SOCIAL = ((&#39;Github&#39;, &#39;https://github.com/nhanb&#39;),
+-          (&#39;Facebook&#39;, &#39;https://www.facebook.com/thanhnhanb&#39;),
+-          (&#39;Google+&#39;,
+-           &#39;https://plus.google.com/114388334309097537564?rel=author&#39;),
+-          )
++SOCIAL = (
++    (&#39;Atom&#39;, &#39;/feeds/atom.xml&#39;),
++    (&#39;Github&#39;, &#39;https://github.com/nhanb&#39;),
++    (&#39;Facebook&#39;, &#39;https://www.facebook.com/thanhnhanb&#39;),
++    (&#39;Google+&#39;,
++     &#39;https://plus.google.com/114388334309097537564?rel=author&#39;),
++)
+ 
+ ## Blogroll
+ #LINKS = ((&#39;Pelican&#39;, &#39;http://getpelican.com/&#39;),
+@@ -76,3 +78,9 @@
+ )
+ 
+ PLUGIN_PATH = &#39;/home/nhanb/open-source/pelican-plugins&#39;
++
++FEED_DOMAIN = SITEURL
++FEED_ALL_ATOM = &#39;feeds/all.atom.xml&#39;
++FEED_ATOM = &#39;feeds/atom.xml&#39;
++FEED_RSS = &#39;feeds/rss.xml&#39;
++CATEGORY_FEED_ATOM = &#39;feeds/%s.atom.xml&#39;
+diff --git a/publishconf.py b/publishconf.py
+index 73a87df..9e7dc2f 100644
+--- a/publishconf.py
++++ b/publishconf.py
+@@ -13,11 +13,6 @@
+ SITEURL = &#39;http://blog.nerdyweekly.com&#39;
+ RELATIVE_URLS = False
+ 
+-FEED_DOMAIN = SITEURL
+-FEED_ALL_ATOM = &#39;feeds/all.atom.xml&#39;
+-FEED_ATOM = &#39;feeds/atom.xml&#39;
+-CATEGORY_FEED_ATOM = &#39;feeds/%s.atom.xml&#39;
+-
+ DELETE_OUTPUT_DIRECTORY = True
+ 
+ # Following items are often useful when publishing
+</pre></body></html>

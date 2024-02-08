@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[be1f0c15f4] update deps | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / be1f0c15f4</strong><hr><pre>commit be1f0c15f4a665ae30196318a0e7da854b4e08fb
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Apr 26 10:02:40 2020 +0700
+
+    update deps
+
+diff --git a/README.md b/README.md
+index cd00bea..76300c0 100644
+--- a/README.md
++++ b/README.md
+@@ -5,12 +5,12 @@ # My blog
+ 
+ # Dev environment
+ 
+-This repo targets Pelican 3.7 on python3. Initial setup on Arch Linux with
++This repo targets python 3. Initial setup on Arch Linux with
+ `pyenv-virtualenv` and `poetry` looks something like this:
+ 
+ ```sh
+-pyenv install 3.7.5
+-pyenv virtualenv 3.7.5 imnhan.com
++pyenv install 3.8.2
++pyenv virtualenv 3.8.2 imnhan.com
+ pyenv activate imnhan.com
+ poetry install
+ ```
+diff --git a/poetry.lock b/poetry.lock
+index d78627b..fcc5c35 100644
+--- a/poetry.lock
++++ b/poetry.lock
+@@ -11,8 +11,8 @@ category = &quot;main&quot;
+ description = &quot;Docutils -- Python Documentation Utilities&quot;
+ name = &quot;docutils&quot;
+ optional = false
+-python-versions = &quot;*&quot;
+-version = &quot;0.15&quot;
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
++version = &quot;0.16&quot;
+ 
+ [[package]]
+ category = &quot;dev&quot;
+@@ -28,7 +28,7 @@ description = &quot;Standalone version of django.utils.feedgenerator&quot;
+ name = &quot;feedgenerator&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+-version = &quot;1.9&quot;
++version = &quot;1.9.1&quot;
+ 
+ [package.dependencies]
+ pytz = &quot;&gt;=0a&quot;
+@@ -40,7 +40,7 @@ description = &quot;the modular source code checker: pep8, pyflakes and co&quot;
+ name = &quot;flake8&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
+-version = &quot;3.7.8&quot;
++version = &quot;3.7.9&quot;
+ 
+ [package.dependencies]
+ entrypoints = &quot;&gt;=0.3.0,&lt;0.4.0&quot;
+@@ -54,7 +54,7 @@ description = &quot;Clean single-source support for Python 3 and 2&quot;
+ name = &quot;future&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.6, !=3.0.*, !=3.1.*, !=3.2.*&quot;
+-version = &quot;0.17.1&quot;
++version = &quot;0.18.2&quot;
+ 
+ [[package]]
+ category = &quot;dev&quot;
+@@ -75,14 +75,19 @@ version = &quot;0.1.12&quot;
+ [[package]]
+ category = &quot;dev&quot;
+ description = &quot;Read metadata from Python packages&quot;
++marker = &quot;python_version &lt; \&quot;3.8\&quot;&quot;
+ name = &quot;importlib-metadata&quot;
+ optional = false
+-python-versions = &quot;&gt;=2.7,!=3.0,!=3.1,!=3.2,!=3.3&quot;
+-version = &quot;0.18&quot;
++python-versions = &quot;!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,&gt;=2.7&quot;
++version = &quot;1.6.0&quot;
+ 
+ [package.dependencies]
+ zipp = &quot;&gt;=0.5&quot;
+ 
++[package.extras]
++docs = [&quot;sphinx&quot;, &quot;rst.linker&quot;]
++testing = [&quot;packaging&quot;, &quot;importlib-resources&quot;]
++
+ [[package]]
+ category = &quot;dev&quot;
+ description = &quot;An autocompletion tool for Python that can be used for text editors.&quot;
+@@ -94,36 +99,45 @@ version = &quot;0.14.1&quot;
+ [package.dependencies]
+ parso = &quot;&gt;=0.5.0&quot;
+ 
++[package.extras]
++testing = [&quot;colorama&quot;, &quot;docopt&quot;, &quot;pytest (&gt;=3.1.0,&lt;5.0.0)&quot;]
++
+ [[package]]
+ category = &quot;main&quot;
+-description = &quot;A small but fast and easy to use stand-alone template engine written in pure python.&quot;
++description = &quot;A very fast and expressive template engine.&quot;
+ name = &quot;jinja2&quot;
+ optional = false
+-python-versions = &quot;*&quot;
+-version = &quot;2.10.1&quot;
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
++version = &quot;2.11.2&quot;
+ 
+ [package.dependencies]
+ MarkupSafe = &quot;&gt;=0.23&quot;
+ 
++[package.extras]
++i18n = [&quot;Babel (&gt;=0.8)&quot;]
++
+ [[package]]
+ category = &quot;main&quot;
+ description = &quot;Lightweight pipelining: using Python functions as pipeline jobs.&quot;
+ name = &quot;joblib&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+-version = &quot;0.13.2&quot;
++version = &quot;0.14.1&quot;
+ 
+ [[package]]
+ category = &quot;main&quot;
+ description = &quot;Python implementation of Markdown.&quot;
+ name = &quot;markdown&quot;
+ optional = false
+-python-versions = &quot;&gt;=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*&quot;
+-version = &quot;3.1.1&quot;
++python-versions = &quot;&gt;=3.5&quot;
++version = &quot;3.2.1&quot;
+ 
+ [package.dependencies]
+ setuptools = &quot;&gt;=36&quot;
+ 
++[package.extras]
++testing = [&quot;coverage&quot;, &quot;pyyaml&quot;]
++
+ [[package]]
+ category = &quot;main&quot;
+ description = &quot;Safely add untrusted strings to HTML/XML markup.&quot;
+@@ -145,8 +159,11 @@ category = &quot;dev&quot;
+ description = &quot;A Python Parser&quot;
+ name = &quot;parso&quot;
+ optional = false
+-python-versions = &quot;*&quot;
+-version = &quot;0.5.1&quot;
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++version = &quot;0.7.0&quot;
++
++[package.extras]
++testing = [&quot;docopt&quot;, &quot;pytest (&gt;=3.0.7)&quot;]
+ 
+ [[package]]
+ category = &quot;main&quot;
+@@ -154,7 +171,7 @@ description = &quot;Static site generator supporting reStructuredText and Markdown so
+ name = &quot;pelican&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+-version = &quot;4.1.0&quot;
++version = &quot;4.2.0&quot;
+ 
+ [package.dependencies]
+ blinker = &quot;*&quot;
+@@ -167,6 +184,9 @@ pytz = &quot;&gt;=0a&quot;
+ six = &quot;&gt;=1.4&quot;
+ unidecode = &quot;*&quot;
+ 
++[package.extras]
++markdown = [&quot;markdown (&gt;=3.1.1,&lt;3.2.0)&quot;]
++
+ [[package]]
+ category = &quot;main&quot;
+ description = &quot;An HTML minification plugin for Pelican, the static site generator.&quot;
+@@ -186,10 +206,15 @@ description = &quot;plugin and hook calling mechanisms for python&quot;
+ name = &quot;pluggy&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
+-version = &quot;0.12.0&quot;
++version = &quot;0.13.1&quot;
+ 
+ [package.dependencies]
+-importlib-metadata = &quot;&gt;=0.12&quot;
++[package.dependencies.importlib-metadata]
++python = &quot;&lt;3.8&quot;
++version = &quot;&gt;=0.12&quot;
++
++[package.extras]
++dev = [&quot;pre-commit&quot;, &quot;tox&quot;]
+ 
+ [[package]]
+ category = &quot;dev&quot;
+@@ -212,16 +237,16 @@ category = &quot;main&quot;
+ description = &quot;Pygments is a syntax highlighting package written in Python.&quot;
+ name = &quot;pygments&quot;
+ optional = false
+-python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
+-version = &quot;2.4.2&quot;
++python-versions = &quot;&gt;=3.5&quot;
++version = &quot;2.6.1&quot;
+ 
+ [[package]]
+ category = &quot;main&quot;
+ description = &quot;Extensions to the standard Python datetime module&quot;
+ name = &quot;python-dateutil&quot;
+ optional = false
+-python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*&quot;
+-version = &quot;2.8.0&quot;
++python-versions = &quot;!=3.0.*,!=3.1.*,!=3.2.*,&gt;=2.7&quot;
++version = &quot;2.8.1&quot;
+ 
+ [package.dependencies]
+ six = &quot;&gt;=1.5&quot;
+@@ -232,10 +257,13 @@ description = &quot;JSON RPC 2.0 server library&quot;
+ name = &quot;python-jsonrpc-server&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+-version = &quot;0.2.0&quot;
++version = &quot;0.3.4&quot;
+ 
+ [package.dependencies]
+-future = &quot;&gt;=0.14.0&quot;
++ujson = &quot;&lt;=1.35&quot;
++
++[package.extras]
++test = [&quot;versioneer&quot;, &quot;pylint&quot;, &quot;pycodestyle&quot;, &quot;pyflakes&quot;, &quot;pytest&quot;, &quot;mock&quot;, &quot;pytest-cov&quot;, &quot;coverage&quot;]
+ 
+ [[package]]
+ category = &quot;dev&quot;
+@@ -243,29 +271,41 @@ description = &quot;Python Language Server for the Language Server Protocol&quot;
+ name = &quot;python-language-server&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+-version = &quot;0.28.0&quot;
++version = &quot;0.28.3&quot;
+ 
+ [package.dependencies]
+ future = &quot;&gt;=0.14.0&quot;
+-jedi = &quot;&gt;=0.13.2,&lt;0.14.0 || &gt;0.14.0,&lt;0.15&quot;
++jedi = &quot;&gt;=0.14.1,&lt;0.15&quot;
+ pluggy = &quot;*&quot;
+ python-jsonrpc-server = &quot;&gt;=0.1.0&quot;
+ 
++[package.extras]
++all = [&quot;autopep8&quot;, &quot;mccabe&quot;, &quot;pycodestyle&quot;, &quot;pydocstyle (&gt;=2.0.0)&quot;, &quot;pyflakes (&gt;=1.6.0)&quot;, &quot;pylint&quot;, &quot;rope (&gt;=0.10.5)&quot;, &quot;yapf&quot;]
++autopep8 = [&quot;autopep8&quot;]
++mccabe = [&quot;mccabe&quot;]
++pycodestyle = [&quot;pycodestyle&quot;]
++pydocstyle = [&quot;pydocstyle (&gt;=2.0.0)&quot;]
++pyflakes = [&quot;pyflakes (&gt;=1.6.0)&quot;]
++pylint = [&quot;pylint&quot;]
++rope = [&quot;rope (&gt;0.10.5)&quot;]
++test = [&quot;versioneer&quot;, &quot;pylint&quot;, &quot;pytest&quot;, &quot;mock&quot;, &quot;pytest-cov&quot;, &quot;coverage&quot;]
++yapf = [&quot;yapf&quot;]
++
+ [[package]]
+ category = &quot;main&quot;
+ description = &quot;World timezone definitions, modern and historical&quot;
+ name = &quot;pytz&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+-version = &quot;2019.1&quot;
++version = &quot;2019.3&quot;
+ 
+ [[package]]
+ category = &quot;main&quot;
+ description = &quot;Python 2 and 3 compatibility utilities&quot;
+ name = &quot;six&quot;
+ optional = false
+-python-versions = &quot;&gt;=2.6, !=3.0.*, !=3.1.*&quot;
+-version = &quot;1.12.0&quot;
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*&quot;
++version = &quot;1.14.0&quot;
+ 
+ [[package]]
+ category = &quot;main&quot;
+@@ -286,6 +326,15 @@ version = &quot;2.0.7&quot;
+ [package.dependencies]
+ smartypants = &quot;&gt;=1.8.3&quot;
+ 
++[[package]]
++category = &quot;dev&quot;
++description = &quot;Ultra fast JSON encoder and decoder for Python&quot;
++marker = &quot;platform_system != \&quot;Windows\&quot;&quot;
++name = &quot;ujson&quot;
++optional = false
++python-versions = &quot;*&quot;
++version = &quot;1.35&quot;
++
+ [[package]]
+ category = &quot;main&quot;
+ description = &quot;ASCII transliterations of Unicode text&quot;
+@@ -297,44 +346,169 @@ version = &quot;1.1.1&quot;
+ [[package]]
+ category = &quot;dev&quot;
+ description = &quot;Backport of pathlib-compatible object wrapper for zip files&quot;
++marker = &quot;python_version &lt; \&quot;3.8\&quot;&quot;
+ name = &quot;zipp&quot;
+ optional = false
+-python-versions = &quot;&gt;=2.7&quot;
+-version = &quot;0.5.2&quot;
++python-versions = &quot;&gt;=3.6&quot;
++version = &quot;3.1.0&quot;
++
++[package.extras]
++docs = [&quot;sphinx&quot;, &quot;jaraco.packaging (&gt;=3.2)&quot;, &quot;rst.linker (&gt;=1.9)&quot;]
++testing = [&quot;jaraco.itertools&quot;, &quot;func-timeout&quot;]
+ 
+ [metadata]
+-content-hash = &quot;6bd1286fee9e5bf28284fd5d107a8238514ba464c754ea5d7a3e08e20ff875bd&quot;
++content-hash = &quot;5237f716c75ec635fa262f67002d84298f576931f4bca554a9cdc97d07683223&quot;
+ python-versions = &quot;^3.7&quot;
+ 
+-[metadata.hashes]
+-blinker = [&quot;471aee25f3992bd325afa3772f1063dbdbbca947a041b8b89466dc00d606f8b6&quot;]
+-docutils = [&quot;54a349c622ff31c91cbec43b0b512f113b5b24daf00e2ea530bb1bd9aac14849&quot;, &quot;ba4584f9107571ced0d2c7f56a5499c696215ba90797849c92d395979da68521&quot;, &quot;d2ddba74835cb090a1b627d3de4e7835c628d07ee461f7b4480f51af2fe4d448&quot;]
+-entrypoints = [&quot;589f874b313739ad35be6e0cd7efde2a4e9b6fea91edcc34e58ecbb8dbe56d19&quot;, &quot;c70dd71abe5a8c85e55e12c19bd91ccfeec11a6e99044204511f9ed547d48451&quot;]
+-feedgenerator = [&quot;5ae05daa9cfa47fa406ee4744d0b7fa1c8a05a7a47ee0ad328ddf55327cfb106&quot;]
+-flake8 = [&quot;19241c1cbc971b9962473e4438a2ca19749a7dd002dd1a946eaba171b4114548&quot;, &quot;8e9dfa3cecb2400b3738a42c54c3043e821682b9c840b0448c0503f781130696&quot;]
+-future = [&quot;67045236dcfd6816dc439556d009594abf643e5eb48992e36beac09c2ca659b8&quot;]
+-ghp-import = [&quot;3e924ea720e4e1f82d56753db2154bfb86067472c5830732159c3a4c4fbc75d7&quot;]
+-htmlmin = [&quot;50c1ef4630374a5d723900096a961cff426dff46b48f34d194a81bbe14eca178&quot;]
+-importlib-metadata = [&quot;6dfd58dfe281e8d240937776065dd3624ad5469c835248219bd16cf2e12dbeb7&quot;, &quot;cb6ee23b46173539939964df59d3d72c3e0c1b5d54b84f1d8a7e912fe43612db&quot;]
+-jedi = [&quot;53c850f1a7d3cfcd306cc513e2450a54bdf5cacd7604b74e42dd1f0758eaaf36&quot;, &quot;e07457174ef7cb2342ff94fa56484fe41cec7ef69b0059f01d3f812379cb6f7c&quot;]
+-jinja2 = [&quot;065c4f02ebe7f7cf559e49ee5a95fb800a9e4528727aec6f24402a5374c65013&quot;, &quot;14dd6caf1527abb21f08f86c784eac40853ba93edb79552aa1e4b8aef1b61c7b&quot;]
+-joblib = [&quot;21e0c34a69ad7fde4f2b1f3402290e9ec46f545f15f1541c582edfe05d87b63a&quot;, &quot;315d6b19643ec4afd4c41c671f9f2d65ea9d787da093487a81ead7b0bac94524&quot;]
+-markdown = [&quot;2e50876bcdd74517e7b71f3e7a76102050edec255b3983403f1a63e7c8a41e7a&quot;, &quot;56a46ac655704b91e5b7e6326ce43d5ef72411376588afa1dd90e881b83c7e8c&quot;]
+-markupsafe = [&quot;00bc623926325b26bb9605ae9eae8a215691f33cae5df11ca5424f06f2d1f473&quot;, &quot;09027a7803a62ca78792ad89403b1b7a73a01c8cb65909cd876f7fcebd79b161&quot;, &quot;09c4b7f37d6c648cb13f9230d847adf22f8171b1ccc4d5682398e77f40309235&quot;, &quot;1027c282dad077d0bae18be6794e6b6b8c91d58ed8a8d89a89d59693b9131db5&quot;, &quot;24982cc2533820871eba85ba648cd53d8623687ff11cbb805be4ff7b4c971aff&quot;, &quot;29872e92839765e546828bb7754a68c418d927cd064fd4708fab9fe9c8bb116b&quot;, &quot;43a55c2930bbc139570ac2452adf3d70cdbb3cfe5912c71cdce1c2c6bbd9c5d1&quot;, &quot;46c99d2de99945ec5cb54f23c8cd5689f6d7177305ebff350a58ce5f8de1669e&quot;, &quot;500d4957e52ddc3351cabf489e79c91c17f6e0899158447047588650b5e69183&quot;, &quot;535f6fc4d397c1563d08b88e485c3496cf5784e927af890fb3c3aac7f933ec66&quot;, &quot;62fe6c95e3ec8a7fad637b7f3d372c15ec1caa01ab47926cfdf7a75b40e0eac1&quot;, &quot;6dd73240d2af64df90aa7c4e7481e23825ea70af4b4922f8ede5b9e35f78a3b1&quot;, &quot;717ba8fe3ae9cc0006d7c451f0bb265ee07739daf76355d06366154ee68d221e&quot;, &quot;79855e1c5b8da654cf486b830bd42c06e8780cea587384cf6545b7d9ac013a0b&quot;, &quot;7c1699dfe0cf8ff607dbdcc1e9b9af1755371f92a68f706051cc8c37d447c905&quot;, &quot;88e5fcfb52ee7b911e8bb6d6aa2fd21fbecc674eadd44118a9cc3863f938e735&quot;, &quot;8defac2f2ccd6805ebf65f5eeb132adcf2ab57aa11fdf4c0dd5169a004710e7d&quot;, &quot;98c7086708b163d425c67c7a91bad6e466bb99d797aa64f965e9d25c12111a5e&quot;, &quot;9add70b36c5666a2ed02b43b335fe19002ee5235efd4b8a89bfcf9005bebac0d&quot;, &quot;9bf40443012702a1d2070043cb6291650a0841ece432556f784f004937f0f32c&quot;, &quot;ade5e387d2ad0d7ebf59146cc00c8044acbd863725f887353a10df825fc8ae21&quot;, &quot;b00c1de48212e4cc9603895652c5c410df699856a2853135b3967591e4beebc2&quot;, &quot;b1282f8c00509d99fef04d8ba936b156d419be841854fe901d8ae224c59f0be5&quot;, &quot;b2051432115498d3562c084a49bba65d97cf251f5a331c64a12ee7e04dacc51b&quot;, &quot;ba59edeaa2fc6114428f1637ffff42da1e311e29382d81b339c1817d37ec93c6&quot;, &quot;c8716a48d94b06bb3b2524c2b77e055fb313aeb4ea620c8dd03a105574ba704f&quot;, &quot;cd5df75523866410809ca100dc9681e301e3c27567cf498077e8551b6d20e42f&quot;, &quot;e249096428b3ae81b08327a63a485ad0878de3fb939049038579ac0ef61e17e7&quot;]
+-mccabe = [&quot;ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42&quot;, &quot;dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f&quot;]
+-parso = [&quot;63854233e1fadb5da97f2744b6b24346d2750b85965e7e399bec1620232797dc&quot;, &quot;666b0ee4a7a1220f65d367617f2cd3ffddff3e205f3f16a0284df30e774c2a9c&quot;]
+-pelican = [&quot;8049fb2411d902659ddc15c142a13f2c342e05f7f4a205f210a27e2ae8b8a81e&quot;, &quot;d2bff36b9dd1bd3b70874b9ac06fafcd2620b16c0a21adb5051c48055a2b6f80&quot;]
+-pelican-minify = [&quot;a0ffa9b1f15089bc4aec4692c5feba87356d427a7946ffd8b6222ac4c7758773&quot;, &quot;fcefce477d4a24c8972ec8871738100f144e329201ab2b45aab8b5d3b7ba8e65&quot;]
+-pluggy = [&quot;0825a152ac059776623854c1543d65a4ad408eb3d33ee114dff91e57ec6ae6fc&quot;, &quot;b9817417e95936bf75d85d3f8767f7df6cdde751fc40aed3bb3074cbcb77757c&quot;]
+-pycodestyle = [&quot;95a2219d12372f05704562a14ec30bc76b05a5b297b21a5dfe3f6fac3491ae56&quot;, &quot;e40a936c9a450ad81df37f549d676d127b1b66000a6c500caa2b085bc0ca976c&quot;]
+-pyflakes = [&quot;17dbeb2e3f4d772725c777fabc446d5634d1038f234e77343108ce445ea69ce0&quot;, &quot;d976835886f8c5b31d47970ed689944a0262b5f3afa00a5a7b4dc81e5449f8a2&quot;]
+-pygments = [&quot;71e430bc85c88a430f000ac1d9b331d2407f681d6f6aec95e8bcfbc3df5b0127&quot;, &quot;881c4c157e45f30af185c1ffe8d549d48ac9127433f2c380c24b84572ad66297&quot;]
+-python-dateutil = [&quot;7e6584c74aeed623791615e26efd690f29817a27c73085b78e4bad02493df2fb&quot;, &quot;c89805f6f4d64db21ed966fda138f8a5ed7a4fdbc1a8ee329ce1b74e3c74da9e&quot;]
+-python-jsonrpc-server = [&quot;59ce9c9523c14c493a327b3a27ee37464a36dc2b9d8ab485ecbcedd38840380a&quot;]
+-python-language-server = [&quot;3a5b2a980ea124361ab65bbbe963039d3bad4cbf4713eccfbc0cdb5cb5335609&quot;]
+-pytz = [&quot;303879e36b721603cc54604edcac9d20401bdbe31e1e4fdee5b9f98d5d31dfda&quot;, &quot;d747dd3d23d77ef44c6a3526e274af6efeb0a6f1afd5a69ba4d5be4098c8e141&quot;]
+-six = [&quot;3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c&quot;, &quot;d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73&quot;]
+-smartypants = [&quot;8db97f7cbdf08d15b158a86037cd9e116b4cf37703d24e0419a0d64ca5808f0d&quot;]
+-typogrify = [&quot;8be4668cda434163ce229d87ca273a11922cb1614cb359970b7dc96eed13cb38&quot;]
+-unidecode = [&quot;1d7a042116536098d05d599ef2b8616759f02985c85b4fef50c78a5aaf10822a&quot;, &quot;2b6aab710c2a1647e928e36d69c21e76b453cd455f4e2621000e54b2a9b8cce8&quot;]
+-zipp = [&quot;4970c3758f4e89a7857a973b1e2a5d75bcdc47794442f2e2dd4fe8e0466e809a&quot;, &quot;8a5712cfd3bb4248015eb3b0b3c54a5f6ee3f2425963ef2a0125b8bc40aafaec&quot;]
++[metadata.files]
++blinker = [
++    {file = &quot;blinker-1.4.tar.gz&quot;, hash = &quot;sha256:471aee25f3992bd325afa3772f1063dbdbbca947a041b8b89466dc00d606f8b6&quot;},
++]
++docutils = [
++    {file = &quot;docutils-0.16-py2.py3-none-any.whl&quot;, hash = &quot;sha256:0c5b78adfbf7762415433f5515cd5c9e762339e23369dbe8000d84a4bf4ab3af&quot;},
++    {file = &quot;docutils-0.16.tar.gz&quot;, hash = &quot;sha256:c2de3a60e9e7d07be26b7f2b00ca0309c207e06c100f9cc2a94931fc75a478fc&quot;},
++]
++entrypoints = [
++    {file = &quot;entrypoints-0.3-py2.py3-none-any.whl&quot;, hash = &quot;sha256:589f874b313739ad35be6e0cd7efde2a4e9b6fea91edcc34e58ecbb8dbe56d19&quot;},
++    {file = &quot;entrypoints-0.3.tar.gz&quot;, hash = &quot;sha256:c70dd71abe5a8c85e55e12c19bd91ccfeec11a6e99044204511f9ed547d48451&quot;},
++]
++feedgenerator = [
++    {file = &quot;feedgenerator-1.9.1-py3-none-any.whl&quot;, hash = &quot;sha256:a81d240a2c74a2ae80c393cfe374aff1a19ed3fe41a488eacc66edbe46d3f422&quot;},
++    {file = &quot;feedgenerator-1.9.1.tar.gz&quot;, hash = &quot;sha256:a28a5add781509390d1a6a52d017829853ee4bef1d2e7b4d5da0e9d1b395ce54&quot;},
++]
++flake8 = [
++    {file = &quot;flake8-3.7.9-py2.py3-none-any.whl&quot;, hash = &quot;sha256:49356e766643ad15072a789a20915d3c91dc89fd313ccd71802303fd67e4deca&quot;},
++    {file = &quot;flake8-3.7.9.tar.gz&quot;, hash = &quot;sha256:45681a117ecc81e870cbf1262835ae4af5e7a8b08e40b944a8a6e6b895914cfb&quot;},
++]
++future = [
++    {file = &quot;future-0.18.2.tar.gz&quot;, hash = &quot;sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d&quot;},
++]
++ghp-import = [
++    {file = &quot;ghp-import-0.5.5.tar.gz&quot;, hash = &quot;sha256:3e924ea720e4e1f82d56753db2154bfb86067472c5830732159c3a4c4fbc75d7&quot;},
++]
++htmlmin = [
++    {file = &quot;htmlmin-0.1.12.tar.gz&quot;, hash = &quot;sha256:50c1ef4630374a5d723900096a961cff426dff46b48f34d194a81bbe14eca178&quot;},
++]
++importlib-metadata = [
++    {file = &quot;importlib_metadata-1.6.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:2a688cbaa90e0cc587f1df48bdc97a6eadccdcd9c35fb3f976a09e3b5016d90f&quot;},
++    {file = &quot;importlib_metadata-1.6.0.tar.gz&quot;, hash = &quot;sha256:34513a8a0c4962bc66d35b359558fd8a5e10cd472d37aec5f66858addef32c1e&quot;},
++]
++jedi = [
++    {file = &quot;jedi-0.14.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:e07457174ef7cb2342ff94fa56484fe41cec7ef69b0059f01d3f812379cb6f7c&quot;},
++    {file = &quot;jedi-0.14.1.tar.gz&quot;, hash = &quot;sha256:53c850f1a7d3cfcd306cc513e2450a54bdf5cacd7604b74e42dd1f0758eaaf36&quot;},
++]
++jinja2 = [
++    {file = &quot;Jinja2-2.11.2-py2.py3-none-any.whl&quot;, hash = &quot;sha256:f0a4641d3cf955324a89c04f3d94663aa4d638abe8f733ecd3582848e1c37035&quot;},
++    {file = &quot;Jinja2-2.11.2.tar.gz&quot;, hash = &quot;sha256:89aab215427ef59c34ad58735269eb58b1a5808103067f7bb9d5836c651b3bb0&quot;},
++]
++joblib = [
++    {file = &quot;joblib-0.14.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:bdb4fd9b72915ffb49fde2229ce482dd7ae79d842ed8c2b4c932441495af1403&quot;},
++    {file = &quot;joblib-0.14.1.tar.gz&quot;, hash = &quot;sha256:0630eea4f5664c463f23fbf5dcfc54a2bc6168902719fa8e19daf033022786c8&quot;},
++]
++markdown = [
++    {file = &quot;Markdown-3.2.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:e4795399163109457d4c5af2183fbe6b60326c17cfdf25ce6e7474c6624f725d&quot;},
++    {file = &quot;Markdown-3.2.1.tar.gz&quot;, hash = &quot;sha256:90fee683eeabe1a92e149f7ba74e5ccdc81cd397bd6c516d93a8da0ef90b6902&quot;},
++]
++markupsafe = [
++    {file = &quot;MarkupSafe-1.1.1-cp27-cp27m-macosx_10_6_intel.whl&quot;, hash = &quot;sha256:09027a7803a62ca78792ad89403b1b7a73a01c8cb65909cd876f7fcebd79b161&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp27-cp27m-manylinux1_i686.whl&quot;, hash = &quot;sha256:e249096428b3ae81b08327a63a485ad0878de3fb939049038579ac0ef61e17e7&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp27-cp27m-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:500d4957e52ddc3351cabf489e79c91c17f6e0899158447047588650b5e69183&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp27-cp27m-win32.whl&quot;, hash = &quot;sha256:b2051432115498d3562c084a49bba65d97cf251f5a331c64a12ee7e04dacc51b&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp27-cp27m-win_amd64.whl&quot;, hash = &quot;sha256:98c7086708b163d425c67c7a91bad6e466bb99d797aa64f965e9d25c12111a5e&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp27-cp27mu-manylinux1_i686.whl&quot;, hash = &quot;sha256:cd5df75523866410809ca100dc9681e301e3c27567cf498077e8551b6d20e42f&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp27-cp27mu-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:43a55c2930bbc139570ac2452adf3d70cdbb3cfe5912c71cdce1c2c6bbd9c5d1&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp34-cp34m-macosx_10_6_intel.whl&quot;, hash = &quot;sha256:1027c282dad077d0bae18be6794e6b6b8c91d58ed8a8d89a89d59693b9131db5&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp34-cp34m-manylinux1_i686.whl&quot;, hash = &quot;sha256:62fe6c95e3ec8a7fad637b7f3d372c15ec1caa01ab47926cfdf7a75b40e0eac1&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp34-cp34m-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:88e5fcfb52ee7b911e8bb6d6aa2fd21fbecc674eadd44118a9cc3863f938e735&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp34-cp34m-win32.whl&quot;, hash = &quot;sha256:ade5e387d2ad0d7ebf59146cc00c8044acbd863725f887353a10df825fc8ae21&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp34-cp34m-win_amd64.whl&quot;, hash = &quot;sha256:09c4b7f37d6c648cb13f9230d847adf22f8171b1ccc4d5682398e77f40309235&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp35-cp35m-macosx_10_6_intel.whl&quot;, hash = &quot;sha256:79855e1c5b8da654cf486b830bd42c06e8780cea587384cf6545b7d9ac013a0b&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp35-cp35m-manylinux1_i686.whl&quot;, hash = &quot;sha256:c8716a48d94b06bb3b2524c2b77e055fb313aeb4ea620c8dd03a105574ba704f&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp35-cp35m-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:7c1699dfe0cf8ff607dbdcc1e9b9af1755371f92a68f706051cc8c37d447c905&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp35-cp35m-win32.whl&quot;, hash = &quot;sha256:6dd73240d2af64df90aa7c4e7481e23825ea70af4b4922f8ede5b9e35f78a3b1&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp35-cp35m-win_amd64.whl&quot;, hash = &quot;sha256:9add70b36c5666a2ed02b43b335fe19002ee5235efd4b8a89bfcf9005bebac0d&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp36-cp36m-macosx_10_6_intel.whl&quot;, hash = &quot;sha256:24982cc2533820871eba85ba648cd53d8623687ff11cbb805be4ff7b4c971aff&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp36-cp36m-manylinux1_i686.whl&quot;, hash = &quot;sha256:00bc623926325b26bb9605ae9eae8a215691f33cae5df11ca5424f06f2d1f473&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp36-cp36m-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:717ba8fe3ae9cc0006d7c451f0bb265ee07739daf76355d06366154ee68d221e&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp36-cp36m-win32.whl&quot;, hash = &quot;sha256:535f6fc4d397c1563d08b88e485c3496cf5784e927af890fb3c3aac7f933ec66&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp36-cp36m-win_amd64.whl&quot;, hash = &quot;sha256:b1282f8c00509d99fef04d8ba936b156d419be841854fe901d8ae224c59f0be5&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp37-cp37m-macosx_10_6_intel.whl&quot;, hash = &quot;sha256:8defac2f2ccd6805ebf65f5eeb132adcf2ab57aa11fdf4c0dd5169a004710e7d&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp37-cp37m-manylinux1_i686.whl&quot;, hash = &quot;sha256:46c99d2de99945ec5cb54f23c8cd5689f6d7177305ebff350a58ce5f8de1669e&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp37-cp37m-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:ba59edeaa2fc6114428f1637ffff42da1e311e29382d81b339c1817d37ec93c6&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp37-cp37m-win32.whl&quot;, hash = &quot;sha256:b00c1de48212e4cc9603895652c5c410df699856a2853135b3967591e4beebc2&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp37-cp37m-win_amd64.whl&quot;, hash = &quot;sha256:9bf40443012702a1d2070043cb6291650a0841ece432556f784f004937f0f32c&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp38-cp38-macosx_10_9_x86_64.whl&quot;, hash = &quot;sha256:6788b695d50a51edb699cb55e35487e430fa21f1ed838122d722e0ff0ac5ba15&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp38-cp38-manylinux1_i686.whl&quot;, hash = &quot;sha256:cdb132fc825c38e1aeec2c8aa9338310d29d337bebbd7baa06889d09a60a1fa2&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp38-cp38-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:13d3144e1e340870b25e7b10b98d779608c02016d5184cfb9927a9f10c689f42&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp38-cp38-win32.whl&quot;, hash = &quot;sha256:596510de112c685489095da617b5bcbbac7dd6384aeebeda4df6025d0256a81b&quot;},
++    {file = &quot;MarkupSafe-1.1.1-cp38-cp38-win_amd64.whl&quot;, hash = &quot;sha256:e8313f01ba26fbbe36c7be1966a7b7424942f670f38e666995b88d012765b9be&quot;},
++    {file = &quot;MarkupSafe-1.1.1.tar.gz&quot;, hash = &quot;sha256:29872e92839765e546828bb7754a68c418d927cd064fd4708fab9fe9c8bb116b&quot;},
++]
++mccabe = [
++    {file = &quot;mccabe-0.6.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42&quot;},
++    {file = &quot;mccabe-0.6.1.tar.gz&quot;, hash = &quot;sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f&quot;},
++]
++parso = [
++    {file = &quot;parso-0.7.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:158c140fc04112dc45bca311633ae5033c2c2a7b732fa33d0955bad8152a8dd0&quot;},
++    {file = &quot;parso-0.7.0.tar.gz&quot;, hash = &quot;sha256:908e9fae2144a076d72ae4e25539143d40b8e3eafbaeae03c1bfe226f4cdf12c&quot;},
++]
++pelican = [
++    {file = &quot;pelican-4.2.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:656d8ff9f778951f4e317c9e6530e92b02698c5961ebf019c583775a30f857f6&quot;},
++    {file = &quot;pelican-4.2.0.tar.gz&quot;, hash = &quot;sha256:be7ea9a09311374322b5579c88975ae003409e40c833e761780a0d0dbd84e756&quot;},
++]
++pelican-minify = [
++    {file = &quot;pelican-minify-0.9.tar.gz&quot;, hash = &quot;sha256:a0ffa9b1f15089bc4aec4692c5feba87356d427a7946ffd8b6222ac4c7758773&quot;},
++    {file = &quot;pelican_minify-0.9-py2.py3-none-any.whl&quot;, hash = &quot;sha256:fcefce477d4a24c8972ec8871738100f144e329201ab2b45aab8b5d3b7ba8e65&quot;},
++]
++pluggy = [
++    {file = &quot;pluggy-0.13.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:966c145cd83c96502c3c3868f50408687b38434af77734af1e9ca461a4081d2d&quot;},
++    {file = &quot;pluggy-0.13.1.tar.gz&quot;, hash = &quot;sha256:15b2acde666561e1298d71b523007ed7364de07029219b604cf808bfa1c765b0&quot;},
++]
++pycodestyle = [
++    {file = &quot;pycodestyle-2.5.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:95a2219d12372f05704562a14ec30bc76b05a5b297b21a5dfe3f6fac3491ae56&quot;},
++    {file = &quot;pycodestyle-2.5.0.tar.gz&quot;, hash = &quot;sha256:e40a936c9a450ad81df37f549d676d127b1b66000a6c500caa2b085bc0ca976c&quot;},
++]
++pyflakes = [
++    {file = &quot;pyflakes-2.1.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:17dbeb2e3f4d772725c777fabc446d5634d1038f234e77343108ce445ea69ce0&quot;},
++    {file = &quot;pyflakes-2.1.1.tar.gz&quot;, hash = &quot;sha256:d976835886f8c5b31d47970ed689944a0262b5f3afa00a5a7b4dc81e5449f8a2&quot;},
++]
++pygments = [
++    {file = &quot;Pygments-2.6.1-py3-none-any.whl&quot;, hash = &quot;sha256:ff7a40b4860b727ab48fad6360eb351cc1b33cbf9b15a0f689ca5353e9463324&quot;},
++    {file = &quot;Pygments-2.6.1.tar.gz&quot;, hash = &quot;sha256:647344a061c249a3b74e230c739f434d7ea4d8b1d5f3721bc0f3558049b38f44&quot;},
++]
++python-dateutil = [
++    {file = &quot;python-dateutil-2.8.1.tar.gz&quot;, hash = &quot;sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c&quot;},
++    {file = &quot;python_dateutil-2.8.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a&quot;},
++]
++python-jsonrpc-server = [
++    {file = &quot;python-jsonrpc-server-0.3.4.tar.gz&quot;, hash = &quot;sha256:c73bf5495c9dd4d2f902755bedeb6da5afe778e0beee82f0e195c4655352fe37&quot;},
++    {file = &quot;python_jsonrpc_server-0.3.4-py3-none-any.whl&quot;, hash = &quot;sha256:1f85f75f37f923149cc0aa078474b6df55b708e82ed819ca8846a65d7d0ada7f&quot;},
++]
++python-language-server = [
++    {file = &quot;python-language-server-0.28.3.tar.gz&quot;, hash = &quot;sha256:bf172c9c21fc5c2baa293155ddcb27712905f1ea1ebc0ba90985f7fd13039550&quot;},
++]
++pytz = [
++    {file = &quot;pytz-2019.3-py2.py3-none-any.whl&quot;, hash = &quot;sha256:1c557d7d0e871de1f5ccd5833f60fb2550652da6be2693c1e02300743d21500d&quot;},
++    {file = &quot;pytz-2019.3.tar.gz&quot;, hash = &quot;sha256:b02c06db6cf09c12dd25137e563b31700d3b80fcc4ad23abb7a315f2789819be&quot;},
++]
++six = [
++    {file = &quot;six-1.14.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c&quot;},
++    {file = &quot;six-1.14.0.tar.gz&quot;, hash = &quot;sha256:236bdbdce46e6e6a3d61a337c0f8b763ca1e8717c03b369e87a7ec7ce1319c0a&quot;},
++]
++smartypants = [
++    {file = &quot;smartypants-2.0.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:8db97f7cbdf08d15b158a86037cd9e116b4cf37703d24e0419a0d64ca5808f0d&quot;},
++]
++typogrify = [
++    {file = &quot;typogrify-2.0.7.tar.gz&quot;, hash = &quot;sha256:8be4668cda434163ce229d87ca273a11922cb1614cb359970b7dc96eed13cb38&quot;},
++]
++ujson = [
++    {file = &quot;ujson-1.35.tar.gz&quot;, hash = &quot;sha256:f66073e5506e91d204ab0c614a148d5aa938bdbf104751be66f8ad7a222f5f86&quot;},
++]
++unidecode = [
++    {file = &quot;Unidecode-1.1.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:1d7a042116536098d05d599ef2b8616759f02985c85b4fef50c78a5aaf10822a&quot;},
++    {file = &quot;Unidecode-1.1.1.tar.gz&quot;, hash = &quot;sha256:2b6aab710c2a1647e928e36d69c21e76b453cd455f4e2621000e54b2a9b8cce8&quot;},
++]
++zipp = [
++    {file = &quot;zipp-3.1.0-py3-none-any.whl&quot;, hash = &quot;sha256:aa36550ff0c0b7ef7fa639055d797116ee891440eac1a56f378e2d3179e0320b&quot;},
++    {file = &quot;zipp-3.1.0.tar.gz&quot;, hash = &quot;sha256:c599e4d75c98f6798c509911d08a22e6c021d074469042177c8c86fb92eefd96&quot;},
++]
+diff --git a/pyproject.toml b/pyproject.toml
+index 09a8dbb..a3fe870 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -2,7 +2,7 @@
+ name = &quot;imnhan.com&quot;
+ version = &quot;0.1.0&quot;
+ description = &quot;&quot;
+-authors = [&quot;nhanb &lt;nhan@nerdyweekly.com&gt;&quot;]
++authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ 
+ [tool.poetry.dependencies]
+ python = &quot;^3.7&quot;
+@@ -11,10 +11,6 @@ markdown = &quot;^3.1&quot;
+ typogrify = &quot;^2.0&quot;
+ pelican-minify = &quot;^0.9.0&quot;
+ 
+-# temporary workaround for
+-# https://github.com/sdispater/poetry/issues/1194#issuecomment-514974670
+-docutils = &quot;=0.15&quot;
+-
+ [tool.poetry.dev-dependencies]
+ flake8 = &quot;^3.7&quot;
+ ghp-import = &quot;^0.5.5&quot;
+</pre></body></html>

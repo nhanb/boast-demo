@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e8c12dbf46] update readme | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / e8c12dbf46</strong><hr><pre>commit e8c12dbf464bb1f57f916ae7ef4153c4ac5f3758
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri May 29 16:09:54 2020 +0700
+
+    update readme
+
+diff --git a/README.md b/README.md
+index c6a1f4d..177e45f 100644
+--- a/README.md
++++ b/README.md
+@@ -7,14 +7,20 @@
+ 
+ ![](https://junk.imnhan.com/mcross.png)
+ 
+-Or check out the demo video: https://junk.imnhan.com/mcross.mp4
+-
+-Surfing plaintext and gemini content is already working well.
++Surfing plaintext and gemini content is already working well. The catch is it
++currently doesn&#39;t support downloading binary content and TOFU TLS verification.
+ See feature checklist below for more details.
+ 
++See my [blog post][1] for the rationale behind this project.
++
+ 
+ # Installation
+ 
++You need python 3.7 or higher. McRoss also uses `idlelib` which is supposed to
++be included in the standard library but some linux distros split it into a
++separate package which you&#39;ll need to install manually. I know at least [Ubuntu
++and Void Linux][2] do this.
++
+ ```sh
+ pip install mcross
+ mcross
+@@ -26,13 +32,6 @@ # Installation
+ 
+ # Development
+ 
+-Deps:
+-
+-- python3.7+
+-- idlelib (it&#39;s supposed to be in the standard lib but Ubuntu for example
+-  splits it into a separate package)
+-- curio - for async I/O so that it doesn&#39;t block the UI.
+-
+ To get started:
+ 
+ ```sh
+@@ -54,10 +53,10 @@ # Feature checklist
+ - [x] non-blocking I/O using curio
+ - [x] more visual indicators: waiting cursor, status bar
+ - [x] parse gemini&#39;s advanced line types
+-- [ ] TOFU TLS (right now it accepts whatever)
+ - [ ] properly handle mime types (gemini/plaintext/binary)
+ - [ ] configurable document styling
+ - [ ] human-friendly distribution
++- [ ] TOFU TLS (right now it always accepts self-signed certs)
+ 
+ Long term high-level goals:
+ 
+@@ -94,3 +93,6 @@ ## Newline
+ 
+ Spec says a newline should be \r\n but the server running
+ gemini.circumlunar.space just uses \n every time.
++
++[1]: https://hi.imnhan.com/posts/introducing-mcross-a-minimal-gemini-browser/
++[2]: https://todo.sr.ht/~nhanb/mcross/3
+</pre></body></html>

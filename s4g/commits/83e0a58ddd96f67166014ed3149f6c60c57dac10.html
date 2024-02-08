@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[83e0a58ddd] refactor includes; custom template example | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 83e0a58ddd</strong><hr><pre>commit 83e0a58ddd96f67166014ed3149f6c60c57dac10
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jul 11 15:24:48 2023 +0700
+
+    refactor includes; custom template example
+
+diff --git a/main.go b/main.go
+index cb5f423..a3bdc5b 100644
+--- a/main.go
++++ b/main.go
+@@ -239,6 +239,7 @@ func WriteHomePage(
+ 		template.ParseFS(
+ 			fsys,
+ 			&quot;_theme/base.tmpl&quot;,
++			&quot;_theme/includes.tmpl&quot;,
+ 			&quot;_theme/home.tmpl&quot;,
+ 		),
+ 	)
+@@ -286,7 +287,11 @@ func findArticles(fsys writablefs.FS) (result []Article) {
+ 		}
+ 
+ 		meta := ArticleMetadata{
+-			Templates:  []string{&quot;$_theme/base.tmpl&quot;, &quot;$_theme/post.tmpl&quot;},
++			Templates: []string{
++				&quot;$_theme/base.tmpl&quot;,
++				&quot;$_theme/includes.tmpl&quot;,
++				&quot;$_theme/post.tmpl&quot;,
++			},
+ 			ShowInFeed: true,
+ 			ShowInNav:  false,
+ 		}
+diff --git a/theme/base.css b/theme/base.css
+index f1b6d99..05ffb70 100644
+--- a/theme/base.css
++++ b/theme/base.css
+@@ -7,7 +7,7 @@ html {
+ p,
+ ul,
+ ol {
+-  line-height: 1.3rem;
++  line-height: 1.35rem;
+ }
+ 
+ footer {
+diff --git a/theme/base.tmpl b/theme/base.tmpl
+index a1f0d72..6edbe18 100644
+--- a/theme/base.tmpl
++++ b/theme/base.tmpl
+@@ -13,13 +13,6 @@
+ &lt;body&gt;
+ {{template &quot;body&quot; .}}
+ 
+-{{- if .Site.ShowFooter}}
+-&lt;footer&gt;
+-© {{if eq .StartYear .Now.Year}}{{.StartYear}}{{else}}{{.StartYear}}–{{.Now.Year}}{{end}} {{.Site.AuthorName}}&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+-&lt;/footer&gt;
+-{{- end}}
+-
+ &lt;/body&gt;
+ 
+ &lt;/html&gt;
+diff --git a/theme/home.tmpl b/theme/home.tmpl
+index 295c1c7..a928083 100644
+--- a/theme/home.tmpl
++++ b/theme/home.tmpl
+@@ -61,4 +61,6 @@ ul {
+   /*font-size: 1.1rem;*/
+ }
+ &lt;/style&gt;
++
++{{template &quot;footer&quot; .}}
+ {{end}}
+diff --git a/theme/includes.tmpl b/theme/includes.tmpl
+new file mode 100644
+index 0000000..a43ffda
+--- /dev/null
++++ b/theme/includes.tmpl
+@@ -0,0 +1,30 @@
++{{define &quot;navbar&quot;}}
++&lt;link rel=&quot;stylesheet&quot; href=&quot;{{.Site.HomePath}}_theme/navbar.css&quot;&gt;
++&lt;nav&gt;
++  &lt;a href=&quot;{{.Site.HomePath}}&quot;&gt;Home&lt;/a&gt;
++  {{- range .ArticlesInNav}}
++  &lt;a href=&quot;{{$.Site.HomePath}}{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
++  {{- end}}
++
++  {{- if not .Post.PostedAt.IsZero}}
++  &lt;span class=&quot;posted-on&quot;&gt;
++    Posted on
++    &lt;time datetime=&quot;{{.Post.PostedAt.Local.Format &quot;2006-01-02&quot;}}&quot;&gt;
++        {{.Post.PostedAt.Local.Format &quot;Monday, 02 Jan 2006&quot;}}
++    &lt;/time&gt;
++  &lt;/span&gt;
++  {{- end}}
++
++&lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
++{{end}}
++
++
++{{define &quot;footer&quot;}}
++{{- if .Site.ShowFooter -}}
++&lt;footer&gt;
++© {{if eq .StartYear .Now.Year}}{{.StartYear}}{{else}}{{.StartYear}}–{{.Now.Year}}{{end}} {{.Site.AuthorName}}&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
++&lt;/footer&gt;
++{{- end -}}
++{{- end}}
+diff --git a/theme/post.css b/theme/navbar.css
+similarity index 62%
+rename from theme/post.css
+rename to theme/navbar.css
+index e1b7a1c..3a7107b 100644
+--- a/theme/post.css
++++ b/theme/navbar.css
+@@ -2,7 +2,11 @@ nav &gt; a {
+   margin-right: 0.5rem;
+ }
+ 
+-.posted-on {
++nav &gt; .posted-on {
+   float: right;
+   font-style: italic;
+ }
++
++.nav-hr {
++  clear: both;
++}
+diff --git a/theme/post.tmpl b/theme/post.tmpl
+index 88f0eff..6878886 100644
+--- a/theme/post.tmpl
++++ b/theme/post.tmpl
+@@ -1,30 +1,13 @@
+-{{- define &quot;head&quot;}}
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.Site.HomePath}}_theme/post.css&quot;&gt;
+-{{- end}}
++{{- define &quot;head&quot;}}{{- end}}
+ 
+ {{define &quot;body&quot;}}
+-&lt;nav&gt;
+-  &lt;a href=&quot;{{.Site.HomePath}}&quot;&gt;Home&lt;/a&gt;
+-  {{- range .ArticlesInNav}}
+-  &lt;a href=&quot;{{$.Site.HomePath}}{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+-  {{- end}}
+-
+-  {{- if not .Post.PostedAt.IsZero}}
+-  &lt;span class=&quot;posted-on&quot;&gt;
+-    Posted on
+-    &lt;time datetime=&quot;{{.Post.PostedAt.Local.Format &quot;2006-01-02&quot;}}&quot;&gt;
+-        {{.Post.PostedAt.Local.Format &quot;Monday, 02 Jan 2006&quot;}}
+-    &lt;/time&gt;
+-  &lt;/span&gt;
+-  {{- end}}
+-
+-&lt;/nav&gt;
+ 
+-&lt;hr&gt;
++{{- template &quot;navbar&quot; .}}
+ 
+-&lt;h1 class=&quot;post-title&quot;&gt;{{.Post.Title}}&lt;/h1&gt;
+-&lt;content&gt;
++&lt;main&gt;
++&lt;h1&gt;{{.Post.Title}}&lt;/h1&gt;
+ {{.Content}}
+-&lt;/content&gt;
++&lt;/main&gt;
+ 
++{{template &quot;footer&quot; .}}
+ {{- end}}
+diff --git a/www/about/index.html b/www/about/index.html
+index 823e3b3..0ba1993 100644
+--- a/www/about/index.html
++++ b/www/about/index.html
+@@ -7,21 +7,21 @@
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/post.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+ 
+ &lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
+ 
+-&lt;hr&gt;
+ 
+-&lt;h1 class=&quot;post-title&quot;&gt;About&lt;/h1&gt;
+-&lt;content&gt;
++&lt;main&gt;
++&lt;h1&gt;About&lt;/h1&gt;
+ &lt;section id=&quot;About-this-site&quot;&gt;
+ &lt;h2&gt;About this site&lt;/h2&gt;
+ &lt;p&gt;It’s a website.&lt;/p&gt;
+@@ -32,7 +32,8 @@ &lt;h2&gt;No really&lt;/h2&gt;
+ &lt;a href=&quot;https://motherfuckingwebsite.com/&quot;&gt;mf-ing website&lt;/a&gt;.&lt;/p&gt;
+ &lt;/section&gt;
+ 
+-&lt;/content&gt;
++&lt;/main&gt;
++
+ &lt;footer&gt;
+ © 2008–2023 Coolio McCool&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+diff --git a/www/index.html b/www/index.html
+index 727f37c..5d0ee5d 100644
+--- a/www/index.html
++++ b/www/index.html
+@@ -75,6 +75,7 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
+ 
++
+ &lt;/body&gt;
+ 
+ &lt;/html&gt;
+diff --git a/www/mfws.html b/www/mfws.html
+index 26d4a8d..cc7abef 100644
+--- a/www/mfws.html
++++ b/www/mfws.html
+@@ -7,11 +7,11 @@
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/post.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+@@ -23,11 +23,11 @@
+   &lt;/span&gt;
+ 
+ &lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
+ 
+-&lt;hr&gt;
+ 
+-&lt;h1 class=&quot;post-title&quot;&gt;This is a motherfucking website.&lt;/h1&gt;
+-&lt;content&gt;
++&lt;main&gt;
++&lt;h1&gt;This is a motherfucking website.&lt;/h1&gt;
+ &lt;p&gt;And it’s fucking perfect.&lt;/p&gt;
+ &lt;section id=&quot;Seriously-what-the-fuck-else-do-you-want&quot;&gt;
+ &lt;h2&gt;Seriously, what the fuck else do you want?&lt;/h2&gt;
+@@ -119,7 +119,8 @@ &lt;h2&gt;Epilogue&lt;/h2&gt;
+ &lt;p&gt;Lifted from &lt;a href=&quot;https://motherfuckingwebsite.com&quot;&gt;https://motherfuckingwebsite.com&lt;/a&gt;.&lt;/p&gt;
+ &lt;/section&gt;
+ 
+-&lt;/content&gt;
++&lt;/main&gt;
++
+ &lt;footer&gt;
+ © 2008–2023 Coolio McCool&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+diff --git a/www/scale/index.dj b/www/scale/index.dj
+index 2b74faa..4adeb61 100644
+--- a/www/scale/index.dj
++++ b/www/scale/index.dj
+@@ -1,5 +1,6 @@
+ Title: I&#39;m Going To Scale My Foot Up Your Ass
+ PostedAt: 2008-04-24
++Templates: $_theme/base.tmpl, $_theme/includes.tmpl, scale.tmpl
+ ---
+ 
+ ![scaleboner](bill.jpg)
+@@ -71,11 +72,6 @@ Shut up about scalability, no one is using your app anyway.
+ 
+ ``` =html
+ &lt;style&gt;
+-h2 { font-size: 1em; }
+-body {
+-    background: linear-gradient(white, lightgrey);
+-    font-family: sans-serif;
+-}
+ img[alt=&quot;scaleboner&quot;] { float: right; }
+ &lt;/style&gt;
+ ```
+diff --git a/www/scale/index.html b/www/scale/index.html
+index b9ee5b8..5c8bc7c 100644
+--- a/www/scale/index.html
++++ b/www/scale/index.html
+@@ -7,11 +7,11 @@
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/post.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+-
++&lt;div class=&quot;navbar-container&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+@@ -23,12 +23,13 @@
+   &lt;/span&gt;
+ 
+ &lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
++&lt;/div&gt;
+ 
+-&lt;hr&gt;
+-
+-&lt;h1 class=&quot;post-title&quot;&gt;I&amp;#39;m Going To Scale My Foot Up Your Ass&lt;/h1&gt;
+-&lt;content&gt;
+-&lt;p&gt;&lt;img alt=&quot;scaleboner&quot; src=&quot;bill.jpg&quot;&gt;&lt;/p&gt;
++&lt;div class=&quot;main-container&quot;&gt;
++  &lt;main&gt;
++  &lt;h1&gt;I&amp;#39;m Going To Scale My Foot Up Your Ass&lt;/h1&gt;
++  &lt;p&gt;&lt;img alt=&quot;scaleboner&quot; src=&quot;bill.jpg&quot;&gt;&lt;/p&gt;
+ &lt;p&gt;&lt;em&gt;by &lt;a href=&quot;http://widgetsandshit.com/teddziuba/2008/04/im-going-to-scale-my-foot-up-y.html&quot;&gt;Ted Dziuba&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
+ &lt;p&gt;Engineers love to talk about scalability.  It makes us feel like the bad ass,
+ dick-swingin’ motherfuckers that we wish we could be.&lt;/p&gt;
+@@ -85,20 +86,77 @@ &lt;h2&gt;Choosing Technology Don’t Mean Shit If You Don’t Know How To Use It&lt;/h2&gt;
+ &lt;h2&gt;tl;dr&lt;/h2&gt;
+ &lt;p&gt;Shut up about scalability, no one is using your app anyway.&lt;/p&gt;
+ &lt;style&gt;
+-h2 { font-size: 1em; }
+-body {
+-background: linear-gradient(white, lightgrey);
+-font-family: sans-serif;
+-}
+ img[alt=&quot;scaleboner&quot;] { float: right; }
+ &lt;/style&gt;
+ &lt;/section&gt;
+ 
+-&lt;/content&gt;
++  &lt;/main&gt;
++&lt;/div&gt;
++
++&lt;div class=&quot;footer-container&quot;&gt;
+ &lt;footer&gt;
+ © 2008–2023 Coolio McCool&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+ &lt;/footer&gt;
++&lt;/div&gt;
++
++&lt;style&gt;
++html, body {
++  margin: 0;
++  padding: 0;
++}
++html {
++  max-width: none;
++  font-family: sans-serif;
++}
++nav, main, footer {
++  margin: 0 auto;
++  max-width: 50rem;
++}
++
++.main-container, .navbar-container, .footer-container {
++  margin: 0;
++  padding: 0.5rem 1rem;
++}
++.main-container {
++  padding-top: 0;
++}
++
++.nav-hr {
++  border: none;
++  height:0;
++  margin: 0;
++  padding: 0;
++}
++
++.navbar-container, .footer-container {
++  background: linear-gradient(#ba4d44, #a92015);
++  text-shadow: 1px 1px #252626;
++  color: white;
++}
++nav a, footer a {
++  color: inherit;
++}
++
++.main-container {
++  background: linear-gradient(lightgrey, white);
++  padding-top: 0.1rem;
++}
++
++main {
++  background: linear-gradient(white, #dcdcdc, #dcdcdc);
++  border: 1px solid gray;
++  padding: 0 1rem;
++  background-color: white;
++  margin: 0.5rem auto;
++  box-shadow: 1px 1px 3px #6F6F6F;
++}
++
++
++h2 {
++  font-size: 1em;
++}
++&lt;/style&gt;
+ 
+ &lt;/body&gt;
+ 
+diff --git a/www/scale/scale.tmpl b/www/scale/scale.tmpl
+new file mode 100644
+index 0000000..59ee909
+--- /dev/null
++++ b/www/scale/scale.tmpl
+@@ -0,0 +1,77 @@
++{{- define &quot;head&quot;}}{{end}}
++
++{{- define &quot;body&quot; -}}
++
++&lt;div class=&quot;navbar-container&quot;&gt;
++{{- template &quot;navbar&quot; . -}}
++&lt;/div&gt;
++
++&lt;div class=&quot;main-container&quot;&gt;
++  &lt;main&gt;
++  &lt;h1&gt;{{.Post.Title}}&lt;/h1&gt;
++  {{.Content}}
++  &lt;/main&gt;
++&lt;/div&gt;
++
++&lt;div class=&quot;footer-container&quot;&gt;
++{{template &quot;footer&quot; .}}
++&lt;/div&gt;
++
++&lt;style&gt;
++html, body {
++  margin: 0;
++  padding: 0;
++}
++html {
++  max-width: none;
++  font-family: sans-serif;
++}
++nav, main, footer {
++  margin: 0 auto;
++  max-width: 50rem;
++}
++
++.main-container, .navbar-container, .footer-container {
++  margin: 0;
++  padding: 0.5rem 1rem;
++}
++.main-container {
++  padding-top: 0;
++}
++
++.nav-hr {
++  border: none;
++  height:0;
++  margin: 0;
++  padding: 0;
++}
++
++.navbar-container, .footer-container {
++  background: linear-gradient(#ba4d44, #a92015);
++  text-shadow: 1px 1px #252626;
++  color: white;
++}
++nav a, footer a {
++  color: inherit;
++}
++
++.main-container {
++  background: linear-gradient(lightgrey, white);
++  padding-top: 0.1rem;
++}
++
++main {
++  background: linear-gradient(white, #dcdcdc, #dcdcdc);
++  border: 1px solid gray;
++  padding: 0 1rem;
++  background-color: white;
++  margin: 0.5rem auto;
++  box-shadow: 1px 1px 3px #6F6F6F;
++}
++
++
++h2 {
++  font-size: 1em;
++}
++&lt;/style&gt;
++{{- end}}
+</pre></body></html>

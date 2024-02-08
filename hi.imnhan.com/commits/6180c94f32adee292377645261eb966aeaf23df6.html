@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[6180c94f32] gather s4g files into 1 place | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 6180c94f32</strong><hr><pre>commit 6180c94f32adee292377645261eb966aeaf23df6
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 21 19:58:31 2023 +0700
+
+    gather s4g files into 1 place
+
+diff --git a/manifest.txt b/_s4g/manifest
+similarity index 100%
+rename from manifest.txt
+rename to _s4g/manifest
+diff --git a/redirects.txt b/_s4g/redirects.txt
+similarity index 100%
+rename from redirects.txt
+rename to _s4g/redirects.txt
+diff --git a/website.s4g b/_s4g/settings.txt
+similarity index 100%
+rename from website.s4g
+rename to _s4g/settings.txt
+diff --git a/_theme/base.css b/_s4g/theme/base.css
+similarity index 100%
+rename from _theme/base.css
+rename to _s4g/theme/base.css
+diff --git a/_theme/base.tmpl b/_s4g/theme/base.tmpl
+similarity index 85%
+rename from _theme/base.tmpl
+rename to _s4g/theme/base.tmpl
+index 22971ce..3dd855a 100644
+--- a/_theme/base.tmpl
++++ b/_s4g/theme/base.tmpl
+@@ -6,7 +6,7 @@
+   &lt;title&gt;{{if .Title}}{{.Title}} | {{end}}{{ .Site.Name -}}&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;{{.Feed}}&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.Site.Root}}_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.ThemePath}}/base.css&quot;&gt;
+   {{- template &quot;head&quot; .}}
+ &lt;/head&gt;
+ 
+diff --git a/_theme/feed.svg b/_s4g/theme/feed.svg
+similarity index 100%
+rename from _theme/feed.svg
+rename to _s4g/theme/feed.svg
+diff --git a/_theme/home.tmpl b/_s4g/theme/home.tmpl
+similarity index 92%
+rename from _theme/home.tmpl
+rename to _s4g/theme/home.tmpl
+index 8938254..394df5a 100644
+--- a/_theme/home.tmpl
++++ b/_s4g/theme/home.tmpl
+@@ -13,7 +13,7 @@
+   &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+ {{- end}}
+   &lt;a class=&quot;feed-link&quot; href=&quot;{{.Feed}}&quot;&gt;
+-    &lt;img src=&quot;{{.Site.Root}}_theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
++    &lt;img src=&quot;{{.ThemePath}}/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
+   &lt;/a&gt;
+ &lt;/div&gt;
+ 
+diff --git a/_theme/includes.tmpl b/_s4g/theme/includes.tmpl
+similarity index 91%
+rename from _theme/includes.tmpl
+rename to _s4g/theme/includes.tmpl
+index aa3130b..f4c14b8 100644
+--- a/_theme/includes.tmpl
++++ b/_s4g/theme/includes.tmpl
+@@ -1,5 +1,5 @@
+ {{define &quot;navbar&quot;}}
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;{{.Site.Root}}_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;{{.ThemePath}}/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   {{- range .ArticlesInNav}}
+   &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+diff --git a/_theme/navbar.css b/_s4g/theme/navbar.css
+similarity index 100%
+rename from _theme/navbar.css
+rename to _s4g/theme/navbar.css
+diff --git a/_theme/post.tmpl b/_s4g/theme/post.tmpl
+similarity index 100%
+rename from _theme/post.tmpl
+rename to _s4g/theme/post.tmpl
+diff --git a/about/index.html b/about/index.html
+index 2859fbb..c02cb4f 100644
+--- a/about/index.html
++++ b/about/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;About | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/chromebook/index.html b/chromebook/index.html
+index ed57877..d8f3b76 100644
+--- a/chromebook/index.html
++++ b/chromebook/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Acer Chromebook Spin 713 &amp;#34;Voxel&amp;#34;: an adequate Crostini device, a buggy Linux laptop | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/cool/index.html b/cool/index.html
+index eadd880..c4b15ef 100644
+--- a/cool/index.html
++++ b/cool/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;&amp;#34;Have you built anything cool?&amp;#34; | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/custom-theme/index.html b/custom-theme/index.html
+index d34f6a4..89fe4d0 100644
+--- a/custom-theme/index.html
++++ b/custom-theme/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Look ma, no stock theme! | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/fcitx/index.html b/fcitx/index.html
+index 862b287..33f6506 100644
+--- a/fcitx/index.html
++++ b/fcitx/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Dẹp ibus-unikey đi, dùng fcitx-unikey nhé! | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/fightstick-1/index.html b/fightstick-1/index.html
+index 9eb1729..982074e 100644
+--- a/fightstick-1/index.html
++++ b/fightstick-1/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;My first DIY fightstick: Part 1 | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/fightstick-2/index.html b/fightstick-2/index.html
+index 9314d18..0af0db6 100644
+--- a/fightstick-2/index.html
++++ b/fightstick-2/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;My first DIY fightstick: Part 2 | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/go-stack/index.html b/go-stack/index.html
+index 06e7768..0f3693f 100644
+--- a/go-stack/index.html
++++ b/go-stack/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Go, Postgres, Caddy, systemd: a simple, highly portable, Docker-free web stack | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/hdviet/index.html b/hdviet/index.html
+index e5dafbe..e65724f 100644
+--- a/hdviet/index.html
++++ b/hdviet/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;How I bypassed my university&amp;#39;s domain blocker to watch movies on hdviet.com | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/ideas.html b/ideas.html
+index 7c9f4f4..f6a14cd 100644
+--- a/ideas.html
++++ b/ideas.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Potential project ideas | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/index.dj b/index.dj
+index 6ce56a8..d75a6e5 100644
+--- a/index.dj
++++ b/index.dj
+@@ -1,4 +1,4 @@
+ Title: Home
+ ShowInFeed: false
+-Templates: $_theme/base.tmpl, $_theme/includes.tmpl, $_theme/home.tmpl
++Templates: $base.tmpl, $includes.tmpl, $home.tmpl
+ ---
+diff --git a/index.html b/index.html
+index 35a4b6c..8508b37 100644
+--- a/index.html
++++ b/index.html
+@@ -6,7 +6,7 @@
+   &lt;title&gt;Home | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+@@ -23,7 +23,7 @@ &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;
+-    &lt;img src=&quot;/_theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
++    &lt;img src=&quot;/_s4g/theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
+   &lt;/a&gt;
+ &lt;/div&gt;
+ 
+diff --git a/linux-automation/index.html b/linux-automation/index.html
+index 95a49d4..12b6177 100644
+--- a/linux-automation/index.html
++++ b/linux-automation/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Why I use Linux: Automation | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/manjaro-xfce/index.html b/manjaro-xfce/index.html
+index a29c7fa..64a598d 100644
+--- a/manjaro-xfce/index.html
++++ b/manjaro-xfce/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;What I did after installing Manjaro xfce | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/mcross/index.html b/mcross/index.html
+index e3ffc3b..670ef4f 100644
+--- a/mcross/index.html
++++ b/mcross/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Introducing McRoss—a minimal gemini browser | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/node-webkit/index.html b/node-webkit/index.html
+index 8317076..5634985 100644
+--- a/node-webkit/index.html
++++ b/node-webkit/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Setting up your development environment for a node-webkit project | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/notes.html b/notes.html
+index 5bba860..cd82a1b 100644
+--- a/notes.html
++++ b/notes.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Random notes | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/pathogen-vs-vundle/index.html b/pathogen-vs-vundle/index.html
+index 90eda2b..b4947a9 100644
+--- a/pathogen-vs-vundle/index.html
++++ b/pathogen-vs-vundle/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Modern vim plugin management: Pathogen vs Vundle | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/petition-fraud/index.html b/petition-fraud/index.html
+index cb0ef90..88f5ce1 100644
+--- a/petition-fraud/index.html
++++ b/petition-fraud/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;I did NOT sign that online petition! | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/pippable-webapp/index.html b/pippable-webapp/index.html
+index 8fa707e..476913c 100644
+--- a/pippable-webapp/index.html
++++ b/pippable-webapp/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;I made my python webapp installable via pip | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/projects/index.html b/projects/index.html
+index 7850620..59fc853 100644
+--- a/projects/index.html
++++ b/projects/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Projects | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/pyqt5/index.html b/pyqt5/index.html
+index e1f6e9c..eebca4e 100644
+--- a/pyqt5/index.html
++++ b/pyqt5/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;How to install PyQt5 on a virtualenv on Ubuntu 14.04 | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/pytaku-old/index.html b/pytaku-old/index.html
+index bab4cf9..7dc24db 100644
+--- a/pytaku-old/index.html
++++ b/pytaku-old/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Introducing Pytaku—the only online manga reader you&amp;#39;ll ever need | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/rmit-wifi/index.html b/rmit-wifi/index.html
+index af4cdda..2cac2a7 100644
+--- a/rmit-wifi/index.html
++++ b/rmit-wifi/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Fix RMIT wi-fi issue in Ubuntu 13.04 and variants | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/sqlite-python/index.html b/sqlite-python/index.html
+index 385fcfe..e89d713 100644
+--- a/sqlite-python/index.html
++++ b/sqlite-python/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Working with SQLite in Python without an ORM or migration framework | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/stepmania-pad/index.html b/stepmania-pad/index.html
+index f882e33..2549e61 100644
+--- a/stepmania-pad/index.html
++++ b/stepmania-pad/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Simplest possible stepmania soft-to-hard pad mod | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/tmux-italics/index.html b/tmux-italics/index.html
+index 73f4e57..7e82c3e 100644
+--- a/tmux-italics/index.html
++++ b/tmux-italics/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Enable italic text inside vim inside tmux inside gnome-terminal | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/ubuntu-programs/index.html b/ubuntu-programs/index.html
+index f843793..1b937b0 100644
+--- a/ubuntu-programs/index.html
++++ b/ubuntu-programs/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Installing programs in Ubuntu | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/video-streaming-1/index.html b/video-streaming-1/index.html
+index f4e78a8..af37a46 100644
+--- a/video-streaming-1/index.html
++++ b/video-streaming-1/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Towards an acceptable video playing experience | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/video-streaming-2/index.html b/video-streaming-2/index.html
+index dad7e5d..065df2d 100644
+--- a/video-streaming-2/index.html
++++ b/video-streaming-2/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Streaming videos from Google Drive: a second attempt | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/video-streaming-3/index.html b/video-streaming-3/index.html
+index 944f2aa..763f6fb 100644
+--- a/video-streaming-3/index.html
++++ b/video-streaming-3/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;The video streaming finale, or why put.io is awesome | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/vim-open-link/index.html b/vim-open-link/index.html
+index d30d229..2fdabb9 100644
+--- a/vim-open-link/index.html
++++ b/vim-open-link/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Opening http link under the cursor in vim | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/virtualenvwrapper/index.html b/virtualenvwrapper/index.html
+index 36a4241..83ffe7e 100644
+--- a/virtualenvwrapper/index.html
++++ b/virtualenvwrapper/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Virtualenv(wrapper), python2 and python3 | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/yaks.html b/yaks.html
+index 2919757..db72e1d 100644
+--- a/yaks.html
++++ b/yaks.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;Yak shaving | Hi, I&amp;#39;m Nhân&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+</pre></body></html>

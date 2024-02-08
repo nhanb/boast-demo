@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b40e2533e0] draft Go backend | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / b40e2533e0</strong><hr><pre>commit b40e2533e009863b5e2e0b4506e6d7aac9368547
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Jun 16 16:56:55 2023 +0700
+
+    draft Go backend
+
+diff --git a/README.md b/README.md
+new file mode 100644
+index 0000000..00bac5d
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1,4 @@
++# GORTS
++
++... is [orts](https://github.com/nhanb/orts) but in pure Go and pure Tcl/Tk
++purely talking via good ole pipes, the way Dennis Ritchie intended.
+diff --git a/main.go b/main.go
+index b690e69..e3673a3 100644
+--- a/main.go
++++ b/main.go
+@@ -1,7 +1,84 @@
+ package main
+ 
+-import &quot;fmt&quot;
++import (
++	&quot;bufio&quot;
++	_ &quot;embed&quot;
++	&quot;io&quot;
++	&quot;log&quot;
++	&quot;os/exec&quot;
++)
++
++//go:embed tcl/main.tcl
++var mainTcl string
+ 
+ func main() {
+-	fmt.Println(&quot;Heeey&quot;)
++	tcl := initTcl()
++	tcl.Connect()
++}
++
++type Tcl struct {
++	cmd *exec.Cmd
++}
++
++func initTcl() Tcl {
++	cmd := exec.Command(&quot;tclsh&quot;)
++	return Tcl{cmd}
++}
++
++func (t *Tcl) Connect() {
++	stdout, err := t.cmd.StdoutPipe()
++	if err != nil {
++		panic(err)
++	}
++
++	stdin, err := t.cmd.StdinPipe()
++	if err != nil {
++		panic(err)
++	}
++
++	err = t.cmd.Start()
++	if err != nil {
++		panic(err)
++	}
++
++	io.WriteString(stdin, mainTcl)
++	println(&quot;Loaded main tcl script.&quot;)
++
++	io.WriteString(stdin, &quot;readvars\n&quot;)
++
++	reqscanner := bufio.NewScanner(stdout)
++	for reqscanner.Scan() {
++		req := reqscanner.Text()
++		println(&quot;=&gt; &quot; + req)
++		switch req {
++		case &quot;readvars&quot;:
++			for _, line := range serveReadvars() {
++				println(&quot;&lt;= &quot; + line)
++				io.WriteString(stdin, line+&quot;\n&quot;)
++			}
++		default:
++			println(&quot;Skipping bogus command: &quot; + req)
++		}
++	}
++
++	println(&quot;Tcl process terminated.&quot;)
++
++	if err := reqscanner.Err(); err != nil {
++		log.Fatal(err)
++	}
++}
++
++func serveReadvars() []string {
++	return []string{
++		&quot;description Saigon Cup 2023&quot;,
++		&quot;p1name Diego Umejuarez&quot;,
++		&quot;p1country jp&quot;,
++		&quot;p1score 1&quot;,
++		&quot;p1team Japan&quot;,
++		&quot;p2name Chokido&quot;,
++		&quot;p2country jp&quot;,
++		&quot;p2score 2&quot;,
++		&quot;p2team Japan2&quot;,
++		&quot;end&quot;,
++	}
+ }
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index 2f54050..0e4b9dc 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -12,28 +12,8 @@ if {$OS == &quot;Windows&quot;} {
+     ttk::style theme use clam
+ }
+ 
+-# Very simple line-based RPC where Tcl client talks to Go server
+-# via stdin/stdout.
+-#
+-# For this &quot;readvars&quot; method, the Go server returns multiple lines
+-# where each line starts with variable name, followed by a space,
+-# with the rest of the line being its value. When done, the server
+-# sends a literal &quot;end&quot; line.
+-#
+-# =&gt; readvars
+-# &lt;= description Saigon Cup 2023
+-# &lt;= p1name BST Diego Umejuarez
+-# &lt;= p1score 0
+-# [etc.]
+-# &lt;= end
+-puts &quot;readvars&quot;
+-set line [gets stdin]
+-while {$line != &quot;end&quot;} {
+-    set spaceindex [string first &quot; &quot; $line]
+-    set key [string range $line 0 $spaceindex-1]
+-    set val [string range $line $spaceindex+1 end]
+-    set ${key} $val
+-    set line [gets stdin]
++wm protocol . WM_DELETE_WINDOW {
++    exit 0
+ }
+ 
+ # GUI
+@@ -94,3 +74,32 @@ grid .c.buttons.swap -row 0 -column 3
+ grid columnconfigure .c.players 2 -pad 5
+ grid columnconfigure .c.buttons 1 -pad 15
+ grid columnconfigure .c.buttons 3 -pad 15
++
++
++# Very simple line-based IPC where Tcl client talks to Go server
++# via stdin/stdout.
++#
++# For this &quot;readvars&quot; method, the Go server returns multiple lines
++# where each line starts with variable name, followed by a space,
++# with the rest of the line being its value. When done, the server
++# sends a literal &quot;end&quot; line.
++#
++# =&gt; readvars
++# &lt;= description Saigon Cup 2023
++# &lt;= p1name BST Diego Umejuarez
++# &lt;= p1score 0
++# [etc.]
++# &lt;= end
++proc readvars {} {
++    puts &quot;readvars&quot;
++    set line [gets stdin]
++    while {$line != &quot;end&quot;} {
++        set spaceindex [string first &quot; &quot; $line]
++        set key [string range $line 0 $spaceindex-1]
++        set val [string range $line $spaceindex+1 end]
++        # this makes sure it sets the outer scope&#39;s variable:
++        variable ${key}
++        set ${key} $val
++        set line [gets stdin]
++    }
++}
+</pre></body></html>

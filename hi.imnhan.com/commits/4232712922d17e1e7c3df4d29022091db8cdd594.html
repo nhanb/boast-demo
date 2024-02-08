@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[4232712922] convert pages to djot | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 4232712922</strong><hr><pre>commit 4232712922d17e1e7c3df4d29022091db8cdd594
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 19 17:52:48 2023 +0700
+
+    convert pages to djot
+
+diff --git a/about/index.dj b/about/index.dj
+new file mode 100644
+index 0000000..7eba9b3
+--- /dev/null
++++ b/about/index.dj
+@@ -0,0 +1,20 @@
++Title: About
++ShowInFeed: false
++Thumb: images/keyboard-warrior.jpg
++---
++
++Hi, I&#39;m Nhân. I make webstuff for a living.
++
++![literally me](keyboard-warrior.jpg)
++
++My mind is a sad mess that cannot hold much information after a couple of
++months or so. This blog is where I write down interesting things I discover.
++On occasional bad days I might throw all my ramblings here too, but hopefully
++those will be rare.
++
++This blog is powered by my {-homegrown organic artisanal-} static site generator
++called [s4g][1] and is hosted on Github Pages.
++Its source code can be found on my [github repo][2].
++
++[1]: https://github.com/nhanb/s4g
++[2]: https://github.com/nhanb/hi.imnhan.com
+diff --git a/about/index.html b/about/index.html
+new file mode 100644
+index 0000000..f75b22e
+--- /dev/null
++++ b/about/index.html
+@@ -0,0 +1,45 @@
++&lt;!DOCTYPE html&gt;
++&lt;html&gt;
++
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;About | Hi, I&amp;#39;m Nhân&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;nav&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++
++&lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
++
++
++&lt;main&gt;
++&lt;h1&gt;About&lt;/h1&gt;
++&lt;p&gt;Hi, I’m Nhân. I make webstuff for a living.&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;literally me&quot; src=&quot;keyboard-warrior.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;My mind is a sad mess that cannot hold much information after a couple of
++months or so. This blog is where I write down interesting things I discover.
++On occasional bad days I might throw all my ramblings here too, but hopefully
++those will be rare.&lt;/p&gt;
++&lt;p&gt;This blog is powered by my &lt;del&gt;homegrown organic artisanal&lt;/del&gt; static site generator
++called &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and is hosted on Github Pages.
++Its source code can be found on my &lt;a href=&quot;https://github.com/nhanb/hi.imnhan.com&quot;&gt;github repo&lt;/a&gt;.&lt;/p&gt;
++
++&lt;/main&gt;
++
++&lt;footer&gt;
++© 2023 nhanb&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++&lt;/footer&gt;
++
++&lt;/body&gt;
++
++&lt;/html&gt;
+diff --git a/content/images/keyboard-warrior.jpg b/about/keyboard-warrior.jpg
+similarity index 100%
+rename from content/images/keyboard-warrior.jpg
+rename to about/keyboard-warrior.jpg
+diff --git a/content/pages/about.md b/content/pages/about.md
+deleted file mode 100644
+index 984f4d0..0000000
+--- a/content/pages/about.md
++++ /dev/null
+@@ -1,23 +0,0 @@
+-Title: About
+-Thumb: images/keyboard-warrior.jpg
+-
+-Hi, I&#39;m Nhân. I make webstuff for a living.
+-
+-![literally me](/images/keyboard-warrior.jpg)
+-
+-My mind is a sad mess that cannot hold much information after a couple of
+-months or so. This blog is where I write down interesting things I discover.
+-On occasional bad days I might throw all my ramblings here too, but hopefully
+-those will be rare.
+-
+-This blog is generated using [Pelican][1] and hosted on Github Pages.
+-Its source code can be found on my [github repo][2].
+-
+-I make a point not to include 3rd-party javascript on the page, with the
+-exception of [Disqus][3], which is not loaded by default---you&#39;ll need to
+-explicitly click on the &quot;show comments&quot; button below each post if you want to
+-view or write comments. I think that&#39;s a reasonable compromise.
+-
+-[1]: http://getpelican.com
+-[2]: https://github.com/nhanb/imnhan.com
+-[3]: https://disqus.com/
+diff --git a/feed.xml b/feed.xml
+new file mode 100644
+index 0000000..9645ccc
+--- /dev/null
++++ b/feed.xml
+@@ -0,0 +1,18 @@
++&lt;feed xmlns=&quot;http://www.w3.org/2005/Atom&quot;&gt;
++  &lt;title&gt;Hi, I&amp;#39;m Nhân&lt;/title&gt;
++  &lt;id&gt;https://hi.imnhan.com/&lt;/id&gt;
++  &lt;link rel=&quot;self&quot; href=&quot;/feed.xml&quot;&gt;&lt;/link&gt;
++  &lt;updated&gt;0001-01-01T00:00:00+00:00&lt;/updated&gt;
++  &lt;author&gt;
++    &lt;name&gt;nhanb&lt;/name&gt;
++    &lt;uri&gt;https://hi.imnhan.com&lt;/uri&gt;
++    &lt;email&gt;hi@imnhan.com&lt;/email&gt;
++  &lt;/author&gt;
++  &lt;entry&gt;
++    &lt;title&gt;Projects&lt;/title&gt;
++    &lt;id&gt;https://hi.imnhan.com/projects/&lt;/id&gt;
++    &lt;link href=&quot;https://hi.imnhan.com/projects/&quot;&gt;&lt;/link&gt;
++    &lt;published&gt;0001-01-01T00:00:00+00:00&lt;/published&gt;
++    &lt;updated&gt;0001-01-01T00:00:00+00:00&lt;/updated&gt;
++  &lt;/entry&gt;
++&lt;/feed&gt;
+\ No newline at end of file
+diff --git a/content/pages/ideas.md b/ideas/index.dj
+similarity index 95%
+rename from content/pages/ideas.md
+rename to ideas/index.dj
+index 98e526b..5e51328 100644
+--- a/content/pages/ideas.md
++++ b/ideas/index.dj
+@@ -1,6 +1,6 @@
+ Title: Potential project ideas
+-Slug: ideas
+-Hidden: True
++ShowInFeed: false
++---
+ 
+ ## Self hosted RSS reader in D
+ 
+@@ -16,7 +16,7 @@ ## Desktop GUI blogging CMS using tkinter
+ - Split screen: one with markdown/bbcode source and one with rendered preview
+ - Sane embedded image/video/etc. file management via GUI
+   + Bonus: 1-click preprocessing: strip EXIF, losslessly optimize image
+-- **No embedded browser**
++- *No embedded browser*
+ - Is static site generator, but supports 1-click deployment to neocities,
+   github/gitlab/sourcehut pages etc.
+ - Human-friend distribution e.g. nuitka, pyoxidizer (pyinstaller is pretty meh)
+diff --git a/ideas/index.html b/ideas/index.html
+new file mode 100644
+index 0000000..94943f4
+--- /dev/null
++++ b/ideas/index.html
+@@ -0,0 +1,94 @@
++&lt;!DOCTYPE html&gt;
++&lt;html&gt;
++
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;Potential project ideas | Hi, I&amp;#39;m Nhân&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;nav&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++
++&lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
++
++
++&lt;main&gt;
++&lt;h1&gt;Potential project ideas&lt;/h1&gt;
++&lt;section id=&quot;Self-hosted-RSS-reader-in-D&quot;&gt;
++&lt;h2&gt;Self hosted RSS reader in D&lt;/h2&gt;
++&lt;ul&gt;
++&lt;li&gt;
++Single executable, web based
++&lt;/li&gt;
++&lt;li&gt;
++SQLite3
++&lt;/li&gt;
++&lt;li&gt;
++Either use adamdruppe’s rss.d or wrap libmrss
++&lt;/li&gt;
++&lt;li&gt;
++Bonus: e-ink friendly display
++&lt;/li&gt;
++&lt;li&gt;
++Bonus: netsurf friendly
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Desktop-GUI-blogging-CMS-using-tkinter&quot;&gt;
++&lt;h2&gt;Desktop GUI blogging CMS using tkinter&lt;/h2&gt;
++&lt;ul&gt;
++&lt;li&gt;
++Native win/mac look-and-feel, acceptable on linux (&lt;code&gt;clam&lt;/code&gt; looks alright)
++&lt;/li&gt;
++&lt;li&gt;
++Split screen: one with markdown/bbcode source and one with rendered preview
++&lt;/li&gt;
++&lt;li&gt;
++Sane embedded image/video/etc. file management via GUI
+++ Bonus: 1-click preprocessing: strip EXIF, losslessly optimize image
++&lt;/li&gt;
++&lt;li&gt;
++&lt;strong&gt;No embedded browser&lt;/strong&gt;
++&lt;/li&gt;
++&lt;li&gt;
++Is static site generator, but supports 1-click deployment to neocities,
++github/gitlab/sourcehut pages etc.
++&lt;/li&gt;
++&lt;li&gt;
++Human-friend distribution e.g. nuitka, pyoxidizer (pyinstaller is pretty meh)
++&lt;/li&gt;
++&lt;li&gt;
++Bonus: pluggable templates
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Discord-bot-that-launches-CSGO-etc-server-on-demand&quot;&gt;
++&lt;h2&gt;Discord bot that launches CSGO/etc. server on demand&lt;/h2&gt;
++&lt;p&gt;Eyeing Linode’s 4GB RAM tier at $0.03/hr. But in general it should work on any
++cloud VPS that supports (almost) instant VM launch via API, and snapshots.&lt;/p&gt;
++&lt;ul&gt;
++&lt;li&gt;
++Easy on/off/status commands via Discord bot maybe
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;/section&gt;
++
++&lt;/main&gt;
++
++&lt;footer&gt;
++© 2023 nhanb&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++&lt;/footer&gt;
++
++&lt;/body&gt;
++
++&lt;/html&gt;
+diff --git a/index.html b/index.html
+index 052cf5f..dc1bb44 100644
+--- a/index.html
++++ b/index.html
+@@ -20,6 +20,8 @@ &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
+ 
+ &lt;div class=&quot;pages&quot;&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;
+     &lt;img src=&quot;/_theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
+   &lt;/a&gt;
+@@ -29,8 +31,15 @@ &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
+ 
+ 
+ 
++&lt;p&gt;All posts, newest first:&lt;/p&gt;
+ 
+-&lt;p&gt;No posts yet.&lt;/p&gt;
++&lt;ul&gt;
++  &lt;li&gt;
++    &lt;span class=&quot;time-prefix&quot;&gt;0001-01-01 — &lt;/span&gt;
++    &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++    &lt;span class=&quot;time-suffix&quot;&gt;(0001-01-01)&lt;/span&gt;
++  &lt;/li&gt;
++&lt;/ul&gt;
+ 
+ 
+ &lt;style&gt;
+diff --git a/manifest.txt b/manifest.txt
+index 6553aff..2bb9e07 100644
+--- a/manifest.txt
++++ b/manifest.txt
+@@ -1,4 +1,8 @@
++about/index.html
++feed.xml
++ideas/index.html
+ index.html
++notes/index.html
+ posts/acer-chromebook-spin/index.html
+ posts/enable-italic-text-vim-tmux-gnome-terminal/index.html
+ posts/fix-rmit-wifi-issue-in-ubuntu-13-04-and-variants/index.html
+@@ -25,4 +29,6 @@ posts/towards-an-acceptable-video-playing-experience/index.html
+ posts/virtualenwrapper-python2-python3/index.html
+ posts/what-i-did-after-installing-manjaro-xfce/index.html
+ posts/why-i-use-linux-automation/index.html
+-posts/working-with-sqlite-in-python-without-an-orm-or-migration-framework/index.html
+\ No newline at end of file
++posts/working-with-sqlite-in-python-without-an-orm-or-migration-framework/index.html
++projects/index.html
++yaks/index.html
+\ No newline at end of file
+diff --git a/content/pages/notes.md b/notes/index.dj
+similarity index 73%
+rename from content/pages/notes.md
+rename to notes/index.dj
+index 697fccf..949e839 100644
+--- a/content/pages/notes.md
++++ b/notes/index.dj
+@@ -1,7 +1,6 @@
+ Title: Random notes
+-Slug: notes
+-Hidden: True
+-
++ShowInFeed: false
++---
+ 
+ In which I jot down scattered tidbits on various topics.
+ 
+@@ -11,16 +10,18 @@ ## SRE
+ on Rachel By The Bay, the gist is:
+ 
+ - Rollbacks should work. On every deployment.
+-
+ - A to AB to B (a.k.a. make before break):
+-    + v2 code/data should not break v1 code/data
++
++    - v2 code/data should not break v1 code/data
+ 
+ - Strict(er than JSON) schema-ing when you fling data across places
+-    + Protobuf, etc.
+-    + You should only _begin_ to consider JSON if you need to talk to browsers
++
++    - Protobuf, etc.
++    - You should only _begin_ to consider JSON if you need to talk to browsers
+ 
+ - Please fix 500s.
+-    + Also you should only get 400s when talking to external things out of your control
++
++    - Also you should only get 400s when talking to external things out of your control
+ 
+ Her [follow-up](http://rachelbythebay.com/w/2019/10/05/nxdomain/) is a nice
+ scary story too. Also reminder that &quot;infra-as-code&quot; abstractions isn&#39;t an
+diff --git a/notes/index.html b/notes/index.html
+new file mode 100644
+index 0000000..e3b1fbb
+--- /dev/null
++++ b/notes/index.html
+@@ -0,0 +1,77 @@
++&lt;!DOCTYPE html&gt;
++&lt;html&gt;
++
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;Random notes | Hi, I&amp;#39;m Nhân&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;nav&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++
++&lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
++
++
++&lt;main&gt;
++&lt;h1&gt;Random notes&lt;/h1&gt;
++&lt;p&gt;In which I jot down scattered tidbits on various topics.&lt;/p&gt;
++&lt;section id=&quot;SRE&quot;&gt;
++&lt;h2&gt;SRE&lt;/h2&gt;
++&lt;p&gt;There’s a good &lt;a href=&quot;http://rachelbythebay.com/w/2019/07/21/reliability/&quot;&gt;checklist&lt;/a&gt;
++on Rachel By The Bay, the gist is:&lt;/p&gt;
++&lt;ul&gt;
++&lt;li&gt;
++Rollbacks should work. On every deployment.
++&lt;/li&gt;
++&lt;li&gt;
++A to AB to B (a.k.a. make before break):
++&lt;ul&gt;
++&lt;li&gt;
++v2 code/data should not break v1 code/data
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;/li&gt;
++&lt;li&gt;
++Strict(er than JSON) schema-ing when you fling data across places
++&lt;ul&gt;
++&lt;li&gt;
++Protobuf, etc.
++&lt;/li&gt;
++&lt;li&gt;
++You should only &lt;em&gt;begin&lt;/em&gt; to consider JSON if you need to talk to browsers
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;/li&gt;
++&lt;li&gt;
++Please fix 500s.
++&lt;ul&gt;
++&lt;li&gt;
++Also you should only get 400s when talking to external things out of your control
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;p&gt;Her &lt;a href=&quot;http://rachelbythebay.com/w/2019/10/05/nxdomain/&quot;&gt;follow-up&lt;/a&gt; is a nice
++scary story too. Also reminder that “infra-as-code” abstractions isn’t an
++excuse &lt;em&gt;not&lt;/em&gt; to learn the underlying infra properly.&lt;/p&gt;
++&lt;/section&gt;
++
++&lt;/main&gt;
++
++&lt;footer&gt;
++© 2023 nhanb&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++&lt;/footer&gt;
++
++&lt;/body&gt;
++
++&lt;/html&gt;
+diff --git a/content/pages/projects.md b/projects/index.dj
+similarity index 99%
+rename from content/pages/projects.md
+rename to projects/index.dj
+index 3a46bcb..2d2ff31 100644
+--- a/content/pages/projects.md
++++ b/projects/index.dj
+@@ -1,5 +1,6 @@
+ Title: Projects
+ Thumb: images/keyboard-warrior.jpg
++---
+ 
+ 
+ I&#39;ve written some open source software in my free time.
+diff --git a/projects/index.html b/projects/index.html
+new file mode 100644
+index 0000000..99175de
+--- /dev/null
++++ b/projects/index.html
+@@ -0,0 +1,87 @@
++&lt;!DOCTYPE html&gt;
++&lt;html&gt;
++
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;Projects | Hi, I&amp;#39;m Nhân&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;nav&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++
++&lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
++
++
++&lt;main&gt;
++&lt;h1&gt;Projects&lt;/h1&gt;
++&lt;p&gt;I’ve written some open source software in my free time.
++In some cases I even maintain them! Shocking, I know.&lt;/p&gt;
++&lt;section id=&quot;Shark&quot;&gt;
++&lt;h2&gt;Shark&lt;/h2&gt;
++&lt;p&gt;&lt;a href=&quot;https://github.com/nhanb/shark/&quot;&gt;Shark&lt;/a&gt; is a simple “desktop pet”. It’s my first foray into cross-platform
++desktop application development, also my first Go project that actually did
++anything fun.&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Pytaku&quot;&gt;
++&lt;h2&gt;Pytaku&lt;/h2&gt;
++&lt;p&gt;&lt;a href=&quot;https://git.sr.ht/~nhanb/pytaku&quot;&gt;Pytaku&lt;/a&gt; is a web-based manga reader that’s designed to be as
++self-host-friendly as possible. It’s an experiment to see how far I can get
++with a simpler toolset: basically just flask, sqlite and mithril.js for the
++frontend. There are still many rough spots but that’s enough for my daily use,
++so it’s currently in maintenance mode.&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;ORTS&quot;&gt;
++&lt;h2&gt;ORTS&lt;/h2&gt;
++&lt;p&gt;&lt;a href=&quot;https://github.com/nhanb/orts/&quot;&gt;ORTS&lt;/a&gt; is a GUI for operating scoreboards on
++fighting game streams. It’s served its purpose beaufifully during
++&lt;a href=&quot;https://www.facebook.com/SaigonFGC/&quot;&gt;our&lt;/a&gt; local tournaments and several
++&lt;a href=&quot;https://sgc19.saigonfgc.com/en/&quot;&gt;Saigon Cups&lt;/a&gt;… until a certain pandemic
++happened.&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;An-animated-wallpaper-for-KDE-Plasma&quot;&gt;
++&lt;h2&gt;An animated wallpaper for KDE Plasma&lt;/h2&gt;
++&lt;p&gt;I was frustrated that KDE 5 didn’t allow animated gifs as wallpaper so I &lt;a href=&quot;https://github.com/nhanb/com.nerdyweekly.animated&quot;&gt;wrote
++one&lt;/a&gt;. Every now and then someone would &lt;a href=&quot;https://www.reddit.com/r/unixporn/comments/9sd5uy/kde_plasma_blur_gif_pixel_art_wallpaper_look/&quot;&gt;use it on /r/unixporn&lt;/a&gt; and cause
++a surge in github stars. It is currently my most starred repo, which gives me
++mixed feelings.&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;McRoss&quot;&gt;
++&lt;h2&gt;McRoss&lt;/h2&gt;
++&lt;p&gt;&lt;a href=&quot;https://sr.ht/~nhanb/mcross&quot;&gt;McRoss&lt;/a&gt; is a minimal and usable
++&lt;a href=&quot;https://gemini.circumlunar.space/&quot;&gt;gemini://&lt;/a&gt; browser written in python and
++tkinter, meaning it Just Works (tm) on any self-respecting desktop OS.
++Fast forward a couple of years and there’s still no interesting content on the
++gemini-verse (that I can find anyway). Also given the fact that there’s a very
++good &lt;a href=&quot;https://portal.mozz.us/gemini/mozz.us/&quot;&gt;web proxy&lt;/a&gt; now, McRoss is pretty
++much shelved.&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Caophim&quot;&gt;
++&lt;h2&gt;Caophim&lt;/h2&gt;
++&lt;p&gt;&lt;a href=&quot;https://github.com/nhanb/caophim&quot;&gt;Caophim&lt;/a&gt; is my take on imageboard software and also my excuse to try
++&lt;a href=&quot;https://nim-lang.org/&quot;&gt;Nim&lt;/a&gt;. There’s a usable live instance at &lt;a href=&quot;https://caophim.imnhan.com/&quot;&gt;caophim.imnhan.com&lt;/a&gt;. It’s
++nowhere near my goals but to be honest I got tired of &lt;a href=&quot;https://github.com/nim-lang/Nim/issues/13531&quot;&gt;running&lt;/a&gt; &lt;a href=&quot;https://github.com/nim-lang/Nim/issues/13986&quot;&gt;into&lt;/a&gt;
++&lt;a href=&quot;https://github.com/pragmagic/karax/issues/143&quot;&gt;nim’s&lt;/a&gt; &lt;a href=&quot;https://github.com/pragmagic/karax/issues/142&quot;&gt;bugs&lt;/a&gt;, in the compiler, the standard library, the flagship
++module that’s supposed to supersede a module in the standard library… you
++name it. The straw that broke the camel’s back though, was &lt;a href=&quot;https://github.com/nim-lang/Nim/issues/13923&quot;&gt;this gem right
++here&lt;/a&gt; that remains unfixed to this day.&lt;/p&gt;
++&lt;/section&gt;
++
++&lt;/main&gt;
++
++&lt;footer&gt;
++© 2023 nhanb&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++&lt;/footer&gt;
++
++&lt;/body&gt;
++
++&lt;/html&gt;
+diff --git a/website.s4g b/website.s4g
+index 9e971de..4bf5261 100644
+--- a/website.s4g
++++ b/website.s4g
+@@ -3,7 +3,7 @@ Name: Hi, I&#39;m Nhân
+ Tagline: and welcome to my humble corner on the interwebs
+ Root: /
+ ShowFooter: true
+-NavbarLinks: index.dj
++NavbarLinks: index.dj, about/index.dj, projects/index.dj
+ AuthorName: nhanb
+ AuthorURI: https://hi.imnhan.com
+ AuthorEmail: hi@imnhan.com
+diff --git a/content/pages/yaks.md b/yaks/index.dj
+similarity index 87%
+rename from content/pages/yaks.md
+rename to yaks/index.dj
+index 3aff4a6..da5b9b1 100644
+--- a/content/pages/yaks.md
++++ b/yaks/index.dj
+@@ -1,7 +1,6 @@
+ Title: Yak shaving
+-Slug: yaks
+-Hidden: True
+-
++ShowInFeed: false
++---
+ 
+ Basically my TODOs, in pursuit of the ever-pervasive _pleasant workflow_.
+ 
+@@ -16,6 +15,7 @@ ## Replacing tmux with kitty
+ ## Interesting tools
+ 
+ - [pyinfra](https://pointlessramblings.com/posts/why-you-should-try-pyinfra/):
++
+     + faster than ansible, from my anecdotal experience
+     + python, not yaml
+     + truly agentless (doesn&#39;t even require python)
+@@ -34,6 +34,6 @@ ## Home server
+ 
+ Services:
+ 
+-- [x] Syncthing
+-- [] Some RSS reader
+-- [] Some bookmarking system that does full text search.
++- Syncthing
++- Some RSS reader
++- Some bookmarking system that does full text search.
+diff --git a/yaks/index.html b/yaks/index.html
+new file mode 100644
+index 0000000..31f5cb4
+--- /dev/null
++++ b/yaks/index.html
+@@ -0,0 +1,101 @@
++&lt;!DOCTYPE html&gt;
++&lt;html&gt;
++
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;Yak shaving | Hi, I&amp;#39;m Nhân&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;nav&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++
++&lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
++
++
++&lt;main&gt;
++&lt;h1&gt;Yak shaving&lt;/h1&gt;
++&lt;p&gt;Basically my TODOs, in pursuit of the ever-pervasive &lt;em&gt;pleasant workflow&lt;/em&gt;.&lt;/p&gt;
++&lt;section id=&quot;Replacing-tmux-with-kitty&quot;&gt;
++&lt;h2&gt;Replacing tmux with kitty&lt;/h2&gt;
++&lt;p&gt;All blockers seem to have been addressed now?&lt;/p&gt;
++&lt;ul&gt;
++&lt;li&gt;
++&lt;a href=&quot;https://sw.kovidgoyal.net/kitty/index.html#startup-sessions&quot;&gt;tmuxp replacement&lt;/a&gt;
++&lt;/li&gt;
++&lt;li&gt;
++&lt;a href=&quot;https://github.com/knubie/vim-kitty-navigator&quot;&gt;seamless navigation alongside vimsplit&lt;/a&gt;
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Interesting-tools&quot;&gt;
++&lt;h2&gt;Interesting tools&lt;/h2&gt;
++&lt;ul&gt;
++&lt;li&gt;
++&lt;a href=&quot;https://pointlessramblings.com/posts/why-you-should-try-pyinfra/&quot;&gt;pyinfra&lt;/a&gt;:
++&lt;ul&gt;
++&lt;li&gt;
++faster than ansible, from my anecdotal experience
++&lt;/li&gt;
++&lt;li&gt;
++python, not yaml
++&lt;/li&gt;
++&lt;li&gt;
++truly agentless (doesn’t even require python)
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;/li&gt;
++&lt;li&gt;
++&lt;a href=&quot;https://pydoit.org/&quot;&gt;doit&lt;/a&gt;: I just want a cross-platform &lt;code&gt;make&lt;/code&gt;.
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Home-server&quot;&gt;
++&lt;h2&gt;Home server&lt;/h2&gt;
++&lt;p&gt;Specs:&lt;/p&gt;
++&lt;ul&gt;
++&lt;li&gt;
++Thinkpad T430 whose screen just broke
++&lt;/li&gt;
++&lt;li&gt;
++Accessible via Tailscale
++&lt;/li&gt;
++&lt;li&gt;
++Debian 10 installed on main SSD
++&lt;/li&gt;
++&lt;li&gt;
++2x1TB Seagate HDDs, LUKS encrypted, running a RAID1 btrfs pool.
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;p&gt;Services:&lt;/p&gt;
++&lt;ul&gt;
++&lt;li&gt;
++Syncthing
++&lt;/li&gt;
++&lt;li&gt;
++Some RSS reader
++&lt;/li&gt;
++&lt;li&gt;
++Some bookmarking system that does full text search.
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;/section&gt;
++
++&lt;/main&gt;
++
++&lt;footer&gt;
++© 2023 nhanb&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++&lt;/footer&gt;
++
++&lt;/body&gt;
++
++&lt;/html&gt;
+</pre></body></html>

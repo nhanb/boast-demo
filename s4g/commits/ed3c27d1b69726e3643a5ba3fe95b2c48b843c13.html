@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ed3c27d1b6] templates for home and post | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / ed3c27d1b6</strong><hr><pre>commit ed3c27d1b69726e3643a5ba3fe95b2c48b843c13
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jul 3 16:56:11 2023 +0700
+
+    templates for home and post
+    
+    Transplanted from https://github.com/nhanb/bloghead
+
+diff --git a/Makefile b/Makefile
+index 784b3e7..2e4ac8e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@ build:
+ 	go build -o dist/
+ 
+ watch:
+-	find . -name &#39;*.go&#39; -or -name &#39;*.js&#39; | entr -rc go run .
++	find . -name &#39;*.go&#39; -or -name &#39;*.js&#39; -or -name &#39;*.tmpl&#39; | entr -rc go run .
+ 
+ # Cheating a little because the djot.js repo on github does not provide builds
+ update-djot:
+diff --git a/main.go b/main.go
+index 4f86a92..694f7e3 100644
+--- a/main.go
++++ b/main.go
+@@ -1,12 +1,15 @@
+ package main
+ 
+ import (
++	&quot;bytes&quot;
+ 	&quot;flag&quot;
+ 	&quot;fmt&quot;
++	&quot;html/template&quot;
+ 	&quot;io/fs&quot;
+ 	&quot;net/http&quot;
+ 	&quot;path/filepath&quot;
+ 	&quot;strings&quot;
++	&quot;time&quot;
+ 
+ 	&quot;github.com/BurntSushi/toml&quot;
+ 	&quot;go.imnhan.com/webmaker2000/djot&quot;
+@@ -24,16 +27,18 @@ func main() {
+ 	}
+ 	fsys := WriteDirFS(absolutePath)
+ 
+-	meta := readSiteMetadata(fsys)
+-	fmt.Println(&quot;Found site:&quot;, meta)
++	site := readSiteMetadata(fsys)
++	fmt.Println(&quot;Found site:&quot;, site)
+ 
+ 	articles := findArticles(fsys)
+ 	fmt.Printf(&quot;Found %d articles:\n&quot;, len(articles))
+ 	for _, a := range articles {
+ 		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Meta.Title)
+-		a.WriteHtmlFile()
++		a.WriteHtmlFile(&amp;site)
+ 	}
+ 
++	WriteHomePage(fsys, site, articles)
++
+ 	println(&quot;Serving local website at http://localhost:&quot; + port)
+ 	http.Handle(&quot;/&quot;, http.FileServer(http.FS(fsys)))
+ 	err = http.ListenAndServe(&quot;127.0.0.1:&quot;+port, nil)
+@@ -43,8 +48,9 @@ func main() {
+ }
+ 
+ type SiteMetadata struct {
+-	Name    string
+-	Tagline string
++	Name     string
++	Tagline  string
++	HomePath string
+ }
+ 
+ func readSiteMetadata(fsys WritableFS) (sm SiteMetadata) {
+@@ -60,22 +66,78 @@ func readSiteMetadata(fsys WritableFS) (sm SiteMetadata) {
+ type Article struct {
+ 	Fs       WritableFS
+ 	Path     string
++	WebPath  string
+ 	DjotBody string
+ 	Meta     ArticleMetadata
+ }
+ 
+-func (a *Article) WriteHtmlFile() {
+-	html := djot.ToHtml(a.DjotBody)
+-	path := strings.TrimSuffix(a.Path, DJOT_EXT) + &quot;.html&quot;
+-	err := a.Fs.WriteFile(path, html)
++type ArticleMetadata struct {
++	Title     string
++	IsPage    bool
++	IsDraft   bool
++	CreatedAt time.Time
++}
++
++func (a *Article) WriteHtmlFile(site *SiteMetadata) {
++	// First generate the main content in html
++	contentHtml := djot.ToHtml(a.DjotBody)
++
++	// Then insert that content into the main template
++	var buf bytes.Buffer
++	tmpl := template.Must(
++		template.ParseFS(
++			a.Fs,
++			&quot;_theme/base.tmpl&quot;,
++			&quot;_theme/post.tmpl&quot;,
++		),
++	)
++	err := tmpl.Execute(&amp;buf, struct {
++		Site    *SiteMetadata
++		Content template.HTML
++		Title   string
++		Post    *Article
++	}{
++		Site:    site,
++		Content: template.HTML(contentHtml),
++		Title:   a.Meta.Title,
++		Post:    a,
++	})
++	if err != nil {
++		fmt.Println(&quot;Error in WriteHtmlFile:&quot;, err)
++		return
++	}
++	fullHtml := buf.String()
++
++	// Now write into an html with the same name as the original djot file
++	err = a.Fs.WriteFile(a.WebPath, fullHtml)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ }
+ 
+-type ArticleMetadata struct {
+-	Title  string
+-	IsPage bool
++func WriteHomePage(fsys WritableFS, site SiteMetadata, articles []Article) {
++	var buf bytes.Buffer
++	tmpl := template.Must(
++		template.ParseFS(
++			fsys,
++			&quot;_theme/base.tmpl&quot;,
++			&quot;_theme/home.tmpl&quot;,
++		),
++	)
++	err := tmpl.Execute(&amp;buf, struct {
++		Site  *SiteMetadata
++		Title string
++		Posts []Article
++	}{
++		Site:  &amp;site,
++		Title: fmt.Sprintf(&quot;%s - %s&quot;, site.Name, site.Tagline),
++		Posts: articles,
++	})
++	if err != nil {
++		fmt.Println(&quot;Error in WriteHtmlFile:&quot;, err)
++		return
++	}
++	fsys.WriteFile(&quot;index.html&quot;, buf.String())
+ }
+ 
+ func findArticles(fsys WritableFS) (articles []Article) {
+@@ -108,11 +170,11 @@ func findArticles(fsys WritableFS) (articles []Article) {
+ 		article := Article{
+ 			Fs:       fsys,
+ 			Path:     path,
++			WebPath:  strings.TrimSuffix(path, DJOT_EXT) + &quot;.html&quot;,
+ 			DjotBody: bodyText,
+ 			Meta:     meta,
+ 		}
+ 		articles = append(articles, article)
+-		fmt.Printf(&quot;Found article %s - %s\n&quot;, article.Path, article.Meta.Title)
+ 		return nil
+ 	})
+ 	return articles
+diff --git a/www/_theme/base.tmpl b/www/_theme/base.tmpl
+new file mode 100644
+index 0000000..352eca0
+--- /dev/null
++++ b/www/_theme/base.tmpl
+@@ -0,0 +1,79 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;meta charset=&quot;utf-8&quot; /&gt;
++    &lt;title&gt;{{if .Title}}{{.Title}} - {{.Site.Name}}{{else}}{{.Site.Name}}{{end}}&lt;/title&gt;
++    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++
++    &lt;style&gt;
++      /* Global look and feel */
++      * {
++        box-sizing: border-box;
++      }
++      input,
++      textarea {
++        font-family: inherit;
++        font-size: inherit;
++        padding: 0.3rem;
++      }
++
++      html {
++        font-size: 100%;
++        font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto,
++          Oxygen-Sans, Cantarell, &quot;Helvetica Neue&quot;, sans-serif;
++        max-width: 800px;
++        margin: 1rem auto;
++      }
++
++      blockquote {
++        border-left: 6px solid darkgrey;
++        background-color: #eaeaea;
++        margin: 1rem 0 1rem 5rem;
++        padding: 0.7rem 1rem;
++      }
++      blockquote p {
++        margin: 0;
++      }
++      blockquote p + p {
++        margin-top: 1rem;
++      }
++
++      pre {
++        border: 1px solid;
++        border-radius: 4px;
++        padding: 1rem;
++        overflow-x: scroll;
++      }
++
++      content &gt; p {
++        margin: 1.7rem 0;
++      }
++
++      header h1 {
++        margin: 0;
++      }
++      header .tagline {
++        margin-top: 0;
++      }
++      header {
++        border-bottom: 2px solid black;
++      }
++      header a {
++        text-decoration: none;
++      }
++    &lt;/style&gt;
++  &lt;/head&gt;
++
++  &lt;body&gt;
++
++  &lt;header&gt;
++    &lt;h1&gt;&lt;a href=&quot;{{.Site.HomePath}}&quot;&gt;{{.Site.Name}}&lt;/a&gt;&lt;/h1&gt;
++    &lt;p class=&quot;tagline&quot;&gt;{{.Site.Tagline}}&lt;/p&gt;
++  &lt;/header&gt;
++
++  &lt;main&gt;
++  {{template &quot;body&quot; .}}
++  &lt;/main&gt;
++
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/www/_theme/home.tmpl b/www/_theme/home.tmpl
+new file mode 100644
+index 0000000..20749ec
+--- /dev/null
++++ b/www/_theme/home.tmpl
+@@ -0,0 +1,26 @@
++{{define &quot;body&quot;}}
++&lt;p&gt;All posts, newest first:&lt;/p&gt;
++
++&lt;ul&gt;
++    {{range .Posts}}
++    {{if not .Meta.IsDraft}}
++    &lt;li&gt;
++      {{.Meta.CreatedAt.Local.Format &quot;2006-01-02&quot;}}
++      — &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Meta.Title}}&lt;/a&gt;
++    &lt;/li&gt;
++    {{end}}
++    {{end}}
++&lt;/ul&gt;
++
++&lt;style&gt;
++    ul a {
++        text-decoration: none;
++    }
++
++    ul {
++        padding: 0;
++        list-style-type: none;
++        font-size: 1.1rem;
++    }
++&lt;/style&gt;
++{{end}}
+diff --git a/www/_theme/post.tmpl b/www/_theme/post.tmpl
+new file mode 100644
+index 0000000..1013b00
+--- /dev/null
++++ b/www/_theme/post.tmpl
+@@ -0,0 +1,26 @@
++{{define &quot;body&quot;}}
++&lt;h1 class=&quot;post-title&quot;&gt;{{.Post.Meta.Title}}&lt;/h1&gt;
++&lt;time class=&quot;post-time&quot; datetime=&quot;{{.Post.Meta.CreatedAt.Local.Format &quot;2006-01-02&quot;}}&quot;&gt;
++    {{.Post.Meta.CreatedAt.Local.Format &quot;Monday, 02 Jan 2006&quot;}}
++&lt;/time&gt;
++&lt;content&gt;
++{{.Content}}
++&lt;/content&gt;
++
++&lt;style&gt;
++.post-title {
++    text-align: center;
++    font-size: 2rem;
++    margin-bottom: 0;
++}
++.post-time {
++    display: block;
++    text-align: center;
++}
++
++content img,
++content video {
++    max-width: 100%;
++}
++&lt;/style&gt;
++{{end}}
+diff --git a/www/about/index.html b/www/about/index.html
+index c84b188..07dc9af 100644
+--- a/www/about/index.html
++++ b/www/about/index.html
+@@ -1,3 +1,83 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;meta charset=&quot;utf-8&quot; /&gt;
++    &lt;title&gt;About - My Site&lt;/title&gt;
++    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++
++    &lt;style&gt;
++       
++      * {
++        box-sizing: border-box;
++      }
++      input,
++      textarea {
++        font-family: inherit;
++        font-size: inherit;
++        padding: 0.3rem;
++      }
++
++      html {
++        font-size: 100%;
++        font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto,
++          Oxygen-Sans, Cantarell, &quot;Helvetica Neue&quot;, sans-serif;
++        max-width: 800px;
++        margin: 1rem auto;
++      }
++
++      blockquote {
++        border-left: 6px solid darkgrey;
++        background-color: #eaeaea;
++        margin: 1rem 0 1rem 5rem;
++        padding: 0.7rem 1rem;
++      }
++      blockquote p {
++        margin: 0;
++      }
++      blockquote p + p {
++        margin-top: 1rem;
++      }
++
++      pre {
++        border: 1px solid;
++        border-radius: 4px;
++        padding: 1rem;
++        overflow-x: scroll;
++      }
++
++      content &gt; p {
++        margin: 1.7rem 0;
++      }
++
++      header h1 {
++        margin: 0;
++      }
++      header .tagline {
++        margin-top: 0;
++      }
++      header {
++        border-bottom: 2px solid black;
++      }
++      header a {
++        text-decoration: none;
++      }
++    &lt;/style&gt;
++  &lt;/head&gt;
++
++  &lt;body&gt;
++
++  &lt;header&gt;
++    &lt;h1&gt;&lt;a href=&quot;/&quot;&gt;My Site&lt;/a&gt;&lt;/h1&gt;
++    &lt;p class=&quot;tagline&quot;&gt;And it&amp;#39;s fine.&lt;/p&gt;
++  &lt;/header&gt;
++
++  &lt;main&gt;
++  
++&lt;h1 class=&quot;post-title&quot;&gt;About&lt;/h1&gt;
++&lt;time class=&quot;post-time&quot; datetime=&quot;0001-01-01&quot;&gt;
++    Monday, 01 Jan 0001
++&lt;/time&gt;
++&lt;content&gt;
+ &lt;section id=&quot;About-this-site&quot;&gt;
+ &lt;h2&gt;About this site&lt;/h2&gt;
+ &lt;p&gt;It’s a website.&lt;/p&gt;
+@@ -7,3 +87,27 @@ &lt;h2&gt;No really&lt;/h2&gt;
+ &lt;p&gt;It really &lt;em&gt;is&lt;/em&gt; a full-blown
+ &lt;a href=&quot;https://motherfuckingwebsite.com/&quot;&gt;mf-ing website&lt;/a&gt;.&lt;/p&gt;
+ &lt;/section&gt;
++
++&lt;/content&gt;
++
++&lt;style&gt;
++.post-title {
++    text-align: center;
++    font-size: 2rem;
++    margin-bottom: 0;
++}
++.post-time {
++    display: block;
++    text-align: center;
++}
++
++content img,
++content video {
++    max-width: 100%;
++}
++&lt;/style&gt;
++
++  &lt;/main&gt;
++
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/www/hello/index.html b/www/hello/index.html
+index 3217db9..363ec7d 100644
+--- a/www/hello/index.html
++++ b/www/hello/index.html
+@@ -1 +1,105 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;meta charset=&quot;utf-8&quot; /&gt;
++    &lt;title&gt;Hello - My Site&lt;/title&gt;
++    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++
++    &lt;style&gt;
++       
++      * {
++        box-sizing: border-box;
++      }
++      input,
++      textarea {
++        font-family: inherit;
++        font-size: inherit;
++        padding: 0.3rem;
++      }
++
++      html {
++        font-size: 100%;
++        font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto,
++          Oxygen-Sans, Cantarell, &quot;Helvetica Neue&quot;, sans-serif;
++        max-width: 800px;
++        margin: 1rem auto;
++      }
++
++      blockquote {
++        border-left: 6px solid darkgrey;
++        background-color: #eaeaea;
++        margin: 1rem 0 1rem 5rem;
++        padding: 0.7rem 1rem;
++      }
++      blockquote p {
++        margin: 0;
++      }
++      blockquote p + p {
++        margin-top: 1rem;
++      }
++
++      pre {
++        border: 1px solid;
++        border-radius: 4px;
++        padding: 1rem;
++        overflow-x: scroll;
++      }
++
++      content &gt; p {
++        margin: 1.7rem 0;
++      }
++
++      header h1 {
++        margin: 0;
++      }
++      header .tagline {
++        margin-top: 0;
++      }
++      header {
++        border-bottom: 2px solid black;
++      }
++      header a {
++        text-decoration: none;
++      }
++    &lt;/style&gt;
++  &lt;/head&gt;
++
++  &lt;body&gt;
++
++  &lt;header&gt;
++    &lt;h1&gt;&lt;a href=&quot;/&quot;&gt;My Site&lt;/a&gt;&lt;/h1&gt;
++    &lt;p class=&quot;tagline&quot;&gt;And it&amp;#39;s fine.&lt;/p&gt;
++  &lt;/header&gt;
++
++  &lt;main&gt;
++  
++&lt;h1 class=&quot;post-title&quot;&gt;Hello&lt;/h1&gt;
++&lt;time class=&quot;post-time&quot; datetime=&quot;0001-01-01&quot;&gt;
++    Monday, 01 Jan 0001
++&lt;/time&gt;
++&lt;content&gt;
+ &lt;p&gt;Hello world.&lt;/p&gt;
++
++&lt;/content&gt;
++
++&lt;style&gt;
++.post-title {
++    text-align: center;
++    font-size: 2rem;
++    margin-bottom: 0;
++}
++.post-time {
++    display: block;
++    text-align: center;
++}
++
++content img,
++content video {
++    max-width: 100%;
++}
++&lt;/style&gt;
++
++  &lt;/main&gt;
++
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/www/index.html b/www/index.html
+new file mode 100644
+index 0000000..8a62061
+--- /dev/null
++++ b/www/index.html
+@@ -0,0 +1,111 @@
++&lt;!DOCTYPE html&gt;
++&lt;html lang=&quot;en&quot;&gt;
++  &lt;head&gt;
++    &lt;meta charset=&quot;utf-8&quot; /&gt;
++    &lt;title&gt;My Site - And it&amp;#39;s fine. - My Site&lt;/title&gt;
++    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++
++    &lt;style&gt;
++       
++      * {
++        box-sizing: border-box;
++      }
++      input,
++      textarea {
++        font-family: inherit;
++        font-size: inherit;
++        padding: 0.3rem;
++      }
++
++      html {
++        font-size: 100%;
++        font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto,
++          Oxygen-Sans, Cantarell, &quot;Helvetica Neue&quot;, sans-serif;
++        max-width: 800px;
++        margin: 1rem auto;
++      }
++
++      blockquote {
++        border-left: 6px solid darkgrey;
++        background-color: #eaeaea;
++        margin: 1rem 0 1rem 5rem;
++        padding: 0.7rem 1rem;
++      }
++      blockquote p {
++        margin: 0;
++      }
++      blockquote p + p {
++        margin-top: 1rem;
++      }
++
++      pre {
++        border: 1px solid;
++        border-radius: 4px;
++        padding: 1rem;
++        overflow-x: scroll;
++      }
++
++      content &gt; p {
++        margin: 1.7rem 0;
++      }
++
++      header h1 {
++        margin: 0;
++      }
++      header .tagline {
++        margin-top: 0;
++      }
++      header {
++        border-bottom: 2px solid black;
++      }
++      header a {
++        text-decoration: none;
++      }
++    &lt;/style&gt;
++  &lt;/head&gt;
++
++  &lt;body&gt;
++
++  &lt;header&gt;
++    &lt;h1&gt;&lt;a href=&quot;/&quot;&gt;My Site&lt;/a&gt;&lt;/h1&gt;
++    &lt;p class=&quot;tagline&quot;&gt;And it&amp;#39;s fine.&lt;/p&gt;
++  &lt;/header&gt;
++
++  &lt;main&gt;
++  
++&lt;p&gt;All posts, newest first:&lt;/p&gt;
++
++&lt;ul&gt;
++    
++    
++    &lt;li&gt;
++      0001-01-01
++      — &lt;a href=&quot;about/index.html&quot;&gt;About&lt;/a&gt;
++    &lt;/li&gt;
++    
++    
++    
++    &lt;li&gt;
++      0001-01-01
++      — &lt;a href=&quot;hello/index.html&quot;&gt;Hello&lt;/a&gt;
++    &lt;/li&gt;
++    
++    
++&lt;/ul&gt;
++
++&lt;style&gt;
++    ul a {
++        text-decoration: none;
++    }
++
++    ul {
++        padding: 0;
++        list-style-type: none;
++        font-size: 1.1rem;
++    }
++&lt;/style&gt;
++
++  &lt;/main&gt;
++
++  &lt;/body&gt;
++&lt;/html&gt;
+diff --git a/www/website.toml b/www/website.toml
+index 0b0fc98..22d4218 100644
+--- a/www/website.toml
++++ b/www/website.toml
+@@ -1,2 +1,3 @@
+ Name = &quot;My Site&quot;
+ Tagline = &quot;And it&#39;s fine.&quot;
++HomePath = &quot;/&quot;
+</pre></body></html>

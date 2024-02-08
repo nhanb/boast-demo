@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[3557c2479c] toggle following | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 3557c2479c</strong><hr><pre>commit 3557c2479ca9abfe91c9b0c0a959591e1a5ffa04
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 23 19:59:42 2020 +0700
+
+    toggle following
+
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index c155e13..14e9630 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -514,3 +514,18 @@ def api_search(query):
+                 &quot;proxy_view&quot;, b64_url=_encode_proxy_url(title[&quot;thumbnail&quot;])
+             )
+     return results
++
++
++@app.route(&quot;/api/follow&quot;, methods=[&quot;POST&quot;])
++@process_token(required=True)
++def api_follow():
++    should_follow = request.json[&quot;follow&quot;]
++    site = request.json[&quot;site&quot;]
++    title_id = request.json[&quot;title_id&quot;]
++
++    if should_follow:
++        follow(request.user_id, site, title_id)
++    else:
++        unfollow(request.user_id, site, title_id)
++
++    return jsonify({&quot;follow&quot;: should_follow})
+diff --git a/src/pytaku/static/js/routes/title.js b/src/pytaku/static/js/routes/title.js
+index 186ae17..529bceb 100644
+--- a/src/pytaku/static/js/routes/title.js
++++ b/src/pytaku/static/js/routes/title.js
+@@ -3,6 +3,7 @@ import { LoadingMessage, Button, fullChapterName, Chapter } from &quot;../utils.js&quot;;
+ 
+ function Title(initialVNode) {
+   let isLoading = false;
++  let isTogglingFollow = false;
+   let title = {};
+ 
+   return {
+@@ -37,9 +38,36 @@ function Title(initialVNode) {
+               m(&quot;div.title--details&quot;, [
+                 Auth.isLoggedIn()
+                   ? m(Button, {
+-                      text: &quot;Follow&quot;,
+                       icon: &quot;bookmark&quot;,
+-                      color: &quot;green&quot;,
++                      disabled: isTogglingFollow ? &quot;disabled&quot; : null,
++                      text: isTogglingFollow
++                        ? &quot;submitting...&quot;
++                        : title.is_following
++                        ? &quot;following&quot;
++                        : &quot;follow&quot;,
++                      color: title.is_following ? &quot;red&quot; : &quot;green&quot;,
++                      title: title.is_following
++                        ? &quot;Click to unfollow&quot;
++                        : &quot;Click to follow&quot;,
++                      onclick: (ev) =&gt; {
++                        isTogglingFollow = true;
++                        m.redraw();
++                        Auth.request({
++                          method: &quot;POST&quot;,
++                          url: &quot;/api/follow&quot;,
++                          body: {
++                            site: title.site,
++                            title_id: title.id,
++                            follow: !title.is_following,
++                          },
++                        })
++                          .then((resp) =&gt; {
++                            title.is_following = resp.follow;
++                          })
++                          .finally(() =&gt; {
++                            isTogglingFollow = false;
++                          });
++                      },
+                     })
+                   : null,
+                 &quot; &quot;,
+diff --git a/src/pytaku/static/lookandfeel.css b/src/pytaku/static/lookandfeel.css
+index b874b45..3e3fd64 100644
+--- a/src/pytaku/static/lookandfeel.css
++++ b/src/pytaku/static/lookandfeel.css
+@@ -114,6 +114,7 @@ button[disabled]:active {
+   filter: none;
+   cursor: default;
+   opacity: 0.5;
++  color: #222;
+ }
+ a.touch-friendly {
+   background-color: white;
+</pre></body></html>

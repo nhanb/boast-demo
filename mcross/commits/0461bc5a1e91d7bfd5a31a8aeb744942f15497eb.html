@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[0461bc5a1e] wrap words instead of char | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 0461bc5a1e</strong><hr><pre>commit 0461bc5a1e91d7bfd5a31a8aeb744942f15497eb
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri May 29 20:27:01 2020 +0700
+
+    wrap words instead of char
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 9ab432d..0412c9c 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;mcross&quot;
+-version = &quot;0.5.8&quot;
++version = &quot;0.5.9&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index 33adee0..d4a8a5a 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -125,7 +125,7 @@ def on_ctrl_l(ev):
+         go_btn.pack(side=&quot;left&quot;, pady=3)
+ 
+         # Main viewport implemented as a Text widget.
+-        text = ReadOnlyText(row2)
++        text = ReadOnlyText(row2, wrap=&quot;word&quot;)
+         self.text = text
+         self.render_page()
+         text_font = pick_font(
+</pre></body></html>

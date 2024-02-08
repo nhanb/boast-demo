@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1f35ebe18f] redirects: clean up generated files on failure | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 1f35ebe18f</strong><hr><pre>commit 1f35ebe18f5ce36a72d271ba16f895f769417705
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jul 22 15:32:15 2023 +0700
+
+    redirects: clean up generated files on failure
+
+diff --git a/README.md b/README.md
+index 34f8944..03a3bc8 100644
+--- a/README.md
++++ b/README.md
+@@ -7,13 +7,14 @@
+ layout _is_ finished website layout; static assets no longer need to be moved
+ around) and publishing (simply `rsync`/`git push` your whole dir). It aims to
+ be beginner-friendly while encouraging users to fiddle with html/css. To that
+-end, the core feature set is purposefully simple:
++end, the core feature set is intentionally simple:
+ 
+ - [x] Finds all `*.dj` files, generates `*.html` in the same place
+     + Per-page metadata allows using custom template
+ - [x] Generates home page, which is just a predefined `index.dj` + custom
+   template. This means the user is free to swap in their own custom home page.
+ - [x] Generates RSS/Atom feed
++- [x] Generates redirects from a `redirects.txt` file
+ 
+ Quality-of-life features are not neglected:
+ 
+diff --git a/redirects.go b/redirects.go
+index 5c1c54e..a02e42c 100644
+--- a/redirects.go
++++ b/redirects.go
+@@ -14,7 +14,9 @@
+ )
+ 
+ // Returns list of generated files
+-func generateRedirects(fsys writablefs.FS, path string, root string) ([]string, *errs.UserErr) {
++func generateRedirects(
++	fsys writablefs.FS, path string, root string,
++) (generated []string, uerr *errs.UserErr) {
+ 	f, err := fsys.Open(path)
+ 	if err != nil {
+ 		panic(err)
+@@ -22,6 +24,7 @@ func generateRedirects(fsys writablefs.FS, path string, root string) ([]string,
+ 
+ 	var sources, dests []string
+ 
++	// Collect redirects, short circuit if any error found
+ 	s := bufio.NewScanner(f)
+ 	lineNo := 0
+ 	for s.Scan() {
+@@ -65,28 +68,38 @@ func generateRedirects(fsys writablefs.FS, path string, root string) ([]string,
+ 		dests = append(dests, dest)
+ 	}
+ 
++	// Actually generate html redirect files
++	cleanUp := func() {
++		for _, path := range generated {
++			fsys.RemoveAll(path)
++		}
++	}
+ 	for i, src := range sources {
+ 		srcDir := filepath.Dir(src)
+ 		err := fsys.MkdirAll(srcDir)
+ 		if err != nil {
++			cleanUp()
+ 			panic(err)
+ 		}
+ 
+ 		var srcBuf bytes.Buffer
+ 		err = srcTmpl.Execute(&amp;srcBuf, root+dests[i])
+ 		if err != nil {
++			cleanUp()
+ 			panic(err)
+ 		}
+ 
+ 		err = fsys.WriteFile(src, srcBuf.Bytes())
+ 		if err != nil {
++			cleanUp()
+ 			panic(err)
+ 		}
+ 
+ 		fmt.Printf(&quot;Redirect: %s -&gt; %s\n&quot;, src, dests[i])
++		generated = append(generated, src)
+ 	}
+ 
+-	return sources, nil
++	return generated, nil
+ }
+ 
+ var srcTmpl = template.Must(template.New(&quot;src&quot;).Parse(`&lt;!DOCTYPE html&gt;
+</pre></body></html>

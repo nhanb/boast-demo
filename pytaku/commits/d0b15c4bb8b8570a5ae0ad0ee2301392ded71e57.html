@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[d0b15c4bb8] build js _before_ python package | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / d0b15c4bb8</strong><hr><pre>commit d0b15c4bb8b8570a5ae0ad0ee2301392ded71e57
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 13 20:49:55 2020 +0700
+
+    build js _before_ python package
+
+diff --git a/.builds/ubuntu.yml b/.builds/ubuntu.yml
+index 5949d7c..e920897 100644
+--- a/.builds/ubuntu.yml
++++ b/.builds/ubuntu.yml
+@@ -51,13 +51,13 @@ tasks:
+ 
+   - build: |
+       cd pytaku
+-      source ~/venv/bin/activate
+-      poetry build
+       npm install -g --prefix ~/.node_modules esbuild
+       ~/.node_modules/bin/esbuild \
+         src/pytaku/js-src/main.js \
+         --bundle --sourcemap --minify \
+         --outfile=src/pytaku/static/js/main.min.js
++      source ~/venv/bin/activate
++      poetry build
+ 
+   # Builds.sr.ht doesn&#39;t support tag or even branch detection yet:
+   # &gt; https://todo.sr.ht/~sircmpwn/builds.sr.ht/170
+diff --git a/pyproject.toml b/pyproject.toml
+index b9f3a5e..be89ed1 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.20&quot;
++version = &quot;0.3.21&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+</pre></body></html>

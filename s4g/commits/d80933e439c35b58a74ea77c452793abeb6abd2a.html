@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[d80933e439] header autolink | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / d80933e439</strong><hr><pre>commit d80933e439c35b58a74ea77c452793abeb6abd2a
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 31 19:30:34 2023 +0700
+
+    header autolink
+
+diff --git a/Makefile b/Makefile
+index d9bbd9c..95570dc 100644
+--- a/Makefile
++++ b/Makefile
+@@ -3,7 +3,7 @@ build:
+ 
+ watch:
+ 	fd -E docs -E theme | entr -rc -s \
+-		&#39;go build -o dist/ &amp;&amp; ./dist/s4g serve -f docs -p 8000&#39;
++		&#39;go build -o dist/ &amp;&amp; ./dist/s4g serve -f docs -p 3338&#39;
+ 
+ watch-theme:
+ 	find theme/* | entr -c rsync -av theme/ docs/_s4g/theme/
+diff --git a/djot/js/main.js b/djot/js/main.js
+index 2d84655..bd4d4df 100644
+--- a/djot/js/main.js
++++ b/djot/js/main.js
+@@ -31,7 +31,22 @@ function concatTypedArray(former, latter) {
+ 
+ function handleMessage(msg) {
+   const input = new TextDecoder().decode(msg);
+-  const output = djot.renderHTML(djot.parse(input));
++  const ast = djot.parse(input);
++  djot.applyFilter(ast, createHeadingLinks);
++  const output = djot.renderHTML(ast);
+   const outputBytes = new TextEncoder().encode(output);
+   process.stdout.write(concatTypedArray(outputBytes, END));
+ }
++
++function createHeadingLinks() {
++  return {
++    section: (e) =&gt; {
++      e.children[0].children.push({
++        tag: &quot;link&quot;,
++        destination: &quot;#&quot; + e.attributes.id,
++        children: [{ tag: &quot;str&quot;, text: &quot;#&quot; }],
++        attributes: { class: &quot;heading-link&quot; },
++      });
++    },
++  };
++}
+diff --git a/docs/_s4g/theme/base.css b/docs/_s4g/theme/base.css
+index c5cb7f3..db89b40 100644
+--- a/docs/_s4g/theme/base.css
++++ b/docs/_s4g/theme/base.css
+@@ -18,6 +18,24 @@ a[target=&quot;_blank&quot;]::after {
+   content: &quot;↗&quot;;
+ }
+ 
++a.heading-link {
++  text-decoration: none;
++  margin-left: 0.3em;
++  visibility: hidden;
++}
++:hover &gt; a.heading-link {
++  visibility: visible;
++}
++section:target &gt; h2,
++section:target &gt; h3,
++section:target &gt; h4,
++section:target &gt; h5,
++section:target &gt; h6 {
++  background-color: #beefff;
++  margin-left: -1rem;
++  padding-left: 1rem;
++}
++
+ main img,
+ main video {
+   max-width: 100%;
+diff --git a/docs/about/index.html b/docs/about/index.html
+index 691703d..3620deb 100644
+--- a/docs/about/index.html
++++ b/docs/about/index.html
+@@ -35,14 +35,14 @@ &lt;h1&gt;About&lt;/h1&gt;
+ &lt;p&gt;The articles themselves are just, uh, &lt;em&gt;colorful&lt;/em&gt; lorem ipsums.
+ Don’t worry too much about their actual content.&lt;/p&gt;
+ &lt;section id=&quot;Sales-pitch&quot;&gt;
+-&lt;h2&gt;Sales pitch&lt;/h2&gt;
++&lt;h2&gt;Sales pitch&lt;a href=&quot;#Sales-pitch&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;s4g aims to assist, not obscure. All it does is reading &lt;code&gt;.dj&lt;/code&gt; files and
+ spitting out &lt;code&gt;.html&lt;/code&gt;s, leaving unrelated files alone. This means the user is
+ free to structure their web directory however they want, and relative links
+ work out of the box.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Features&quot;&gt;
+-&lt;h2&gt;Features&lt;/h2&gt;
++&lt;h2&gt;Features&lt;a href=&quot;#Features&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;So far we have:&lt;/p&gt;
+ &lt;ul&gt;
+ &lt;li&gt;
+diff --git a/docs/mfws.html b/docs/mfws.html
+index b85bf6a..bb9a840 100644
+--- a/docs/mfws.html
++++ b/docs/mfws.html
+@@ -37,7 +37,7 @@ &lt;h1&gt;This is a motherfucking website.&lt;/h1&gt;
+ 
+ &lt;p&gt;And it’s fucking perfect.&lt;/p&gt;
+ &lt;section id=&quot;Seriously-what-the-fuck-else-do-you-want&quot;&gt;
+-&lt;h2&gt;Seriously, what the fuck else do you want?&lt;/h2&gt;
++&lt;h2&gt;Seriously, what the fuck else do you want?&lt;a href=&quot;#Seriously-what-the-fuck-else-do-you-want&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;You probably build websites and think your shit is special. You think your 13
+ megabyte parallax-ative home page is going to get you some fucking Awwward
+ banner you can glue to the top corner of your site. You think your 40-pound
+@@ -62,7 +62,7 @@ &lt;h2&gt;Seriously, what the fuck else do you want?&lt;/h2&gt;
+ &lt;/li&gt;
+ &lt;/ul&gt;
+ &lt;section id=&quot;Well-guess-what-motherfucker&quot;&gt;
+-&lt;h3&gt;Well guess what, motherfucker:&lt;/h3&gt;
++&lt;h3&gt;Well guess what, motherfucker:&lt;a href=&quot;#Well-guess-what-motherfucker&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;You. Are. Over-designing. Look at this shit. It’s a motherfucking website. Why
+ the fuck do you need to animate a fucking trendy-ass banner flag when I hover
+ over that useless piece of shit? You spent hours on it and added 80 kilobytes
+@@ -73,7 +73,7 @@ &lt;h3&gt;Well guess what, motherfucker:&lt;/h3&gt;
+ &lt;/section&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;It-s-fucking-lightweight&quot;&gt;
+-&lt;h2&gt;It’s fucking lightweight&lt;/h2&gt;
++&lt;h2&gt;It’s fucking lightweight&lt;a href=&quot;#It-s-fucking-lightweight&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;This entire page weighs less than the gradient-meshed facebook logo on your
+ fucking Wordpress site. Did you seriously load 100kb of jQuery UI just so you
+ could animate the fucking background color of a div? You loaded all 7 fontfaces
+@@ -81,14 +81,14 @@ &lt;h2&gt;It’s fucking lightweight&lt;/h2&gt;
+ beginning of your site? You piece of shit.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;It-s-responsive&quot;&gt;
+-&lt;h2&gt;It’s responsive&lt;/h2&gt;
++&lt;h2&gt;It’s responsive&lt;a href=&quot;#It-s-responsive&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;You dumbass. You thought you needed media queries to be responsive, but no.
+ Responsive means that it responds to whatever motherfucking screensize it’s
+ viewed on. This site doesn’t care if you’re on an iMac or a motherfucking
+ Tamagotchi.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;It-fucking-works&quot;&gt;
+-&lt;h2&gt;It fucking works&lt;/h2&gt;
++&lt;h2&gt;It fucking works&lt;a href=&quot;#It-fucking-works&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Look at this shit. You can read it … that is, if you can read, motherfucker.
+ It makes sense. It has motherfucking hierarchy. It’s using HTML5 tags so you
+ and your bitch-ass browser know what the fuck’s in this fucking site. That’s
+@@ -99,14 +99,14 @@ &lt;h2&gt;It fucking works&lt;/h2&gt;
+ &lt;p&gt;Cross-browser compatibility? Load this motherfucker in IE6. I fucking dare you.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;This-is-a-website-Look-at-it-You-ve-never-seen-one-before&quot;&gt;
+-&lt;h2&gt;This is a website. Look at it. You’ve never seen one before.&lt;/h2&gt;
++&lt;h2&gt;This is a website. Look at it. You’ve never seen one before.&lt;a href=&quot;#This-is-a-website-Look-at-it-You-ve-never-seen-one-before&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Like the man who’s never grown out his beard has no idea what his true natural
+ state is, you have no fucking idea what a website is. All you have ever seen
+ are shitty skeuomorphic bastardizations of what should be text communicating a
+ fucking message. This is a real, naked website. Look at it. It’s fucking
+ beautiful.&lt;/p&gt;
+ &lt;section id=&quot;Yes-this-is-fucking-satire-you-fuck&quot;&gt;
+-&lt;h3&gt;Yes, this is fucking satire, you fuck&lt;/h3&gt;
++&lt;h3&gt;Yes, this is fucking satire, you fuck&lt;a href=&quot;#Yes-this-is-fucking-satire-you-fuck&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;I’m not actually saying your shitty site should look like this. What I’m saying
+ is that all the problems we have with websites are &lt;strong&gt;ones we create ourselves&lt;/strong&gt;.
+ Websites aren’t broken by default, they are functional, high-performing, and
+@@ -119,7 +119,7 @@ &lt;h3&gt;Yes, this is fucking satire, you fuck&lt;/h3&gt;
+ &lt;/section&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Epilogue&quot;&gt;
+-&lt;h2&gt;Epilogue&lt;/h2&gt;
++&lt;h2&gt;Epilogue&lt;a href=&quot;#Epilogue&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;From the philosophies expressed (poorly) above, &lt;a href=&quot;http://txti.es/&quot;&gt;txti&lt;/a&gt; was
+ created. You should try it today to make your own motherfucking websites.&lt;/p&gt;
+ &lt;hr&gt;
+diff --git a/docs/scale/index.html b/docs/scale/index.html
+index b0e33c7..3be053f 100644
+--- a/docs/scale/index.html
++++ b/docs/scale/index.html
+@@ -43,7 +43,7 @@ &lt;h1&gt;I&amp;#39;m Going To Scale My Foot Up Your Ass&lt;/h1&gt;
+ our blog.  Once that post hits Reddit, son, everyone will know how hardcore you
+ really are.  Respect.&lt;/p&gt;
+ &lt;section id=&quot;People-Who-Talk-Big-About-Scalability-Don-t-Need-To-Worry-About-It&quot;&gt;
+-&lt;h2&gt;People Who Talk Big About Scalability Don’t Need To Worry About It&lt;/h2&gt;
++&lt;h2&gt;People Who Talk Big About Scalability Don’t Need To Worry About It&lt;a href=&quot;#People-Who-Talk-Big-About-Scalability-Don-t-Need-To-Worry-About-It&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Fact:  every chest-thumping blog post I have seen written about scalability is
+ either about architecture, Memcached, or both.  Some asshole who writes shitty
+ code starts pontificating about &lt;em&gt;“scalable architecture”&lt;/em&gt; with data storage,
+@@ -56,7 +56,7 @@ &lt;h2&gt;People Who Talk Big About Scalability Don’t Need To Worry About It&lt;/h2&gt;
+ welcome to the modern age.  Hope you know what a cache expiry policy is.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;If-You-Haven-t-Discussed-Capacity-Planning-You-Can-t-Discuss-Scalability&quot;&gt;
+-&lt;h2&gt;If You Haven’t Discussed Capacity Planning, You Can’t Discuss Scalability&lt;/h2&gt;
++&lt;h2&gt;If You Haven’t Discussed Capacity Planning, You Can’t Discuss Scalability&lt;a href=&quot;#If-You-Haven-t-Discussed-Capacity-Planning-You-Can-t-Discuss-Scalability&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;You don’t need to worry about scalability on your Rails-over-Mysql application
+ because nobody is going to use it.  Really.  Believe me.  You’re going to get,
+ at most, 1,000 people on your app, and maybe 1% of them will be 7-day active.
+@@ -75,7 +75,7 @@ &lt;h2&gt;If You Haven’t Discussed Capacity Planning, You Can’t Discuss Scalabilit
+ Amazon datacenters”.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Choosing-Technology-Don-t-Mean-Shit-If-You-Don-t-Know-How-To-Use-It&quot;&gt;
+-&lt;h2&gt;Choosing Technology Don’t Mean Shit If You Don’t Know How To Use It&lt;/h2&gt;
++&lt;h2&gt;Choosing Technology Don’t Mean Shit If You Don’t Know How To Use It&lt;a href=&quot;#Choosing-Technology-Don-t-Mean-Shit-If-You-Don-t-Know-How-To-Use-It&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;The most common butthurt about scalability is this:  choose a technology.  If
+ you like the technology, claim &lt;em&gt;“technology X scales better!”&lt;/em&gt; If you don’t
+ like it, claim &lt;em&gt;“technology X doesn’t scale!”&lt;/em&gt;&lt;/p&gt;
+@@ -88,7 +88,7 @@ &lt;h2&gt;Choosing Technology Don’t Mean Shit If You Don’t Know How To Use It&lt;/h2&gt;
+ chances are, you’re doing it wrong.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;tl-dr&quot;&gt;
+-&lt;h2&gt;tl;dr&lt;/h2&gt;
++&lt;h2&gt;tl;dr&lt;a href=&quot;#tl-dr&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Shut up about scalability, no one is using your app anyway.&lt;/p&gt;
+ &lt;style&gt;
+ img[alt=&quot;scaleboner&quot;] { float: right; }
+diff --git a/theme/base.css b/theme/base.css
+index c5cb7f3..db89b40 100644
+--- a/theme/base.css
++++ b/theme/base.css
+@@ -18,6 +18,24 @@ a[target=&quot;_blank&quot;]::after {
+   content: &quot;↗&quot;;
+ }
+ 
++a.heading-link {
++  text-decoration: none;
++  margin-left: 0.3em;
++  visibility: hidden;
++}
++:hover &gt; a.heading-link {
++  visibility: visible;
++}
++section:target &gt; h2,
++section:target &gt; h3,
++section:target &gt; h4,
++section:target &gt; h5,
++section:target &gt; h6 {
++  background-color: #beefff;
++  margin-left: -1rem;
++  padding-left: 1rem;
++}
++
+ main img,
+ main video {
+   max-width: 100%;
+</pre></body></html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[fbc85a9b87] notes: sshd: add link to Arch wiki | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / fbc85a9b87</strong><hr><pre>commit fbc85a9b87647db7e0ed72509701b31188752b51
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Sep 19 14:53:30 2023 +0700
+
+    notes: sshd: add link to Arch wiki
+
+diff --git a/notes.dj b/notes.dj
+index 95046a0..70198df 100644
+--- a/notes.dj
++++ b/notes.dj
+@@ -3,7 +3,9 @@ PostedAt: 2023-09-18 23:21
+ ShowInFeed: false
+ ---
+ 
+-## sftp/sshfs only
++## sftp/sshfs only ssh config
++
++Useful for, say, a static web hosting service that deploys via rsync.
+ 
+ Per [Hacker News](https://news.ycombinator.com/item?id=37390184#37427965):
+ 
+@@ -19,3 +21,5 @@ Per [Hacker News](https://news.ycombinator.com/item?id=37390184#37427965):
+ &gt; GatewayPorts no
+ &gt; X11Forwarding no
+ &gt; ```
++
++See also: &lt;https://wiki.archlinux.org/title/SFTP_chroot&gt;
+diff --git a/notes.html b/notes.html
+index 6159d97..174aa41 100644
+--- a/notes.html
++++ b/notes.html
+@@ -40,8 +40,9 @@
+ 
+ &lt;h1&gt;Notes&lt;/h1&gt;
+ 
+-&lt;section id=&quot;sftp-sshfs-only&quot;&gt;
+-&lt;h2&gt;sftp/sshfs only&lt;a href=&quot;#sftp-sshfs-only&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
++&lt;section id=&quot;sftp-sshfs-only-ssh-config&quot;&gt;
++&lt;h2&gt;sftp/sshfs only ssh config&lt;a href=&quot;#sftp-sshfs-only-ssh-config&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
++&lt;p&gt;Useful for, say, a static web hosting service that deploys via rsync.&lt;/p&gt;
+ &lt;p&gt;Per &lt;a href=&quot;https://news.ycombinator.com/item?id=37390184#37427965&quot;&gt;Hacker News&lt;/a&gt;:&lt;/p&gt;
+ &lt;blockquote&gt;
+ &lt;p&gt;If the user account is only supposed to have file transfer capabilities/no
+@@ -55,6 +56,7 @@ &lt;h2&gt;sftp/sshfs only&lt;a href=&quot;#sftp-sshfs-only&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ X11Forwarding no
+ &lt;/code&gt;&lt;/pre&gt;
+ &lt;/blockquote&gt;
++&lt;p&gt;See also: &lt;a href=&quot;https://wiki.archlinux.org/title/SFTP_chroot&quot;&gt;https://wiki.archlinux.org/title/SFTP_chroot&lt;/a&gt;&lt;/p&gt;
+ &lt;/section&gt;
+ 
+ &lt;/main&gt;
+</pre></body></html>

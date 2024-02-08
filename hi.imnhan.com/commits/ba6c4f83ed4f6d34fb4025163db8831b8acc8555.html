@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ba6c4f83ed] better spaced series-container | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / ba6c4f83ed</strong><hr><pre>commit ba6c4f83ed4f6d34fb4025163db8831b8acc8555
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Nov 28 21:06:10 2023 +0700
+
+    better spaced series-container
+
+diff --git a/_s4g/theme/post.tmpl b/_s4g/theme/post.tmpl
+index 15fa7c6..a5036c7 100644
+--- a/_s4g/theme/post.tmpl
++++ b/_s4g/theme/post.tmpl
+@@ -11,7 +11,6 @@
+   This post is part of
+   &lt;a href=&quot;{{.Post.Parent.WebPath}}&quot;&gt;{{.Post.Parent.Title}}&lt;/a&gt;
+ &lt;/em&gt;
+-&lt;hr&gt;
+ {{- end }}
+ 
+ &lt;h1&gt;{{.Post.Title}}&lt;/h1&gt;
+@@ -29,7 +28,7 @@
+     {{- range .Post.Parent.Children }}
+       {{ if not .IsDraft -}}
+       &lt;li&gt;&lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+-          {{- if eq $.Post.WebPath .WebPath }} (you are here) {{- end -}}
++          {{- if eq $.Post.WebPath .WebPath }} (you&amp;nbsp;are&amp;nbsp;here) {{- end -}}
+       &lt;/li&gt;
+       {{- end -}}
+     {{ end }}
+@@ -40,9 +39,16 @@
+     .series-container {
+       margin: 2rem 0;
+       padding: 0 1rem;
+-      border: 1px dashed #aaa;
++      border: 2px dashed #aaa;
++      border-radius: 0.3rem;
+       background-color: #eee;
+     }
++    .series-container li {
++      margin: 0.3rem;
++    }
++    .series-container p, .series-container ol {
++      margin: 0.8rem 0 1rem 0;
++    }
+   &lt;/style&gt;
+ {{ end -}}
+ 
+diff --git a/movie-streaming/gflick-fixed/index.html b/movie-streaming/gflick-fixed/index.html
+index 09c848b..011cb66 100644
+--- a/movie-streaming/gflick-fixed/index.html
++++ b/movie-streaming/gflick-fixed/index.html
+@@ -43,7 +43,6 @@
+   This post is part of
+   &lt;a href=&quot;/movie-streaming/&quot;&gt;The movie streaming saga&lt;/a&gt;
+ &lt;/em&gt;
+-&lt;hr&gt;
+ 
+ &lt;h1&gt;Streaming videos from Google Drive: a second attempt&lt;/h1&gt;
+ 
+@@ -151,7 +150,7 @@ &lt;h2&gt;In conclusion&lt;a href=&quot;#In-conclusion&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ 
+     &lt;ol&gt;
+       &lt;li&gt;&lt;a href=&quot;/movie-streaming/gflick/&quot;&gt;Towards an acceptable video playing experience&lt;/a&gt;&lt;/li&gt;
+-      &lt;li&gt;&lt;a href=&quot;/movie-streaming/gflick-fixed/&quot;&gt;Streaming videos from Google Drive: a second attempt&lt;/a&gt; (you are here)&lt;/li&gt;
++      &lt;li&gt;&lt;a href=&quot;/movie-streaming/gflick-fixed/&quot;&gt;Streaming videos from Google Drive: a second attempt&lt;/a&gt; (you&amp;nbsp;are&amp;nbsp;here)&lt;/li&gt;
+       &lt;li&gt;&lt;a href=&quot;/movie-streaming/put.io/&quot;&gt;The video streaming finale, or why put.io is awesome&lt;/a&gt;&lt;/li&gt;
+     &lt;/ol&gt;
+   &lt;/div&gt;
+@@ -160,9 +159,16 @@ &lt;h2&gt;In conclusion&lt;a href=&quot;#In-conclusion&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+     .series-container {
+       margin: 2rem 0;
+       padding: 0 1rem;
+-      border: 1px dashed #aaa;
++      border: 2px dashed #aaa;
++      border-radius: 0.3rem;
+       background-color: #eee;
+     }
++    .series-container li {
++      margin: 0.3rem;
++    }
++    .series-container p, .series-container ol {
++      margin: 0.8rem 0 1rem 0;
++    }
+   &lt;/style&gt;
+ &lt;/main&gt;
+ 
+diff --git a/movie-streaming/gflick/index.html b/movie-streaming/gflick/index.html
+index 16b22ba..26776dd 100644
+--- a/movie-streaming/gflick/index.html
++++ b/movie-streaming/gflick/index.html
+@@ -43,7 +43,6 @@
+   This post is part of
+   &lt;a href=&quot;/movie-streaming/&quot;&gt;The movie streaming saga&lt;/a&gt;
+ &lt;/em&gt;
+-&lt;hr&gt;
+ 
+ &lt;h1&gt;Towards an acceptable video playing experience&lt;/h1&gt;
+ 
+@@ -183,7 +182,7 @@ &lt;h2&gt;Other failed attempts&lt;a href=&quot;#Other-failed-attempts&quot; class=&quot;heading-link&quot;&gt;#
+     &lt;/p&gt;
+ 
+     &lt;ol&gt;
+-      &lt;li&gt;&lt;a href=&quot;/movie-streaming/gflick/&quot;&gt;Towards an acceptable video playing experience&lt;/a&gt; (you are here)&lt;/li&gt;
++      &lt;li&gt;&lt;a href=&quot;/movie-streaming/gflick/&quot;&gt;Towards an acceptable video playing experience&lt;/a&gt; (you&amp;nbsp;are&amp;nbsp;here)&lt;/li&gt;
+       &lt;li&gt;&lt;a href=&quot;/movie-streaming/gflick-fixed/&quot;&gt;Streaming videos from Google Drive: a second attempt&lt;/a&gt;&lt;/li&gt;
+       &lt;li&gt;&lt;a href=&quot;/movie-streaming/put.io/&quot;&gt;The video streaming finale, or why put.io is awesome&lt;/a&gt;&lt;/li&gt;
+     &lt;/ol&gt;
+@@ -193,9 +192,16 @@ &lt;h2&gt;Other failed attempts&lt;a href=&quot;#Other-failed-attempts&quot; class=&quot;heading-link&quot;&gt;#
+     .series-container {
+       margin: 2rem 0;
+       padding: 0 1rem;
+-      border: 1px dashed #aaa;
++      border: 2px dashed #aaa;
++      border-radius: 0.3rem;
+       background-color: #eee;
+     }
++    .series-container li {
++      margin: 0.3rem;
++    }
++    .series-container p, .series-container ol {
++      margin: 0.8rem 0 1rem 0;
++    }
+   &lt;/style&gt;
+ &lt;/main&gt;
+ 
+diff --git a/movie-streaming/put.io/index.html b/movie-streaming/put.io/index.html
+index 7b5f5cd..6ea12c5 100644
+--- a/movie-streaming/put.io/index.html
++++ b/movie-streaming/put.io/index.html
+@@ -43,7 +43,6 @@
+   This post is part of
+   &lt;a href=&quot;/movie-streaming/&quot;&gt;The movie streaming saga&lt;/a&gt;
+ &lt;/em&gt;
+-&lt;hr&gt;
+ 
+ &lt;h1&gt;The video streaming finale, or why put.io is awesome&lt;/h1&gt;
+ 
+@@ -82,7 +81,7 @@ &lt;h1&gt;The video streaming finale, or why put.io is awesome&lt;/h1&gt;
+     &lt;ol&gt;
+       &lt;li&gt;&lt;a href=&quot;/movie-streaming/gflick/&quot;&gt;Towards an acceptable video playing experience&lt;/a&gt;&lt;/li&gt;
+       &lt;li&gt;&lt;a href=&quot;/movie-streaming/gflick-fixed/&quot;&gt;Streaming videos from Google Drive: a second attempt&lt;/a&gt;&lt;/li&gt;
+-      &lt;li&gt;&lt;a href=&quot;/movie-streaming/put.io/&quot;&gt;The video streaming finale, or why put.io is awesome&lt;/a&gt; (you are here)&lt;/li&gt;
++      &lt;li&gt;&lt;a href=&quot;/movie-streaming/put.io/&quot;&gt;The video streaming finale, or why put.io is awesome&lt;/a&gt; (you&amp;nbsp;are&amp;nbsp;here)&lt;/li&gt;
+     &lt;/ol&gt;
+   &lt;/div&gt;
+ 
+@@ -90,9 +89,16 @@ &lt;h1&gt;The video streaming finale, or why put.io is awesome&lt;/h1&gt;
+     .series-container {
+       margin: 2rem 0;
+       padding: 0 1rem;
+-      border: 1px dashed #aaa;
++      border: 2px dashed #aaa;
++      border-radius: 0.3rem;
+       background-color: #eee;
+     }
++    .series-container li {
++      margin: 0.3rem;
++    }
++    .series-container p, .series-container ol {
++      margin: 0.8rem 0 1rem 0;
++    }
+   &lt;/style&gt;
+ &lt;/main&gt;
+ 
+</pre></body></html>

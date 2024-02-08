@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[5d9fbc7245] add in-app browser source instruction | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 5d9fbc7245</strong><hr><pre>commit 5d9fbc72456d9306cbeb76e6c1a621ec789a32bd
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jun 18 17:13:44 2023 +0700
+
+    add in-app browser source instruction
+
+diff --git a/main.go b/main.go
+index 9602b59..f3a6e6c 100644
+--- a/main.go
++++ b/main.go
+@@ -73,6 +73,8 @@ func startGUI() {
+ 	b64icon := base64.StdEncoding.EncodeToString(gortsPngIcon)
+ 	fmt.Fprintf(stdin, &quot;seticon %s\n&quot;, b64icon)
+ 
++	fmt.Fprintf(stdin, &quot;set mainstatus \&quot;Point your OBS browser source to http://localhost:%s\&quot;\n&quot;, WebPort)
++
+ 	io.WriteString(stdin, &quot;readstate\n&quot;)
+ 
+ 	scanner := bufio.NewScanner(stdout)
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index f23fb36..92a5918 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -44,6 +44,7 @@ ttk::button .c.buttons.apply -text &quot;▶ Apply&quot; -command applystate
+ ttk::button .c.buttons.discard -text &quot;✖ Discard&quot; -state disabled
+ ttk::button .c.buttons.reset -text &quot;↶ Reset scores&quot; -state disabled
+ ttk::button .c.buttons.swap -text &quot;⇄ Swap players&quot; -state disabled
++ttk::label .c.status -textvariable mainstatus
+ 
+ grid .c -row 0 -column 0 -sticky NESW
+ grid .c.description -row 0 -column 0 -sticky NESW -pady {0 5}
+@@ -66,11 +67,12 @@ grid .c.players.p2score -row 3 -column 3
+ grid .c.players.p2win -row 3 -column 4 -padx {5 0} -rowspan 2 -sticky NS
+ grid .c.players.p2teamlbl -row 4 -column 0
+ grid .c.players.p2team -row 4 -column 1 -columnspan 3 -sticky EW
+-grid .c.buttons -row 5 -column 0 -sticky W -pady {10 0}
++grid .c.buttons -row 2 -column 0 -sticky W -pady {10 0}
+ grid .c.buttons.apply -row 0 -column 0
+ grid .c.buttons.discard -row 0 -column 1
+ grid .c.buttons.reset -row 0 -column 2
+ grid .c.buttons.swap -row 0 -column 3
++grid .c.status -row 3 -column 0 -columnspan 5 -pady {10 0} -sticky EW
+ 
+ grid columnconfigure .c.players 2 -pad 5
+ grid columnconfigure .c.buttons 1 -pad 15
+</pre></body></html>

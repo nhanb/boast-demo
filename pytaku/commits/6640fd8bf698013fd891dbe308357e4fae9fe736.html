@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[6640fd8bf6] remove cloudscraper | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 6640fd8bf6</strong><hr><pre>commit 6640fd8bf698013fd891dbe308357e4fae9fe736
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Oct 2 16:20:06 2021 +0700
+
+    remove cloudscraper
+    
+    Because we now depend on gae-proxy which does that anyway
+
+diff --git a/README.md b/README.md
+index 1d758dc..bef92b9 100644
+--- a/README.md
++++ b/README.md
+@@ -28,8 +28,6 @@ # Development
+ 
+ ```sh
+ ## Backend ##
+-doas pacman -S nodejs  # used by cloudscraper to bypass Cloudflare
+-
+ poetry install
+ pip install --upgrade pip
+ pip install https://github.com/rogerbinns/apsw/releases/download/3.34.0-r1/apsw-3.34.0-r1.zip \
+@@ -49,7 +47,7 @@ # run 2 processes:
+ 
+ ## Frontend ##
+ 
+-doas pacman -S entr  # to watch source files
++sudo pacman -S entr  # to watch source files
+ npm install -g --prefix ~/.node_modules esbuild # to bundle js
+ 
+ # Listen for changes in js-src dir, automatically build minified bundle:
+@@ -81,17 +79,24 @@ ## Code QA tools
+ - JavaScript: jshint, prettier
+ 
+ ```sh
+-doas pacman python-black python-isort flake8 prettier
++sudo pacman python-black python-isort flake8 prettier
+ npm install -g --prefix ~/.node_modules jshint
+ ```
+ 
+ # Production
+ 
+-This assumes Debian 11, consequently targeting python 3.9.
++I&#39;m running my instance on Debian 11, but any unix-like environment with these
++should work:
++
++- python3.7+
++- apws (on Debian, simply install the `python3-apsw` package)
++- the rest are all pypi packages that should be automatically installed when
++  you run `pip install pytaku`
++
++The following is a step-by-step guide on Debian 11.
+ 
+ ```sh
+-# nodejs is used by cloudscraper to bypass Cloudflare
+-sudo apt install nodejs python3-pip python3-apsw
++sudo apt install python3-pip python3-apsw
+ pip3 install --user pytaku
+ # now make sure ~/.local/bin is in your $PATH so pytaku commands are usable
+ 
+@@ -118,12 +123,13 @@ # then restart `pytaku` &amp; `pytaku-scheduler` processes
+ properly set up a firewall and a TLS-terminating reverse proxy e.g.
+ nginx/caddy, right?
+ 
+-Alternatively, just setup [tailscale](https://tailscale.com/) and let them
+-worry about access control and end-to-end encryption for you.
++Alternatively, just setup a personal [tailscale](https://tailscale.com/)
++network and let them worry about access control and end-to-end encryption for
++you.
+ 
+ # LICENSE
+ 
+-Copyright (C) 2021  Bùi Thành Nhân
++Copyright (C) 2021 Bùi Thành Nhân
+ 
+ This program is free software: you can redistribute it and/or modify it under
+ the terms of the GNU Affero General Public License version 3 as published by
+diff --git a/poetry.lock b/poetry.lock
+index 72bb155..57940f5 100644
+--- a/poetry.lock
++++ b/poetry.lock
+@@ -96,19 +96,6 @@ category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
+ 
+-[[package]]
+-name = &quot;cloudscraper&quot;
+-version = &quot;1.2.58&quot;
+-description = &quot;A Python module to bypass Cloudflare&#39;s anti-bot page.&quot;
+-category = &quot;main&quot;
+-optional = false
+-python-versions = &quot;*&quot;
+-
+-[package.dependencies]
+-pyparsing = &quot;&gt;=2.4.7&quot;
+-requests = &quot;&gt;=2.9.2&quot;
+-requests-toolbelt = &quot;&gt;=0.9.1&quot;
+-
+ [[package]]
+ name = &quot;colorama&quot;
+ version = &quot;0.4.4&quot;
+@@ -415,7 +402,7 @@ python-versions = &quot;&gt;=3.5&quot;
+ name = &quot;pyparsing&quot;
+ version = &quot;2.4.7&quot;
+ description = &quot;Python parsing module&quot;
+-category = &quot;main&quot;
++category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.6, !=3.0.*, !=3.1.*, !=3.2.*&quot;
+ 
+@@ -459,17 +446,6 @@ urllib3 = &quot;&gt;=1.21.1,&lt;1.27&quot;
+ security = [&quot;pyOpenSSL (&gt;=0.14)&quot;, &quot;cryptography (&gt;=1.3.4)&quot;]
+ socks = [&quot;PySocks (&gt;=1.5.6,!=1.5.7)&quot;, &quot;win-inet-pton&quot;]
+ 
+-[[package]]
+-name = &quot;requests-toolbelt&quot;
+-version = &quot;0.9.1&quot;
+-description = &quot;A utility belt for advanced users of python-requests&quot;
+-category = &quot;main&quot;
+-optional = false
+-python-versions = &quot;*&quot;
+-
+-[package.dependencies]
+-requests = &quot;&gt;=2.0.1,&lt;3.0.0&quot;
+-
+ [[package]]
+ name = &quot;six&quot;
+ version = &quot;1.16.0&quot;
+@@ -556,7 +532,7 @@ testing = [&quot;pytest (&gt;=4.6)&quot;, &quot;pytest-checkdocs (&gt;=1.2.3)&quot;, &quot;pytest-flake8&quot;, &quot;pyt
+ [metadata]
+ lock-version = &quot;1.1&quot;
+ python-versions = &quot;^3.7&quot;
+-content-hash = &quot;6ab6afb2d27321e79013421b33c1fa4011bdc5b33b04ffd20906b4a4122c0900&quot;
++content-hash = &quot;1753bef74f04a35a21914127fef75ab7bfc5c14e04c0c48613c0d637bcc6df91&quot;
+ 
+ [metadata.files]
+ appnope = [
+@@ -666,10 +642,6 @@ click = [
+     {file = &quot;click-7.1.2-py2.py3-none-any.whl&quot;, hash = &quot;sha256:dacca89f4bfadd5de3d7489b7c8a566eee0d3676333fbb50030263894c38c0dc&quot;},
+     {file = &quot;click-7.1.2.tar.gz&quot;, hash = &quot;sha256:d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a&quot;},
+ ]
+-cloudscraper = [
+-    {file = &quot;cloudscraper-1.2.58-py2.py3-none-any.whl&quot;, hash = &quot;sha256:674fd739f9412188aae8d6614e3e6316939fc0670ef5646abd3d316f1a59d3c2&quot;},
+-    {file = &quot;cloudscraper-1.2.58.tar.gz&quot;, hash = &quot;sha256:dda29028c5628b5ba3e4dc43816ed38fd46bd945ef938c420f185586a6d8dff2&quot;},
+-]
+ colorama = [
+     {file = &quot;colorama-0.4.4-py2.py3-none-any.whl&quot;, hash = &quot;sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2&quot;},
+     {file = &quot;colorama-0.4.4.tar.gz&quot;, hash = &quot;sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b&quot;},
+@@ -817,10 +789,6 @@ requests = [
+     {file = &quot;requests-2.25.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:c210084e36a42ae6b9219e00e48287def368a26d03a048ddad7bfee44f75871e&quot;},
+     {file = &quot;requests-2.25.1.tar.gz&quot;, hash = &quot;sha256:27973dd4a904a4f13b263a19c866c13b92a39ed1c964655f025f3f8d3d75b804&quot;},
+ ]
+-requests-toolbelt = [
+-    {file = &quot;requests-toolbelt-0.9.1.tar.gz&quot;, hash = &quot;sha256:968089d4584ad4ad7c171454f0a5c6dac23971e9472521ea3b6d49d610aa6fc0&quot;},
+-    {file = &quot;requests_toolbelt-0.9.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:380606e1d10dc85c3bd47bf5a6095f815ec007be7a8b69c878507068df059e6f&quot;},
+-]
+ six = [
+     {file = &quot;six-1.16.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254&quot;},
+     {file = &quot;six-1.16.0.tar.gz&quot;, hash = &quot;sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926&quot;},
+diff --git a/pyproject.toml b/pyproject.toml
+index 410ef49..1687773 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -27,7 +27,6 @@ requests = &quot;^2.24.0&quot;
+ goodconf = &quot;^1.0.0&quot;
+ argon2-cffi = &quot;^20.1.0&quot;
+ bbcode = &quot;^1.1.0&quot;
+-cloudscraper = &quot;^1.2.58&quot;
+ 
+ [tool.poetry.dev-dependencies]
+ pytest = &quot;^6.0.1&quot;
+diff --git a/src/mangoapi/base_site.py b/src/mangoapi/base_site.py
+index 8aaf1d6..7abb36f 100644
+--- a/src/mangoapi/base_site.py
++++ b/src/mangoapi/base_site.py
+@@ -1,7 +1,6 @@
+ from abc import ABC, abstractmethod
+ from urllib.parse import urlparse
+ 
+-import cloudscraper
+ import requests
+ 
+ from pytaku.conf import config
+@@ -14,11 +13,11 @@
+ 
+ 
+ def create_session():
+-    return cloudscraper.create_scraper(
+-        {
+-            &quot;mobile&quot;: False,
+-        }
+-    )
++    session = requests.Session()
++    session.headers[
++        &quot;User-Agent&quot;
++    ] = &quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36&quot;
++    return session
+ 
+ 
+ class Site(ABC):
+</pre></body></html>

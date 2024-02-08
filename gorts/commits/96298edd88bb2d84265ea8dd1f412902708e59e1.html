@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[96298edd88] more breathing room | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 96298edd88</strong><hr><pre>commit 96298edd88bb2d84265ea8dd1f412902708e59e1
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jun 20 18:06:35 2023 +0700
+
+    more breathing room
+
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index db4be7c..6f886e1 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -131,6 +131,8 @@ grid .c.status -row 4 -column 0 -columnspan 5 -pady {10 0} -sticky EW
+ grid columnconfigure .c.players 2 -pad 5
+ grid columnconfigure .c.buttons 1 -pad 15
+ grid columnconfigure .c.buttons 3 -pad 15
++grid rowconfigure .c.players 1 -pad 5
++grid rowconfigure .c.players 3 -pad 5
+ 
+ # The following procs constitute a very simple line-based IPC system where Tcl
+ # client talks to Go server via stdin/stdout.
+</pre></body></html>

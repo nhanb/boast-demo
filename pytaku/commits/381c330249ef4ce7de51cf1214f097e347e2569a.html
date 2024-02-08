@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[381c330249] mobile-friendly buttons in chapter/title routes | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 381c330249</strong><hr><pre>commit 381c330249ef4ce7de51cf1214f097e347e2569a
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 30 22:19:57 2020 +0700
+
+    mobile-friendly buttons in chapter/title routes
+
+diff --git a/pyproject.toml b/pyproject.toml
+index a6a01d1..74d273a 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.17&quot;
++version = &quot;0.3.18&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index ddce3da..4e591ac 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -341,9 +341,20 @@ .title--cover {
+ 
+ .title--details {
+   margin: 1rem 0;
++  display: flex;
+ }
+ .title--details &gt; * {
+   margin-right: 0.3rem;
++  flex-shrink: 1;
++}
++
++@media (max-width: 399px) {
++  .title--details {
++    flex-direction: column;
++  }
++  .title--details &gt; * {
++    margin: 0 0 0.3rem 0;
++  }
+ }
+ 
+ /* Chapter route */
+@@ -378,6 +389,14 @@ .chapter--buttons &gt; button:last-child {
+   margin-right: 0;
+ }
+ 
++@media (max-width: 349px) {
++  .chapter--buttons &gt; a,
++  .chapter--buttons &gt; button {
++    padding-left: 0.5rem;
++    padding-right: 0.5rem;
++  }
++}
++
+ /* Components defined in utils */
+ .utils--chapter {
+   margin-bottom: 0.5rem;
+</pre></body></html>

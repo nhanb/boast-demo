@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[dd995dd642] update mangasee cover image server | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / dd995dd642</strong><hr><pre>commit dd995dd6428f6b9edb7c71c8de7b88353604d230
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Oct 12 16:41:25 2020 +0700
+
+    update mangasee cover image server
+    
+    Also apparently latest `black` takes trailing slash in function argument
+    list into account, so in order to keep things in 1 line we&#39;ll need to
+    remove the trailing slash.
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 11c9416..763ce36 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.24&quot;
++version = &quot;0.3.25&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+index 3b07bf9..03d852d 100644
+--- a/src/mangoapi/mangasee.py
++++ b/src/mangoapi/mangasee.py
+@@ -117,7 +117,7 @@ def search_title(self, query):
+                 &quot;id&quot;: row[0],
+                 &quot;name&quot;: row[1],
+                 &quot;site&quot;: &quot;mangasee&quot;,
+-                &quot;thumbnail&quot;: f&quot;https://cover.mangabeast01.com/cover/{row[0]}.jpg&quot;,
++                &quot;thumbnail&quot;: f&quot;https://cover.nep.li/cover/{row[0]}.jpg&quot;,
+             }
+             for row in self.search_table.search(query)
+         ]
+@@ -126,7 +126,7 @@ def title_cover(self, title_id, cover_ext):
+         return self.title_thumbnail(title_id)
+ 
+     def title_thumbnail(self, title_id):
+-        return f&quot;https://cover.mangabeast01.com/cover/{title_id}.jpg&quot;
++        return f&quot;https://cover.nep.li/cover/{title_id}.jpg&quot;
+ 
+     def title_source_url(self, title_id):
+         return f&quot;https://mangasee123.com/manga/{title_id}&quot;
+@@ -148,13 +148,13 @@ def __init__(self, titles: list):
+             rows.append((id, name, &quot; &quot;.join(alt_names)))
+ 
+         cursor.executemany(
+-            &quot;INSERT INTO titles(id, name, alt_names) VALUES(?,?,?);&quot;, rows,
++            &quot;INSERT INTO titles(id, name, alt_names) VALUES(?,?,?);&quot;, rows
+         )
+ 
+     def search(self, query):
+         query = &#39;&quot;&#39; + query.replace(&#39;&quot;&#39;, &#39;&quot;&quot;&#39;) + &#39;&quot;&#39;
+         return self.db.cursor().execute(
+-            &quot;SELECT id, name FROM titles WHERE titles MATCH ? ORDER BY rank;&quot;, (query,),
++            &quot;SELECT id, name FROM titles WHERE titles MATCH ? ORDER BY rank;&quot;, (query,)
+         )
+ 
+ 
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 5729d9e..4152a89 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -371,7 +371,7 @@ def get_username(user_id):
+ 
+ def delete_token(token):
+     num_deleted = run_sql(
+-        &quot;DELETE FROM token WHERE token=?;&quot;, (token,), return_num_affected=True,
++        &quot;DELETE FROM token WHERE token=?;&quot;, (token,), return_num_affected=True
+     )
+     return num_deleted
+ 
+diff --git a/tests/mangoapi/test_mangasee.py b/tests/mangoapi/test_mangasee.py
+index b66d306..e4cb3b9 100644
+--- a/tests/mangoapi/test_mangasee.py
++++ b/tests/mangoapi/test_mangasee.py
+@@ -60,6 +60,6 @@ def set(self, key, val):
+             &quot;id&quot;: &quot;Sayonara-Football&quot;,
+             &quot;name&quot;: &quot;Sayonara Football&quot;,
+             &quot;site&quot;: &quot;mangasee&quot;,
+-            &quot;thumbnail&quot;: &quot;https://cover.mangabeast01.com/cover/Sayonara-Football.jpg&quot;,
++            &quot;thumbnail&quot;: &quot;https://cover.nep.li/cover/Sayonara-Football.jpg&quot;,
+         }
+     ]
+</pre></body></html>

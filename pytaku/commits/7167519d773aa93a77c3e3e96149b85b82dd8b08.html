@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[7167519d77] return db rows as dicts instead of tuples | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 7167519d77</strong><hr><pre>commit 7167519d773aa93a77c3e3e96149b85b82dd8b08
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 6 20:56:11 2020 +0700
+
+    return db rows as dicts instead of tuples
+    
+    also use run_sql whenever possible
+
+diff --git a/src/pytaku/database/common.py b/src/pytaku/database/common.py
+index 6701431..34d82bc 100644
+--- a/src/pytaku/database/common.py
++++ b/src/pytaku/database/common.py
+@@ -7,10 +7,20 @@
+ 
+ def get_conn():
+     global _conn
++
+     if not _conn:
+         _conn = apsw.Connection(DBNAME)
++
+         # Apparently you need to enable this pragma _per connection_
+         _conn.cursor().execute(&quot;PRAGMA foreign_keys = ON;&quot;)
++
++        # Return rows as dicts instead of tuples
++        _conn.setrowtrace(
++            lambda cursor, row: {
++                k[0]: row[i] for i, k in enumerate(cursor.getdescription())
++            }
++        )
++
+     return _conn
+ 
+ 
+diff --git a/src/pytaku/database/migrator.py b/src/pytaku/database/migrator.py
+index 670ed7d..c63519c 100644
+--- a/src/pytaku/database/migrator.py
++++ b/src/pytaku/database/migrator.py
+@@ -3,7 +3,7 @@
+ from pathlib import Path
+ 
+ from . import migrations
+-from .common import DBNAME, get_conn
++from .common import DBNAME, get_conn, run_sql
+ 
+ 
+ &quot;&quot;&quot;
+@@ -15,11 +15,7 @@
+ 
+ 
+ def _get_current_version():
+-    conn = get_conn()
+-    cur = conn.cursor()
+-    cur.execute(&quot;PRAGMA user_version;&quot;)
+-    version = int(cur.fetchone()[0])
+-    return version
++    return run_sql(&quot;PRAGMA user_version;&quot;)[0][&quot;user_version&quot;]
+ 
+ 
+ def _get_version(migration: Path):
+@@ -58,8 +54,7 @@ def _write_db_schema_script(migrations_dir: Path):
+ def migrate(overwrite_latest_schema=True):
+     # If there&#39;s no existing db, create one with the correct pragmas
+     if not Path(DBNAME).is_file():
+-        conn = get_conn()
+-        conn.cursor().execute(&quot;PRAGMA journal_mode = WAL;&quot;)
++        run_sql(&quot;PRAGMA journal_mode = WAL;&quot;)
+ 
+     with resources.path(migrations, &quot;&quot;) as migrations_dir:
+         pending_migrations = _get_pending_migrations(migrations_dir)
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index ab3a2be..6792d4a 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -3,12 +3,11 @@
+ import apsw
+ import argon2
+ 
+-from .database.common import get_conn, run_sql
++from .database.common import run_sql
+ 
+ 
+ def save_title(title):
+-    conn = get_conn()
+-    conn.cursor().execute(
++    run_sql(
+         &quot;&quot;&quot;
+     INSERT INTO title (
+         id,
+@@ -48,18 +47,15 @@ def save_title(title):
+ 
+ 
+ def load_title(site, title_id, user_id=None):
+-    conn = get_conn()
+-    result = list(
+-        conn.cursor().execute(
+-            &quot;&quot;&quot;
+-    SELECT id, name, site, cover_ext, chapters, alt_names, descriptions
+-    FROM title
+-    WHERE id = ?
+-      AND site = ?
+-      AND datetime(updated_at) &gt; datetime(&#39;now&#39;, &#39;-6 hours&#39;);
+-    &quot;&quot;&quot;,
+-            (title_id, site),
+-        )
++    result = run_sql(
++        &quot;&quot;&quot;
++        SELECT id, name, site, cover_ext, chapters, alt_names, descriptions
++        FROM title
++        WHERE id = ?
++          AND site = ?
++          AND datetime(updated_at) &gt; datetime(&#39;now&#39;, &#39;-6 hours&#39;);
++        &quot;&quot;&quot;,
++        (title_id, site),
+     )
+     if not result:
+         return None
+@@ -68,29 +64,21 @@ def load_title(site, title_id, user_id=None):
+     else:
+         title = result[0]
+ 
+-        return_val = {
+-            &quot;id&quot;: title[0],
+-            &quot;name&quot;: title[1],
+-            &quot;site&quot;: title[2],
+-            &quot;cover_ext&quot;: title[3],
+-            &quot;chapters&quot;: json.loads(title[4]),
+-            &quot;alt_names&quot;: json.loads(title[5]),
+-            &quot;descriptions&quot;: json.loads(title[6]),
+-        }
++        for field in [&quot;chapters&quot;, &quot;alt_names&quot;, &quot;descriptions&quot;]:
++            title[field] = json.loads(title[field])
+ 
+         if user_id is not None:
+-            return_val[&quot;is_following&quot;] = bool(
++            title[&quot;is_following&quot;] = bool(
+                 run_sql(
+                     &quot;SELECT 1 FROM follow WHERE user_id=? AND site=? AND title_id=?;&quot;,
+-                    (user_id, site, return_val[&quot;id&quot;]),
++                    (user_id, site, title[&quot;id&quot;]),
+                 )
+             )
+-        return return_val
++        return title
+ 
+ 
+ def save_chapter(chapter):
+-    conn = get_conn()
+-    conn.cursor().execute(
++    run_sql(
+         &quot;&quot;&quot;
+     INSERT INTO chapter (
+         id,
+@@ -129,33 +117,20 @@ def save_chapter(chapter):
+ 
+ 
+ def load_chapter(site, chapter_id):
+-    conn = get_conn()
+-    result = list(
+-        conn.cursor().execute(
+-            &quot;&quot;&quot;
+-    SELECT id, title_id, num_major, num_minor, name, pages, groups, is_webtoon
+-    FROM chapter
+-    WHERE id = ? AND site=?;
+-    &quot;&quot;&quot;,
+-            (chapter_id, site),
+-        )
++    result = run_sql(
++        &quot;&quot;&quot;
++        SELECT id, title_id, num_major, num_minor, name, pages, groups, is_webtoon
++        FROM chapter
++        WHERE id = ? AND site=?;
++        &quot;&quot;&quot;,
++        (chapter_id, site),
+     )
+     if not result:
+         return None
+     elif len(result) &gt; 1:
+         raise Exception(f&quot;Found multiple results for chapter_id {chapter_id}!&quot;)
+     else:
+-        chapter = result[0]
+-        return {
+-            &quot;id&quot;: chapter[0],
+-            &quot;title_id&quot;: chapter[1],
+-            &quot;num_major&quot;: chapter[2],
+-            &quot;num_minor&quot;: chapter[3],
+-            &quot;name&quot;: chapter[4],
+-            &quot;pages&quot;: json.loads(chapter[5]),
+-            &quot;groups&quot;: json.loads(chapter[6]),
+-            &quot;is_webtoon&quot;: chapter[7],
+-        }
++        return result[0]
+ 
+ 
+ def get_prev_next_chapters(title, chapter):
+@@ -181,7 +156,7 @@ def register_user(username, password):
+     hasher = argon2.PasswordHasher()
+     hashed_password = hasher.hash(password)
+     try:
+-        get_conn().cursor().execute(
++        run_sql(
+             &quot;INSERT INTO user (username, password) VALUES (?, ?);&quot;,
+             (username, hashed_password),
+         )
+@@ -193,18 +168,13 @@ def register_user(username, password):
+ 
+ 
+ def verify_username_password(username, password):
+-    data = list(
+-        get_conn()
+-        .cursor()
+-        .execute(&quot;SELECT id, password FROM user WHERE username = ?;&quot;, (username,))
+-    )
++    data = run_sql(&quot;SELECT id, password FROM user WHERE username = ?;&quot;, (username,))
+     if len(data) != 1:
+         print(f&quot;User {username} doesn&#39;t exist.&quot;)
+         return None
+ 
+-    user_id = data[0][0]
+-    hashed_password = data[0][1]
+-
++    user_id = data[0][&quot;id&quot;]
++    hashed_password = data[0][&quot;password&quot;]
+     hasher = argon2.PasswordHasher()
+     try:
+         hasher.verify(hashed_password, password)
+@@ -215,14 +185,14 @@ def verify_username_password(username, password):
+ 
+ 
+ def follow(user_id, site, title_id):
+-    get_conn().cursor().execute(
++    run_sql(
+         &quot;INSERT INTO follow (user_id, site, title_id) VALUES (?, ?, ?);&quot;,
+         (user_id, site, title_id),
+     )
+ 
+ 
+ def unfollow(user_id, site, title_id):
+-    get_conn().cursor().execute(
++    run_sql(
+         &quot;DELETE FROM follow WHERE user_id=? AND site=? AND title_id=?;&quot;,
+         (user_id, site, title_id),
+     )
+@@ -239,11 +209,9 @@ def get_followed_titles(user_id):
+         &quot;&quot;&quot;,
+         (user_id,),
+     )
+-    keys = (&quot;id&quot;, &quot;site&quot;, &quot;name&quot;, &quot;cover_ext&quot;, &quot;chapters&quot;)
+     title_dicts = []
+     for t in titles:
+-        title = {key: t[i] for i, key in enumerate(keys)}
+-        title[&quot;chapters&quot;] = json.loads(title[&quot;chapters&quot;])
+-        title_dicts.append(title)
++        t[&quot;chapters&quot;] = json.loads(t[&quot;chapters&quot;])
++        title_dicts.append(t)
+ 
+     return title_dicts
+</pre></body></html>

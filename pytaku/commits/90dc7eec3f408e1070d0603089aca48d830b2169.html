@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[90dc7eec3f] revamp login | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 90dc7eec3f</strong><hr><pre>commit 90dc7eec3f408e1070d0603089aca48d830b2169
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Aug 18 22:15:53 2020 +0700
+
+    revamp login
+    
+    - Use standard issue bearer token
+    - Implement require_token decorator &amp; use on new API views
+    - Client-side Auth state management
+    - Use layout pattern on client side to use Navbar in one place
+
+diff --git a/src/pytaku/database/migrations/latest_schema.sql b/src/pytaku/database/migrations/latest_schema.sql
+index 7883803..c9bf35d 100644
+--- a/src/pytaku/database/migrations/latest_schema.sql
++++ b/src/pytaku/database/migrations/latest_schema.sql
+@@ -63,11 +63,10 @@ CREATE TABLE IF NOT EXISTS &quot;read&quot; (
+ );
+ CREATE TABLE token (
+     user_id integer not null,
+-    token text not null,
++    token text unique not null,
+     created_at text not null default (datetime(&#39;now&#39;)),
+     last_accessed_at text not null default (datetime(&#39;now&#39;)),
+     lifespan text not null, -- &#39;+1 day&#39;, &#39;+365 days&#39;, etc.
+ 
+-    foreign key (user_id) references user (id),
+-    unique(user_id, token)
++    foreign key (user_id) references user (id)
+ );
+diff --git a/src/pytaku/database/migrations/m0004.sql b/src/pytaku/database/migrations/m0004.sql
+index a1641ea..ca0b019 100644
+--- a/src/pytaku/database/migrations/m0004.sql
++++ b/src/pytaku/database/migrations/m0004.sql
+@@ -2,13 +2,12 @@ begin transaction;
+ 
+ create table token (
+     user_id integer not null,
+-    token text not null,
++    token text unique not null,
+     created_at text not null default (datetime(&#39;now&#39;)),
+     last_accessed_at text not null default (datetime(&#39;now&#39;)),
+     lifespan text not null, -- &#39;+1 day&#39;, &#39;+365 days&#39;, etc.
+ 
+-    foreign key (user_id) references user (id),
+-    unique(user_id, token)
++    foreign key (user_id) references user (id)
+ );
+ 
+ commit;
+diff --git a/src/pytaku/decorators.py b/src/pytaku/decorators.py
+index 6cc1422..8bcaa84 100644
+--- a/src/pytaku/decorators.py
++++ b/src/pytaku/decorators.py
+@@ -1,10 +1,8 @@
+ from functools import wraps
+ 
+ from flask import jsonify, redirect, request, session, url_for
+-from itsdangerous import SignatureExpired, URLSafeTimedSerializer
+ 
+-from .conf import config
+-from .persistence import read, unread
++from .persistence import read, unread, verify_token
+ 
+ 
+ def require_login(f):
+@@ -20,18 +18,22 @@ def decorated_function(*args, **kwargs):
+ def require_token(f):
+     @wraps(f)
+     def decorated_function(*args, **kwargs):
+-        token = request.headers.get(&quot;Pytaku-Token&quot;)
+-        if not token:
+-            return jsonify({&quot;message&quot;: &quot;Please provide Pytaku-Token header.&quot;}), 401
+-        s = URLSafeTimedSerializer(config.FLASK_SECRET_KEY, salt=&quot;access_token&quot;)
+-        try:
+-            user_id = s.loads(token)
+-        except SignatureExpired:
+-            return jsonify({&quot;message&quot;: &quot;Token expired.&quot;}), 401
+-        except Exception:
+-            return jsonify({&quot;message&quot;: &quot;Malformed token.&quot;}), 401
+-
+-        return f(*args, user_id=user_id, **kwargs)
++        header = request.headers.get(&quot;Authorization&quot;)
++        if not header or not header.startswith(&quot;Bearer &quot;):
++            return (
++                jsonify({&quot;message&quot;: &quot;Missing `Authorization: Bearer &lt;token&gt;` header.&quot;}),
++                401,
++            )
++
++        token = header[len(&quot;Bearer &quot;) :]
++        user_id = verify_token(token)
++        if user_id is None:
++            return jsonify({&quot;message&quot;: &quot;Invalid token.&quot;}), 401
++
++        request.token = token
++        request.user_id = user_id
++
++        return f(*args, **kwargs)
+ 
+     return decorated_function
+ 
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 3bb6018..b73dc0e 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -19,7 +19,7 @@
+ )
+ 
+ from .conf import config
+-from .decorators import require_login, toggle_has_read
++from .decorators import require_login, require_token, toggle_has_read
+ from .persistence import (
+     create_token,
+     delete_token,
+@@ -34,7 +34,6 @@
+     save_chapter,
+     save_title,
+     unfollow,
+-    verify_token,
+     verify_username_password,
+ )
+ from .source_sites import (
+@@ -418,22 +417,22 @@ def api_login():
+     return jsonify({&quot;user_id&quot;: user_id, &quot;token&quot;: token}), 200
+ 
+ 
+-@app.route(&quot;/api/verify-token&quot;, methods=[&quot;POST&quot;])
++@app.route(&quot;/api/verify-token&quot;, methods=[&quot;GET&quot;])
++@require_token
+ def api_verify_token():
+-    user_id = request.json[&quot;user_id&quot;]
+-    token = request.json[&quot;token&quot;]
+-    is_valid = verify_token(user_id, token)
+-    if not is_valid:
+-        return jsonify({&quot;message&quot;: &quot;Invalid token.&quot;}), 401
+-    return {&quot;username&quot;: get_username(user_id)}, 200
++    return {&quot;user_id&quot;: request.user_id, &quot;username&quot;: get_username(request.user_id)}, 200
+ 
+ 
+ @app.route(&quot;/api/logout&quot;, methods=[&quot;POST&quot;])
++@require_token
+ def api_logout():
+-    # TODO: should probably be using auth http header like other APIs
+-    user_id = request.json[&quot;user_id&quot;]
+-    token = request.json[&quot;token&quot;]
+-    num_deleted = delete_token(user_id, token)
++    num_deleted = delete_token(request.token)
+     if num_deleted != 1:
+         return jsonify({&quot;message&quot;: &quot;Invalid token.&quot;}), 401
+     return &quot;{}&quot;, 200
++
++
++@app.route(&quot;/api/follows&quot;, methods=[&quot;GET&quot;])
++@require_token
++def api_follows():
++    return jsonify({&quot;message&quot;: &quot;TODO&quot;})
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 57a581d..7cb0a81 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -350,7 +350,7 @@ def create_token(user_id, remember=False):
+     return token
+ 
+ 
+-def verify_token(user_id, token):
++def verify_token(token):
+     &quot;&quot;&quot;
+     Checks if there&#39;s a matching token that hasn&#39;t exceeded its lifespan.
+     If there&#39;s a match, refreshes its last_accessed_at value, effectively expanding
+@@ -358,22 +358,19 @@ def verify_token(user_id, token):
+     &quot;&quot;&quot;
+     result = run_sql(
+         &quot;&quot;&quot;
+-        SELECT 1 FROM token
+-        WHERE user_id=? AND token=?
++        SELECT user_id FROM token
++        WHERE token=?
+           AND datetime(last_accessed_at, lifespan) &gt; datetime(&#39;now&#39;);
+         &quot;&quot;&quot;,
+-        (user_id, token),
++        (token,),
+     )
+-    is_success = len(result) == 1
+-    if is_success:
++    user_id = result[0] if len(result) == 1 else None
++    if user_id:
+         run_sql(
+-            &quot;&quot;&quot;
+-            UPDATE token SET last_accessed_at = datetime(&#39;now&#39;)
+-            WHERE user_id=? AND token=?;
+-            &quot;&quot;&quot;,
+-            (user_id, token),
++            &quot;UPDATE token SET last_accessed_at = datetime(&#39;now&#39;) WHERE token=?;&quot;,
++            (token,),
+         )
+-    return is_success
++    return user_id
+ 
+ 
+ def get_username(user_id):
+@@ -382,11 +379,9 @@ def get_username(user_id):
+     return result[0]
+ 
+ 
+-def delete_token(user_id, token):
++def delete_token(token):
+     num_deleted = run_sql(
+-        &quot;DELETE FROM token WHERE user_id=? AND token=?&quot;,
+-        (user_id, token),
+-        return_num_affected=True,
++        &quot;DELETE FROM token WHERE token=?;&quot;, (token,), return_num_affected=True,
+     )
+     return num_deleted
+ 
+diff --git a/src/pytaku/static/js/common-components.js b/src/pytaku/static/js/layout.js
+similarity index 64%
+rename from src/pytaku/static/js/common-components.js
+rename to src/pytaku/static/js/layout.js
+index 22852ee..7807b0f 100644
+--- a/src/pytaku/static/js/common-components.js
++++ b/src/pytaku/static/js/layout.js
+@@ -16,7 +16,13 @@ function Navbar(initialVNode) {
+               onclick: (ev) =&gt; {
+                 isLoggingOut = true;
+                 m.redraw();
+-                Auth.logout();
++                Auth.logout()
++                  .then(() =&gt; {
++                    m.route.set(&quot;/&quot;);
++                  })
++                  .finally(() =&gt; {
++                    isLoggingOut = false;
++                  });
+               },
+               disabled: isLoggingOut ? &quot;disabled&quot; : null,
+             },
+@@ -34,12 +40,16 @@ function Navbar(initialVNode) {
+       }
+ 
+       return m(&quot;nav&quot;, [
+-        m(m.route.Link, { class: &quot;nav--logo&quot;, href: &quot;/&quot; }, [
+-          m(&quot;img.nav--logo--img&quot;, {
+-            src: &quot;/static/pytaku.svg&quot;,
+-            alt: &quot;home&quot;,
+-          }),
+-        ]),
++        m(
++          m.route.Link,
++          { class: &quot;nav--logo&quot;, href: Auth.isLoggedIn() ? &quot;/f&quot; : &quot;/&quot; },
++          [
++            m(&quot;img.nav--logo--img&quot;, {
++              src: &quot;/static/pytaku.svg&quot;,
++              alt: &quot;home&quot;,
++            }),
++          ]
++        ),
+         m(&quot;form.nav--search-form&quot;, [
+           m(&quot;input&quot;, { placeholder: &quot;search title name&quot; }),
+           m(&quot;button&quot;, { type: &quot;submit&quot; }, [m(&quot;i.icon.icon-search&quot;)]),
+@@ -49,4 +59,11 @@ function Navbar(initialVNode) {
+     },
+   };
+ }
+-export { Navbar };
++
++const Layout = {
++  view: (vnode) =&gt; {
++    return m(&quot;div.main&quot;, [m(Navbar), vnode.children]);
++  },
++};
++
++export default Layout;
+diff --git a/src/pytaku/static/js/main.js b/src/pytaku/static/js/main.js
+index cf63ec1..2dde99a 100644
+--- a/src/pytaku/static/js/main.js
++++ b/src/pytaku/static/js/main.js
+@@ -1,11 +1,43 @@
+ import { Auth } from &quot;./models.js&quot;;
++import Layout from &quot;./layout.js&quot;;
+ import Authentication from &quot;./routes/authentication.js&quot;;
+ import Home from &quot;./routes/home.js&quot;;
++import Follows from &quot;./routes/follows.js&quot;;
+ 
+-const root = document.getElementById(&quot;spa-root&quot;);
+-m.route.prefix = &quot;&quot;;
+-m.route(root, &quot;/h&quot;, {
+-  &quot;/h&quot;: Home,
+-  &quot;/a&quot;: Authentication,
++Auth.init().then(() =&gt; {
++  const root = document.getElementById(&quot;spa-root&quot;);
++  m.route.prefix = &quot;&quot;;
++  m.route(root, &quot;/&quot;, {
++    &quot;/&quot;: {
++      onmatch: () =&gt; {
++        if (Auth.isLoggedIn()) {
++          m.route.set(&quot;/f&quot;, null, { replace: true });
++        } else {
++          return Home;
++        }
++      },
++      render: () =&gt; m(Layout, m(Home)),
++    },
++    &quot;/a&quot;: {
++      onmatch: () =&gt; {
++        if (Auth.isLoggedIn()) {
++          m.route.set(&quot;/f&quot;, null, { replace: true });
++        } else {
++          return Authentication;
++        }
++      },
++      render: () =&gt; m(Layout, m(Authentication)),
++    },
++    &quot;/f&quot;: {
++      onmatch: () =&gt; {
++        if (Auth.isLoggedIn()) {
++          return Follows;
++        } else {
++          //m.route.set(&quot;/a&quot;, null, { replace: true });
++          return m(&quot;h1&quot;, &quot;waiting&quot;);
++        }
++      },
++      render: () =&gt; m(Layout, m(Follows)),
++    },
++  });
+ });
+-Auth.init();
+diff --git a/src/pytaku/static/js/models.js b/src/pytaku/static/js/models.js
+index ecaee29..e1dc2b4 100644
+--- a/src/pytaku/static/js/models.js
++++ b/src/pytaku/static/js/models.js
+@@ -1,30 +1,34 @@
+ const Auth = {
+   username: sessionStorage.getItem(&quot;username&quot;),
++  userId: sessionStorage.getItem(&quot;userId&quot;),
+   token: localStorage.getItem(&quot;token&quot;),
+-  userId: localStorage.getItem(&quot;user_id&quot;),
+-  isLoggedIn: () =&gt; Auth.username !== null,
++  isLoggedIn: () =&gt; Auth.username !== null &amp;&amp; Auth.userId !== null,
+   init: () =&gt; {
+     // Already logged in, probably from another tab:
+-    if (Auth.username !== null) {
+-      return;
++    if (Auth.isLoggedIn()) {
++      console.log(&quot;Already logged in&quot;);
++      return Promise.resolve();
+     }
+ 
+     // No previous login session:
+-    if (Auth.token === null || Auth.userId === null) {
+-      return;
++    if (Auth.token === null) {
++      console.log(&quot;No saved token found&quot;);
++      return Promise.resolve();
+     }
+ 
+-    // Verify token &amp; user_id saved from previous login session:
++    // Verify token saved from previous login session:
+     return m
+       .request({
+-        method: &quot;POST&quot;,
++        method: &quot;GET&quot;,
+         url: &quot;/api/verify-token&quot;,
+-        body: { token: Auth.token, user_id: Auth.userId },
++        headers: { Authorization: `Bearer ${Auth.token}` },
+       })
+       .then((result) =&gt; {
+-        // Success! Set username for this session now
++        // Success! Set user info for this session now
+         sessionStorage.setItem(&quot;username&quot;, result.username);
++        sessionStorage.setItem(&quot;userId&quot;, result.user_id);
+         Auth.username = result.username;
++        Auth.userId = result.user_id;
+       })
+       .catch((err) =&gt; {
+         // If server responded with 401 Unauthorized, clear any local trace of
+@@ -32,12 +36,25 @@ const Auth = {
+         if (err.code == 401) {
+           Auth.clearCredentials();
+         }
+-      });
++      })
++      .finally(m.redraw);
+   },
+ 
+-  saveLoginResults: ({ userId, username, token }) =&gt; {
++  saveLoginResults: ({ userId, username, token, remember }) =&gt; {
++    // FIXME: currently, even when remember=false we&#39;re still storing the token
++    // in localStorage, simply because sessionStorage isn&#39;t shared across tabs.
++    // Unfortunately this means when user logs in without checking &quot;remember
++    // me&quot;, the token will still linger in localstorage after browser is
++    // closed, and if an adversary reopens browser within the token&#39;s
++    // server-enforced lifespan (1 day), then user is pwned.
++    //
++    // Either that or we stick to sessionStorage and forget multitab support.
++    // _OR_ we do a convoluted song and dance with storage events:
++    // &gt; https://stackoverflow.com/a/32766809
++    //
++    // 0 days since web APIs last made me sad.
++    sessionStorage.setItem(&quot;userId&quot;, userId);
+     sessionStorage.setItem(&quot;username&quot;, username);
+-    localStorage.setItem(&quot;user_id&quot;, userId);
+     localStorage.setItem(&quot;token&quot;, token);
+     Auth.userId = userId;
+     Auth.username = username;
+@@ -45,12 +62,7 @@ const Auth = {
+   },
+ 
+   logout: () =&gt; {
+-    return m
+-      .request({
+-        method: &quot;POST&quot;,
+-        url: &quot;/api/logout&quot;,
+-        body: { token: Auth.token, user_id: Auth.userId },
+-      })
++    return Auth.request({ method: &quot;POST&quot;, url: &quot;/api/logout&quot; })
+       .then(Auth.clearCredentials)
+       .catch((err) =&gt; {
+         if (err.code == 401) {
+@@ -68,6 +80,13 @@ const Auth = {
+     localStorage.clear();
+     sessionStorage.clear();
+   },
++
++  request: (options) =&gt; {
++    if (Auth.isLoggedIn()) {
++      options.headers = { Authorization: `Bearer ${Auth.token}` };
++    }
++    return m.request(options);
++  },
+ };
+ 
+ export { Auth };
+diff --git a/src/pytaku/static/js/routes/authentication.js b/src/pytaku/static/js/routes/authentication.js
+index 1e6743a..bb37d16 100644
+--- a/src/pytaku/static/js/routes/authentication.js
++++ b/src/pytaku/static/js/routes/authentication.js
+@@ -1,10 +1,9 @@
+-import { Navbar } from &quot;../common-components.js&quot;;
+ import { Auth } from &quot;../models.js&quot;;
+ 
+ function Authentication(initialVNode) {
+   let loginUsername;
+   let loginPassword;
+-  let rememberMe;
++  let rememberMe = false;
+   let loginErrorMessage;
+   let registerUsername;
+   let registerPassword;
+@@ -20,167 +19,170 @@ function Authentication(initialVNode) {
+       document.title = &quot;Authentication - Pytaku&quot;;
+     },
+     view: (vnode) =&gt; {
+-      return m(&quot;div.main&quot;, [
+-        m(Navbar),
+-        m(&quot;div.content.auth&quot;, [
+-          m(
+-            &quot;form.auth--form&quot;,
+-            {
+-              onsubmit: (e) =&gt; {
+-                e.preventDefault();
+-                loginErrorMessage = &quot;&quot;;
+-                loggingIn = true;
+-                m.redraw();
++      return m(&quot;div.content.auth&quot;, [
++        m(
++          &quot;form.auth--form&quot;,
++          {
++            onsubmit: (e) =&gt; {
++              e.preventDefault();
++              loginErrorMessage = &quot;&quot;;
++              loggingIn = true;
++              m.redraw();
+ 
+-                m.request({
+-                  method: &quot;POST&quot;,
+-                  url: &quot;/api/login&quot;,
+-                  body: {
+-                    username: loginUsername,
+-                    password: loginPassword,
++              m.request({
++                method: &quot;POST&quot;,
++                url: &quot;/api/login&quot;,
++                body: {
++                  username: loginUsername,
++                  password: loginPassword,
++                  remember: rememberMe,
++                },
++              })
++                .then((result) =&gt; {
++                  let userId = result.user_id;
++                  let token = result.token;
++                  let username = loginUsername;
++                  Auth.saveLoginResults({
++                    userId,
++                    username,
++                    token,
+                     remember: rememberMe,
+-                  },
+-                })
+-                  .then((result) =&gt; {
+-                    loggingIn = false;
+-                    let userId = result.user_id;
+-                    let token = result.token;
+-                    let username = loginUsername;
+-                    Auth.saveLoginResults({ userId, username, token });
+-                    m.route.set(&quot;/&quot;);
+-                  })
+-                  .catch((e) =&gt; {
+-                    console.log(e);
+-                    loggingIn = false;
+-                    loginErrorMessage = e.response.message;
+                   });
+-              },
++                  m.route.set(&quot;/f&quot;);
++                })
++                .catch((e) =&gt; {
++                  loginErrorMessage = e.response.message;
++                })
++                .finally(() =&gt; {
++                  loggingIn = false;
++                });
+             },
+-            [
+-              m(&quot;h1&quot;, &quot;Login&quot;),
+-              m(&quot;input[placeholder=username][name=username][required]&quot;, {
+-                value: loginUsername,
++          },
++          [
++            m(&quot;h1&quot;, &quot;Login&quot;),
++            m(&quot;input[placeholder=username][name=username][required]&quot;, {
++              value: loginUsername,
++              oninput: (e) =&gt; {
++                loginUsername = e.target.value;
++              },
++            }),
++            m(
++              &quot;input[placeholder=password][name=password][type=password][required]&quot;,
++              {
++                value: loginPassword,
+                 oninput: (e) =&gt; {
+-                  loginUsername = e.target.value;
++                  loginPassword = e.target.value;
+                 },
+-              }),
+-              m(
+-                &quot;input[placeholder=password][name=password][type=password][required]&quot;,
+-                {
+-                  value: loginPassword,
+-                  oninput: (e) =&gt; {
+-                    loginPassword = e.target.value;
+-                  },
+-                }
+-              ),
+-              m(&quot;label[for=auth--remember].auth--checkbox-label&quot;, [
+-                m(&quot;input[type=checkbox][name=remember][id=auth--remember]&quot;, {
+-                  checked: rememberMe,
+-                  onchange: (e) =&gt; {
+-                    rememberMe = e.target.checked;
+-                  },
+-                }),
+-                &quot; Remember me&quot;,
+-              ]),
+-              m(
+-                &quot;button[type=submit]&quot;,
+-                {
+-                  disabled: loggingIn ? &quot;disabled&quot; : null,
++              }
++            ),
++            m(&quot;label[for=auth--remember].auth--checkbox-label&quot;, [
++              m(&quot;input[type=checkbox][name=remember][id=auth--remember]&quot;, {
++                checked: rememberMe,
++                onchange: (e) =&gt; {
++                  rememberMe = e.target.checked;
+                 },
+-                [
+-                  m(&quot;i.icon.icon-log-in&quot;),
+-                  loggingIn ? &quot; Logging in...&quot; : &quot; Log in&quot;,
+-                ]
+-              ),
+-              m(&quot;p.auth--form--error-message&quot;, loginErrorMessage),
+-            ]
+-          ),
+-          m(
+-            &quot;form.auth--form&quot;,
+-            {
+-              onsubmit: (e) =&gt; {
+-                e.preventDefault();
+-                registerMessage = &quot;&quot;;
+-                m.redraw();
++              }),
++              &quot; Remember me&quot;,
++            ]),
++            m(
++              &quot;button[type=submit]&quot;,
++              {
++                disabled: loggingIn ? &quot;disabled&quot; : null,
++              },
++              [
++                m(&quot;i.icon.icon-log-in&quot;),
++                loggingIn ? &quot; Logging in...&quot; : &quot; Log in&quot;,
++              ]
++            ),
++            m(&quot;p.auth--form--error-message&quot;, loginErrorMessage),
++          ]
++        ),
++        m(
++          &quot;form.auth--form&quot;,
++          {
++            onsubmit: (e) =&gt; {
++              e.preventDefault();
++              registerMessage = &quot;&quot;;
++              m.redraw();
+ 
+-                if (registerPassword !== confirmPassword) {
+-                  registerMessage = &quot;Password confirmation didn&#39;t match!&quot;;
+-                  registerSuccess = false;
+-                  return;
+-                }
++              if (registerPassword !== confirmPassword) {
++                registerMessage = &quot;Password confirmation didn&#39;t match!&quot;;
++                registerSuccess = false;
++                return;
++              }
+ 
+-                registering = true;
+-                m.redraw();
+-                m.request({
+-                  method: &quot;POST&quot;,
+-                  url: &quot;/api/register&quot;,
+-                  body: {
+-                    username: registerUsername,
+-                    password: registerPassword,
+-                  },
++              registering = true;
++              m.redraw();
++              m.request({
++                method: &quot;POST&quot;,
++                url: &quot;/api/register&quot;,
++                body: {
++                  username: registerUsername,
++                  password: registerPassword,
++                },
++              })
++                .then((result) =&gt; {
++                  registerSuccess = true;
++                  registerMessage = result.message;
++                  loginUsername = registerUsername;
++                  loginPassword = registerPassword;
+                 })
+-                  .then((result) =&gt; {
+-                    registering = false;
+-                    registerSuccess = true;
+-                    registerMessage = result.message;
+-                    loginUsername = registerUsername;
+-                    loginPassword = registerPassword;
+-                  })
+-                  .catch((e) =&gt; {
+-                    registering = false;
+-                    registerMessage = e.response.message;
+-                    registerSuccess = false;
+-                  });
+-              },
++                .catch((e) =&gt; {
++                  registerMessage = e.response.message;
++                  registerSuccess = false;
++                })
++                .finally(() =&gt; {
++                  registering = false;
++                });
+             },
+-            [
+-              m(&quot;h1&quot;, &quot;Register&quot;),
+-              m(&quot;input[placeholder=username][name=username][required]&quot;, {
+-                value: registerUsername,
++          },
++          [
++            m(&quot;h1&quot;, &quot;Register&quot;),
++            m(&quot;input[placeholder=username][name=username][required]&quot;, {
++              value: registerUsername,
++              oninput: (e) =&gt; {
++                registerUsername = e.target.value;
++              },
++            }),
++            m(
++              &quot;input[placeholder=password][name=password][type=password][required]&quot;,
++              {
++                value: registerPassword,
+                 oninput: (e) =&gt; {
+-                  registerUsername = e.target.value;
++                  registerPassword = e.target.value;
+                 },
+-              }),
+-              m(
+-                &quot;input[placeholder=password][name=password][type=password][required]&quot;,
+-                {
+-                  value: registerPassword,
+-                  oninput: (e) =&gt; {
+-                    registerPassword = e.target.value;
+-                  },
+-                }
+-              ),
+-              m(
+-                &quot;input[placeholder=confirm password][name=confirm][type=password][required]&quot;,
+-                {
+-                  value: confirmPassword,
+-                  oninput: (e) =&gt; {
+-                    confirmPassword = e.target.value;
+-                  },
+-                }
+-              ),
+-              m(
+-                &quot;button[type=submit]&quot;,
+-                {
+-                  disabled: registering ? &quot;disabled&quot; : null,
+-                },
+-                [
+-                  m(&quot;i.icon.icon-user-plus&quot;),
+-                  registering ? &quot; Registering...&quot; : &quot; Register&quot;,
+-                ]
+-              ),
+-              m(
+-                &quot;p&quot;,
+-                {
+-                  class:
+-                    &quot;auth--form--message-&quot; +
+-                    (registerSuccess ? &quot;success&quot; : &quot;error&quot;),
++              }
++            ),
++            m(
++              &quot;input[placeholder=confirm password][name=confirm][type=password][required]&quot;,
++              {
++                value: confirmPassword,
++                oninput: (e) =&gt; {
++                  confirmPassword = e.target.value;
+                 },
+-                registerMessage
+-              ),
+-            ]
+-          ),
+-        ]),
++              }
++            ),
++            m(
++              &quot;button[type=submit]&quot;,
++              {
++                disabled: registering ? &quot;disabled&quot; : null,
++              },
++              [
++                m(&quot;i.icon.icon-user-plus&quot;),
++                registering ? &quot; Registering...&quot; : &quot; Register&quot;,
++              ]
++            ),
++            m(
++              &quot;p&quot;,
++              {
++                class:
++                  &quot;auth--form--message-&quot; +
++                  (registerSuccess ? &quot;success&quot; : &quot;error&quot;),
++              },
++              registerMessage
++            ),
++          ]
++        ),
+       ]);
+     },
+   };
+diff --git a/src/pytaku/static/js/routes/follows.js b/src/pytaku/static/js/routes/follows.js
+new file mode 100644
+index 0000000..cd4e18f
+--- /dev/null
++++ b/src/pytaku/static/js/routes/follows.js
+@@ -0,0 +1,31 @@
++import { Auth } from &quot;../models.js&quot;;
++
++function Follows(initialVNode) {
++  let titles = [];
++  return {
++    oninit: () =&gt; {
++      Auth.request({
++        method: &quot;GET&quot;,
++        url: &quot;/api/follows&quot;,
++      });
++    },
++    oncreate: (vnode) =&gt; {
++      document.title = &quot;Stuff I follow - Pytaku&quot;;
++    },
++    view: (vnode) =&gt; {
++      return m(&quot;div.content&quot;, [
++        titles.map((title) =&gt;
++          m(&quot;div.title&quot;, [
++            m(&quot;div&quot;, [
++              m(&quot;a&quot;, { href: &quot;TODO&quot; }, [
++                m(&quot;img.cover&quot;, { src: title.thumbnail, alt: title.name }),
++              ]),
++            ]),
++          ])
++        ),
++      ]);
++    },
++  };
++}
++
++export default Follows;
+diff --git a/src/pytaku/static/js/routes/home.js b/src/pytaku/static/js/routes/home.js
+index df0ce6d..5005492 100644
+--- a/src/pytaku/static/js/routes/home.js
++++ b/src/pytaku/static/js/routes/home.js
+@@ -1,16 +1,13 @@
+-import { Navbar } from &quot;../common-components.js&quot;;
++import { Auth } from &quot;../models.js&quot;;
+ 
+ const Home = {
+   oncreate: (vnode) =&gt; {
+     document.title = &quot;Pytaku&quot;;
+   },
+   view: (vnode) =&gt; {
+-    return m(&quot;div.main&quot;, [
+-      m(Navbar),
+-      m(&quot;div.content&quot;, [
+-        m(&quot;p&quot;, &quot;Try searching for some manga title using the box above.&quot;),
+-        m(&quot;p&quot;, &quot;Logging in allows you to follow manga titles.&quot;),
+-      ]),
++    return m(&quot;div.content&quot;, [
++      m(&quot;p&quot;, &quot;Try searching for some manga title using the box above.&quot;),
++      m(&quot;p&quot;, &quot;Logging in allows you to follow manga titles.&quot;),
+     ]);
+   },
+ };
+diff --git a/src/pytaku/templates/spa.html b/src/pytaku/templates/spa.html
+index ce36cfa..dabbf90 100644
+--- a/src/pytaku/templates/spa.html
++++ b/src/pytaku/templates/spa.html
+@@ -7,7 +7,7 @@
+     &lt;link rel=&quot;icon&quot; type=&quot;image/svg+xml&quot; href=&quot;/static/favicon.svg&quot;&gt;
+     &lt;link rel=&quot;alternate icon&quot; type=&quot;image/png&quot; href=&quot;/static/favicon.png&quot;&gt;
+ 
+-    &lt;title&gt;{% block title %} {% endblock %} - Pytaku&lt;/title&gt;
++    &lt;title&gt;{% block title %}Pytaku{% endblock %}&lt;/title&gt;
+ 
+     &lt;link rel=&quot;stylesheet&quot; href=&quot;{{ url_for(&#39;static&#39;, filename=&#39;minireset.css&#39;) }}&quot;&gt;
+     &lt;link rel=&quot;stylesheet&quot; href=&quot;{{ url_for(&#39;static&#39;, filename=&#39;feathericons/iconfont.css&#39;) }}&quot;&gt;
+</pre></body></html>

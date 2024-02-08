@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[24885ce45f] pypi-friendly restructure | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 24885ce45f</strong><hr><pre>commit 24885ce45f5b7b2f6fbb970aa610822362372d9e
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu May 14 11:18:08 2020 +0700
+
+    pypi-friendly restructure
+
+diff --git a/.gitignore b/.gitignore
+index a295864..5164b9a 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,2 +1,4 @@
+ *.pyc
+ __pycache__
++*.egg-info/
++dist/
+diff --git a/LICENSE b/LICENSE
+new file mode 100644
+index 0000000..3f0191d
+--- /dev/null
++++ b/LICENSE
+@@ -0,0 +1,19 @@
++Copyright 2020 Bùi Thành Nhân
++
++Permission is hereby granted, free of charge, to any person obtaining a copy of
++this software and associated documentation files (the &quot;Software&quot;), to deal in
++the Software without restriction, including without limitation the rights to
++use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
++of the Software, and to permit persons to whom the Software is furnished to do
++so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.
+diff --git a/README.md b/README.md
+index d346404..448020b 100644
+--- a/README.md
++++ b/README.md
+@@ -1,9 +1,21 @@
+-# WIP
++![do you remember wwww?](https://p.caophim.net/81.webp)
++
++McCross is a WIP [gemini://](https://gemini.circumlunar.space/) browser,
++built in loving memory of a simpler, more innocent time.
+ 
+ Developed against gemini://gemini.circumlunar.space/ because apparently
+-it&#39;s the only one if a valid TLS cert.
++it&#39;s the only one with a valid, CA-approved TLS cert.
++
++It currently looks like this:
++
++![](https://p.caophim.net/82.png)
++
++# Installation
+ 
+-It currently looks like this: https://junk.imnhan.com/beans.mp4
++```sh
++pip install mccross
++mccross
++```
+ 
+ # Deps
+ 
+@@ -16,10 +28,4 @@ # Server bugs/surprises
+ ## Forces gemini:// in request
+ 
+ Spec says protocol part is optional, but if I omit that one the server will
+-respond with `53 No proxying to other hosts!`
+-
+-```
+-&lt;URL&gt; is a UTF-8 encoded absolute URL, of maximum length 1024 bytes.
+-If the scheme of the URL is not specified, a scheme of gemini:// is
+-implied.
+-```
++respond with `53 No proxying to other hosts!`.
+diff --git a/pyproject.toml b/pyproject.toml
+index ab3e352..d2e98ba 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,9 +1,15 @@
+ [tool.poetry]
+-name = &quot;beans&quot;
++name = &quot;mccross&quot;
+ version = &quot;0.1.0&quot;
+-description = &quot;gemini for human(bean)s&quot;
+-authors = [&quot;Your Name &lt;you@example.com&gt;&quot;]
++description = &quot;Do you remember www?&quot;
++authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
++packages = [
++    { include = &quot;mccross&quot;, from = &quot;src&quot; },
++]
++
++[tool.poetry.scripts]
++mccross = &quot;mccross:run&quot;
+ 
+ [tool.poetry.dependencies]
+ python = &quot;^3.7&quot;
+diff --git a/src/mccross/__init__.py b/src/mccross/__init__.py
+new file mode 100644
+index 0000000..918327d
+--- /dev/null
++++ b/src/mccross/__init__.py
+@@ -0,0 +1,6 @@
++from .gui import Controller
++
++
++def run():
++    c = Controller()
++    c.run()
+diff --git a/client.py b/src/mccross/client.py
+similarity index 100%
+rename from client.py
+rename to src/mccross/client.py
+diff --git a/gui.py b/src/mccross/gui.py
+similarity index 96%
+rename from gui.py
+rename to src/mccross/gui.py
+index b0ea23b..0b4f3b7 100644
+--- a/gui.py
++++ b/src/mccross/gui.py
+@@ -1,8 +1,8 @@
+ import sys
+ from tkinter import Text, Tk, font, ttk
+ 
+-import client
+-from gui_widgets import ReadOnlyText
++from . import client
++from .gui_widgets import ReadOnlyText
+ 
+ 
+ class Model:
+@@ -54,6 +54,7 @@ def __init__(self, root: Tk, model: Model):
+         self.address_bar = address_bar
+         address_bar.pack(side=&quot;left&quot;, fill=&quot;both&quot;, expand=True, padx=3, pady=3)
+         address_bar.bind(&quot;&lt;Return&gt;&quot;, self._on_go)
++        address_bar.bind(&quot;&lt;KP_Enter&gt;&quot;, self._on_go)
+         address_bar.focus_set()
+ 
+         # Go button
+@@ -115,7 +116,7 @@ def __init__(self):
+         self.view.go_callback = self.go_callback
+ 
+     def run(self):
+-        self.root.title(&quot;Beans Browser&quot;)
++        self.root.title(&quot;McCross Browser&quot;)
+         self.root.geometry(&quot;800x600&quot;)
+         self.root.mainloop()
+ 
+@@ -139,7 +140,3 @@ def go_callback(self, url: str):
+ 
+         print(&quot;Received&quot;, resp)
+         self.view.render_page()
+-
+-
+-c = Controller()
+-c.run()
+diff --git a/gui_widgets.py b/src/mccross/gui_widgets.py
+similarity index 100%
+rename from gui_widgets.py
+rename to src/mccross/gui_widgets.py
+</pre></body></html>

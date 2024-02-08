@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[5f58f2f51c] bullets! | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 5f58f2f51c</strong><hr><pre>commit 5f58f2f51c0f290f754289f4e037b737ebbdcd08
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 26 21:39:44 2021 +0700
+
+    bullets!
+
+diff --git a/nhanb-theme/static/css/index.css b/nhanb-theme/static/css/index.css
+index d3702e6..b0c9bdf 100644
+--- a/nhanb-theme/static/css/index.css
++++ b/nhanb-theme/static/css/index.css
+@@ -18,3 +18,13 @@ .article-list time {
+   display: block;
+   margin-top: 0.1rem;
+ }
++
++@media (min-width: 760px) {
++  .article:hover::before {
++    position: absolute;
++    margin-left: -1.2rem;
++    color: black;
++    content: &quot;➜&quot;;
++    line-height: 1.1rem;
++  }
++}
+</pre></body></html>

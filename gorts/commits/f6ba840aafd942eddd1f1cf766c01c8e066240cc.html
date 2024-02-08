@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[f6ba840aaf] remove cheats from initialize proc | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / f6ba840aaf</strong><hr><pre>commit f6ba840aafd942eddd1f1cf766c01c8e066240cc
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jun 21 20:25:08 2023 +0700
+
+    remove cheats from initialize proc
+    
+    in preparation for migrating to netstring-based IPC.
+
+diff --git a/main.go b/main.go
+index ce0e2e7..9b582cc 100644
+--- a/main.go
++++ b/main.go
+@@ -89,18 +89,9 @@ func startGUI() {
+ 
+ 	allplayers := players.FromFile(PlayersFile)
+ 	scoreboard := initScoreboard()
+-	b64icon := base64.StdEncoding.EncodeToString(gortsPngIcon)
+ 	startggInputs := startgg.LoadInputs(StartggFile)
+ 
+-	fmt.Fprintf(
+-		stdin,
+-		&quot;initialize %s %s {%s} %s %s\n&quot;,
+-		b64icon,
+-		WebPort,
+-		strings.Join(startgg.CountryCodes, &quot; &quot;),
+-		startggInputs.Token,
+-		startggInputs.Slug,
+-	)
++	fmt.Fprintln(stdin, &quot;initialize&quot;)
+ 
+ 	scanner := bufio.NewScanner(stdout)
+ 
+@@ -112,7 +103,11 @@ func startGUI() {
+ 	}
+ 
+ 	respond := func(s string) {
+-		println(&quot;&lt;--&quot;, s)
++		debug := &quot;&lt;-- &quot; + s
++		if len(debug) &gt; 35 {
++			debug = debug[:35] + &quot;[...]&quot;
++		}
++		println(debug)
+ 		io.WriteString(stdin, s+&quot;\n&quot;)
+ 	}
+ 
+@@ -177,8 +172,21 @@ func startGUI() {
+ 			respond(&quot;fetchplayers__resp&quot;)
+ 			respond(&quot;All done.&quot;)
+ 			startggInputs.Write(StartggFile)
+-		}
+ 
++		case &quot;readwebport&quot;:
++			respond(WebPort)
++
++		case &quot;geticon&quot;:
++			b64icon := base64.StdEncoding.EncodeToString(gortsPngIcon)
++			respond(b64icon)
++
++		case &quot;getcountrycodes&quot;:
++			respond(strings.Join(startgg.CountryCodes, &quot; &quot;))
++
++		case &quot;readstartgg&quot;:
++			respond(startggInputs.Token)
++			respond(startggInputs.Slug)
++		}
+ 	}
+ 
+ 	println(&quot;Tcl process terminated.&quot;)
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index 875e7b8..616a87a 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -147,7 +147,7 @@ grid rowconfigure .n.m.players 3 -pad 5
+ 
+ # start.gg tab:
+ 
+-.n select .n.s; # for debug only
++#.n select .n.s; # for debug only
+ ttk::label .n.s.tokenlbl -text &quot;Personal token: &quot;
+ ttk::entry .n.s.token -show * -textvariable startgg(token)
+ ttk::label .n.s.tournamentlbl -text &quot;Tournament slug: &quot;
+@@ -167,26 +167,45 @@ grid rowconfigure .n.s 1 -pad 5
+ # The following procs constitute a very simple line-based IPC system where Tcl
+ # client talks to Go server via stdin/stdout.
+ 
+-proc initialize {b64icon webport countrycodes startgg_token startgg_slug} {
+-    seticon $b64icon
+-    set ::mainstatus &quot;Point your OBS browser source to http://localhost:${webport}&quot;
+-    .n.m.players.p1country configure -values $countrycodes
+-    .n.m.players.p2country configure -values $countrycodes
+-    set ::startgg(token) $startgg_token
+-    set ::startgg(slug) $startgg_slug
++proc initialize {} {
++    seticon
++    setwebport
++    setcountrycodes
++    setstartgg
+     readscoreboard
+     setupdiffcheck
+     readplayernames
+     setupplayersuggestion
+ }
+ 
+-proc seticon {b64data} {
++proc setstartgg {} {
++    puts &quot;readstartgg&quot;
++    set ::startgg(token) [gets stdin]
++    set ::startgg(slug) [gets stdin]
++}
++
++proc setwebport {} {
++    puts &quot;readwebport&quot;
++    set webport [gets stdin]
++    set ::mainstatus &quot;Point your OBS browser source to http://localhost:${webport}&quot;
++}
++
++proc seticon {} {
++    puts &quot;geticon&quot;
++    set b64data [gets stdin]
+     image create photo applicationIcon -data [
+         binary decode base64 $b64data
+     ]
+     wm iconphoto . -default applicationIcon
+ }
+ 
++proc setcountrycodes {} {
++    puts getcountrycodes
++    set countrycodes [gets stdin]
++    .n.m.players.p1country configure -values $countrycodes
++    .n.m.players.p2country configure -values $countrycodes
++}
++
+ proc readscoreboard {} {
+     puts &quot;readscoreboard&quot;
+     set ::scoreboard(description) [gets stdin]
+</pre></body></html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[46714b5c94] jshint strict mode | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 46714b5c94</strong><hr><pre>commit 46714b5c94aab4660ebedff9769f55b0f826c57a
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 24 18:16:05 2020 +0700
+
+    jshint strict mode
+
+diff --git a/.jshintignore b/.jshintignore
+new file mode 100644
+index 0000000..edc02dc
+--- /dev/null
++++ b/.jshintignore
+@@ -0,0 +1 @@
++src/pytaku/static/vendored
+diff --git a/.jshintrc b/.jshintrc
+index 871f29f..d46f595 100644
+--- a/.jshintrc
++++ b/.jshintrc
+@@ -1,4 +1,10 @@
+ {
+   &quot;laxbreak&quot;: true,
+-  &quot;esversion&quot;: 6
++  &quot;esversion&quot;: 6,
++  &quot;strict&quot;: &quot;implied&quot;,
++  &quot;browser&quot;: true,
++  &quot;globals&quot;: {
++    &quot;m&quot;: true,
++    &quot;console&quot;: true
++  }
+ }
+diff --git a/pyproject.toml b/pyproject.toml
+index df8f397..5e59ea2 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.2&quot;
++version = &quot;0.3.3&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/static/js/routes/follows.js b/src/pytaku/static/js/routes/follows.js
+index 04e2ad4..b603aed 100644
+--- a/src/pytaku/static/js/routes/follows.js
++++ b/src/pytaku/static/js/routes/follows.js
+@@ -51,7 +51,6 @@ function Follows(initialVNode) {
+           titles = resp.titles;
+         })
+         .catch((err) =&gt; {
+-          alert(&quot;TODO&quot;);
+           console.log(err);
+         })
+         .finally(() =&gt; {
+diff --git a/src/pytaku/static/js/utils.js b/src/pytaku/static/js/utils.js
+index d8f1f12..dd428a2 100644
+--- a/src/pytaku/static/js/utils.js
++++ b/src/pytaku/static/js/utils.js
+@@ -6,10 +6,7 @@ const Button = {
+   view: (vnode) =&gt;
+     m(
+       &quot;button&quot;,
+-      {
+-        class: vnode.attrs.color || &quot;&quot;,
+-        ...vnode.attrs,
+-      },
++      Object.assign({ class: vnode.attrs.color || &quot;&quot; }, vnode.attrs),
+       [
+         vnode.attrs.icon ? m(`i.icon.icon-${vnode.attrs.icon}`) : null,
+         vnode.attrs.text ? m(&quot;span&quot;, vnode.attrs.text) : null,
+@@ -33,7 +30,6 @@ const Chapter = {
+           ),
+         ]
+       ),
+-      ,
+     ]),
+ };
+ 
+</pre></body></html>

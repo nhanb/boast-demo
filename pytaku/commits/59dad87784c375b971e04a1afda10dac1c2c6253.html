@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[59dad87784] ofc I messed up the thumbnails | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 59dad87784</strong><hr><pre>commit 59dad87784c375b971e04a1afda10dac1c2c6253
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 10 23:15:38 2020 +0700
+
+    ofc I messed up the thumbnails
+
+diff --git a/src/mangoapi/base_site.py b/src/mangoapi/base_site.py
+index 23f97ee..afa801d 100644
+--- a/src/mangoapi/base_site.py
++++ b/src/mangoapi/base_site.py
+@@ -24,6 +24,10 @@ def search_title(self, query):
+     def title_cover(self, title_id, cover_ext):
+         pass
+ 
++    @abstractmethod
++    def title_thumbnail(self, title_id):
++        pass
++
+     @abstractmethod
+     def title_source_url(self, title_id):
+         pass
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index ff9c5b1..cc56e68 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -98,6 +98,9 @@ def login(self, username, password):
+     def title_cover(self, title_id, cover_ext):
+         return f&quot;https://mangadex.org/images/manga/{title_id}.{cover_ext}&quot;
+ 
++    def title_thumbnail(self, title_id):
++        return f&quot;https://mangadex.org/images/manga/{title_id}.large.jpg&quot;
++
+     def title_source_url(self, title_id):
+         return f&quot;https://mangadex.org/manga/{title_id}&quot;
+ 
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+index 07b3524..8abaa99 100644
+--- a/src/mangoapi/mangasee.py
++++ b/src/mangoapi/mangasee.py
+@@ -1,9 +1,9 @@
+ import json
+ import re
+ 
+-import apsw
+ import requests
+ 
++import apsw
+ from mangoapi.base_site import Site
+ 
+ regexes = {
+@@ -120,6 +120,9 @@ def search_title(self, query):
+         ]
+ 
+     def title_cover(self, title_id, cover_ext):
++        return self.title_thumbnail(title_id)
++
++    def title_thumbnail(self, title_id):
+         return f&quot;https://cover.mangabeast01.com/cover/{title_id}.jpg&quot;
+ 
+     def title_source_url(self, title_id):
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index fc182a4..38b2754 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -33,6 +33,7 @@
+     search_title_all_sites,
+     title_cover,
+     title_source_url,
++    title_thumbnail,
+ )
+ 
+ config.load()
+@@ -57,7 +58,7 @@ def home_view():
+ def follows_view():
+     titles = get_followed_titles(session[&quot;user&quot;][&quot;id&quot;])
+     for title in titles:
+-        title[&quot;cover&quot;] = title_cover(title[&quot;site&quot;], title[&quot;id&quot;], title[&quot;cover_ext&quot;])
++        title[&quot;thumbnail&quot;] = title_thumbnail(title[&quot;site&quot;], title[&quot;id&quot;])
+     return render_template(&quot;follows.html&quot;, titles=titles)
+ 
+ 
+diff --git a/src/pytaku/source_sites.py b/src/pytaku/source_sites.py
+index 71a0d98..ebfd3ba 100644
+--- a/src/pytaku/source_sites.py
++++ b/src/pytaku/source_sites.py
+@@ -42,6 +42,10 @@ def title_cover(site_name, title_id, cover_ext):
+     return _get_site(site_name).title_cover(title_id, cover_ext)
+ 
+ 
++def title_thumbnail(site_name, title_id):
++    return _get_site(site_name).title_thumbnail(title_id)
++
++
+ def title_source_url(site_name, title_id):
+     return _get_site(site_name).title_source_url(title_id)
+ 
+diff --git a/src/pytaku/templates/follows.html b/src/pytaku/templates/follows.html
+index ec88dde..957bb24 100644
+--- a/src/pytaku/templates/follows.html
++++ b/src/pytaku/templates/follows.html
+@@ -75,7 +75,7 @@
+   &lt;div&gt;
+     &lt;a href=&quot;{{ title_url }}&quot;&gt;
+       &lt;img class=&quot;cover&quot;
+-           src=&quot;{{ title[&#39;cover&#39;] }}&quot;
++           src=&quot;{{ title[&#39;thumbnail&#39;] }}&quot;
+            alt=&quot;{{ title[&#39;name&#39;] }}&quot; /&gt;
+     &lt;/a&gt;
+   &lt;/div&gt;
+</pre></body></html>

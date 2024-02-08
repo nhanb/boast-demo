@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[73c6a2b103] autosuggest names based on player list | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 73c6a2b103</strong><hr><pre>commit 73c6a2b103a750adaabea9a2a7868d1f7c3ed2d9
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jun 20 14:35:56 2023 +0700
+
+    autosuggest names based on player list
+
+diff --git a/main.go b/main.go
+index e273d15..33bc0a2 100644
+--- a/main.go
++++ b/main.go
+@@ -85,6 +85,7 @@ func startGUI() {
+ 	fmt.Fprintln(stdin, mainTcl)
+ 	println(&quot;Loaded main tcl script.&quot;)
+ 
++	players := players.FromFile(PlayersFile)
+ 	state := initState()
+ 	b64icon := base64.StdEncoding.EncodeToString(gortsPngIcon)
+ 
+@@ -139,13 +140,21 @@ func startGUI() {
+ 			state.Write()
+ 
+ 		case &quot;readplayernames&quot;:
+-			players := players.FromFile(PlayersFile)
+ 			for _, player := range players {
+ 				respond(player.Name)
+ 			}
+ 			respond(&quot;end&quot;)
+ 
++		case &quot;searchplayers&quot;:
++			query := next()
++			for _, p := range players {
++				if p.MatchesName(query) {
++					respond(p.Name)
++				}
++			}
++			respond(&quot;end&quot;)
+ 		}
++
+ 	}
+ 
+ 	println(&quot;Tcl process terminated.&quot;)
+diff --git a/players/players.go b/players/players.go
+index efa601a..e68be90 100644
+--- a/players/players.go
++++ b/players/players.go
+@@ -4,6 +4,8 @@
+ 	&quot;encoding/csv&quot;
+ 	&quot;log&quot;
+ 	&quot;os&quot;
++	&quot;regexp&quot;
++	&quot;strings&quot;
+ )
+ 
+ type Player struct {
+@@ -26,6 +28,8 @@ func FromFile(filepath string) []Player {
+ 	reader := csv.NewReader(f)
+ 	reader.FieldsPerRecord = 3
+ 	records, err := reader.ReadAll()
++	// TODO: should probably return error so GUI can show an error message
++	// instead of crashing.
+ 	if err != nil {
+ 		log.Fatalf(&quot;csv parse error for %s: %s&quot;, filepath, err)
+ 	}
+@@ -41,3 +45,15 @@ func FromFile(filepath string) []Player {
+ 
+ 	return players
+ }
++
++var nonAlphanumeric = regexp.MustCompile(`[^a-zA-Z0-9]+`)
++
++func normalize(in string) (out string) {
++	out = strings.ToLower(in)
++	out = nonAlphanumeric.ReplaceAllString(out, &quot;&quot;)
++	return out
++}
++
++func (p *Player) MatchesName(query string) bool {
++	return normalize(query) == normalize(p.Name)
++}
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index 0539600..eca1954 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -145,6 +145,7 @@ proc initialize {b64icon webport countrycodes} {
+     .c.players.p2country configure -values $countrycodes
+ 
+     readplayernames
++    setup_player_name_suggestion
+ }
+ 
+ proc seticon {b64data} {
+@@ -196,6 +197,31 @@ proc readplayernames {} {
+     .c.players.p2name configure -values $playernames
+ }
+ 
++proc setup_player_name_suggestion {} {
++    proc update_suggestions {_ key _} {
++        if {!($key == &quot;p1name&quot; || $key == &quot;p2name&quot;)} {
++            return
++        }
++        set widget .c.players.$key
++        set newvalue $::scoreboard($key)
++        set matches [searchplayers $newvalue]
++        $widget configure -values $matches
++    }
++    trace add variable ::scoreboard write update_suggestions
++}
++
++proc searchplayers {query} {
++    set playernames {}
++    puts &quot;searchplayers&quot;
++    puts $query
++    set line [gets stdin]
++    while {$line != &quot;end&quot;} {
++        lappend playernames $line
++        set line [gets stdin]
++    }
++    return $playernames
++}
++
+ proc discardstate {} {
+     foreach key [array names ::scoreboard] {
+         set ::scoreboard($key) $::applied_scoreboard($key)
+</pre></body></html>

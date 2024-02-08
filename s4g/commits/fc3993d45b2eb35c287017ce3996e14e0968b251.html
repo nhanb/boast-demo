@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[fc3993d45b] add atom feed | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / fc3993d45b</strong><hr><pre>commit fc3993d45b2eb35c287017ce3996e14e0968b251
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jul 4 00:06:38 2023 +0700
+
+    add atom feed
+
+diff --git a/feed.go b/feed.go
+new file mode 100644
+index 0000000..72a0069
+--- /dev/null
++++ b/feed.go
+@@ -0,0 +1,46 @@
++package main
++
++import (
++	&quot;encoding/xml&quot;
++	&quot;strings&quot;
++
++	&quot;golang.org/x/tools/blog/atom&quot;
++)
++
++// TODO: Use Article&#39;s updated date instead of PostedAt.
++// I need to implement Article.Meta.UpdatedAt first though.
++func generateFeed(site SiteMetadata, posts []Article, path string) []byte {
++	siteAddr := site.Address
++	if !strings.HasSuffix(siteAddr, &quot;/&quot;) {
++		siteAddr += &quot;/&quot;
++	}
++	var entries []*atom.Entry
++	for _, p := range posts {
++		entries = append(entries, &amp;atom.Entry{
++			ID:        siteAddr + p.WebPath,
++			Link:      []atom.Link{{Href: siteAddr + p.WebPath}},
++			Title:     p.Meta.Title,
++			Published: atom.Time(p.Meta.PostedAt),
++			Updated:   atom.Time(p.Meta.PostedAt),
++		})
++	}
++
++	feed := atom.Feed{
++		ID:      siteAddr,
++		Title:   site.Name,
++		Updated: atom.Time(posts[0].Meta.PostedAt),
++		Entry:   entries,
++		Author: &amp;atom.Person{
++			Name:  site.Author.Name,
++			URI:   site.Author.URI,
++			Email: site.Author.Email,
++		},
++		Link: []atom.Link{{Rel: &quot;self&quot;, Href: path}},
++	}
++
++	result, err := xml.MarshalIndent(feed, &quot;&quot;, &quot;  &quot;)
++	if err != nil {
++		panic(err)
++	}
++	return result
++}
+diff --git a/go.mod b/go.mod
+index 07dc113..829ab3e 100644
+--- a/go.mod
++++ b/go.mod
+@@ -3,3 +3,5 @@ module go.imnhan.com/webmaker2000
+ go 1.20
+ 
+ require github.com/BurntSushi/toml v1.3.2
++
++require golang.org/x/tools v0.10.0
+diff --git a/go.sum b/go.sum
+index ef0f966..d4d0018 100644
+--- a/go.sum
++++ b/go.sum
+@@ -1,2 +1,4 @@
+ github.com/BurntSushi/toml v1.3.2 h1:o7IhLm0Msx3BaB+n3Ag7L8EVlByGnpq14C4YWiu/gL8=
+ github.com/BurntSushi/toml v1.3.2/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
++golang.org/x/tools v0.10.0 h1:tvDr/iQoUqNdohiYm0LmmKcBk+q86lb9EprIUFhHHGg=
++golang.org/x/tools v0.10.0/go.mod h1:UJwyiVBsOA2uwvK/e5OY3GTpDUJriEd+/YlqAwLPmyM=
+diff --git a/main.go b/main.go
+index e2b39dd..4f8678b 100644
+--- a/main.go
++++ b/main.go
+@@ -16,6 +16,9 @@
+ 	&quot;go.imnhan.com/webmaker2000/djot&quot;
+ )
+ 
++const DJOT_EXT = &quot;.dj&quot;
++const FEED_PATH = &quot;feed.xml&quot;
++
+ func main() {
+ 	var port, folder string
+ 	flag.StringVar(&amp;port, &quot;port&quot;, &quot;3338&quot;, &quot;Port for local preview server&quot;)
+@@ -49,6 +52,8 @@ func main() {
+ 
+ 	WriteHomePage(fsys, site, posts, pages)
+ 
++	fsys.WriteFile(FEED_PATH, generateFeed(site, posts, site.HomePath+FEED_PATH))
++
+ 	println(&quot;Serving local website at http://localhost:&quot; + port)
+ 	http.Handle(&quot;/&quot;, http.FileServer(http.FS(fsys)))
+ 	err = http.ListenAndServe(&quot;127.0.0.1:&quot;+port, nil)
+@@ -58,9 +63,15 @@ func main() {
+ }
+ 
+ type SiteMetadata struct {
++	Address  string
+ 	Name     string
+ 	Tagline  string
+ 	HomePath string
++	Author   struct {
++		Name  string
++		URI   string
++		Email string
++	}
+ }
+ 
+ func readSiteMetadata(fsys WritableFS) (sm SiteMetadata) {
+@@ -68,11 +79,12 @@ func readSiteMetadata(fsys WritableFS) (sm SiteMetadata) {
+ 	if err != nil {
+ 		panic(err)
+ 	}
++	if sm.HomePath == &quot;&quot; {
++		sm.HomePath = &quot;/&quot;
++	}
+ 	return sm
+ }
+ 
+-const DJOT_EXT = &quot;.dj&quot;
+-
+ type Article struct {
+ 	Fs       WritableFS
+ 	Path     string
+@@ -107,18 +119,20 @@ func (a *Article) WriteHtmlFile(site *SiteMetadata, pages []Article) {
+ 		Title   string
+ 		Post    *Article
+ 		Pages   []Article
++		Feed    string
+ 	}{
+ 		Site:    site,
+ 		Content: template.HTML(contentHtml),
+ 		Title:   fmt.Sprintf(&quot;%s | %s&quot;, a.Meta.Title, site.Name),
+ 		Post:    a,
+ 		Pages:   pages,
++		Feed:    site.HomePath + FEED_PATH,
+ 	})
+ 	if err != nil {
+ 		fmt.Println(&quot;Error in WriteHtmlFile:&quot;, err)
+ 		return
+ 	}
+-	fullHtml := buf.String()
++	fullHtml := buf.Bytes()
+ 
+ 	// Now write into an html with the same name as the original djot file
+ 	err = a.Fs.WriteFile(a.WebPath, fullHtml)
+@@ -141,17 +155,19 @@ func WriteHomePage(fsys WritableFS, site SiteMetadata, posts, pages []Article) {
+ 		Title string
+ 		Posts []Article
+ 		Pages []Article
++		Feed  string
+ 	}{
+ 		Site:  &amp;site,
+ 		Title: fmt.Sprintf(&quot;%s - %s&quot;, site.Name, site.Tagline),
+ 		Posts: posts,
+ 		Pages: pages,
++		Feed:  site.HomePath + FEED_PATH,
+ 	})
+ 	if err != nil {
+ 		fmt.Println(&quot;Error in WriteHtmlFile:&quot;, err)
+ 		return
+ 	}
+-	fsys.WriteFile(&quot;index.html&quot;, buf.String())
++	fsys.WriteFile(&quot;index.html&quot;, buf.Bytes())
+ }
+ 
+ func findArticles(fsys WritableFS) (posts, pages []Article) {
+diff --git a/writablefs.go b/writablefs.go
+index 05a3fde..bf1624e 100644
+--- a/writablefs.go
++++ b/writablefs.go
+@@ -8,7 +8,7 @@
+ 
+ type WritableFS interface {
+ 	fs.FS
+-	WriteFile(path string, content string) error
++	WriteFile(path string, content []byte) error
+ }
+ 
+ // Like os.DirFS but is writable
+@@ -22,7 +22,7 @@ func (w writeDirFS) Open(name string) (fs.File, error) {
+ 	return os.DirFS(string(w)).Open(name)
+ }
+ 
+-func (w writeDirFS) WriteFile(path string, content string) error {
++func (w writeDirFS) WriteFile(path string, content []byte) error {
+ 	fullPath := filepath.Join(string(w), path)
+-	return os.WriteFile(fullPath, []byte(content), 0644)
++	return os.WriteFile(fullPath, content, 0644)
+ }
+diff --git a/www/_theme/base.tmpl b/www/_theme/base.tmpl
+index d614b60..7e44d28 100644
+--- a/www/_theme/base.tmpl
++++ b/www/_theme/base.tmpl
+@@ -12,6 +12,9 @@
+       margin: auto;
+     }
+   &lt;/style&gt;
++{{if .Feed}}
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;{{.Feed}}&quot;&gt;
++{{end}}
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+diff --git a/www/about/index.html b/www/about/index.html
+index 9d6175a..cb89f40 100644
+--- a/www/about/index.html
++++ b/www/about/index.html
+@@ -12,6 +12,9 @@
+       margin: auto;
+     }
+   &lt;/style&gt;
++
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+diff --git a/www/feed.xml b/www/feed.xml
+new file mode 100644
+index 0000000..df876fb
+--- /dev/null
++++ b/www/feed.xml
+@@ -0,0 +1,25 @@
++&lt;feed xmlns=&quot;http://www.w3.org/2005/Atom&quot;&gt;
++  &lt;title&gt;CoolZone&lt;/title&gt;
++  &lt;id&gt;https://coolzone.example.com/&lt;/id&gt;
++  &lt;link rel=&quot;self&quot; href=&quot;/feed.xml&quot;&gt;&lt;/link&gt;
++  &lt;updated&gt;2023-04-05T00:00:00+07:00&lt;/updated&gt;
++  &lt;author&gt;
++    &lt;name&gt;Coolio McCool&lt;/name&gt;
++    &lt;uri&gt;https://author.example.com&lt;/uri&gt;
++    &lt;email&gt;coolio@example.com&lt;/email&gt;
++  &lt;/author&gt;
++  &lt;entry&gt;
++    &lt;title&gt;This is a motherfucking website.&lt;/title&gt;
++    &lt;id&gt;https://coolzone.example.com/mfws.html&lt;/id&gt;
++    &lt;link href=&quot;https://coolzone.example.com/mfws.html&quot;&gt;&lt;/link&gt;
++    &lt;published&gt;2023-04-05T00:00:00+07:00&lt;/published&gt;
++    &lt;updated&gt;2023-04-05T00:00:00+07:00&lt;/updated&gt;
++  &lt;/entry&gt;
++  &lt;entry&gt;
++    &lt;title&gt;Hello&lt;/title&gt;
++    &lt;id&gt;https://coolzone.example.com/hello/index.html&lt;/id&gt;
++    &lt;link href=&quot;https://coolzone.example.com/hello/index.html&quot;&gt;&lt;/link&gt;
++    &lt;published&gt;2022-01-02T00:00:00+07:00&lt;/published&gt;
++    &lt;updated&gt;2022-01-02T00:00:00+07:00&lt;/updated&gt;
++  &lt;/entry&gt;
++&lt;/feed&gt;
+\ No newline at end of file
+diff --git a/www/hello/index.html b/www/hello/index.html
+index 41ae45d..514635d 100644
+--- a/www/hello/index.html
++++ b/www/hello/index.html
+@@ -12,6 +12,9 @@
+       margin: auto;
+     }
+   &lt;/style&gt;
++
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+diff --git a/www/index.html b/www/index.html
+index c722bdf..d9bf2af 100644
+--- a/www/index.html
++++ b/www/index.html
+@@ -12,6 +12,9 @@
+       margin: auto;
+     }
+   &lt;/style&gt;
++
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+diff --git a/www/mfws.html b/www/mfws.html
+index 362bd1d..5840971 100644
+--- a/www/mfws.html
++++ b/www/mfws.html
+@@ -12,6 +12,9 @@
+       margin: auto;
+     }
+   &lt;/style&gt;
++
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+diff --git a/www/website.toml b/www/website.toml
+index 8722c90..1654c4a 100644
+--- a/www/website.toml
++++ b/www/website.toml
+@@ -1,3 +1,9 @@
++Address = &quot;https://coolzone.example.com&quot;
+ Name = &quot;CoolZone&quot;
+ Tagline = &quot;Cool people only.&quot;
+ HomePath = &quot;/&quot;
++
++[Author]
++Name = &quot;Coolio McCool&quot;
++URI = &quot;https://author.example.com&quot;
++Email = &quot;coolio@example.com&quot;
+</pre></body></html>

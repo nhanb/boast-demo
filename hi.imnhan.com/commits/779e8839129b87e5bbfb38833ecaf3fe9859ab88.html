@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[779e883912] fix links + somewhat better prose | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 779e883912</strong><hr><pre>commit 779e8839129b87e5bbfb38833ecaf3fe9859ab88
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Feb 1 17:29:36 2022 +0700
+
+    fix links + somewhat better prose
+
+diff --git a/content/posts/working-with-sqlite-without-an-orm.md b/content/posts/working-with-sqlite-without-an-orm.md
+index 2277605..b5d1d8d 100644
+--- a/content/posts/working-with-sqlite-without-an-orm.md
++++ b/content/posts/working-with-sqlite-without-an-orm.md
+@@ -16,12 +16,12 @@
+ &gt; We use this right now to roll our own migrators and it&#39;s light years
+ &gt; better than how migrators work for Entity Framework, et. al.
+ &gt;
+-&gt; [https://www.sqlite.org/pragma.html#pragma_user_version]()
++&gt; &lt;https://www.sqlite.org/pragma.html#pragma_user_version&gt;
+ 
+-It made a lot of sense, and as I&#39;ve become more and more [disillusioned][3]
+-with Django&#39;s ORM (and similar &quot;kitchen sink&quot; web frameworks in general), I
+-decided to try it out on [Pytaku][2] as a learning experience. Things went
+-okay, all things considered. Here I&#39;ll outline some of my findings.
++I&#39;d wanted to try working without an ORM for a while, and this comment gave me
++the final missing piece: a straightforward approach to SQL migrations that I
++can trivially implement. Obviously, I had to try it out on my latest [pet
++project][2]. Here I&#39;ll outline some of my findings.
+ 
+ ## APSW as the driver
+ 
+@@ -95,7 +95,7 @@ ## A minimum viable DB migration scheme
+ [...]
+ ```
+ 
+-Now to address the elephant in the room: SQLite has... _limited_ ALTER TABLE
++Now to address the elephant in the room: SQLite has... limited ALTER TABLE
+ capabilities. The upside is it&#39;s [well-documented][10]. What this means in
+ practice is that sometimes an otherwise simple `ALTER TABLE` in other RDBMS-es
+ will require more manual gymnastics in SQLite: you&#39;ll need to create a new
+@@ -138,7 +138,7 @@ ## A minimum viable DB migration scheme
+ latest_schema.sql file, tweak it to my desired state, then do the table
+ switcheroo. Again, the specific ordering of steps is important. I won&#39;t go into
+ details, but I had actually tripped on a failure mode, which I then realized
+-was already nicely warned against in the docs. RTMF is actually fine advice for
++was already nicely warned against in the docs. RTFM is actually fine advice for
+ projects that have good documentation, who would have thought?
+ 
+ ## Recommended sane defaults
+@@ -165,7 +165,7 @@ ## A quick note on SQL injection
+ 
+ You don&#39;t need a full blown ORM to protect yourself against SQL injections. In
+ fact, SQLite (and any sane RDBMS really) has built-in support for it called
+-parameterized queries. The python documentation also [covers this][17], but the
++parameterized queries. Python&#39;s sqlite3 documentation also covers this, but the
+ tl;dr is:
+ 
+ ```python
+@@ -176,12 +176,11 @@ # Use the parameter substitution API instead:
+ cursor.execute(&#39;SELECT foo FROM bar WHERE stuff = ?;&#39;, (user_input,))
+ ```
+ 
+-Congratulations! You now have better security than [Vietnam&#39;s &quot;leading&quot;
++Congratulations! You now have better security hygiene than [Vietnam&#39;s &quot;leading&quot;
+ cybersecurity firm][16].
+ 
+ [1]: https://news.ycombinator.com/item?id=23510382
+ [2]: https://sr.ht/~nhanb/pytaku/
+-[3]: https://code.djangoproject.com/ticket/21961
+ [4]: https://rogerbinns.github.io/apsw/download.html#i-really-want-to-use-pip
+ [5]: https://rogerbinns.github.io/apsw/
+ [6]: https://www.python.org/dev/peps/pep-0249/
+@@ -195,5 +194,4 @@ # Use the parameter substitution API instead:
+ [14]: https://www.sqlite.org/c3ref/busy_timeout.html
+ [15]: https://www.sqlite.org/lang_altertable.html#otheralter
+ [16]: https://vnhacker.blogspot.com/2021/08/bkav-bi-hack-nhu-nao.html
+-[17]: https://docs.python.org/3/library/sqlite3.html
+ [18]: https://archive.org/details/byte-magazine
+</pre></body></html>

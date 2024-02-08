@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[540d3aa747] gather s4g files into 1 place | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 540d3aa747</strong><hr><pre>commit 540d3aa7478d7b5e2f10954e9fa1e227c1378dad
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 21 19:51:39 2023 +0700
+
+    gather s4g files into 1 place
+    
+    The watcher event filtering logic could really use some cleaning up...
+
+diff --git a/Makefile b/Makefile
+index 8d9981e..4291a2d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -5,7 +5,7 @@ watch:
+ 	fd -E docs -E theme | entr -rc go run . serve
+ 
+ watch-theme:
+-	find theme/* | entr -c rsync -av theme/ docs/_theme/
++	find theme/* | entr -c rsync -av theme/ docs/_s4g/theme/
+ 
+ # Cheating a little because the djot.js repo on github does not provide builds
+ update-djot:
+diff --git a/README.md b/README.md
+index fe41673..414befd 100644
+--- a/README.md
++++ b/README.md
+@@ -54,4 +54,3 @@ # TODOs
+ - Warn when linking to redirected content
+ - Home page: align multi-line article title
+ - Minify/prettify HTML (optional?)
+-- Move s4g-specific files into own dir to avoid polluting root dir.
+diff --git a/docs/manifest.txt b/docs/_s4g/manifest
+similarity index 100%
+rename from docs/manifest.txt
+rename to docs/_s4g/manifest
+diff --git a/docs/redirects.txt b/docs/_s4g/redirects.txt
+similarity index 100%
+rename from docs/redirects.txt
+rename to docs/_s4g/redirects.txt
+diff --git a/docs/website.s4g b/docs/_s4g/settings.txt
+similarity index 100%
+rename from docs/website.s4g
+rename to docs/_s4g/settings.txt
+diff --git a/docs/_theme/base.css b/docs/_s4g/theme/base.css
+similarity index 100%
+rename from docs/_theme/base.css
+rename to docs/_s4g/theme/base.css
+diff --git a/docs/_theme/base.tmpl b/docs/_s4g/theme/base.tmpl
+similarity index 85%
+rename from docs/_theme/base.tmpl
+rename to docs/_s4g/theme/base.tmpl
+index 22971ce..3dd855a 100644
+--- a/docs/_theme/base.tmpl
++++ b/docs/_s4g/theme/base.tmpl
+@@ -6,7 +6,7 @@
+   &lt;title&gt;{{if .Title}}{{.Title}} | {{end}}{{ .Site.Name -}}&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;{{.Feed}}&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.Site.Root}}_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.ThemePath}}/base.css&quot;&gt;
+   {{- template &quot;head&quot; .}}
+ &lt;/head&gt;
+ 
+diff --git a/docs/_theme/feed.svg b/docs/_s4g/theme/feed.svg
+similarity index 100%
+rename from docs/_theme/feed.svg
+rename to docs/_s4g/theme/feed.svg
+diff --git a/docs/_theme/home.tmpl b/docs/_s4g/theme/home.tmpl
+similarity index 92%
+rename from docs/_theme/home.tmpl
+rename to docs/_s4g/theme/home.tmpl
+index 8938254..394df5a 100644
+--- a/docs/_theme/home.tmpl
++++ b/docs/_s4g/theme/home.tmpl
+@@ -13,7 +13,7 @@
+   &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+ {{- end}}
+   &lt;a class=&quot;feed-link&quot; href=&quot;{{.Feed}}&quot;&gt;
+-    &lt;img src=&quot;{{.Site.Root}}_theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
++    &lt;img src=&quot;{{.ThemePath}}/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
+   &lt;/a&gt;
+ &lt;/div&gt;
+ 
+diff --git a/docs/_theme/includes.tmpl b/docs/_s4g/theme/includes.tmpl
+similarity index 91%
+rename from docs/_theme/includes.tmpl
+rename to docs/_s4g/theme/includes.tmpl
+index aa3130b..f4c14b8 100644
+--- a/docs/_theme/includes.tmpl
++++ b/docs/_s4g/theme/includes.tmpl
+@@ -1,5 +1,5 @@
+ {{define &quot;navbar&quot;}}
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;{{.Site.Root}}_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;{{.ThemePath}}/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   {{- range .ArticlesInNav}}
+   &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+diff --git a/docs/_theme/navbar.css b/docs/_s4g/theme/navbar.css
+similarity index 100%
+rename from docs/_theme/navbar.css
+rename to docs/_s4g/theme/navbar.css
+diff --git a/docs/_theme/post.tmpl b/docs/_s4g/theme/post.tmpl
+similarity index 100%
+rename from docs/_theme/post.tmpl
+rename to docs/_s4g/theme/post.tmpl
+diff --git a/docs/about/index.html b/docs/about/index.html
+index 4099f11..46ec36f 100644
+--- a/docs/about/index.html
++++ b/docs/about/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;About | CoolZone&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/s4g/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/s4g/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/s4g/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/docs/index.dj b/docs/index.dj
+index 6ce56a8..d75a6e5 100644
+--- a/docs/index.dj
++++ b/docs/index.dj
+@@ -1,4 +1,4 @@
+ Title: Home
+ ShowInFeed: false
+-Templates: $_theme/base.tmpl, $_theme/includes.tmpl, $_theme/home.tmpl
++Templates: $base.tmpl, $includes.tmpl, $home.tmpl
+ ---
+diff --git a/docs/index.html b/docs/index.html
+index 5387fce..2e20956 100644
+--- a/docs/index.html
++++ b/docs/index.html
+@@ -6,7 +6,7 @@
+   &lt;title&gt;Home | CoolZone&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/s4g/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+@@ -22,7 +22,7 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+   &lt;a href=&quot;/s4g/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/s4g/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a class=&quot;feed-link&quot; href=&quot;/s4g/feed.xml&quot;&gt;
+-    &lt;img src=&quot;/s4g/_theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
++    &lt;img src=&quot;/s4g/_s4g/theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
+   &lt;/a&gt;
+ &lt;/div&gt;
+ 
+@@ -33,15 +33,15 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ &lt;p&gt;All posts, newest first:&lt;/p&gt;
+ 
+ &lt;ul&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2023-04-05 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/s4g/mfws.html&quot;&gt;This is a motherfucking website.&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2023-04-05)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;April 4, 2023&lt;/span&gt;
+   &lt;/li&gt;
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;2008-04-24 — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;/s4g/scale/&quot;&gt;I&amp;#39;m Going To Scale My Foot Up Your Ass&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;(2008-04-24)&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;April 4, 2008&lt;/span&gt;
+   &lt;/li&gt;
+ &lt;/ul&gt;
+ 
+@@ -71,26 +71,10 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ ul {
+   padding: 0;
+   list-style: none;
+-   
+ }
+ 
+-.time-suffix {
+-  display: none;
+-}
+-
+-@media (max-width: 30rem) {
+-  .time-suffix {
+-    display: inline;
+-  }
+-  .time-prefix {
+-    display: none;
+-  }
+-  li {
+-    margin-bottom: 0.5rem;
+-  }
+-  li::before {
+-    content: &#39;❖&#39;;
+-  }
++.article {
++  margin-bottom: 1rem;
+ }
+ &lt;/style&gt;
+ 
+diff --git a/docs/mfws.html b/docs/mfws.html
+index c3d0595..a9cd041 100644
+--- a/docs/mfws.html
++++ b/docs/mfws.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;This is a motherfucking website. | CoolZone&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/s4g/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ 
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/s4g/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/s4g/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/docs/scale/index.dj b/docs/scale/index.dj
+index efa2841..1aa7db7 100644
+--- a/docs/scale/index.dj
++++ b/docs/scale/index.dj
+@@ -1,6 +1,6 @@
+ Title: I&#39;m Going To Scale My Foot Up Your Ass
+ PostedAt: 2008-04-24
+-Templates: $_theme/base.tmpl, $_theme/includes.tmpl, scale.tmpl
++Templates: $base.tmpl, $includes.tmpl, scale.tmpl
+ ---
+ 
+ _by [Ted Dziuba][1]_
+diff --git a/docs/scale/index.html b/docs/scale/index.html
+index e931c97..183fa76 100644
+--- a/docs/scale/index.html
++++ b/docs/scale/index.html
+@@ -6,12 +6,12 @@
+   &lt;title&gt;I&amp;#39;m Going To Scale My Foot Up Your Ass | CoolZone&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/s4g/feed.xml&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_s4g/theme/base.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+ &lt;div class=&quot;navbar-container&quot;&gt;
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/s4g/_s4g/theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   &lt;a href=&quot;/s4g/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/s4g/about/&quot;&gt;About&lt;/a&gt;
+diff --git a/livereload/livereload.go b/livereload/livereload.go
+index e73eaeb..4a89e57 100644
+--- a/livereload/livereload.go
++++ b/livereload/livereload.go
+@@ -3,6 +3,7 @@
+ import (
+ 	&quot;bytes&quot;
+ 	_ &quot;embed&quot;
++	&quot;fmt&quot;
+ 	&quot;io/fs&quot;
+ 	&quot;net/http&quot;
+ 	&quot;strings&quot;
+@@ -128,6 +129,9 @@ func Trigger() {
+ // When a non-nil error is set, the local webserver returns
+ // the error page for every path (except livereload duh).
+ func SetError(err error) {
++	if err != nil {
++		fmt.Println(&quot;ERR:&quot;, err.Error())
++	}
+ 	state.errMut.Lock()
+ 	state.err = err
+ 	state.errMut.Unlock()
+diff --git a/main.go b/main.go
+index 5ab092b..cf34c67 100644
+--- a/main.go
++++ b/main.go
+@@ -24,10 +24,13 @@
+ )
+ 
+ const DjotExt = &quot;.dj&quot;
+-const SiteExt = &quot;.s4g&quot;
+-const SiteFileName = &quot;website&quot; + SiteExt
+ const FeedPath = &quot;feed.xml&quot;
+-const RedirectsPath = &quot;redirects.txt&quot;
++const S4gDir = &quot;_s4g&quot;
++
++var SettingsPath = S4gDir + &quot;/settings.txt&quot;
++var RedirectsPath = S4gDir + &quot;/redirects.txt&quot;
++var ManifestPath = S4gDir + &quot;/manifest&quot;
++var ThemePath = S4gDir + &quot;/theme&quot;
+ 
+ func main() {
+ 	invalidCommand := func() {
+@@ -194,7 +197,7 @@ func regenerate(fsys writablefs.FS) (site *SiteMetadata, err error) {
+ 		a, ok := articles[link]
+ 		if !ok {
+ 			return nil, &amp;errs.UserErr{
+-				File:  SiteFileName,
++				File:  SettingsPath,
+ 				Field: &quot;NavbarLinks&quot;,
+ 				Msg:   fmt.Sprintf(`&quot;%s&quot; does not exist`, link),
+ 			}
+@@ -286,7 +289,7 @@ func computeTemplatePaths(articlePath string, templates []string) []string {
+ 	for i := 0; i &lt; len(paths); i++ {
+ 		p := templates[i]
+ 		if strings.HasPrefix(p, &quot;$&quot;) {
+-			paths[i] = strings.TrimPrefix(p, &quot;$&quot;)
++			paths[i] = ThemePath + &quot;/&quot; + strings.TrimPrefix(p, &quot;$&quot;)
+ 		} else {
+ 			paths[i] = filepath.Join(filepath.Dir(articlePath), p)
+ 		}
+@@ -321,6 +324,7 @@ func (a *Article) WriteHtmlFile(
+ 		Feed           string
+ 		Now            time.Time
+ 		StartYear      int
++		ThemePath      string
+ 	}{
+ 		Site:           site,
+ 		Content:        template.HTML(contentHtml),
+@@ -331,6 +335,7 @@ func (a *Article) WriteHtmlFile(
+ 		Feed:           site.Root + FeedPath,
+ 		Now:            time.Now(),
+ 		StartYear:      startYear,
++		ThemePath:      site.Root + ThemePath,
+ 	})
+ 	if err != nil {
+ 		return fmt.Errorf(&quot;Failed to execute templates (%v): %w&quot;, a.Templates, err)
+@@ -368,9 +373,9 @@ func findArticles(fsys writablefs.FS, site *SiteMetadata) (map[string]Article, e
+ 
+ 		meta := ArticleMetadata{
+ 			Templates: []string{
+-				&quot;$_theme/base.tmpl&quot;,
+-				&quot;$_theme/includes.tmpl&quot;,
+-				&quot;$_theme/post.tmpl&quot;,
++				&quot;$base.tmpl&quot;,
++				&quot;$includes.tmpl&quot;,
++				&quot;$post.tmpl&quot;,
+ 			},
+ 			ShowInFeed: true,
+ 		}
+diff --git a/makesite.go b/makesite.go
+index a45415f..11f0725 100644
+--- a/makesite.go
++++ b/makesite.go
+@@ -5,7 +5,6 @@
+ 	_ &quot;embed&quot;
+ 	&quot;fmt&quot;
+ 	&quot;io/fs&quot;
+-	&quot;io/ioutil&quot;
+ 	&quot;os&quot;
+ 	&quot;path/filepath&quot;
+ )
+@@ -15,28 +14,37 @@
+ 
+ func makeSite(path string, meta SiteMetadata) error {
+ 	// Create web root dir
+-	err := os.MkdirAll(path, 0755)
++	err := os.MkdirAll(filepath.Join(path, S4gDir), 0755)
+ 	if err != nil {
+ 		return fmt.Errorf(&quot;make site: %w&quot;, err)
+ 	}
+ 
+ 	// Write site metadata file
+ 	data := MarshalMetadata(&amp;meta)
+-	err = ioutil.WriteFile(filepath.Join(path, SiteFileName), data, 0664)
++	err = os.WriteFile(filepath.Join(path, SettingsPath), data, 0664)
+ 	if err != nil {
+ 		return fmt.Errorf(&quot;write site metadata: %w&quot;, err)
+ 	}
+ 
+ 	// Copy default theme into new site
+-	copyTheme(defaultTheme, path)
++	copyTheme(defaultTheme, filepath.Dir(path+&quot;/&quot;+ThemePath))
+ 
+ 	// Write default index page
+ 	indexData := []byte(`Title: Home
+ ShowInFeed: false
+-Templates: $_theme/base.tmpl, $_theme/includes.tmpl, $_theme/home.tmpl
++Templates: $base.tmpl, $includes.tmpl, $home.tmpl
+ ---
+ `)
+-	err = ioutil.WriteFile(filepath.Join(path, &quot;index.dj&quot;), indexData, 0664)
++	err = os.WriteFile(filepath.Join(path, &quot;index.dj&quot;), indexData, 0664)
++	if err != nil {
++		panic(err)
++	}
++
++	// Write empty redirects file
++	err = os.WriteFile(filepath.Join(path, RedirectsPath), []byte{}, 0664)
++	if err != nil {
++		panic(err)
++	}
+ 
+ 	return nil
+ }
+@@ -55,7 +63,7 @@ func copyTheme(src fs.FS, dst string) error {
+ 			return fmt.Errorf(&quot;read source file: %w&quot;, err)
+ 		}
+ 
+-		err = ioutil.WriteFile(dstPath, content, 0644)
++		err = os.WriteFile(dstPath, content, 0644)
+ 		if err != nil {
+ 			return fmt.Errorf(&quot;write dest file: %w&quot;, err)
+ 		}
+@@ -63,6 +71,5 @@ func copyTheme(src fs.FS, dst string) error {
+ 		return nil
+ 	})
+ 
+-	os.Rename(filepath.Join(dst, &quot;theme&quot;), filepath.Join(dst, &quot;_theme&quot;))
+ 	return nil
+ }
+diff --git a/manifest.go b/manifest.go
+index e8d2cab..4383e04 100644
+--- a/manifest.go
++++ b/manifest.go
+@@ -9,8 +9,6 @@
+ 	&quot;go.imnhan.com/s4g/writablefs&quot;
+ )
+ 
+-const ManifestPath = &quot;manifest.txt&quot;
+-
+ // Write list of files generated by s4g
+ func WriteManifest(fsys writablefs.FS, files map[string]bool) {
+ 	lines := make([]string, 0, len(files))
+diff --git a/metadata.go b/metadata.go
+index ac6fffe..1756f77 100644
+--- a/metadata.go
++++ b/metadata.go
+@@ -46,7 +46,7 @@ func NewSiteMetadata() SiteMetadata {
+ func ReadSiteMetadata(fsys writablefs.FS) (*SiteMetadata, error) {
+ 	sm := NewSiteMetadata()
+ 
+-	data, err := fs.ReadFile(fsys, SiteFileName)
++	data, err := fs.ReadFile(fsys, SettingsPath)
+ 	if err != nil {
+ 		return nil, fmt.Errorf(&quot;ReadSiteMetadata: %w&quot;, err)
+ 	}
+diff --git a/theme/base.tmpl b/theme/base.tmpl
+index 22971ce..3dd855a 100644
+--- a/theme/base.tmpl
++++ b/theme/base.tmpl
+@@ -6,7 +6,7 @@
+   &lt;title&gt;{{if .Title}}{{.Title}} | {{end}}{{ .Site.Name -}}&lt;/title&gt;
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;{{.Feed}}&quot;&gt;
+-  &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.Site.Root}}_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.ThemePath}}/base.css&quot;&gt;
+   {{- template &quot;head&quot; .}}
+ &lt;/head&gt;
+ 
+diff --git a/theme/home.tmpl b/theme/home.tmpl
+index 8938254..394df5a 100644
+--- a/theme/home.tmpl
++++ b/theme/home.tmpl
+@@ -13,7 +13,7 @@
+   &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+ {{- end}}
+   &lt;a class=&quot;feed-link&quot; href=&quot;{{.Feed}}&quot;&gt;
+-    &lt;img src=&quot;{{.Site.Root}}_theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
++    &lt;img src=&quot;{{.ThemePath}}/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
+   &lt;/a&gt;
+ &lt;/div&gt;
+ 
+diff --git a/theme/includes.tmpl b/theme/includes.tmpl
+index aa3130b..f4c14b8 100644
+--- a/theme/includes.tmpl
++++ b/theme/includes.tmpl
+@@ -1,5 +1,5 @@
+ {{define &quot;navbar&quot;}}
+-&lt;link rel=&quot;stylesheet&quot; href=&quot;{{.Site.Root}}_theme/navbar.css&quot;&gt;
++&lt;link rel=&quot;stylesheet&quot; href=&quot;{{.ThemePath}}/navbar.css&quot;&gt;
+ &lt;nav&gt;
+   {{- range .ArticlesInNav}}
+   &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+diff --git a/watcher.go b/watcher.go
+index b7c3e2a..4f3d8bd 100644
+--- a/watcher.go
++++ b/watcher.go
+@@ -12,7 +12,7 @@
+ 	&quot;go.imnhan.com/s4g/writablefs&quot;
+ )
+ 
+-var WatchedExts = []string{DjotExt, SiteExt, &quot;.tmpl&quot;}
++var WatchedExts = []string{DjotExt, &quot;.tmpl&quot;, &quot;.txt&quot;}
+ 
+ const debounceInterval = 500 * time.Millisecond
+ 
+@@ -25,12 +25,14 @@ func WatchLocalFS(fsys writablefs.FS, callback func()) (Close func() error) {
+ 		panic(err)
+ 	}
+ 
++	fsysPath := fsys.Path()
++
+ 	fs.WalkDir(fsys, &quot;.&quot;, func(path string, d fs.DirEntry, err error) error {
+ 		if !d.IsDir() || (shouldIgnore(path) &amp;&amp; path != &quot;.&quot;) {
+ 			return nil
+ 		}
+ 
+-		fullPath := filepath.Join(fsys.Path(), path)
++		fullPath := filepath.Join(fsysPath, path)
+ 
+ 		err = watcher.Add(fullPath)
+ 		if err != nil {
+@@ -52,7 +54,11 @@ func WatchLocalFS(fsys writablefs.FS, callback func()) (Close func() error) {
+ 					return
+ 				}
+ 
+-				//fmt.Println(&quot;EVENT:&quot;, event.Op, event.Name)
++				//relPath, err := filepath.Rel(fsysPath, event.Name)
++				//if err != nil {
++				//panic(err)
++				//}
++				//fmt.Println(&quot;EVENT:&quot;, event.Op, relPath)
+ 
+ 				if shouldIgnore(event.Name) {
+ 					break
+</pre></body></html>

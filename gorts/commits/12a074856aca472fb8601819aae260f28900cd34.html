@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[12a074856a] spin up web server | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 12a074856a</strong><hr><pre>commit 12a074856aca472fb8601819aae260f28900cd34
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Jun 16 21:03:34 2023 +0700
+
+    spin up web server
+
+diff --git a/README.md b/README.md
+index 00bac5d..1c61707 100644
+--- a/README.md
++++ b/README.md
+@@ -1,4 +1,4 @@
+ # GORTS
+ 
+ ... is [orts](https://github.com/nhanb/orts) but in pure Go and pure Tcl/Tk
+-purely talking via good ole pipes, the way Dennis Ritchie intended.
++passing messages through good ole pipes, the way Bell Labs intended.
+diff --git a/main.go b/main.go
+index e3673a3..c18c4fa 100644
+--- a/main.go
++++ b/main.go
+@@ -5,38 +5,55 @@
+ 	_ &quot;embed&quot;
+ 	&quot;io&quot;
+ 	&quot;log&quot;
++	&quot;net/http&quot;
+ 	&quot;os/exec&quot;
++	&quot;sync&quot;
+ )
+ 
++const WebPort = &quot;1337&quot;
++const WebDir = &quot;web&quot;
++const StateFile = WebDir + &quot;/state.json&quot;
++
+ //go:embed tcl/main.tcl
+ var mainTcl string
+ 
+ func main() {
+-	tcl := initTcl()
+-	tcl.Connect()
+-}
++	var wg sync.WaitGroup
+ 
+-type Tcl struct {
+-	cmd *exec.Cmd
+-}
++	wg.Add(1)
++	go func() {
++		defer wg.Done()
++		connectTclProc()
++	}()
+ 
+-func initTcl() Tcl {
+-	cmd := exec.Command(&quot;tclsh&quot;)
+-	return Tcl{cmd}
++	// No need to wait on the http server,
++	// just let it die when the GUI is closed.
++	go func() {
++		println(&quot;Serving scoreboard at http://localhost:&quot; + WebPort)
++		fs := http.FileServer(http.Dir(WebDir))
++		http.Handle(&quot;/&quot;, fs)
++		err := http.ListenAndServe(&quot;127.0.0.1:&quot;+WebPort, nil)
++		if err != nil {
++			log.Fatal(err)
++		}
++	}()
++
++	wg.Wait()
+ }
+ 
+-func (t *Tcl) Connect() {
+-	stdout, err := t.cmd.StdoutPipe()
++func connectTclProc() {
++	cmd := exec.Command(&quot;tclsh&quot;)
++	stdout, err := cmd.StdoutPipe()
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ 
+-	stdin, err := t.cmd.StdinPipe()
++	stdin, err := cmd.StdinPipe()
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ 
+-	err = t.cmd.Start()
++	err = cmd.Start()
+ 	if err != nil {
+ 		panic(err)
+ 	}
+diff --git a/web/animation.css b/web/animation.css
+new file mode 100644
+index 0000000..49ba4a8
+--- /dev/null
++++ b/web/animation.css
+@@ -0,0 +1,13 @@
++@keyframes fade {
++    from {opacity: 0;}
++    to   {opacity: 1;}
++}
++
++.fade {
++    animation-name: fade;
++    animation-duration: 1s;
++    animation-timing-function: ease; /* ease is the default */
++    animation-delay: 0s;             /* 0 is the default */
++    animation-iteration-count: 1;    /* 1 is the default */
++    animation-direction: alternate;  /* normal is the default */
++}
+diff --git a/web/assets/fonts/SIL Open Font License.txt b/web/assets/fonts/SIL Open Font License.txt
+new file mode 100644
+index 0000000..d4bc2f0
+--- /dev/null
++++ b/web/assets/fonts/SIL Open Font License.txt	
+@@ -0,0 +1,44 @@
++Copyright (c) 2012, Vernon Adams (vern@newtypography.co.uk),
++with Reserved Font Name Oswald
++
++This Font Software is licensed under the SIL Open Font License, Version 1.1.
++This license is copied below, and is also available with a FAQ at: http://scripts.sil.org/OFL
++
++-----------------------------------------------------------
++SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
++-----------------------------------------------------------
++
++PREAMBLE
++The goals of the Open Font License (OFL) are to stimulate worldwide development of collaborative font projects, to support the font creation efforts of academic and linguistic communities, and to provide a free and open framework in which fonts may be shared and improved in partnership with others.
++
++The OFL allows the licensed fonts to be used, studied, modified and redistributed freely as long as they are not sold by themselves. The fonts, including any derivative works, can be bundled, embedded, redistributed and/or sold with any software provided that any reserved names are not used by derivative works. The fonts and derivatives, however, cannot be released under any other type of license. The requirement for fonts to remain under this license does not apply to any document created using the fonts or their derivatives.
++
++DEFINITIONS
++&quot;Font Software&quot; refers to the set of files released by the Copyright Holder(s) under this license and clearly marked as such. This may include source files, build scripts and documentation.
++
++&quot;Reserved Font Name&quot; refers to any names specified as such after the copyright statement(s).
++
++&quot;Original Version&quot; refers to the collection of Font Software components as distributed by the Copyright Holder(s).
++
++&quot;Modified Version&quot; refers to any derivative made by adding to, deleting, or substituting -- in part or in whole -- any of the components of the Original Version, by changing formats or by porting the Font Software to a new environment.
++
++&quot;Author&quot; refers to any designer, engineer, programmer, technical writer or other person who contributed to the Font Software.
++
++PERMISSION &amp; CONDITIONS
++Permission is hereby granted, free of charge, to any person obtaining a copy of the Font Software, to use, study, copy, merge, embed, modify, redistribute, and sell modified and unmodified copies of the Font Software, subject to the following conditions:
++
++1) Neither the Font Software nor any of its individual components, in Original or Modified Versions, may be sold by itself.
++
++2) Original or Modified Versions of the Font Software may be bundled, redistributed and/or sold with any software, provided that each copy contains the above copyright notice and this license. These can be included either as stand-alone text files, human-readable headers or in the appropriate machine-readable metadata fields within text or binary files as long as those fields can be easily viewed by the user.
++
++3) No Modified Version of the Font Software may use the Reserved Font Name(s) unless explicit written permission is granted by the corresponding Copyright Holder. This restriction only applies to the primary font name as presented to the users.
++
++4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font Software shall not be used to promote, endorse or advertise any Modified Version, except to acknowledge the contribution(s) of the Copyright Holder(s) and the Author(s) or with their explicit written permission.
++
++5) The Font Software, modified or unmodified, in part or in whole, must be distributed entirely under this license, and must not be distributed under any other license. The requirement for fonts to remain under this license does not apply to any document created using the Font Software.
++
++TERMINATION
++This license becomes null and void if any of the above conditions are not met.
++
++DISCLAIMER
++THE FONT SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
+\ No newline at end of file
+diff --git a/web/assets/fonts/oswald-v17-vietnamese_cyrillic_latin_latin-ext-500.woff b/web/assets/fonts/oswald-v17-vietnamese_cyrillic_latin_latin-ext-500.woff
+new file mode 100644
+index 0000000..b3e9884
+Binary files /dev/null and b/web/assets/fonts/oswald-v17-vietnamese_cyrillic_latin_latin-ext-500.woff differ
+diff --git a/web/assets/fonts/oswald-v17-vietnamese_cyrillic_latin_latin-ext-600.woff b/web/assets/fonts/oswald-v17-vietnamese_cyrillic_latin_latin-ext-600.woff
+new file mode 100644
+index 0000000..9795b96
+Binary files /dev/null and b/web/assets/fonts/oswald-v17-vietnamese_cyrillic_latin_latin-ext-600.woff differ
+diff --git a/web/assets/fonts/oswald-v17-vietnamese_cyrillic_latin_latin-ext-700.woff b/web/assets/fonts/oswald-v17-vietnamese_cyrillic_latin_latin-ext-700.woff
+new file mode 100644
+index 0000000..062d835
+Binary files /dev/null and b/web/assets/fonts/oswald-v17-vietnamese_cyrillic_latin_latin-ext-700.woff differ
+diff --git a/web/assets/fonts/oswald-v17-vietnamese_cyrillic_latin_latin-ext-regular.woff b/web/assets/fonts/oswald-v17-vietnamese_cyrillic_latin_latin-ext-regular.woff
+new file mode 100644
+index 0000000..cc6a4b9
+Binary files /dev/null and b/web/assets/fonts/oswald-v17-vietnamese_cyrillic_latin_latin-ext-regular.woff differ
+diff --git a/web/assets/logo-sfgc.png b/web/assets/logo-sfgc.png
+new file mode 100644
+index 0000000..69a125a
+Binary files /dev/null and b/web/assets/logo-sfgc.png differ
+diff --git a/web/assets/scoreboard.png b/web/assets/scoreboard.png
+new file mode 100644
+index 0000000..4b3863f
+Binary files /dev/null and b/web/assets/scoreboard.png differ
+diff --git a/web/index.css b/web/index.css
+new file mode 100644
+index 0000000..f75719b
+--- /dev/null
++++ b/web/index.css
+@@ -0,0 +1,155 @@
++/*
++Fonts lifted from https://google-webfonts-helper.herokuapp.com.
++I&#39;m using woff instead of woff2 simply because OBS&#39;s Browser Source
++plugin apparently came with a pretty old Chromium.
++*/
++@font-face {
++  font-family: &quot;Oswald&quot;;
++  font-style: normal;
++  font-weight: 400;
++  src: local(&quot;Oswald Regular&quot;), local(&quot;Oswald-Regular&quot;),
++    url(&quot;assets/fonts/oswald-v17-vietnamese_cyrillic_latin_latin-ext-regular.woff&quot;)
++      format(&quot;woff&quot;); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
++}
++
++/* oswald-500 - vietnamese_cyrillic_latin_latin-ext */
++@font-face {
++  font-family: &quot;Oswald&quot;;
++  font-style: normal;
++  font-weight: 500;
++  src: local(&quot;Oswald Medium&quot;), local(&quot;Oswald-Medium&quot;),
++    url(&quot;assets/fonts/oswald-v17-vietnamese_cyrillic_latin_latin-ext-500.woff&quot;)
++      format(&quot;woff&quot;); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
++}
++
++/* oswald-600 - vietnamese_cyrillic_latin_latin-ext */
++@font-face {
++  font-family: &quot;Oswald&quot;;
++  font-style: normal;
++  font-weight: 600;
++  src: local(&quot;Oswald SemiBold&quot;), local(&quot;Oswald-SemiBold&quot;),
++    url(&quot;assets/fonts/oswald-v17-vietnamese_cyrillic_latin_latin-ext-600.woff&quot;)
++      format(&quot;woff&quot;); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
++}
++
++/* oswald-700 - vietnamese_cyrillic_latin_latin-ext */
++@font-face {
++  font-family: &quot;Oswald&quot;;
++  font-style: normal;
++  font-weight: 700;
++  src: local(&quot;Oswald Bold&quot;), local(&quot;Oswald-Bold&quot;),
++    url(&quot;assets/fonts/oswald-v17-vietnamese_cyrillic_latin_latin-ext-700.woff&quot;)
++      format(&quot;woff&quot;); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
++}
++
++body {
++  width: 1920px;
++  height: 1080px;
++  /*box-sizing: border-box;*/
++  /*border: 2px solid red;*/
++  overflow: hidden;
++  padding: 0;
++  margin: 0;
++  position: relative;
++  font-weight: 600;
++}
++
++#scoreboard {
++  text-align: center;
++  position: relative;
++}
++
++#p1score,
++#p2score,
++#p1name,
++#p2name,
++#p1country,
++#p2country,
++#p1team,
++#p2team,
++#description {
++  position: absolute;
++  top: 0;
++  bottom: 0;
++  color: white;
++  font-family: &quot;Oswald&quot;, sans-serif;
++  text-transform: uppercase;
++}
++
++#p1team,
++#p2team {
++  font-size: 32px;
++  font-family: &quot;Oswald&quot;, sans-serif;
++  text-shadow: 0px 0px 20px black;
++}
++
++#description {
++  left: 0;
++  right: 0;
++  top: 6px;
++  text-transform: uppercase;
++  font-size: 23px;
++}
++
++#p1country,
++#p2country {
++  font-size: 2em;
++  top: -3px;
++}
++
++#p1country {
++  left: 340px;
++}
++
++#p2country {
++  right: 340px;
++}
++
++#p1score,
++#p2score {
++  top: 2px;
++  color: black;
++  font-size: 32px;
++}
++
++#p1score {
++  left: 285px;
++}
++
++#p2score {
++  right: 285px;
++}
++
++#p1name,
++#p2name {
++  top: 1px;
++  font-size: 28px;
++}
++
++#p1name {
++  left: 390px;
++}
++
++#p2name {
++  right: 390px;
++}
++
++#p1team {
++  top: 182px;
++  left: 153px;
++}
++
++#p2team {
++  top: 182px;
++  right: 153px;
++}
++
++#logo {
++  display: block;
++  position: absolute;
++  bottom: 10px;
++  left: 0;
++  right: 0;
++  margin-left: auto;
++  margin-right: auto;
++}
+diff --git a/web/index.html b/web/index.html
+new file mode 100644
+index 0000000..d6c0e05
+--- /dev/null
++++ b/web/index.html
+@@ -0,0 +1,26 @@
++&lt;!DOCTYPE html&gt;
++&lt;meta charset=&quot;utf-8&quot; /&gt;
++&lt;title&gt;ESPORTS&lt;/title&gt;
++
++&lt;body&gt;
++  &lt;div id=&quot;scoreboard&quot;&gt;
++    &lt;img src=&quot;assets/scoreboard.png&quot; /&gt;
++
++    &lt;div id=&quot;description&quot;&gt;&lt;/div&gt;
++
++    &lt;div id=&quot;p1score&quot;&gt;&lt;/div&gt;
++    &lt;span id=&quot;p1country&quot;&gt;&lt;/span&gt;
++    &lt;div id=&quot;p1name&quot;&gt;&lt;/div&gt;
++    &lt;div id=&quot;p1team&quot;&gt;&lt;/div&gt;
++
++    &lt;div id=&quot;p2score&quot;&gt;&lt;/div&gt;
++    &lt;span id=&quot;p2country&quot;&gt;&lt;/span&gt;
++    &lt;div id=&quot;p2name&quot;&gt;&lt;/div&gt;
++    &lt;div id=&quot;p2team&quot;&gt;&lt;/div&gt;
++  &lt;/div&gt;
++  &lt;img id=&quot;logo&quot; src=&quot;assets/logo-sfgc.png&quot; /&gt;
++&lt;/body&gt;
++
++&lt;link href=&quot;index.css&quot; rel=&quot;stylesheet&quot; /&gt;
++&lt;link href=&quot;animation.css&quot; rel=&quot;stylesheet&quot; /&gt;
++&lt;script src=&quot;index.js&quot;&gt;&lt;/script&gt;
+diff --git a/web/index.js b/web/index.js
+new file mode 100644
+index 0000000..ab93e09
+--- /dev/null
++++ b/web/index.js
+@@ -0,0 +1,71 @@
++const fadeUpdate = (element, newValue, updateFunc) =&gt; {
++  element.classList.add(&quot;fade&quot;);
++  updateFunc();
++  // Assuming whole animation duration == 1s
++  setTimeout(() =&gt; {
++    element.classList.remove(&quot;fade&quot;);
++  }, 1000);
++};
++
++const getDiff = (newState, oldState) =&gt; {
++  const diff = {};
++  Object.keys(newState).forEach((key) =&gt; {
++    if (newState[key] !== oldState[key]) {
++      diff[key] = {
++        old: oldState[key],
++        new: newState[key],
++      };
++    }
++  });
++  return diff;
++};
++
++const drawDiffToDom = (diff) =&gt; {
++  Object.keys(diff).forEach((key) =&gt; {
++    const element = document.querySelector(`#${key}`);
++    if (!element) {
++      return;
++    } // skip fields not used in DOM
++
++    const newValue = diff[key][&quot;new&quot;];
++    const oldValue = diff[key][&quot;old&quot;];
++
++    // Most elements are straightforward to overwrite
++    let updateFunc = () =&gt; {
++      element.innerHTML = newValue;
++    };
++
++    fadeUpdate(element, newValue, updateFunc);
++  });
++};
++
++const applyNewState = (newState) =&gt; {
++  // first calculate just what has changed
++  const diff = getDiff(newState, window.STATE);
++
++  // then only draw the changed stuff to DOM, complete with animation
++  drawDiffToDom(diff);
++
++  // advance the global state
++  window.STATE = newState;
++};
++
++const fetchHeaders = new Headers();
++fetchHeaders.append(&quot;pragma&quot;, &quot;no-cache&quot;);
++fetchHeaders.append(&quot;cache-control&quot;, &quot;no-cache&quot;);
++const fetchInit = {
++  method: &quot;GET&quot;,
++  headers: fetchHeaders,
++};
++const pollState = () =&gt; {
++  fetch(&quot;state.json&quot;, fetchInit)
++    .then((response) =&gt; response.json())
++    .then(applyNewState);
++};
++
++/*
++ * ACTUAL CODE FLOW STARTS HERE
++ */
++window.STATE = {}; // state singleton, globally accessible
++pollState(); // immediately populate data to avoid empty values on page load
++setInterval(pollState, 1500);
+diff --git a/web/state.json b/web/state.json
+new file mode 100644
+index 0000000..11d2151
+--- /dev/null
++++ b/web/state.json
+@@ -0,0 +1,11 @@
++{
++    &quot;description&quot;: &quot;asdfasdf&quot;,
++    &quot;p1name&quot;: &quot;CYG BST | | Fuudo&quot;,
++    &quot;p1country&quot;: &quot;🇯🇵&quot;,
++    &quot;p1team&quot;: &quot;&quot;,
++    &quot;p1score&quot;: &quot;6&quot;,
++    &quot;p2name&quot;: &quot;B.O.B | Xiaobao&quot;,
++    &quot;p2country&quot;: &quot;🇯🇵&quot;,
++    &quot;p2score&quot;: &quot;1&quot;,
++    &quot;p2team&quot;: &quot;&quot;
++}
+</pre></body></html>

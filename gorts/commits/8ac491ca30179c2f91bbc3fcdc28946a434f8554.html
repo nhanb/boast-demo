@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[8ac491ca30] remove unnecessary goroutine | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 8ac491ca30</strong><hr><pre>commit 8ac491ca30179c2f91bbc3fcdc28946a434f8554
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jun 17 16:53:56 2023 +0700
+
+    remove unnecessary goroutine
+
+diff --git a/main.go b/main.go
+index 8074cc1..1f010b6 100644
+--- a/main.go
++++ b/main.go
+@@ -11,7 +11,6 @@
+ 	&quot;os&quot;
+ 	&quot;os/exec&quot;
+ 	&quot;strconv&quot;
+-	&quot;sync&quot;
+ )
+ 
+ const WebPort = &quot;1337&quot;
+@@ -22,14 +21,6 @@
+ var mainTcl string
+ 
+ func main() {
+-	var wg sync.WaitGroup
+-
+-	wg.Add(1)
+-	go func() {
+-		defer wg.Done()
+-		connectTclProc()
+-	}()
+-
+ 	// No need to wait on the http server,
+ 	// just let it die when the GUI is closed.
+ 	go func() {
+@@ -42,10 +33,10 @@ func main() {
+ 		}
+ 	}()
+ 
+-	wg.Wait()
++	startGUI()
+ }
+ 
+-func connectTclProc() {
++func startGUI() {
+ 	cmd := exec.Command(&quot;tclsh&quot;)
+ 	stdout, err := cmd.StdoutPipe()
+ 	if err != nil {
+@@ -89,7 +80,7 @@ func connectTclProc() {
+ 		println(&quot;=&gt; &quot; + req)
+ 		switch req {
+ 		case &quot;readstate&quot;:
+-			// TODO: there must be more... civilized way.
++			// TODO: there must be a more... civilized way.
+ 			respond(state.Description)
+ 			respond(state.P1name)
+ 			respond(state.P1country)
+</pre></body></html>

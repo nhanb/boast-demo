@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[01b57b5fa6] expose is_webtoon field to client | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 01b57b5fa6</strong><hr><pre>commit 01b57b5fa6793f97d11bf32ddeae640beade0cc4
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Jan 22 16:29:10 2021 +0700
+
+    expose is_webtoon field to client
+
+diff --git a/pyproject.toml b/pyproject.toml
+index bcb2885..dcb5d65 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.34&quot;
++version = &quot;0.3.35&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/database/common.py b/src/pytaku/database/common.py
+index 1bc6095..8624c5a 100644
+--- a/src/pytaku/database/common.py
++++ b/src/pytaku/database/common.py
+@@ -10,12 +10,19 @@ def _row_trace(cursor, row):
+     Customize each result row&#39;s representation:
+     - If query only asks for 1 field, return that result directly instead of tuple
+     - If more than 1 field, return dict instead of tuple
++    - Because SQLite stores booleans as 0 or 1, convert them to proper python bools
+     &quot;&quot;&quot;
+     desc = cursor.getdescription()
+     if len(desc) == 1:
+         return row[0]
+     else:
+-        return {k[0]: row[i] for i, k in enumerate(desc)}
++        result = {}
++        for i, (col_name, col_type) in enumerate(desc):
++            value = row[i]
++            if col_type == &quot;boolean&quot;:
++                value = bool(value)
++            result[col_name] = value
++        return result
+ 
+ 
+ def get_conn():
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 25bec95..88e51d1 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -294,6 +294,7 @@ def api_chapter(site, title_id, chapter_id):
+     chapter[&quot;prev_chapter&quot;] = prev_chapter
+     chapter[&quot;next_chapter&quot;] = next_chapter
+     chapter[&quot;site&quot;] = site
++    chapter[&quot;is_webtoon&quot;] = title[&quot;is_webtoon&quot;]
+     return chapter
+ 
+ 
+</pre></body></html>

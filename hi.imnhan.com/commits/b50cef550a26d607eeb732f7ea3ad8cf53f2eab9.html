@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b50cef550a] add projects page, change default thumbnail | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / b50cef550a</strong><hr><pre>commit b50cef550a26d607eeb732f7ea3ad8cf53f2eab9
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jun 13 19:53:10 2020 +0700
+
+    add projects page, change default thumbnail
+
+diff --git a/content/images/keyboard-warrior.jpg b/content/images/keyboard-warrior.jpg
+new file mode 100644
+index 0000000..84ffebd
+Binary files /dev/null and b/content/images/keyboard-warrior.jpg differ
+diff --git a/content/images/nhan.jpg b/content/images/nhan.jpg
+deleted file mode 100644
+index b473852..0000000
+Binary files a/content/images/nhan.jpg and /dev/null differ
+diff --git a/content/pages/about.md b/content/pages/about.md
+index 33ec0f6..21c1872 100644
+--- a/content/pages/about.md
++++ b/content/pages/about.md
+@@ -1,9 +1,9 @@
+ Title: About
+-Thumb: images/nhan.jpg
++Thumb: images/keyboard-warrior.jpg
+ 
+ ## About me
+ 
+-![My face](/images/nhan.jpg)
++![literally me](/images/keyboard-warrior.jpg)
+ 
+ Hi, I&#39;m Nhân. I make web&lt;strike&gt;shit&lt;/strike&gt;stuff for a living.
+ 
+diff --git a/content/pages/projects.md b/content/pages/projects.md
+new file mode 100644
+index 0000000..2cd4040
+--- /dev/null
++++ b/content/pages/projects.md
+@@ -0,0 +1,61 @@
++Title: Projects
++Thumb: images/keyboard-warrior.jpg
++
++
++I&#39;ve written some open source software in my free time.
++In some cases I even maintain them! Shocking, I know.
++
++## McRoss
++
++[McRoss](https://sr.ht/~nhanb/mcross) is a minimal and usable
++[gemini://](https://gemini.circumlunar.space/) browser written in python and
++tkinter, meaning it Just Works (tm) on any self-respecting desktop OS: Linux,
++Windows, Mac OS, and maybe the BSDs? Never tried one of those.
++
++
++## ORTS
++
++[ORTS](https://github.com/nhanb/orts/) is a GUI for operating scoreboards on
++fighting game streams.
++
++
++## An animated wallpaper for KDE Plasma
++
++I was frustrated that KDE 5 didn&#39;t allow animated gifs as wallpaper so I [wrote
++one][3]. Every now and then someone would [use it on /r/unixporn][4] and cause
++a surge in github stars. It is currently my most starred repo, which gives me
++mixed feelings.
++
++
++## Caophim
++
++[Caophim][5] is my take on imageboard software and also my excuse to try
++[Nim][6]. There&#39;s a usable live instance at [caophim.net][7]. It&#39;s nowhere near
++my goals but to be honest I got tired of [running][8] [into][9] [nim&#39;s][10]
++[bugs][11], in the compiler, the standard library, the flagship module that&#39;s
++supposed to supersede a module in the standard library... you name it. The
++straw that broke the camel&#39;s back though, was [this gem right here][12] that
++remains unfixed to this day.
++
++
++## Unmaintained projects
++
++[**Pytaku**][1] was an online &quot;manga aggregator aggregator&quot;: it let me follow new
++manga scanlation releases on multiple sites. Eventually the limits of Google
++App Engine&#39;s free offering prompted me to do a rewrite which resulted in
++endless yak-shaving and analysis paralysis. Then life happened, _then_
++[tachiyomi][2] happened and I lost the actual need for the project.
++
++
++[1]: https://hi.imnhan.com/posts/introducing-pytaku-the-only-online-manga-reader-youll-ever-need/
++[2]: https://tachiyomi.org/
++[3]: https://github.com/nhanb/com.nerdyweekly.animated
++[4]: https://www.reddit.com/r/unixporn/comments/9sd5uy/kde_plasma_blur_gif_pixel_art_wallpaper_look/
++[5]: https://github.com/nhanb/caophim
++[6]: https://nim-lang.org/
++[7]: https://caophim.net/
++[8]: https://github.com/nim-lang/Nim/issues/13531
++[9]: https://github.com/nim-lang/Nim/issues/13986
++[10]: https://github.com/pragmagic/karax/issues/143
++[11]: https://github.com/pragmagic/karax/issues/142
++[12]: https://github.com/nim-lang/Nim/issues/13923
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 9a3f5e7..2a548b6 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -73,7 +73,7 @@
+ 
+ # ========= Theme-specific settings follow =============
+ 
+-MOTHERFUCKING_DEFAULT_THUMB = &quot;images/nhan.jpg&quot;
++MOTHERFUCKING_DEFAULT_THUMB = &quot;images/keyboard-warrior.jpg&quot;
+ MOTHERFUCKING_GREETINGS = &quot;&quot;&quot;
+ Why hello there, source viewer. Here&#39;s a dragon for no particular reason:
+ 
+</pre></body></html>

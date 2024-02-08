@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[fc7236d595] implement &quot;read all&quot;, tweak follows page | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / fc7236d595</strong><hr><pre>commit fc7236d59518fc11b75d12b307cdb978ea7fe879
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 23 22:52:51 2020 +0700
+
+    implement &quot;read all&quot;, tweak follows page
+    
+    - &quot;read all&quot; button on Title page allows to mark all chapters as read
+    - Follows page now shows all unread chapters instead of just chapters
+    that are newer than latest read chapter.
+
+diff --git a/src/pytaku/database/migrations/latest_schema.sql b/src/pytaku/database/migrations/latest_schema.sql
+index c9bf35d..fc65604 100644
+--- a/src/pytaku/database/migrations/latest_schema.sql
++++ b/src/pytaku/database/migrations/latest_schema.sql
+@@ -50,6 +50,15 @@ CREATE TABLE IF NOT EXISTS &quot;chapter&quot; (
+     unique(site, title_id, id),
+     unique(site, title_id, num_major, num_minor)
+ );
++CREATE TABLE token (
++    user_id integer not null,
++    token text unique not null,
++    created_at text not null default (datetime(&#39;now&#39;)),
++    last_accessed_at text not null default (datetime(&#39;now&#39;)),
++    lifespan text not null, -- &#39;+1 day&#39;, &#39;+365 days&#39;, etc.
++
++    foreign key (user_id) references user (id)
++);
+ CREATE TABLE IF NOT EXISTS &quot;read&quot; (
+     user_id integer not null,
+     site text not null,
+@@ -58,15 +67,5 @@ CREATE TABLE IF NOT EXISTS &quot;read&quot; (
+     updated_at text default (datetime(&#39;now&#39;)),
+ 
+     foreign key (user_id) references user (id),
+-    foreign key (site, title_id, chapter_id) references chapter (site, title_id, id),
+     unique(user_id, site, title_id, chapter_id)
+ );
+-CREATE TABLE token (
+-    user_id integer not null,
+-    token text unique not null,
+-    created_at text not null default (datetime(&#39;now&#39;)),
+-    last_accessed_at text not null default (datetime(&#39;now&#39;)),
+-    lifespan text not null, -- &#39;+1 day&#39;, &#39;+365 days&#39;, etc.
+-
+-    foreign key (user_id) references user (id)
+-);
+diff --git a/src/pytaku/database/migrations/m0005.sql b/src/pytaku/database/migrations/m0005.sql
+new file mode 100644
+index 0000000..b4adb73
+--- /dev/null
++++ b/src/pytaku/database/migrations/m0005.sql
+@@ -0,0 +1,24 @@
++-- Remove foreign key from &quot;read&quot; table pointing to &quot;chapter&quot;.
++-- So we can, say, mark all chapters of a title as read even if some of those
++-- chapters haven&#39;t been created.
++
++pragma foreign_keys = off; -- to let us do anything at all
++begin transaction;
++
++create table new_read (
++    user_id integer not null,
++    site text not null,
++    title_id text, -- nullable to accomodate existing mangadex rows, urgh.
++    chapter_id text not null,
++    updated_at text default (datetime(&#39;now&#39;)),
++
++    foreign key (user_id) references user (id),
++    unique(user_id, site, title_id, chapter_id)
++);
++insert into new_read select * from read;
++drop table read;
++alter table new_read rename to read;
++
++pragma foreign_key_check;
++commit;
++pragma foreign_keys = on;
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index d934a5e..95b7721 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -542,12 +542,13 @@ def api_read():
+ 
+     if reads:
+         for r in reads:
++            print(&quot;&gt;&gt; reading&quot;, request.user_id, r)
+             read(
+                 request.user_id, r[&quot;site&quot;], r[&quot;title_id&quot;], r[&quot;chapter_id&quot;],
+             )
+     if unreads:
+         for u in unreads:
+-            read(
++            unread(
+                 request.user_id, u[&quot;site&quot;], u[&quot;title_id&quot;], u[&quot;chapter_id&quot;],
+             )
+     # TODO: rewrite read/unread to do bulk updates instead of n+1 queries like these.
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 7cb0a81..2a246e0 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -80,10 +80,9 @@ def load_title(site, title_id, user_id=None):
+                 &quot;&quot;&quot;
+                 SELECT r.chapter_id
+                 FROM read r
+-                  INNER JOIN chapter c ON c.id = r.chapter_id AND c.site = r.site
+                 WHERE r.user_id = ?
+-                  AND c.title_id = ?
+-                  AND c.site = ?
++                  AND r.title_id = ?
++                  AND r.site = ?
+                 ORDER BY r.updated_at;
+                 &quot;&quot;&quot;,
+                 (user_id, title[&quot;id&quot;], title[&quot;site&quot;]),
+@@ -248,27 +247,18 @@ def get_followed_titles(user_id):
+ 
+         # n+1 queries cuz I don&#39;t give a f- actually I do, but sqlite&#39;s cool with it:
+         # https://www.sqlite.org/np1queryprob.html
+-        chapters_i_finished = run_sql_on_demand(
++        chapters_i_finished = run_sql(
+             &quot;&quot;&quot;
+-            SELECT r.chapter_id
+-            FROM read r
+-                INNER JOIN chapter c ON c.id = r.chapter_id AND c.site = r.site
+-            WHERE r.user_id = ?
+-                AND c.title_id = ?
+-                AND c.site = ?
+-            ORDER BY c.num_major desc, c.num_minor desc;
++            SELECT chapter_id
++            FROM read
++            WHERE user_id = ?
++              AND title_id = ?
++              AND site = ?;
+             &quot;&quot;&quot;,
+             (user_id, t[&quot;id&quot;], t[&quot;site&quot;]),
+         )
+-        # Cut off chapter list:
+-        # only show chapters newer than the latest chapter that user has finished.
+-        # Running a loop here instead of just picking the one latest finished chapter
+-        # because source site may have deleted said chapter.
+-        for finished_chapter_id in chapters_i_finished:
+-            for i, ch in enumerate(chapters):
+-                if finished_chapter_id == ch[&quot;id&quot;]:
+-                    chapters = chapters[:i]
+-                    break
++        # Only show chapters that user hasn&#39;t read
++        chapters = [ch for ch in chapters if ch[&quot;id&quot;] not in chapters_i_finished]
+ 
+         t[&quot;chapters&quot;] = chapters
+ 
+diff --git a/src/pytaku/static/js/routes/title.js b/src/pytaku/static/js/routes/title.js
+index 529bceb..c5a368e 100644
+--- a/src/pytaku/static/js/routes/title.js
++++ b/src/pytaku/static/js/routes/title.js
+@@ -4,7 +4,9 @@ import { LoadingMessage, Button, fullChapterName, Chapter } from &quot;../utils.js&quot;;
+ function Title(initialVNode) {
+   let isLoading = false;
+   let isTogglingFollow = false;
++  let isMarkingAllAsRead = false;
+   let title = {};
++  let allAreRead;
+ 
+   return {
+     oninit: (vnode) =&gt; {
+@@ -29,6 +31,15 @@ function Title(initialVNode) {
+         });
+     },
+     view: (vnode) =&gt; {
++      if (!isLoading &amp;&amp; Auth.isLoggedIn()) {
++        allAreRead = true;
++        for (let chap of title.chapters) {
++          if (!chap.is_read) {
++            allAreRead = false;
++            break;
++          }
++        }
++      }
+       return m(
+         &quot;div.content&quot;,
+         isLoading
+@@ -37,40 +48,82 @@ function Title(initialVNode) {
+               m(&quot;h1&quot;, title.name),
+               m(&quot;div.title--details&quot;, [
+                 Auth.isLoggedIn()
+-                  ? m(Button, {
+-                      icon: &quot;bookmark&quot;,
+-                      disabled: isTogglingFollow ? &quot;disabled&quot; : null,
+-                      text: isTogglingFollow
+-                        ? &quot;submitting...&quot;
+-                        : title.is_following
+-                        ? &quot;following&quot;
+-                        : &quot;follow&quot;,
+-                      color: title.is_following ? &quot;red&quot; : &quot;green&quot;,
+-                      title: title.is_following
+-                        ? &quot;Click to unfollow&quot;
+-                        : &quot;Click to follow&quot;,
+-                      onclick: (ev) =&gt; {
+-                        isTogglingFollow = true;
+-                        m.redraw();
+-                        Auth.request({
+-                          method: &quot;POST&quot;,
+-                          url: &quot;/api/follow&quot;,
+-                          body: {
+-                            site: title.site,
+-                            title_id: title.id,
+-                            follow: !title.is_following,
+-                          },
+-                        })
+-                          .then((resp) =&gt; {
+-                            title.is_following = resp.follow;
++                  ? [
++                      m(Button, {
++                        icon: &quot;bookmark&quot;,
++                        disabled: isTogglingFollow ? &quot;disabled&quot; : null,
++                        text: isTogglingFollow
++                          ? &quot;submitting...&quot;
++                          : title.is_following
++                          ? &quot;following&quot;
++                          : &quot;follow&quot;,
++                        color: title.is_following ? &quot;red&quot; : &quot;green&quot;,
++                        title: title.is_following
++                          ? &quot;Click to unfollow&quot;
++                          : &quot;Click to follow&quot;,
++                        onclick: (ev) =&gt; {
++                          isTogglingFollow = true;
++                          m.redraw();
++                          Auth.request({
++                            method: &quot;POST&quot;,
++                            url: &quot;/api/follow&quot;,
++                            body: {
++                              site: title.site,
++                              title_id: title.id,
++                              follow: !title.is_following,
++                            },
+                           })
+-                          .finally(() =&gt; {
+-                            isTogglingFollow = false;
+-                          });
+-                      },
+-                    })
++                            .then((resp) =&gt; {
++                              title.is_following = resp.follow;
++                            })
++                            .finally(() =&gt; {
++                              isTogglingFollow = false;
++                            });
++                        },
++                      }),
++                      m(Button, {
++                        icon: &quot;eye&quot;,
++                        disabled:
++                          isMarkingAllAsRead || allAreRead ? &quot;disabled&quot; : null,
++                        text: isMarkingAllAsRead
++                          ? &quot;submitting...&quot;
++                          : allAreRead
++                          ? &quot;no new chapters&quot;
++                          : &quot;read all&quot;,
++                        color: &quot;green&quot;,
++                        title: allAreRead
++                          ? null
++                          : &quot;Click to mark all chapters as read&quot;,
++                        onclick: (ev) =&gt; {
++                          isMarkingAllAsRead = true;
++                          m.redraw();
++                          Auth.request({
++                            method: &quot;POST&quot;,
++                            url: &quot;/api/read&quot;,
++                            body: {
++                              read: title.chapters
++                                .filter((ch) =&gt; !ch.is_read)
++                                .map((ch) =&gt; {
++                                  return {
++                                    site: title.site,
++                                    title_id: title.id,
++                                    chapter_id: ch.id,
++                                  };
++                                }),
++                            },
++                          })
++                            .then((resp) =&gt; {
++                              title.chapters.forEach((chap) =&gt; {
++                                chap.is_read = true;
++                              });
++                            })
++                            .finally(() =&gt; {
++                              isMarkingAllAsRead = false;
++                            });
++                        },
++                      }),
++                    ]
+                   : null,
+-                &quot; &quot;,
+                 m(
+                   &quot;a.touch-friendly[title=Go to source site][target=_blank]&quot;,
+                   { href: title.source_url },
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index 9d7bc59..f2bebf5 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -287,6 +287,9 @@ .title--cover {
+ .title--details {
+   margin: 1rem 0;
+ }
++.title--details &gt; * {
++  margin-right: 0.3rem;
++}
+ 
+ /* Chapter route */
+ .chapter.content {
+@@ -327,7 +330,7 @@ .utils--chapter {
+ .utils--chapter.read &gt; a:before {
+   content: &quot;🗹&quot;;
+   color: green;
+-  margin-right: 0.2rem;
++  margin-right: 0.4rem;
+   font-weight: bold;
+ }
+ .utils--chapter &gt; a {
+</pre></body></html>

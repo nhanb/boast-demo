@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[8a01764f30] more visual feedback during page resize | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 8a01764f30</strong><hr><pre>commit 8a01764f306fb1c1ea037ad931e80b30ae271b84
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 26 13:19:02 2021 +0700
+
+    more visual feedback during page resize
+
+diff --git a/src/pytaku/js-src/routes/chapter.js b/src/pytaku/js-src/routes/chapter.js
+index 2d19e54..806af56 100644
+--- a/src/pytaku/js-src/routes/chapter.js
++++ b/src/pytaku/js-src/routes/chapter.js
+@@ -75,23 +75,23 @@ function Chapter(initialVNode) {
+   let nextChapterPendingPages = null;
+   let nextChapterLoadedPages = [];
+ 
+-  let imgMaxWidth = 100; // in percent
++  let pageMaxWidth = 100; // in percent
+ 
+   function onKeyPress(event) {
+     switch (event.keyCode) {
+       case KEYCODE_PLUS:
+-        imgMaxWidth += 20;
++        if (pageMaxWidth &lt;= 85) pageMaxWidth += 15;
+         break;
+       case KEYCODE_MINUS:
+-        if (imgMaxWidth &gt; 20) imgMaxWidth -= 20;
++        if (pageMaxWidth &gt; 15) pageMaxWidth -= 15;
+         break;
+       case KEYCODE_ZERO:
+-        imgMaxWidth = 100;
++        pageMaxWidth = 100;
+         break;
+       case KEYCODE_QUESTION_MARK:
+         window.alert(`Keyboard shortcuts:
+-    + to increase page size
+     - to decrease page size
++    + to increase page size (max 100%)
+     0 (zero) to reset page size`);
+         break;
+     }
+@@ -294,35 +294,45 @@ function Chapter(initialVNode) {
+           },
+           [
+             loadedPages.map((page, pageIndex) =&gt;
+-              m(&quot;div&quot;, { key: page.src }, [
+-                m(FallbackableImg, {
+-                  src: page.src,
+-                  altsrc: page.altsrc,
++              m(
++                &quot;div.chapter--page-container&quot;,
++                {
++                  key: page.src,
+                   style: {
+-                    display:
+-                      page.status === ImgStatus.SUCCEEDED ? &quot;block&quot; : &quot;none&quot;,
+-                    maxWidth: `${imgMaxWidth}%`,
++                    width: `${pageMaxWidth}%`,
++                    backgroundColor:
++                      pageMaxWidth === 100 ? &quot;transparent&quot; : &quot;#333&quot;,
+                   },
+-                  onload: (ev) =&gt; {
+-                    page.status = ImgStatus.SUCCEEDED;
+-                    loadNextPage();
+-                  },
+-                  onerror: (ev) =&gt; {
+-                    page.status = ImgStatus.FAILED;
+-                    loadNextPage();
+-                  },
+-                }),
+-                page.status === ImgStatus.LOADING
+-                  ? m(LoadingPlaceholder)
+-                  : null,
+-                page.status === ImgStatus.FAILED
+-                  ? m(
+-                      &quot;div&quot;,
+-                      { style: { &quot;margin-bottom&quot;: &quot;.5rem&quot; } },
+-                      m(RetryImgButton, { page })
+-                    )
+-                  : null,
+-              ])
++                },
++                [
++                  m(FallbackableImg, {
++                    src: page.src,
++                    altsrc: page.altsrc,
++                    style: {
++                      display:
++                        page.status === ImgStatus.SUCCEEDED ? &quot;inline&quot; : &quot;none&quot;,
++                    },
++                    onload: (ev) =&gt; {
++                      page.status = ImgStatus.SUCCEEDED;
++                      loadNextPage();
++                    },
++                    onerror: (ev) =&gt; {
++                      page.status = ImgStatus.FAILED;
++                      loadNextPage();
++                    },
++                  }),
++                  page.status === ImgStatus.LOADING
++                    ? m(LoadingPlaceholder)
++                    : null,
++                  page.status === ImgStatus.FAILED
++                    ? m(
++                        &quot;div&quot;,
++                        { style: { &quot;margin-bottom&quot;: &quot;.5rem&quot; } },
++                        m(RetryImgButton, { page })
++                      )
++                    : null,
++                ]
++              )
+             ),
+             pendingPages.map(() =&gt; m(PendingPlaceholder)),
+           ]
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index a726a7b..2885613 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -402,9 +402,11 @@ .chapter.content {
+   color: white;
+ }
+ 
+-.chapter--pages img {
+-  display: block;
++.chapter--page-container {
++  transition-duration: 0.2s;
+   margin: 0 auto 0.7rem auto;
++  display: flex;
++  justify-content: center;
+ }
+ .chapter--pages.chapter--webtoon img {
+   margin: 0 auto;
+</pre></body></html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[f957cf1ea9] u-root braindump | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / f957cf1ea9</strong><hr><pre>commit f957cf1ea97489dd9040c4c12f706fdc3c043e92
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Sep 14 20:11:55 2023 +0700
+
+    u-root braindump
+
+diff --git a/ideas/index.dj b/ideas/index.dj
+index fccdf08..b37cdc9 100644
+--- a/ideas/index.dj
++++ b/ideas/index.dj
+@@ -10,6 +10,40 @@ Description: &quot;The idea is there. It just needs implementation.&quot;
+ 
+ ---
+ 
++## A Linux appliance with u-root
++
++Only the kernel and a Go runtime, plus [a bunch][1] of busybox-like utils.
++Doesn&#39;t get more minimal than that!
++
++Candidates:
++
++- rss reader: see below
++- git-in-a-box: see [go-git][5]
++- btrfs NAS: encryption can use either gocryptfs, or fscrypt when its btrfs
++  support lands in mainline... [apparently soon?][6]
++
++Why not gokrazy? Nothing wrong with it, though I don&#39;t really need most of its
++amenities. Also I recently tried to update my old gokrazy instance and it
++failed for no obvious reason. Searching existing issues yielded no result and
++I&#39;m too lazy to investigate further.
++
++### Preliminary research
++
++No ufw, so learn to use nftables directly instead.
++[This][2] is a good starting point.
++
++No ca-certificates: [copy from host][3] instead, e.g. on Arch:
++
++```
++u-root -files &#39;/etc/ca-certificates/extracted/tls-ca-bundle.pem:/etc/ssl/certs/ca-certificates.crt&#39;
++```
++
++To draw to fbdev, see [cmds/exp/fbsplash][4]. Helpful to draw a dashboard to
++hdmi out, like gokrazy.
++
++TODO: check if tailscale can run on this. That would cleanly solve the &quot;enter
++disk encryption passphrase remotely after reboot&quot; problem.
++
+ ## Self hosted RSS reader in pure Go
+ 
+ - Single executable, web based
+@@ -39,3 +73,10 @@ Eyeing Linode&#39;s 4GB RAM tier at $0.03/hr. But in general it should work on any
+ cloud VPS that supports (almost) instant VM launch via API, and snapshots.
+ 
+ - Easy on/off/status commands via Discord bot maybe
++
++[1]: https://github.com/u-root/u-root/tree/main/cmds/core
++[2]: https://wiki.nftables.org/wiki-nftables/index.php/Simple_ruleset_for_a_server
++[3]: https://github.com/u-root/u-root/issues/2151#issuecomment-990124460
++[4]: https://github.com/u-root/u-root/blob/main/cmds/exp/fbsplash/main.go
++[5]: https://github.com/go-git/go-git/issues/234
++[6]: https://youtu.be/6YIc2fVLVPU?si=AEB-iTJhTF-Nxo_3&amp;t=893
+diff --git a/ideas/index.html b/ideas/index.html
+index 0903b02..601d68d 100644
+--- a/ideas/index.html
++++ b/ideas/index.html
+@@ -40,6 +40,40 @@ &lt;h1&gt;Potential project ideas&lt;/h1&gt;
+ &lt;p&gt;The idea is there. It just needs implementation.&lt;/p&gt;
+ &lt;/blockquote&gt;
+ &lt;hr&gt;
++&lt;section id=&quot;A-Linux-appliance-with-u-root&quot;&gt;
++&lt;h2&gt;A Linux appliance with u-root&lt;a href=&quot;#A-Linux-appliance-with-u-root&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
++&lt;p&gt;Only the kernel and a Go runtime, plus &lt;a href=&quot;https://github.com/u-root/u-root/tree/main/cmds/core&quot;&gt;a bunch&lt;/a&gt; of busybox-like utils.
++Doesn’t get more minimal than that!&lt;/p&gt;
++&lt;p&gt;Candidates:&lt;/p&gt;
++&lt;ul&gt;
++&lt;li&gt;
++rss reader: see below
++&lt;/li&gt;
++&lt;li&gt;
++git-in-a-box: see &lt;a href=&quot;https://github.com/go-git/go-git/issues/234&quot;&gt;go-git&lt;/a&gt;
++&lt;/li&gt;
++&lt;li&gt;
++btrfs NAS: encryption can use either gocryptfs, or fscrypt when its btrfs
++support lands in mainline… &lt;a href=&quot;https://youtu.be/6YIc2fVLVPU?si=AEB-iTJhTF-Nxo_3&amp;amp;t=893&quot;&gt;apparently soon?&lt;/a&gt;
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;p&gt;Why not gokrazy? Nothing wrong with it, though I don’t really need most of its
++amenities. Also I recently tried to update my old gokrazy instance and it
++failed for no obvious reason. Searching existing issues yielded no result and
++I’m too lazy to investigate further.&lt;/p&gt;
++&lt;section id=&quot;Preliminary-research&quot;&gt;
++&lt;h3&gt;Preliminary research&lt;a href=&quot;#Preliminary-research&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
++&lt;p&gt;No ufw, so learn to use nftables directly instead.
++&lt;a href=&quot;https://wiki.nftables.org/wiki-nftables/index.php/Simple_ruleset_for_a_server&quot;&gt;This&lt;/a&gt; is a good starting point.&lt;/p&gt;
++&lt;p&gt;No ca-certificates: &lt;a href=&quot;https://github.com/u-root/u-root/issues/2151#issuecomment-990124460&quot;&gt;copy from host&lt;/a&gt; instead, e.g. on Arch:&lt;/p&gt;
++&lt;pre&gt;&lt;code&gt;u-root -files &#39;/etc/ca-certificates/extracted/tls-ca-bundle.pem:/etc/ssl/certs/ca-certificates.crt&#39;
++&lt;/code&gt;&lt;/pre&gt;
++&lt;p&gt;To draw to fbdev, see &lt;a href=&quot;https://github.com/u-root/u-root/blob/main/cmds/exp/fbsplash/main.go&quot;&gt;cmds/exp/fbsplash&lt;/a&gt;. Helpful to draw a dashboard to
++hdmi out, like gokrazy.&lt;/p&gt;
++&lt;p&gt;TODO: check if tailscale can run on this. That would cleanly solve the “enter
++disk encryption passphrase remotely after reboot” problem.&lt;/p&gt;
++&lt;/section&gt;
++&lt;/section&gt;
+ &lt;section id=&quot;Self-hosted-RSS-reader-in-pure-Go&quot;&gt;
+ &lt;h2&gt;Self hosted RSS reader in pure Go&lt;a href=&quot;#Self-hosted-RSS-reader-in-pure-Go&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;ul&gt;
+</pre></body></html>

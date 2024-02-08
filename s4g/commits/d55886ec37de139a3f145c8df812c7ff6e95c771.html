@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[d55886ec37] let user manually define nav links | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / d55886ec37</strong><hr><pre>commit d55886ec37de139a3f145c8df812c7ff6e95c771
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jul 13 05:05:05 2023 +0700
+
+    let user manually define nav links
+    
+    Changed `articles` type from slice to map because I&#39;m too much of a
+    pussy to run nested loops for lookup.
+
+diff --git a/docs/_theme/home.tmpl b/docs/_theme/home.tmpl
+index fdc3cd8..b777357 100644
+--- a/docs/_theme/home.tmpl
++++ b/docs/_theme/home.tmpl
+@@ -9,7 +9,6 @@
+ &lt;hr&gt;
+ 
+ &lt;div class=&quot;pages&quot;&gt;
+-  &lt;a href=&quot;{{.Site.Root}}&quot;&gt;Home&lt;/a&gt;
+ {{- range .ArticlesInNav}}
+   &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+ {{- end}}
+diff --git a/docs/_theme/includes.tmpl b/docs/_theme/includes.tmpl
+index cdd6ec2..7f9fdcb 100644
+--- a/docs/_theme/includes.tmpl
++++ b/docs/_theme/includes.tmpl
+@@ -1,7 +1,6 @@
+ {{define &quot;navbar&quot;}}
+ &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.Site.Root}}_theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+-  &lt;a href=&quot;{{.Site.Root}}&quot;&gt;Home&lt;/a&gt;
+   {{- range .ArticlesInNav}}
+   &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+   {{- end}}
+diff --git a/docs/about/index.dj b/docs/about/index.dj
+index ebe134f..eed959a 100644
+--- a/docs/about/index.dj
++++ b/docs/about/index.dj
+@@ -1,6 +1,5 @@
+ Title: About
+ ShowInFeed: false
+-ShowInNav: true
+ ---
+ 
+ This is a sample website to demonstrate some features of [WebMaker2000][1].
+diff --git a/docs/index.dj b/docs/index.dj
+index 0c20203..6ce56a8 100644
+--- a/docs/index.dj
++++ b/docs/index.dj
+@@ -1,5 +1,4 @@
+ Title: Home
+-ShowInNav: false
+ ShowInFeed: false
+ Templates: $_theme/base.tmpl, $_theme/includes.tmpl, $_theme/home.tmpl
+ ---
+diff --git a/docs/website.wbmkr2k b/docs/website.wbmkr2k
+index c67de7c..cf91244 100644
+--- a/docs/website.wbmkr2k
++++ b/docs/website.wbmkr2k
+@@ -2,6 +2,7 @@ Address: https://coolzone.example.com
+ Name: CoolZone
+ Tagline: Cool people only.
+ Root: /webmaker2000/
++NavbarLinks: index.dj, about/index.dj
+ 
+ AuthorName: Coolio McCool
+ AuthorURI: https://author.example.com
+diff --git a/main.go b/main.go
+index 1050c09..18d09c7 100644
+--- a/main.go
++++ b/main.go
+@@ -126,36 +126,37 @@ func regenerate(fsys writablefs.FS) (site SiteMetadata) {
+ 
+ 	if len(articles) == 0 {
+ 		fmt.Println(&quot;No articles found.&quot;)
+-		fsys.RemoveAll(&quot;index.html&quot;)
+ 		fsys.RemoveAll(FeedPath)
+ 		return
+ 	}
+ 
+ 	generatedFiles := make(map[string]bool)
+ 
+-	// Sort articles, newest first
+-	sort.Slice(articles, func(i int, j int) bool {
+-		return articles[i].PostedAt.Compare(articles[j].PostedAt) &gt; 0
+-	})
+-
+-	var startYear int
++	var articlesInNav []Article
++	for _, link := range site.NavbarLinks {
++		a, ok := articles[link]
++		if !ok {
++			fmt.Printf(&quot;NavbarLinks: %s not found\n&quot;, link)
++			continue
++		}
++		articlesInNav = append(articlesInNav, a)
++	}
+ 
+-	var articlesInNav, articlesInFeed []Article
++	var articlesInFeed []Article
++	startYear := time.Now().Year()
+ 	for _, a := range articles {
+-		if a.ShowInNav {
+-			articlesInNav = append(articlesInNav, a)
+-		}
+ 		if a.ShowInFeed {
+ 			articlesInFeed = append(articlesInFeed, a)
+ 		}
+-		if !a.PostedAt.IsZero() {
++		if !a.PostedAt.IsZero() &amp;&amp; a.PostedAt.Year() &lt; startYear {
+ 			startYear = a.PostedAt.Year()
+ 		}
+ 	}
+ 
+-	if startYear == 0 {
+-		startYear = time.Now().Year()
+-	}
++	// Sort articles in feed, newest first
++	sort.Slice(articlesInFeed, func(i int, j int) bool {
++		return articlesInFeed[i].PostedAt.Compare(articlesInFeed[j].PostedAt) &gt; 0
++	})
+ 
+ 	for _, a := range articles {
+ 		fmt.Println(&quot;&gt;&quot;, a.Path, &quot;-&quot;, a.Title)
+@@ -267,46 +268,8 @@ func (a *Article) WriteHtmlFile(
+ 	}
+ }
+ 
+-func WriteHomePage(
+-	fsys writablefs.FS,
+-	site SiteMetadata,
+-	articlesInFeed, articlesInNav []Article,
+-	startYear int,
+-) {
+-	var buf bytes.Buffer
+-	tmpl := template.Must(
+-		template.ParseFS(
+-			fsys,
+-			&quot;_theme/base.tmpl&quot;,
+-			&quot;_theme/includes.tmpl&quot;,
+-			&quot;_theme/home.tmpl&quot;,
+-		),
+-	)
+-	err := tmpl.Execute(&amp;buf, struct {
+-		Site           *SiteMetadata
+-		Title          string
+-		ArticlesInFeed []Article
+-		ArticlesInNav  []Article
+-		Feed           string
+-		Now            time.Time
+-		StartYear      int
+-	}{
+-		Site:           &amp;site,
+-		Title:          fmt.Sprintf(&quot;%s - %s&quot;, site.Name, site.Tagline),
+-		ArticlesInFeed: articlesInFeed,
+-		ArticlesInNav:  articlesInNav,
+-		Feed:           site.Root + FeedPath,
+-		Now:            time.Now(),
+-		StartYear:      startYear,
+-	})
+-	if err != nil {
+-		fmt.Println(&quot;Error in WriteHtmlFile:&quot;, err)
+-		return
+-	}
+-	fsys.WriteFile(&quot;index.html&quot;, buf.Bytes())
+-}
+-
+-func findArticles(fsys writablefs.FS, site SiteMetadata) (result []Article) {
++func findArticles(fsys writablefs.FS, site SiteMetadata) map[string]Article {
++	result := make(map[string]Article)
+ 
+ 	fs.WalkDir(fsys, &quot;.&quot;, func(path string, d fs.DirEntry, err error) error {
+ 		if d.IsDir() || !strings.HasSuffix(d.Name(), DjotExt) {
+@@ -332,7 +295,6 @@ func findArticles(fsys writablefs.FS, site SiteMetadata) (result []Article) {
+ 				&quot;$_theme/post.tmpl&quot;,
+ 			},
+ 			ShowInFeed: true,
+-			ShowInNav:  false,
+ 		}
+ 		err = UnmarshalMetadata(metaText, &amp;meta)
+ 		if err != nil {
+@@ -348,8 +310,8 @@ func findArticles(fsys writablefs.FS, site SiteMetadata) (result []Article) {
+ 			ArticleMetadata: meta,
+ 		}
+ 		article.ComputeWebPath(site.Root)
+-		result = append(result, article)
++		result[article.Path] = article
+ 		return nil
+ 	})
+-	return
++	return result
+ }
+diff --git a/metadata.go b/metadata.go
+index 0a41d5a..9f77e96 100644
+--- a/metadata.go
++++ b/metadata.go
+@@ -7,6 +7,7 @@
+ 	&quot;io&quot;
+ 	&quot;io/fs&quot;
+ 	&quot;reflect&quot;
++	&quot;strconv&quot;
+ 	&quot;strings&quot;
+ 	&quot;time&quot;
+ 
+@@ -19,6 +20,7 @@ type SiteMetadata struct {
+ 	Tagline     string
+ 	Root        string
+ 	ShowFooter  bool
++	NavbarLinks []string
+ 	AuthorName  string
+ 	AuthorURI   string
+ 	AuthorEmail string
+@@ -30,7 +32,6 @@ type ArticleMetadata struct {
+ 	PostedAt   time.Time
+ 	Templates  []string
+ 	ShowInFeed bool
+-	ShowInNav  bool
+ }
+ 
+ func NewSiteMetadata() SiteMetadata {
+@@ -70,6 +71,13 @@ func UnmarshalMetadata(data []byte, dest any) error {
+ 			case &quot;string&quot;:
+ 				s.Field(i).SetString(val)
+ 
++			case &quot;int&quot;:
++				intVal, err := strconv.Atoi(val)
++				if err != nil {
++					return fmt.Errorf(&quot;invalid int: %s&quot;, val)
++				}
++				s.Field(i).Set(reflect.ValueOf(intVal))
++
+ 			case &quot;bool&quot;:
+ 				if val != &quot;true&quot; &amp;&amp; val != &quot;false&quot; {
+ 					return fmt.Errorf(
+diff --git a/theme/home.tmpl b/theme/home.tmpl
+index fdc3cd8..b777357 100644
+--- a/theme/home.tmpl
++++ b/theme/home.tmpl
+@@ -9,7 +9,6 @@
+ &lt;hr&gt;
+ 
+ &lt;div class=&quot;pages&quot;&gt;
+-  &lt;a href=&quot;{{.Site.Root}}&quot;&gt;Home&lt;/a&gt;
+ {{- range .ArticlesInNav}}
+   &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+ {{- end}}
+diff --git a/theme/includes.tmpl b/theme/includes.tmpl
+index cdd6ec2..7f9fdcb 100644
+--- a/theme/includes.tmpl
++++ b/theme/includes.tmpl
+@@ -1,7 +1,6 @@
+ {{define &quot;navbar&quot;}}
+ &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.Site.Root}}_theme/navbar.css&quot;&gt;
+ &lt;nav&gt;
+-  &lt;a href=&quot;{{.Site.Root}}&quot;&gt;Home&lt;/a&gt;
+   {{- range .ArticlesInNav}}
+   &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+   {{- end}}
+</pre></body></html>

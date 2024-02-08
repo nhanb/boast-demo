@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[07f1e22015] fix relative link redirects, bump 0.5.14 | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 07f1e22015</strong><hr><pre>commit 07f1e220150d808d27f57ca3cf2d91056ae60731
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jun 16 13:40:10 2020 +0700
+
+    fix relative link redirects, bump 0.5.14
+    
+    https://todo.sr.ht/~nhanb/mcross/7
+
+diff --git a/pyproject.toml b/pyproject.toml
+index b4f6775..cf215bc 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;mcross&quot;
+-version = &quot;0.5.13&quot;
++version = &quot;0.5.14&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+diff --git a/src/mcross/transport.py b/src/mcross/transport.py
+index d25f7ba..68dcaef 100644
+--- a/src/mcross/transport.py
++++ b/src/mcross/transport.py
+@@ -151,7 +151,7 @@ async def get(url: GeminiUrl, redirect_count=0):
+     resp = await curio.timeout_after(MAX_REQUEST_SECONDS, raw_get, url)
+     if resp.status.startswith(&quot;3&quot;) and redirect_count &lt; MAX_REDIRECTS:
+         redirect_count += 1
+-        new_url = GeminiUrl.parse_absolute_url(resp.meta)
++        new_url = GeminiUrl.parse(resp.meta, url)
+         print(f&quot;Redirecting to {new_url}, count={redirect_count}&quot;)
+         return await get(new_url, redirect_count)
+     return resp
+</pre></body></html>

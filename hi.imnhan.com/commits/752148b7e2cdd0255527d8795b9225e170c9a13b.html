@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[752148b7e2] programs post draft | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 752148b7e2</strong><hr><pre>commit 752148b7e2cdd0255527d8795b9225e170c9a13b
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Sat Sep 7 00:06:02 2013 +0700
+
+    programs post draft
+
+diff --git a/content/images/synaptic.png b/content/images/synaptic.png
+new file mode 100644
+index 0000000..f294bac
+Binary files /dev/null and b/content/images/synaptic.png differ
+diff --git a/content/images/wget-dependencies.png b/content/images/wget-dependencies.png
+new file mode 100644
+index 0000000..b8ee007
+Binary files /dev/null and b/content/images/wget-dependencies.png differ
+diff --git a/content/images/wget-installed-files.png b/content/images/wget-installed-files.png
+new file mode 100644
+index 0000000..0e8e68b
+Binary files /dev/null and b/content/images/wget-installed-files.png differ
+diff --git a/content/installing-programs-in-ubuntu.md b/content/installing-programs-in-ubuntu.md
+new file mode 100644
+index 0000000..1430540
+--- /dev/null
++++ b/content/installing-programs-in-ubuntu.md
+@@ -0,0 +1,138 @@
++Title: Installing programs in Ubuntu
++Date: 2013-09-06 21:03
++Category: tutorials
++Tags: ubuntu, linux
++Summary: Or the story of runtime paths, executables, packages and package managers.
++status: draft
++
++This article will not only explain how to install stuff, but it will (hopefully) also give readers
++a better understanding about Linux&#39;s structure for storing and executing programs, ultimately
++appreciate the usefulness of package managers in general.
++
++## Executables
++
++Let&#39;s start with something simple. Fire up your favorite text editor and create a file called
++`itc.sh` with the following content:
++
++    :::bash
++    #!/bin/bash
++
++    notify-send &quot;Hello world!&quot;
++
++Let&#39;s say I put it at the desktop. Now open up a terminal, go to the Desktop directory and make
++our itc file executable. In case you&#39;re new, here are the commands:
++
++    :::bash
++    cd /home/your_username/Desktop
++    chmod +x itc.sh
++
++**Protip**: for the first command you can also type `cd ~/Desktop`, because `~` is the shorthand for
++your home directory (`/home/username`)
++
++With the `chmod` command, we made it possible to run our little script by typing its full path:
++
++    :::bash
++    ~/Desktop/itc.sh
++
++Another shorthand to make your life easier: `.` stands for &quot;current directory&quot;, meaning if you are
++currently in the `~/Desktop` directory, you can run the script by simply typing:
++
++    :::bash
++    ./itc.sh
++
++Either way, a notification saying &quot;Hello world!&quot; should pop up. This is a program in its
++simplest form: an executable file. In this particular example it is a Bash script, but it&#39;s not
++limited to that. It can be a Python or Ruby script, or a compiled binary file. The file extension
++isn&#39;t even needed. You can rename it to simply `itc` and it should run just fine.
++
++&gt; In order to run a file, you need to make it executable. This can be done with the `chmod` command
++&gt; or via the GUI [using Nautilus&#39;s **Properties** dialog][1].
++
++## Path
++
++So we&#39;ve created a program that shows a useless message, good job! However, every time we call
++it, we need to specify the whole address to the file: `~/Desktop/itc` is probably not a very cool
++looking command. In order to make it possible to simply run `itc`, you need to move it to the
++`/usr/bin/` directory. This requires root permission so we&#39;ll need `sudo` too:
++
++    :::bash
++    sudo mv ~/Desktop/itc /usr/bin/itc
++
++We can now run our program by simply typing `itc`. You guessed it: every executable file put in
++this directory will be available as a command. There are other directories like this too. You can
++see a whole list of such directories by typing `echo $PATH` to your terminal.
++
++&gt; To make an executable file available as a command, shove it into a directory that&#39;s included in
++&gt; **$PATH**
++
++## Packages
++
++Unfortunately, most programs have a lot of files instead of one, and they are scattered to many
++different folders. Let&#39;s have a look at the files of `wget` - the downloader that&#39;s included in
++every major Linux distribution:
++
++![Wget files](/static/images/wget-installed-files.png)
++
++It&#39;s not that the developers chose to annoy us by scattering them all over the place. It&#39;s simply
++complying to Linux structure: executable files go to **/usr/bin**, man pages (user manuals that
++show up when you type `man wget`) go to **/usr/share/man**, and so on. For more complex programs,
++the number of files alone is terrifying, which makes installing and remove the program a nightmare.
++
++On another note, almost every Linux program depends on one or many other programs. This is
++because of the UNIX philosophy that encourages writing each program to do one thing, and do it
++well. The goal is to make each program easier to implement and maintain as well as to avoid
++duplicate work. For example, program A may provide a functionality that both programs B and C
++need. Otherwise, B and C developers both have to write code for one same functionality. In this
++case, A is called a **dependency** of B and C. However, this introduces a bunch of problems:
++
++- We need to install A before installing B
++- We should know not to install A again when we install C
++- We must be careful not to remove A if we are still using B or C
++- What if B and C require different versions of A?
++- I can go on...
++
++This is where packages jump in. A package is basically the whole set of files of a program (or a
++part of a program). It also stores necessary information such as which file goes to which
++directory, what are the dependencies of this package, etc. A special program reads the
++package, installs dependencies and puts files into their appropriate locations. This is called
++a **package manager**. Of course besides installing, a package manager also manages updates
++and removals of programs. Ubuntu is based on Debian, so it inherits Debian&#39;s great package manager
++called **aptitude** (or simply `apt`). Let&#39;s take a look at wget&#39;s dependencies:
++
++![Wget files](/static/images/wget-dependencies.png)
++
++The package manager maintains a list of available packages and their dependency/dependant
++relationships. For Ubuntu, the list is updated regularly on Canonical&#39;s official servers. Everytime
++Ubuntu does the &quot;Check for updates&quot; thing, it is downloading the latest list of packages. And when
++Ubuntu updates, it is simply pulling newer versions of the installed packages from Canonical&#39;s
++servers too. These servers are called **repositories**. All other major Linux distributions do the
++same thing: letting the package manager and the repositories work on their thing, saving users
++time to do more interesting stuff.
++
++Here are some basic commands to get you started:
++
++- `sudo apt-get install package-name` to install package
++- `sudo apt-get remove package-name` - it&#39;s obvious isn&#39;t it?
++- `sudo apt-get update` - update package list. Note that it only updates the list, not the packages
++- `sudo apt-get upgrade` - update packages
++
++There will be programs that are not available on the official repositories, but are provided as
++package files (Dropbox for example). Remember that the right package format for Ubuntu is `.deb`
++files. Do not open `.rpm` files since they are for Fedora&#39;s package manager called `yum`. When
++you&#39;ve obtained the file, simply open it with Ubuntu Software Center to start installing.
++
++## Synaptic, Ubuntu Software Center
++
++Aptitude is only a command-line program, which is not very user-friendly. Synaptic is a GUI program
++that provides a nice user interface that&#39;s easy to use, while internally it uses `apt` to do all
++the actual work.
++
++![Wget files](/static/images/wget-dependencies.png)
++
++Ubuntu Software Center is more than a GUI wrapper for `apt`. It is something similar to Apple&#39;s
++appstore with all those program ratings and promotions. It&#39;s nice for beginners but the fact that
++it hides the details like dependency list makes it undesirable for intermediate users. If you are
++comfortable with Synaptic, I strongly recommend using it as your main way to install/uninstall
++stuff. But ultimately, using the command-line `apt` always is the fastest way.
++
++[1]: http://askubuntu.com/questions/35478/how-do-i-mark-a-file-as-executable-via-a-gui
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 0d46276..312a47b 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -3,7 +3,8 @@
+ from __future__ import unicode_literals
+ 
+ AUTHOR = u&#39;Bùi Thành Nhân&#39;
+-SITENAME = u&#39;Nhanb&#39;
++SITENAME = u&#39;Nerdy Weekly&#39;
++SITESUBTITLE = u&#39;By nhanb&#39;
+ SITEURL = &#39;&#39;
+ 
+ THEME = u&#39;/home/nhanb/open-source/pelican-octopress-theme&#39;
+@@ -58,7 +59,8 @@
+ # Social widget
+ SOCIAL = ((&#39;Github&#39;, &#39;https://github.com/nhanb&#39;),
+           (&#39;Facebook&#39;, &#39;https://www.facebook.com/thanhnhanb&#39;),
+-          (&#39;Google+&#39;, &#39;https://plus.google.com/114388334309097537564&#39;),
++          (&#39;Google+&#39;,
++           &#39;https://plus.google.com/114388334309097537564?rel=author&#39;),
+           )
+ 
+ ## Blogroll
+</pre></body></html>

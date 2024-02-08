@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b86f5162bb] add jshintrc | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / b86f5162bb</strong><hr><pre>commit b86f5162bb4c244afe16e3a0c8a9849bf67caf60
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Aug 21 19:36:22 2020 +0700
+
+    add jshintrc
+
+diff --git a/.jshintrc b/.jshintrc
+new file mode 100644
+index 0000000..871f29f
+--- /dev/null
++++ b/.jshintrc
+@@ -0,0 +1,4 @@
++{
++  &quot;laxbreak&quot;: true,
++  &quot;esversion&quot;: 6
++}
+diff --git a/README.md b/README.md
+index dd287a0..a9814ee 100644
+--- a/README.md
++++ b/README.md
+@@ -44,6 +44,11 @@ ## Tests
+ 
+ Can be run with just `pytest`. It needs a pytaku.conf.json as well.
+ 
++## Code QA tools
++
++- Python: black, isort, flake8 without mccabe
++- JavaScript: jshint, prettier
++
+ # Production
+ 
+ ```sh
+</pre></body></html>

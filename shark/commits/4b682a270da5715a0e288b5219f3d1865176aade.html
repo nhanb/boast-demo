@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[4b682a270d] add tag helper script; block-quote GH release note | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 4b682a270d</strong><hr><pre>commit 4b682a270da5715a0e288b5219f3d1865176aade
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Jul 8 00:05:48 2022 +0700
+
+    add tag helper script; block-quote GH release note
+
+diff --git a/.github/workflows/main.yml b/.github/workflows/main.yml
+index 14de397..a7900fe 100644
+--- a/.github/workflows/main.yml
++++ b/.github/workflows/main.yml
+@@ -59,7 +59,9 @@ jobs:
+           # https://github.com/actions/checkout/issues/290
+           git fetch --force --tags
+ 
+-          git tag -l --format=&#39;%(contents)&#39; &quot;$TAG&quot; &gt; RELEASE_NOTES
++          echo &#39;```&#39; &gt; RELEASE_NOTES
++          git tag -l --format=&#39;%(contents)&#39; &quot;$TAG&quot; &gt;&gt; RELEASE_NOTES
++          echo &#39;```&#39; &gt;&gt; RELEASE_NOTES
+           cat RELEASE_NOTES
+           gh release create &quot;$TAG&quot; dist/* -F RELEASE_NOTES
+         fi
+diff --git a/scripts/tag.sh b/scripts/tag.sh
+new file mode 100755
+index 0000000..34569d1
+--- /dev/null
++++ b/scripts/tag.sh
+@@ -0,0 +1,12 @@
++#!/usr/bin/env sh
++set -euf
++
++# Usage: ./scripts/tag.sh v0.0.0
++# which will open an annotated tag editor prefilled with a shortlog comparing
++# against the previous tag.
++
++PREVIOUS_TAG=$(git describe --abbrev=0 HEAD^1)
++SHORTLOG=$(git shortlog &quot;$PREVIOUS_TAG..HEAD&quot;)
++
++printf &quot;CHANGEME\n\n%s&quot; &quot;$SHORTLOG&quot; | git tag &quot;$1&quot; --file -
++git tag &quot;$1&quot; -f -a
+</pre></body></html>

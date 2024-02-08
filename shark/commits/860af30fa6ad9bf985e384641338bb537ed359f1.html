@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[860af30fa6] merge walking states into one | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 860af30fa6</strong><hr><pre>commit 860af30fa6ad9bf985e384641338bb537ed359f1
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 17 16:37:33 2023 +0700
+
+    merge walking states into one
+
+diff --git a/states.go b/states.go
+index adaeef2..ab46a7d 100644
+--- a/states.go
++++ b/states.go
+@@ -89,12 +89,7 @@ func (s *StateIdle) Update(sm *StateMachine) {
+ }
+ func (s *StateIdle) EndAnimHook(sm *StateMachine) {
+ 	if randBool(WalkChance) {
+-		if randBool(50) {
+-			sm.SetState(&amp;StateWalkL{})
+-		} else {
+-			sm.SetState(&amp;StateWalkR{})
+-		}
+-		return
++		sm.SetState(&amp;StateWalk{isLeft: randBool(50)})
+ 	}
+ }
+ 
+@@ -178,32 +173,18 @@ func (s *StateFeed) EndAnimHook(sm *StateMachine) {
+ 	sm.lastFed = time.Now()
+ }
+ 
+-type StateWalkL struct{}
+-
+-func (s *StateWalkL) Enter(sm *StateMachine) { sm.SetAnim(WalkLeft) }
+-func (s *StateWalkL) Update(sm *StateMachine) {
+-	if checkHunger(sm) {
+-		return
+-	}
+-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+-		sm.SetState(&amp;StateDrag{})
+-		return
+-	}
+-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
+-		sm.SetState(&amp;StateRClick{})
+-		return
+-	}
++type StateWalk struct {
++	isLeft bool
+ }
+-func (s *StateWalkL) EndAnimHook(sm *StateMachine) {
+-	if randBool(StopChance) {
+-		sm.SetState(&amp;StateIdle{})
++
++func (s *StateWalk) Enter(sm *StateMachine) {
++	if s.isLeft {
++		sm.SetAnim(WalkLeft)
++	} else {
++		sm.SetAnim(WalkRight)
+ 	}
+ }
+-
+-type StateWalkR struct{}
+-
+-func (s *StateWalkR) Enter(sm *StateMachine) { sm.SetAnim(WalkRight) }
+-func (s *StateWalkR) Update(sm *StateMachine) {
++func (s *StateWalk) Update(sm *StateMachine) {
+ 	if checkHunger(sm) {
+ 		return
+ 	}
+@@ -216,7 +197,7 @@ func (s *StateWalkR) Update(sm *StateMachine) {
+ 		return
+ 	}
+ }
+-func (s *StateWalkR) EndAnimHook(sm *StateMachine) {
++func (s *StateWalk) EndAnimHook(sm *StateMachine) {
+ 	if randBool(StopChance) {
+ 		sm.SetState(&amp;StateIdle{})
+ 	}
+</pre></body></html>

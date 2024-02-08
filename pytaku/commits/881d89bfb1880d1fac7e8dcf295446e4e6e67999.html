@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[881d89bfb1] implement tachiyomi importer | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 881d89bfb1</strong><hr><pre>commit 881d89bfb1880d1fac7e8dcf295446e4e6e67999
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Aug 25 21:08:45 2020 +0700
+
+    implement tachiyomi importer
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 06bc4d0..cffb1ee 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,7 +1,7 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.4&quot;
+-description = &quot;&quot;
++version = &quot;0.3.5&quot;
++description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+ packages = [
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 9f8deb2..747f23e 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -303,11 +303,20 @@ def read_tachiyomi_follows(text: str) -&gt; List[Tuple[str, str]]:
+ 
+ 
+ def ensure_titles(site_title_pairs: List[Tuple[str, str]]):
+-    new_titles = [
+-        (site, title_id)
+-        for site, title_id in site_title_pairs
+-        if load_title(site, title_id) is None  # again, n+1 queries are fine in sqlite
+-    ]
++    &quot;&quot;&quot;
++    Fetch and save titles that are not already in db.
++    Returns a list of title dicts, both old and new.
++    &quot;&quot;&quot;
++    title_dicts = []
++    new_titles = []
++
++    for site, title_id in site_title_pairs:
++        existing_title = load_title(site, title_id)
++        if existing_title is None:  # again, n+1 queries are fine in sqlite
++            new_titles.append((site, title_id))
++        else:
++            title_dicts.append(existing_title)
++
+     print(f&quot;Fetching {len(new_titles)} new titles out of {len(site_title_pairs)}.&quot;)
+     with ThreadPoolExecutor(max_workers=3) as executor:
+         futures = [
+@@ -317,6 +326,9 @@ def ensure_titles(site_title_pairs: List[Tuple[str, str]]):
+             title = future.result()
+             save_title(title)
+             print(f&quot;Saved {title[&#39;site&#39;]}: {title[&#39;name&#39;]}&quot;)
++            title_dicts.append(title)
++
++    return title_dicts
+ 
+ 
+ &quot;&quot;&quot;
+@@ -330,6 +342,7 @@ def ensure_titles(site_title_pairs: List[Tuple[str, str]]):
+ @app.route(&quot;/f&quot;)
+ @app.route(&quot;/s&quot;)
+ @app.route(&quot;/s/&lt;query&gt;&quot;)
++@app.route(&quot;/i&quot;)
+ def home_view(query=None):
+     return render_template(&quot;spa.html&quot;)
+ 
+@@ -556,3 +569,36 @@ def api_read():
+     # Also TODO: maybe a separate &quot;read all from title&quot; API would be cleaner &amp; easier on
+     # FE side.
+     return {}
++
++
++@app.route(&quot;/api/import&quot;, methods=[&quot;POST&quot;])
++@process_token(required=True)
++def api_import():
++    # check if the post request has the file part
++    if &quot;tachiyomi&quot; not in request.files:
++        return jsonify({&quot;message&quot;: &quot;No file provided&quot;}), 400
++    file = request.files[&quot;tachiyomi&quot;]
++
++    # if user does not select file, browser also
++    # submits an empty part without filename
++    if file.filename == &quot;&quot;:
++        return jsonify({&quot;message&quot;: &quot;No selected file&quot;}), 400
++
++    if file:
++        text = file.read()
++        site_title_pairs = read_tachiyomi_follows(text)
++        if site_title_pairs is None:
++            return jsonify({&quot;message&quot;: &quot;Malformed file.&quot;}), 400
++
++        # First fetch &amp; save titles if they&#39;re not already in db
++        titles = ensure_titles(site_title_pairs)
++
++        # Then follow them all
++        import_follows(request.user_id, site_title_pairs)
++
++        # Mark all chapters as read too
++        for title in titles:
++            for chapter in title[&quot;chapters&quot;]:
++                read(request.user_id, title[&quot;site&quot;], title[&quot;id&quot;], chapter[&quot;id&quot;])
++
++        return jsonify({&quot;message&quot;: f&quot;Added {len(site_title_pairs)} follows.&quot;})
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 2a246e0..5729d9e 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -5,7 +5,7 @@
+ import apsw
+ import argon2
+ 
+-from .database.common import run_sql, run_sql_many, run_sql_on_demand
++from .database.common import run_sql, run_sql_many
+ 
+ 
+ def save_title(title):
+diff --git a/src/pytaku/static/js/main.js b/src/pytaku/static/js/main.js
+index 427f052..afff953 100644
+--- a/src/pytaku/static/js/main.js
++++ b/src/pytaku/static/js/main.js
+@@ -6,6 +6,7 @@ import Follows from &quot;./routes/follows.js&quot;;
+ import Search from &quot;./routes/search.js&quot;;
+ import Title from &quot;./routes/title.js&quot;;
+ import Chapter from &quot;./routes/chapter.js&quot;;
++import Importer from &quot;./routes/importer.js&quot;;
+ 
+ Auth.init().then(() =&gt; {
+   const root = document.getElementById(&quot;spa-root&quot;);
+@@ -76,5 +77,15 @@ Auth.init().then(() =&gt; {
+           })
+         ),
+     },
++    &quot;/i&quot;: {
++      onmatch: () =&gt; {
++        if (Auth.isLoggedIn()) {
++          return Importer;
++        } else {
++          m.route.set(&quot;/a&quot;, null, { replace: true });
++        }
++      },
++      render: (vnode) =&gt; m(Layout, vnode),
++    },
+   });
+ });
+diff --git a/src/pytaku/static/js/routes/follows.js b/src/pytaku/static/js/routes/follows.js
+index b603aed..eef5e95 100644
+--- a/src/pytaku/static/js/routes/follows.js
++++ b/src/pytaku/static/js/routes/follows.js
+@@ -70,10 +70,14 @@ function Follows(initialVNode) {
+       }
+ 
+       if (titles.length === 0) {
+-        return m(
+-          &quot;div.content&quot;,
+-          &quot;You&#39;re not following any title yet. Try searching for some.&quot;
+-        );
++        return m(&quot;div.content&quot;, [
++          m(&quot;p&quot;, &quot;You&#39;re not following any title yet. Try searching for some.&quot;),
++          m(&quot;p&quot;, [
++            &quot;Migrating from Tachiyomi? &quot;,
++            m(m.route.Link, { href: &quot;/i&quot; }, &quot;Use the importer&quot;),
++            &quot;!&quot;,
++          ]),
++        ]);
+       }
+ 
+       return m(&quot;div.content&quot;, [titles.map((title) =&gt; m(Title, { title }))]);
+diff --git a/src/pytaku/static/js/routes/home.js b/src/pytaku/static/js/routes/home.js
+index 5005492..326a531 100644
+--- a/src/pytaku/static/js/routes/home.js
++++ b/src/pytaku/static/js/routes/home.js
+@@ -1,5 +1,3 @@
+-import { Auth } from &quot;../models.js&quot;;
+-
+ const Home = {
+   oncreate: (vnode) =&gt; {
+     document.title = &quot;Pytaku&quot;;
+diff --git a/src/pytaku/static/js/routes/importer.js b/src/pytaku/static/js/routes/importer.js
+new file mode 100644
+index 0000000..1d7b354
+--- /dev/null
++++ b/src/pytaku/static/js/routes/importer.js
+@@ -0,0 +1,77 @@
++import { Auth } from &quot;../models.js&quot;;
++import { Button } from &quot;../utils.js&quot;;
++
++function Importer(initialVNode) {
++  let resultMessage = null;
++  let isSuccess = null;
++  let isUploading = false;
++
++  return {
++    oninit: (vnode) =&gt; {
++      document.title = &quot;Import from Tachiyomi&quot;;
++    },
++    view: (vnode) =&gt; {
++      return m(&quot;div.content&quot;, [
++        m(&quot;h1&quot;, &quot;Importing from Tachiyomi&quot;),
++        m(
++          &quot;form[enctype=multipart/form-data]&quot;,
++          {
++            onsubmit: (ev) =&gt; {
++              ev.preventDefault();
++              // prepare multipart form body
++              const file = document.getElementById(&quot;tachiyomi&quot;).files[0];
++              const body = new FormData();
++              body.append(&quot;tachiyomi&quot;, file);
++
++              isUploading = true;
++              resultMessage = null;
++              m.redraw();
++              Auth.request({
++                method: &quot;POST&quot;,
++                url: &quot;/api/import&quot;,
++                body,
++              })
++                .then((resp) =&gt; {
++                  resultMessage = resp.message;
++                  isSuccess = true;
++                })
++                .catch((err) =&gt; {
++                  resultMessage = err.response.message;
++                  isSuccess = false;
++                })
++                .finally(() =&gt; {
++                  isUploading = false;
++                });
++            },
++          },
++          [
++            m(&quot;p&quot;, [
++              &quot;Go to &quot;,
++              m(&quot;b&quot;, &quot;Settings &gt; Backup &gt; Create backup&quot;),
++              &quot;, then upload the generated json file here:&quot;,
++            ]),
++            m(&quot;input[type=file][id=tachiyomi].importer--filepicker&quot;),
++            m(&quot;br&quot;),
++            m(Button, {
++              type: &quot;submit&quot;,
++              text: isUploading ? &quot;uploading...&quot; : &quot;upload&quot;,
++              color: &quot;green&quot;,
++              icon: &quot;upload&quot;,
++              disabled: isUploading ? &quot;disabled&quot; : null,
++            }),
++          ]
++        ),
++        m(
++          &quot;p&quot;,
++          { class: `importer--${isSuccess ? &quot;success&quot; : &quot;failure&quot;}` },
++          resultMessage
++        ),
++        isSuccess
++          ? m(m.route.Link, { href: &quot;/f&quot; }, &quot;See your following list here.&quot;)
++          : null,
++      ]);
++    },
++  };
++}
++
++export default Importer;
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index 358858b..0a0d385 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -349,3 +349,16 @@ .utils--chapter--group {
+ .utils--chapter--read-icon {
+   color: green;
+ }
++
++/* Tachiyomi importer */
++input[type=&quot;file&quot;].importer--filepicker {
++  border: 2px solid black;
++  border-radius: var(--border-radius);
++  margin: 1rem 0;
++}
++.importer--success {
++  color: green;
++}
++.importer--failure {
++  color: red;
++}
+</pre></body></html>

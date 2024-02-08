@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[882e73a9ca] add cv to navlink | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 882e73a9ca</strong><hr><pre>commit 882e73a9ca7d993131be4c093fc1976c0be0fc16
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 23 21:37:33 2023 +0700
+
+    add cv to navlink
+
+diff --git a/_s4g/settings.txt b/_s4g/settings.txt
+index 60a783b..718f6eb 100644
+--- a/_s4g/settings.txt
++++ b/_s4g/settings.txt
+@@ -3,7 +3,7 @@ Name: Hi, I&#39;m Nhân
+ Tagline: and this is my humble corner on the intertubes
+ Root: /
+ ShowFooter: true
+-NavbarLinks: index.dj, about/index.dj, projects/index.dj
++NavbarLinks: index.dj, about/index.dj, projects/index.dj, #CV#https://cv.imnhan.com
+ DefaultThumb: about/keyboard-warrior.jpg
+ 
+ AuthorName: nhanb
+diff --git a/_s4g/theme/home.tmpl b/_s4g/theme/home.tmpl
+index 394df5a..0c286f0 100644
+--- a/_s4g/theme/home.tmpl
++++ b/_s4g/theme/home.tmpl
+@@ -9,8 +9,8 @@
+ &lt;hr&gt;
+ 
+ &lt;div class=&quot;pages&quot;&gt;
+-{{- range .ArticlesInNav}}
+-  &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
++{{- range .NavLinks}}
++  &lt;a href=&quot;{{.Url}}&quot;&gt;{{.Text}}&lt;/a&gt;
+ {{- end}}
+   &lt;a class=&quot;feed-link&quot; href=&quot;{{.Feed}}&quot;&gt;
+     &lt;img src=&quot;{{.ThemePath}}/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
+diff --git a/_s4g/theme/includes.tmpl b/_s4g/theme/includes.tmpl
+index f4c14b8..652d4a1 100644
+--- a/_s4g/theme/includes.tmpl
++++ b/_s4g/theme/includes.tmpl
+@@ -1,8 +1,8 @@
+ {{define &quot;navbar&quot;}}
+ &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.ThemePath}}/navbar.css&quot;&gt;
+ &lt;nav&gt;
+-  {{- range .ArticlesInNav}}
+-  &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
++  {{- range .NavLinks}}
++  &lt;a href=&quot;{{.Url}}&quot;&gt;{{.Text}}&lt;/a&gt;
+   {{- end}}
+ 
+   {{- if not .Post.PostedAt.IsZero}}
+diff --git a/about/index.html b/about/index.html
+index 56d71b9..f08b173 100644
+--- a/about/index.html
++++ b/about/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+ 
+ &lt;/nav&gt;
+ &lt;hr class=&quot;nav-hr&quot;&gt;
+diff --git a/chromebook/index.html b/chromebook/index.html
+index 956b044..3cd5cc8 100644
+--- a/chromebook/index.html
++++ b/chromebook/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2023-04-22&quot;&gt;
+diff --git a/cool/index.html b/cool/index.html
+index b2f94ba..4460831 100644
+--- a/cool/index.html
++++ b/cool/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2014-01-25&quot;&gt;
+diff --git a/custom-theme/index.html b/custom-theme/index.html
+index 432519d..a7de1c7 100644
+--- a/custom-theme/index.html
++++ b/custom-theme/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2015-06-05&quot;&gt;
+diff --git a/fcitx/index.html b/fcitx/index.html
+index 1cc38b6..83a8388 100644
+--- a/fcitx/index.html
++++ b/fcitx/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2015-01-29&quot;&gt;
+diff --git a/fightstick-1/index.html b/fightstick-1/index.html
+index dc7ca3e..4c709fc 100644
+--- a/fightstick-1/index.html
++++ b/fightstick-1/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2015-12-08&quot;&gt;
+diff --git a/fightstick-2/index.html b/fightstick-2/index.html
+index 266ce77..fb59989 100644
+--- a/fightstick-2/index.html
++++ b/fightstick-2/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2016-01-23&quot;&gt;
+diff --git a/go-stack/index.html b/go-stack/index.html
+index ef00615..9c4f12e 100644
+--- a/go-stack/index.html
++++ b/go-stack/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2023-02-12&quot;&gt;
+diff --git a/hdviet/index.html b/hdviet/index.html
+index e9b4d39..1eac9dc 100644
+--- a/hdviet/index.html
++++ b/hdviet/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2014-03-17&quot;&gt;
+diff --git a/ideas.html b/ideas.html
+index c4ce17b..09143bf 100644
+--- a/ideas.html
++++ b/ideas.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+ 
+ &lt;/nav&gt;
+ &lt;hr class=&quot;nav-hr&quot;&gt;
+diff --git a/index.html b/index.html
+index a488d81..1fd7d58 100644
+--- a/index.html
++++ b/index.html
+@@ -27,6 +27,7 @@ &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot;&gt;
+     &lt;img src=&quot;/_s4g/theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
+   &lt;/a&gt;
+diff --git a/linux-automation/index.html b/linux-automation/index.html
+index 21741fc..73911a1 100644
+--- a/linux-automation/index.html
++++ b/linux-automation/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2013-06-07&quot;&gt;
+diff --git a/manjaro-xfce/index.html b/manjaro-xfce/index.html
+index 577a198..6c5f7f7 100644
+--- a/manjaro-xfce/index.html
++++ b/manjaro-xfce/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2014-02-04&quot;&gt;
+diff --git a/mcross/index.html b/mcross/index.html
+index e74e4fa..41fbdc6 100644
+--- a/mcross/index.html
++++ b/mcross/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2020-05-29&quot;&gt;
+diff --git a/movie-streaming/gflick-fixed/index.html b/movie-streaming/gflick-fixed/index.html
+index ed6ad3f..6e86f6b 100644
+--- a/movie-streaming/gflick-fixed/index.html
++++ b/movie-streaming/gflick-fixed/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2020-06-10&quot;&gt;
+diff --git a/movie-streaming/gflick/index.html b/movie-streaming/gflick/index.html
+index 6c784e5..6616998 100644
+--- a/movie-streaming/gflick/index.html
++++ b/movie-streaming/gflick/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2020-04-26&quot;&gt;
+diff --git a/movie-streaming/index.html b/movie-streaming/index.html
+index 2cf66b9..a20761e 100644
+--- a/movie-streaming/index.html
++++ b/movie-streaming/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+ 
+ &lt;/nav&gt;
+ &lt;hr class=&quot;nav-hr&quot;&gt;
+diff --git a/movie-streaming/put.io/index.html b/movie-streaming/put.io/index.html
+index a736283..69efb92 100644
+--- a/movie-streaming/put.io/index.html
++++ b/movie-streaming/put.io/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2020-10-21&quot;&gt;
+diff --git a/node-webkit/index.html b/node-webkit/index.html
+index c011a3c..898f11d 100644
+--- a/node-webkit/index.html
++++ b/node-webkit/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2014-05-01&quot;&gt;
+diff --git a/notes.html b/notes.html
+index 8dd3f4b..a09d5b6 100644
+--- a/notes.html
++++ b/notes.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+ 
+ &lt;/nav&gt;
+ &lt;hr class=&quot;nav-hr&quot;&gt;
+diff --git a/pathogen-vs-vundle/index.html b/pathogen-vs-vundle/index.html
+index 8507780..0673457 100644
+--- a/pathogen-vs-vundle/index.html
++++ b/pathogen-vs-vundle/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2013-05-13&quot;&gt;
+diff --git a/petition-fraud/index.html b/petition-fraud/index.html
+index 56b1bf6..fe0eaca 100644
+--- a/petition-fraud/index.html
++++ b/petition-fraud/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2016-03-12&quot;&gt;
+diff --git a/pippable-webapp/index.html b/pippable-webapp/index.html
+index 10af212..6ac1b17 100644
+--- a/pippable-webapp/index.html
++++ b/pippable-webapp/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2021-10-02&quot;&gt;
+diff --git a/projects/index.html b/projects/index.html
+index 2ff315f..4354124 100644
+--- a/projects/index.html
++++ b/projects/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+ 
+ &lt;/nav&gt;
+ &lt;hr class=&quot;nav-hr&quot;&gt;
+diff --git a/pyqt5/index.html b/pyqt5/index.html
+index 959e1e0..e5c4a7a 100644
+--- a/pyqt5/index.html
++++ b/pyqt5/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2015-02-14&quot;&gt;
+diff --git a/pytaku-old/index.html b/pytaku-old/index.html
+index fff0ad2..d84f66c 100644
+--- a/pytaku-old/index.html
++++ b/pytaku-old/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2015-01-02&quot;&gt;
+diff --git a/rmit-wifi/index.html b/rmit-wifi/index.html
+index 5877d75..e68928a 100644
+--- a/rmit-wifi/index.html
++++ b/rmit-wifi/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2013-06-17&quot;&gt;
+diff --git a/sqlite-python/index.html b/sqlite-python/index.html
+index 30cf3ee..2742cba 100644
+--- a/sqlite-python/index.html
++++ b/sqlite-python/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2022-01-30&quot;&gt;
+diff --git a/stepmania-pad/index.html b/stepmania-pad/index.html
+index 7099b5d..f387c34 100644
+--- a/stepmania-pad/index.html
++++ b/stepmania-pad/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2021-02-08&quot;&gt;
+diff --git a/tmux-italics/index.html b/tmux-italics/index.html
+index affeeba..9280724 100644
+--- a/tmux-italics/index.html
++++ b/tmux-italics/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2014-08-02&quot;&gt;
+diff --git a/ubuntu-programs/index.html b/ubuntu-programs/index.html
+index 96811ae..89b2f4f 100644
+--- a/ubuntu-programs/index.html
++++ b/ubuntu-programs/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2013-09-06&quot;&gt;
+diff --git a/vim-open-link/index.html b/vim-open-link/index.html
+index 3563a53..ddac649 100644
+--- a/vim-open-link/index.html
++++ b/vim-open-link/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2021-08-07&quot;&gt;
+diff --git a/virtualenvwrapper/index.html b/virtualenvwrapper/index.html
+index 05eba0f..605e07d 100644
+--- a/virtualenvwrapper/index.html
++++ b/virtualenvwrapper/index.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2014-12-16&quot;&gt;
+diff --git a/yaks.html b/yaks.html
+index 9f1fcc1..000cec6 100644
+--- a/yaks.html
++++ b/yaks.html
+@@ -21,6 +21,7 @@
+   &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot;&gt;CV&lt;/a&gt;
+ 
+ &lt;/nav&gt;
+ &lt;hr class=&quot;nav-hr&quot;&gt;
+</pre></body></html>

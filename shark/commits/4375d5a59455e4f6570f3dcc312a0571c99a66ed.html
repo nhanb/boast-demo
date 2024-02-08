@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[4375d5a594] explicitly track window position | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 4375d5a594</strong><hr><pre>commit 4375d5a59455e4f6570f3dcc312a0571c99a66ed
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 17 17:08:12 2023 +0700
+
+    explicitly track window position
+    
+    This solves a bug where quick calls to ebiten.(Set)WindowPosition()
+    result in lost progress.
+    
+    But now we have a bug when our window tries to walk agains a screen
+    boundary...
+
+diff --git a/states.go b/states.go
+index 28d102d..e220662 100644
+--- a/states.go
++++ b/states.go
+@@ -14,8 +14,10 @@ type StateMachine struct {
+ 	animFrameCount int // number of frames in current anim
+ 	frameIdx       int // frame index in current animation
+ 	ticks          int // ticks since last animation frame change
++	lastFed        time.Time
++	x, y           int // logical window position
+ 
+-	lastFed time.Time
++	isXYInit bool
+ }
+ 
+ func NewStateMachine() *StateMachine {
+@@ -39,8 +41,15 @@ func (sm *StateMachine) SetState(s State) {
+ 	sm.state.Enter(sm)
+ }
+ func (sm *StateMachine) Update() error {
++	if !sm.isXYInit {
++		sm.x, sm.y = ebiten.WindowPosition()
++		sm.isXYInit = true
++	}
++
+ 	sm.state.Update(sm)
+ 
++	ebiten.SetWindowPosition(sm.x, sm.y)
++
+ 	// Advance to next animation frame
+ 	sm.ticks += 1
+ 	if sm.ticks &lt; 10 {
+@@ -117,7 +126,7 @@ func (s *StateDrag) Update(sm *StateMachine) {
+ 	mousePos := GlobalCursorPosition()
+ 	if mousePos != s.PreviousMousePos {
+ 		winPos := s.WinStartPos.Add(mousePos.Subtract(s.MouseStartPos))
+-		ebiten.SetWindowPosition(winPos.x, winPos.y)
++		sm.x, sm.y = winPos.x, winPos.y
+ 	}
+ 	s.PreviousMousePos = mousePos
+ }
+@@ -198,15 +207,13 @@ func (s *StateWalk) Update(sm *StateMachine) {
+ 		return
+ 	}
+ 
+-	x, y := ebiten.WindowPosition()
+-	newX := x
++	oldX := sm.x
+ 	if s.isLeft {
+-		newX -= 2
++		sm.x -= 1
+ 	} else {
+-		newX += 2
++		sm.x += 1
+ 	}
+-	fmt.Println(x, &quot;-&gt;&quot;, newX)
+-	ebiten.SetWindowPosition(newX, y)
++	fmt.Println(oldX, &quot;-&gt;&quot;, sm.x)
+ }
+ func (s *StateWalk) EndAnimHook(sm *StateMachine) {
+ 	if randBool(StopChance) {
+</pre></body></html>

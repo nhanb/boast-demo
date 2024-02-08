@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[66667f050d] clickable links | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 66667f050d</strong><hr><pre>commit 66667f050d7dd31f8453fe7899bb117327e5a0df
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri May 15 08:41:06 2020 +0700
+
+    clickable links
+    
+    next step: back-forward buttons
+
+diff --git a/src/mcross/gui/controller.py b/src/mcross/gui/controller.py
+index 2edc5aa..3f1dca9 100644
+--- a/src/mcross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -1,6 +1,12 @@
+-from tkinter import Tk
++from ssl import SSLCertVerificationError
++from tkinter import Tk, messagebox
+ 
+-from .. import transport
++from ..transport import (
++    GeminiUrl,
++    NonAbsoluteUrlWithoutContextError,
++    UnsupportedProtocolError,
++    get,
++)
+ from .model import Model
+ from .view import View
+ 
+@@ -11,6 +17,7 @@ def __init__(self):
+         self.model = Model()
+         self.view = View(self.root, self.model)
+         self.view.go_callback = self.go_callback
++        self.view.link_click_callback = self.link_click_callback
+ 
+     def run(self):
+         self.root.title(&quot;McRoss Browser&quot;)
+@@ -19,10 +26,33 @@ def run(self):
+ 
+     def go_callback(self, url: str):
+         # TODO more visual indications
+-        # TODO url validation
+ 
++        url = GeminiUrl.parse_absolute_url(url)
++        self.visit_link(url)
++
++    def link_click_callback(self, raw_url):
++        # FIXME ugh
++        try:
++            url = GeminiUrl.parse(raw_url, self.model.current_url)
++            self.visit_link(url)
++        except NonAbsoluteUrlWithoutContextError:
++            messagebox.showwarning(
++                &quot;Ambiguous link&quot;,
++                &quot;Cannot visit relative urls without a current_url context&quot;,
++            )
++        except UnsupportedProtocolError as e:
++            messagebox.showinfo(
++                &quot;Unsupported protocol&quot;, f&quot;{e} links are unsupported (yet?)&quot;
++            )
++        except SSLCertVerificationError:
++            messagebox.showerror(
++                &quot;Invalid server certificate&quot;,
++                &quot;Server is NOT using a valid CA-approved TLS certificate.&quot;,
++            )
++
++    def visit_link(self, url: GeminiUrl):
+         print(&quot;Requesting&quot;, url)
+-        resp = transport.get(url)
++        resp = get(url)
+         print(&quot;Received&quot;, resp)
+ 
+         if resp.status.startswith(&quot;2&quot;):
+@@ -37,5 +67,5 @@ def go_callback(self, url: str):
+                     ]
+                 )
+             )
+-
++        self.model.current_url = url
+         self.view.render_page()
+diff --git a/src/mcross/gui/model.py b/src/mcross/gui/model.py
+index 6b08883..5164785 100644
+--- a/src/mcross/gui/model.py
++++ b/src/mcross/gui/model.py
+@@ -10,6 +10,16 @@
+ * おぼえていますか　手と手触れ会った時
+ * Do you remember? The time when our hands first touched?
+ 
++## Links
++
++=&gt; gemini://gemini.circumlunar.space/	Gemini homepage
++=&gt; gemini://gus.guru/     Gemini Universal Search engine
++=&gt; gemini://gemini.conman.org/test/torture/ 	Gemini client torture test
++
++=&gt; relative/ Relative link
++=&gt; /relative/ Relative link starting with &quot;/&quot;
++=&gt; https://lists.orbitalfox.eu/listinfo/gemini?foo=bar HTTP link
++
+ ## Codes
+ 
+ ```
+@@ -20,21 +30,11 @@
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+ ```
+-
+-## Links
+-
+-=&gt; gemini.circumlunar.space/docs/	Gemini documentation
+-=&gt; gemini://gemini.circumlunar.space/software/ Gemini software
+-=&gt; gemini.circumlunar.space/servers/     Known Gemini servers
+-=&gt; gemini://gus.guru/	Gemini Universal Search engine
+-=&gt; https://lists.orbitalfox.eu/listinfo/gemini	Gemini mailing list
+-=&gt; https://portal.mozz.us/?url=gemini%3A%2F%2Fgemini.circumlunar.space%2F&amp;fmt=fixed	Gemini-to-web proxy service
+-=&gt; https://proxy.vulpes.one/gemini/gemini.circumlunar.space	Another Gemini-to-web proxy service
+-=&gt; gemini://gemini.conman.org/test/torture/	Gemini client torture test
+ &quot;&quot;&quot;
+ 
+ 
+ class Model:
++    current_url = None
+     plaintext = &quot;&quot;
+     gemini_nodes = None
+ 
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index 602187a..f47e637 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -47,7 +47,6 @@ def __init__(self, root: Tk, model: Model):
+ 
+         # Address bar
+         address_bar = ttk.Entry(row1)
+-        address_bar.insert(0, &quot;gemini.circumlunar.space/&quot;)
+         self.address_bar = address_bar
+         address_bar.pack(side=&quot;left&quot;, fill=&quot;both&quot;, expand=True, padx=3, pady=3)
+         address_bar.bind(&quot;&lt;Return&gt;&quot;, self._on_go)
+@@ -82,15 +81,18 @@ def __init__(self, root: Tk, model: Model):
+         )
+         mono_font = pick_font([&quot;Ubuntu Mono&quot;, &quot;Consolas&quot;, &quot;Courier&quot;, &quot;TkFixedFont&quot;])
+         text.config(
+-            font=(text_font, 13), bg=&quot;#fff8dc&quot;, fg=&quot;black&quot;, padx=5, pady=5,
+-        )
+-        text.tag_config(&quot;link&quot;, foreground=&quot;blue&quot;, underline=1)
+-        text.tag_config(
+-            &quot;pre&quot;,
+-            font=(mono_font, 13),
+-            # background=&quot;#ffe4c4&quot;,
+-            # selectbackground=text.cget(&quot;selectbackground&quot;),
++            font=(text_font, 13),
++            bg=&quot;#fff8dc&quot;,
++            fg=&quot;black&quot;,
++            padx=5,
++            pady=5,
++            insertontime=0,  # hide blinking insertion cursor
+         )
++        text.tag_config(&quot;link&quot;, foreground=&quot;brown&quot;)
++        text.tag_bind(&quot;link&quot;, &quot;&lt;Enter&gt;&quot;, self._on_link_enter)
++        text.tag_bind(&quot;link&quot;, &quot;&lt;Leave&gt;&quot;, self._on_link_leave)
++        text.tag_bind(&quot;link&quot;, &quot;&lt;Button-1&gt;&quot;, self._on_link_click)
++        text.tag_config(&quot;pre&quot;, font=(mono_font, 13))
+         text.pack(side=&quot;left&quot;, fill=&quot;both&quot;, expand=True)
+ 
+         text_scrollbar = ttk.Scrollbar(viewport, command=text.yview)
+@@ -109,9 +111,24 @@ def _on_go(self, ev=None):
+         if self.go_callback is not None:
+             self.go_callback(&quot;gemini://&quot; + self.address_bar.get())
+ 
++    def _on_link_enter(self, ev):
++        self.text.config(cursor=&quot;hand1&quot;)
++
++    def _on_link_leave(self, ev):
++        self.text.config(cursor=&quot;xterm&quot;)
++
++    def _on_link_click(self, ev):
++        raw_url = get_content_from_tag_click_event(ev)
++        self.link_click_callback(raw_url)
++
+     def render_page(self):
+-        self.text.delete(&quot;1.0&quot;, &quot;end&quot;)
++        # Update url in address bar
++        if self.model.current_url is not None:
++            self.address_bar.delete(0, &quot;end&quot;)
++            self.address_bar.insert(0, self.model.current_url.without_protocol())
+ 
++        # Update viewport
++        self.text.delete(&quot;1.0&quot;, &quot;end&quot;)
+         if not self.model.gemini_nodes:
+             self.text.insert(&quot;end&quot;, self.model.plaintext)
+         else:
+@@ -133,3 +150,20 @@ def render_node(node: GeminiNode, widget: Text):
+         widget.insert(&quot;end&quot;, f&quot;```\n{node.text}\n```\n&quot;, (&quot;pre&quot;,))
+     else:
+         widget.insert(&quot;end&quot;, node.text + &quot;\n&quot;)
++
++
++def get_content_from_tag_click_event(event):
++    # get the index of the mouse click
++    index = event.widget.index(&quot;@%s,%s&quot; % (event.x, event.y))
++
++    # get the indices of all &quot;link&quot; tags
++    tag_indices = list(event.widget.tag_ranges(&quot;link&quot;))
++
++    # iterate them pairwise (start and end index)
++    for start, end in zip(tag_indices[0::2], tag_indices[1::2]):
++        # check if the tag matches the mouse click index
++        if event.widget.compare(start, &quot;&lt;=&quot;, index) and event.widget.compare(
++            index, &quot;&lt;&quot;, end
++        ):
++            # return string between tag start and end
++            return event.widget.get(start, end)
+diff --git a/src/mcross/transport.py b/src/mcross/transport.py
+index 8b252d6..10e4ff0 100644
+--- a/src/mcross/transport.py
++++ b/src/mcross/transport.py
+@@ -23,25 +23,7 @@ def __repr__(self):
+         return f&quot;Response(status={repr(self.status)}, meta={repr(self.meta)})&quot;
+ 
+ 
+-def get(absolute_url=&quot;gemini://gemini.circumlunar.space/&quot;):
+-    url = parse_absolute_url(absolute_url)
+-    port = url.port or 1965
+-
+-    context = ssl.create_default_context()
+-    with socket.create_connection((url.netloc, port)) as sock:
+-        with context.wrap_socket(sock, server_hostname=url.netloc) as ssock:
+-            ssock.send(f&quot;gemini://{url.netloc}{url.path}\r\n&quot;.encode())
+-            header = ssock.recv(MAX_RESP_HEADER_BYTES).decode()
+-            status, meta = _parse_resp_header(header)
+-            resp = Response(status=status, meta=meta)
+-
+-            if status.startswith(&quot;2&quot;):
+-                resp.body = ssock.recv(MAX_RESP_BODY_BYTES)
+-
+-            return resp
+-
+-
+-def _parse_resp_header(header, pattern=re.compile(r&quot;^(\d\d) (.{,1024})\r\n$&quot;)):
++def _parse_resp_header(header, pattern=re.compile(r&quot;^(\d\d)\s+(.{,1024})\r\n$&quot;)):
+     match = pattern.match(header)
+     assert match is not None, f&quot;Malformed response header: {header}&quot;
+     status = match.group(1)
+@@ -50,7 +32,90 @@ def _parse_resp_header(header, pattern=re.compile(r&quot;^(\d\d) (.{,1024})\r\n$&quot;)):
+ 
+ 
+ def parse_absolute_url(absolute_url):
+-    # TODO: this is not exactly safe. Do proper parsing later.
+     assert absolute_url.startswith(&quot;gemini://&quot;), f&quot;Malformed url: {absolute_url}&quot;
+     parsed = urlparse(absolute_url)
+     return parsed
++
++
++# TODO: GeminiUrl&#39;s context-aware parse() method probably doesn&#39;t belong
++# in a &quot;transport&quot; module.
++
++
++class UnsupportedProtocolError(Exception):
++    pass
++
++
++class NonAbsoluteUrlWithoutContextError(Exception):
++    pass
++
++
++class GeminiUrl:
++    PROTOCOL = &quot;gemini&quot;
++    host: str
++    port: int
++    path: str
++
++    def __init__(self, host, port, path):
++        &quot;&quot;&quot;
++        You probably don&#39;t want to use this constructor directly.
++        Use one of the parse methods instead.
++        &quot;&quot;&quot;
++        self.host = host
++        self.port = port
++        self.path = path
++
++    def __repr__(self):
++        return f&quot;{self.PROTOCOL}://{self.host}:{self.port}{self.path}&quot;
++
++    def without_protocol(self):
++        if self.port == 1965:
++            return f&quot;{self.host}{self.path}&quot;
++        else:
++            return f&quot;{self.host}:{self.port}{self.path}&quot;
++
++    @classmethod
++    def parse(cls, text, current_url):
++        assert not re.search(r&quot;\s&quot;, text), &quot;Url should not contain any whitespace!&quot;
++
++        protocol = urlparse(text).scheme
++        if protocol == cls.PROTOCOL:
++            return cls.parse_absolute_url(text)
++
++        if protocol:
++            raise UnsupportedProtocolError(protocol)
++
++        if current_url is None:
++            raise NonAbsoluteUrlWithoutContextError(text)
++
++        # relative url starting from top level
++        if text.startswith(&quot;/&quot;):
++            return GeminiUrl(current_url.host, current_url.port, text)
++
++        # just relative url:
++        # trim stuff after the last `/` - for example:
++        #   current url: gemini://example.com/foo/bar
++        #   raw url text: yikes
++        #   =&gt; parsed url: gemini://example.com/foo/yikes
++        current_path = current_url.path[: current_url.path.rfind(&quot;/&quot;) + 1]
++        return GeminiUrl(current_url.host, current_url.port, current_path + text)
++
++    @staticmethod
++    def parse_absolute_url(text):
++        # TODO: urlparse doesn&#39;t seem that foolproof. Revisit later.
++        parsed = urlparse(text)
++        return GeminiUrl(parsed.hostname, parsed.port or 1965, parsed.path)
++
++
++def get(url: GeminiUrl):
++    context = ssl.create_default_context()
++    with socket.create_connection((url.host, url.port)) as sock:
++        with context.wrap_socket(sock, server_hostname=url.host) as ssock:
++            ssock.send(f&quot;gemini://{url.host}{url.path}\r\n&quot;.encode())
++            header = ssock.recv(MAX_RESP_HEADER_BYTES).decode()
++            status, meta = _parse_resp_header(header)
++            resp = Response(status=status, meta=meta)
++
++            if status.startswith(&quot;2&quot;):
++                resp.body = ssock.recv(MAX_RESP_BODY_BYTES)
++
++            return resp
+</pre></body></html>

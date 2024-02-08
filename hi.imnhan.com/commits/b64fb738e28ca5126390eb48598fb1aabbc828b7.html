@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b64fb738e2] fix pytaku redirect | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / b64fb738e2</strong><hr><pre>commit b64fb738e28ca5126390eb48598fb1aabbc828b7
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 30 23:33:04 2023 +0700
+
+    fix pytaku redirect
+
+diff --git a/_s4g/redirects.txt b/_s4g/redirects.txt
+index af8734f..2c4ec97 100644
+--- a/_s4g/redirects.txt
++++ b/_s4g/redirects.txt
+@@ -10,7 +10,7 @@ posts/i-did-not-sign-that-rmit-sc-petition/index.html -&gt; petition-fraud/
+ posts/i-made-my-python-webapp-pip-installable/index.html -&gt; pippable-webapp/
+ posts/installing-programs-in-ubuntu/index.html -&gt; ubuntu-programs/
+ posts/introducing-mcross-a-minimal-gemini-browser/index.html -&gt; mcross/
+-posts/introducing-pytaku-the-only-online-manga-reader-youll-ever-need/index.html -&gt; pytaku/
++posts/introducing-pytaku-the-only-online-manga-reader-youll-ever-need/index.html -&gt; pytaku-old/
+ posts/look-ma-no-stock-theme/index.html -&gt; custom-theme/
+ posts/modern-vim-plugin-management-pathogen-vs-vundle/index.html -&gt; pathogen-vs-vundle/
+ posts/my-first-diy-fightstick-part-1/index.html -&gt; fightstick-1/
+diff --git a/posts/introducing-pytaku-the-only-online-manga-reader-youll-ever-need/index.html b/posts/introducing-pytaku-the-only-online-manga-reader-youll-ever-need/index.html
+index e18d119..d4330c7 100644
+--- a/posts/introducing-pytaku-the-only-online-manga-reader-youll-ever-need/index.html
++++ b/posts/introducing-pytaku-the-only-online-manga-reader-youll-ever-need/index.html
+@@ -1,10 +1,10 @@
+ &lt;!DOCTYPE html&gt;
+ &lt;html lang=&quot;en&quot;&gt;
+   &lt;head&gt;
+-    &lt;title&gt;Redirecting to /pytaku/&lt;/title&gt;
+-    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/pytaku/&quot; /&gt;
++    &lt;title&gt;Redirecting to /pytaku-old/&lt;/title&gt;
++    &lt;meta http-equiv=&quot;Refresh&quot; content=&quot;0; URL=/pytaku-old/&quot; /&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+-    The page you&#39;re looking for has been moved to &lt;a href=&quot;/pytaku/&quot;&gt;/pytaku/&lt;/a&gt;.
++    The page you&#39;re looking for has been moved to &lt;a href=&quot;/pytaku-old/&quot;&gt;/pytaku-old/&lt;/a&gt;.
+   &lt;/body&gt;
+ &lt;/html&gt;
+</pre></body></html>

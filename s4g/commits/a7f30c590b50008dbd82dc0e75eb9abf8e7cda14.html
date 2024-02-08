@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a7f30c590b] clean up home page + use sans serif | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / a7f30c590b</strong><hr><pre>commit a7f30c590b50008dbd82dc0e75eb9abf8e7cda14
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 21 18:13:02 2023 +0700
+
+    clean up home page + use sans serif
+
+diff --git a/docs/_theme/base.css b/docs/_theme/base.css
+index c061eb7..53a5d64 100644
+--- a/docs/_theme/base.css
++++ b/docs/_theme/base.css
+@@ -1,5 +1,6 @@
+ html {
+-  font-family: serif;
++  font-family: system-ui, sans-serif;
++  font-size: 1em;
+   max-width: 50rem;
+   margin: auto;
+ }
+diff --git a/docs/_theme/home.tmpl b/docs/_theme/home.tmpl
+index d85797f..8938254 100644
+--- a/docs/_theme/home.tmpl
++++ b/docs/_theme/home.tmpl
+@@ -27,10 +27,10 @@
+ &lt;ul&gt;
+   {{- range .ArticlesInFeed}}
+   {{- if not .IsDraft}}
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;{{.PostedAt.Local.Format &quot;2006-01-02&quot;}} — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;({{.PostedAt.Local.Format &quot;2006-01-02&quot;}})&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;{{.PostedAt.Local.Format &quot;January 1, 2006&quot;}}&lt;/span&gt;
+   &lt;/li&gt;
+   {{- end}}
+   {{- end}}
+@@ -64,26 +64,10 @@ hr {
+ ul {
+   padding: 0;
+   list-style: none;
+-  /*font-size: 1.1rem;*/
+ }
+ 
+-.time-suffix {
+-  display: none;
+-}
+-
+-@media (max-width: 30rem) {
+-  .time-suffix {
+-    display: inline;
+-  }
+-  .time-prefix {
+-    display: none;
+-  }
+-  li {
+-    margin-bottom: 0.5rem;
+-  }
+-  li::before {
+-    content: &#39;❖&#39;;
+-  }
++.article {
++  margin-bottom: 1rem;
+ }
+ &lt;/style&gt;
+ 
+diff --git a/theme/base.css b/theme/base.css
+index c061eb7..53a5d64 100644
+--- a/theme/base.css
++++ b/theme/base.css
+@@ -1,5 +1,6 @@
+ html {
+-  font-family: serif;
++  font-family: system-ui, sans-serif;
++  font-size: 1em;
+   max-width: 50rem;
+   margin: auto;
+ }
+diff --git a/theme/home.tmpl b/theme/home.tmpl
+index d85797f..8938254 100644
+--- a/theme/home.tmpl
++++ b/theme/home.tmpl
+@@ -27,10 +27,10 @@
+ &lt;ul&gt;
+   {{- range .ArticlesInFeed}}
+   {{- if not .IsDraft}}
+-  &lt;li&gt;
+-    &lt;span class=&quot;time-prefix&quot;&gt;{{.PostedAt.Local.Format &quot;2006-01-02&quot;}} — &lt;/span&gt;
++  &lt;li class=&quot;article&quot;&gt;
+     &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
+-    &lt;span class=&quot;time-suffix&quot;&gt;({{.PostedAt.Local.Format &quot;2006-01-02&quot;}})&lt;/span&gt;
++    &lt;br&gt;
++    &lt;span&gt;{{.PostedAt.Local.Format &quot;January 1, 2006&quot;}}&lt;/span&gt;
+   &lt;/li&gt;
+   {{- end}}
+   {{- end}}
+@@ -64,26 +64,10 @@ hr {
+ ul {
+   padding: 0;
+   list-style: none;
+-  /*font-size: 1.1rem;*/
+ }
+ 
+-.time-suffix {
+-  display: none;
+-}
+-
+-@media (max-width: 30rem) {
+-  .time-suffix {
+-    display: inline;
+-  }
+-  .time-prefix {
+-    display: none;
+-  }
+-  li {
+-    margin-bottom: 0.5rem;
+-  }
+-  li::before {
+-    content: &#39;❖&#39;;
+-  }
++.article {
++  margin-bottom: 1rem;
+ }
+ &lt;/style&gt;
+ 
+</pre></body></html>

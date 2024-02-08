@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[cd51422b09] add syso file to set icon for the .exe | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / cd51422b09</strong><hr><pre>commit cd51422b098a7f03ffcdb3df7a8c199399cc687c
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jul 9 18:28:54 2022 +0700
+
+    add syso file to set icon for the .exe
+    
+    Steps on linux:
+    
+        convert icon.png icon.ico
+        go install github.com/akavel/rsrc@latest
+        ~/go/bin/rsrc -ico icon.ico -o shark.syso
+        rm icon.ico
+
+diff --git a/shark.syso b/shark.syso
+new file mode 100644
+index 0000000..f6f9806
+Binary files /dev/null and b/shark.syso differ
+</pre></body></html>

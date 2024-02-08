@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[c8a301a252] make sure shark is always on top | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / c8a301a252</strong><hr><pre>commit c8a301a252353a9e721dc5f9cb1bae418467b378
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jun 30 23:22:04 2022 +0700
+
+    make sure shark is always on top
+
+diff --git a/main.go b/main.go
+index 9a7b27f..12192f0 100644
+--- a/main.go
++++ b/main.go
+@@ -168,6 +168,7 @@ func main() {
+ 	ebiten.SetWindowDecorated(false)
+ 	ebiten.SetScreenTransparent(true)
+ 	ebiten.SetWindowPosition(9999, 9999)
++	ebiten.SetWindowFloating(true)
+ 	if err := ebiten.RunGame(&amp;game); err != nil {
+ 		log.Fatal(err)
+ 	}
+</pre></body></html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[6ded4ec65a] add yakshaving page | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 6ded4ec65a</strong><hr><pre>commit 6ded4ec65affdc782971c55efc80388a49de8a23
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Oct 15 17:04:08 2020 +0700
+
+    add yakshaving page
+
+diff --git a/content/pages/notes.md b/content/pages/notes.md
+index b3b002c..697fccf 100644
+--- a/content/pages/notes.md
++++ b/content/pages/notes.md
+@@ -1,4 +1,5 @@
+ Title: Random notes
++Slug: notes
+ Hidden: True
+ 
+ 
+@@ -10,11 +11,14 @@ ## SRE
+ on Rachel By The Bay, the gist is:
+ 
+ - Rollbacks should work. On every deployment.
++
+ - A to AB to B (a.k.a. make before break):
+     + v2 code/data should not break v1 code/data
++
+ - Strict(er than JSON) schema-ing when you fling data across places
+     + Protobuf, etc.
+     + You should only _begin_ to consider JSON if you need to talk to browsers
++
+ - Please fix 500s.
+     + Also you should only get 400s when talking to external things out of your control
+ 
+diff --git a/content/pages/yaks.md b/content/pages/yaks.md
+new file mode 100644
+index 0000000..221e812
+--- /dev/null
++++ b/content/pages/yaks.md
+@@ -0,0 +1,39 @@
++Title: Yak shaving
++Slug: yaks
++Hidden: True
++
++
++Basically my TODOs, in pursuit of the ever-pervasive _pleasant workflow_.
++
++## Replacing tmux with kitty
++
++All blockers seem to have been addressed now?
++
++- [tmuxp replacement](https://sw.kovidgoyal.net/kitty/index.html#startup-sessions)
++- [seamless navigation alongside vimsplit](https://github.com/knubie/vim-kitty-navigator)
++
++
++## Interesting tools
++
++- [pyinfra](https://pointlessramblings.com/posts/why-you-should-try-pyinfra/):
++    + faster than ansible, from my anecdotal experience
++    + python, not yaml
++    + truly agentless (doesn&#39;t even require python)
++
++- [doit](https://pydoit.org/): I just want a cross-platform `make`.
++
++
++## Home server
++
++Specs:
++
++- Thinkpad T430 whose screen just broke
++- Accessible via Tailscale
++- Debian 10 installed on main SSD
++- 2x1TB Seagate HDDs, LUKS encrypted, running a RAID1 btrfs pool.
++
++Services:
++
++- [] Syncthing
++- [] Some RSS reader
++- [] Some bookmarking system that does full text search.
+</pre></body></html>

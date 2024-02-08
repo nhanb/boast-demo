@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[8199a82f83] only call &quot;read&quot; API when logged in | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 8199a82f83</strong><hr><pre>commit 8199a82f8370cdbceaf7a4af6550f8689a9a9f9b
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 23 23:29:00 2020 +0700
+
+    only call &quot;read&quot; API when logged in
+
+diff --git a/pyproject.toml b/pyproject.toml
+index da61574..fbdb802 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.0&quot;
++version = &quot;0.3.1&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/static/js/routes/chapter.js b/src/pytaku/static/js/routes/chapter.js
+index b22a2d7..16dad27 100644
+--- a/src/pytaku/static/js/routes/chapter.js
++++ b/src/pytaku/static/js/routes/chapter.js
+@@ -111,19 +111,21 @@ function Chapter(initialVNode) {
+               ? `/m/${site}/${titleId}/${next.id}`
+               : `/m/${site}/${titleId}`,
+             onclick: (ev) =&gt; {
+-              Auth.request({
+-                method: &quot;POST&quot;,
+-                url: &quot;/api/read&quot;,
+-                body: {
+-                  read: [
+-                    {
+-                      site,
+-                      title_id: titleId,
+-                      chapter_id: chapter.id,
+-                    },
+-                  ],
+-                },
+-              });
++              if (Auth.isLoggedIn()) {
++                Auth.request({
++                  method: &quot;POST&quot;,
++                  url: &quot;/api/read&quot;,
++                  body: {
++                    read: [
++                      {
++                        site,
++                        title_id: titleId,
++                        chapter_id: chapter.id,
++                      },
++                    ],
++                  },
++                });
++              }
+               return true;
+             },
+           },
+</pre></body></html>

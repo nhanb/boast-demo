@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[7b7ee91ff0] h2 subtitle; slightly more p margin | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 7b7ee91ff0</strong><hr><pre>commit 7b7ee91ff097e61e22665a094ae7760c4283215f
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Sep 28 12:48:40 2021 +0700
+
+    h2 subtitle; slightly more p margin
+    
+    Site subtitle was previously a &lt;p&gt; which was incorrectly included in
+    page content scrapers e.g. facebook preview.
+
+diff --git a/nhanb-theme/static/css/main.css b/nhanb-theme/static/css/main.css
+index bf7604d..1d45387 100644
+--- a/nhanb-theme/static/css/main.css
++++ b/nhanb-theme/static/css/main.css
+@@ -48,6 +48,7 @@ video {
+ 
+ p {
+   line-height: 1.4rem;
++  margin: 1.1rem 0;
+ }
+ 
+ li {
+@@ -176,6 +177,8 @@ #site-name {
+ }
+ 
+ #site-subtitle {
++  font-size: 1rem;
++  font-weight: normal;
+   margin: 0;
+ }
+ 
+diff --git a/nhanb-theme/templates/base.html b/nhanb-theme/templates/base.html
+index 29a32a9..69f32d2 100644
+--- a/nhanb-theme/templates/base.html
++++ b/nhanb-theme/templates/base.html
+@@ -18,7 +18,7 @@
+ 
+     &lt;header role=&quot;banner&quot;&gt;
+       &lt;h1 id=&quot;site-name&quot;&gt;&lt;a href=&quot;/&quot;&gt;{{ SITENAME }}&lt;/a&gt;&lt;/h1&gt;
+-      &lt;p id=&quot;site-subtitle&quot;&gt;{{ SITESUBTITLE}}&lt;/p&gt;
++      &lt;h2 id=&quot;site-subtitle&quot;&gt;{{ SITESUBTITLE}}&lt;/h2&gt;
+     &lt;/header&gt;
+ 
+     &lt;nav role=&quot;navigation&quot;&gt;
+</pre></body></html>

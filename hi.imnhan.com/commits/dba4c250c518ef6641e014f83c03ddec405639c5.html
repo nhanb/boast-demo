@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[dba4c250c5] minimal 404 | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / dba4c250c5</strong><hr><pre>commit dba4c250c518ef6641e014f83c03ddec405639c5
+Author: nhanb &lt;nhan@nerdyweekly.com&gt;
+Date:   Sat Apr 23 11:07:00 2016 +0700
+
+    minimal 404
+
+diff --git a/content/extra/404.html b/content/extra/404.html
+index 70246da..383aa86 100644
+--- a/content/extra/404.html
++++ b/content/extra/404.html
+@@ -1,75 +1,39 @@
+ &lt;!DOCTYPE html&gt;
+-&lt;html&gt;
++&lt;html lang=&quot;en&quot;&gt;
+ &lt;head&gt;
+-    &lt;title&gt;404 Not Found&lt;/title&gt;
+-    &lt;meta charset=&quot;utf-8&quot; /&gt;
+-    &lt;link href=&#39;http://fonts.googleapis.com/css?family=Open+Sans:400,300&#39; rel=&#39;stylesheet&#39; type=&#39;text/css&#39;&gt;
+-    &lt;style class=&quot;text/css&quot;&gt;
+-        body {
+-            font-family: &quot;Open Sans&quot;, &quot;sans-serif&quot;;
+-            text-align: center;
+-        }
+-
+-        h1 {
+-            font-size: 90px;
+-            font-weight: 300;
+-            margin-bottom: 5px;
+-        }
+-
+-        p {
+-            font-size: 25px;
+-            width: 50%;
+-            margin: 0 auto;
+-        }
+-
+-    &lt;/style&gt;
+-&lt;/head&gt;
+-&lt;body&gt;
+-
+-    &lt;h1&gt;404 Not Found&lt;/h1&gt;
+-    &lt;p id=&quot;msg&quot;&gt; Looks like you&#39;re lost!&lt;br /&gt;
+-    Click &lt;a href=&quot;/&quot;&gt;here&lt;/a&gt; to go back to the home page&lt;/p&gt;
+-
+-    &lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot;&gt;
+-
+-// Courtesy of stackoverflow
+-function getURLParameter(name) {
+-    return decodeURI((RegExp(name + &#39;=&#39; + &#39;(.+?)(&amp;|$)&#39;).exec(location.search)||[,null])[1]);
++  &lt;meta charset=&quot;UTF-8&quot;&gt;
++  &lt;title&gt;404 Not Fun ಠ_ಠ&lt;/title&gt;
++  &lt;style&gt;
++body {
++  background-color: #333;
++  color: #eee;
+ }
+ 
+-function attemptRedirect(count) {
+-    var url = window.location.href.toString();
+-    var regex = /\/[0-9]{4}\/[0-9]{2}\//;
+-    var newUrl = url.replace(regex, &quot;/posts/&quot;);
+-    if (newUrl !== url) {
+-        setInterval(function(){
+-            if(count == 0) {
+-                document.location.href = newUrl + &quot;?smartass=yes&quot;;
+-            }
+-
+-            document.getElementById(&quot;msg&quot;).innerHTML = &quot;No worries, I&#39;m using my &lt;b&gt;psychic power&lt;\/b&gt; to redirect you the correct article in &lt;b&gt;&quot; + count + &quot;&lt;\/b&gt; seconds...&quot;;
+-
+-            count -= 1;
+-        }, 1000);
+-    }
+-}
+-
+-function fuckingScope() {
+-    var count = 5;
+-    var param = getURLParameter(&quot;smartass&quot;);
+-    if (param === &quot;yes&quot;) {
+-        var msg = &quot;Well, looks like my &lt;b&gt;psychic power&lt;\/b&gt;&#39;s a bit off today...&quot;;
+-        msg += &#39; Redirecting you to my &lt;b&gt;&lt;a href=&quot;/&quot;&gt;home page&lt;\/a&gt;&lt;\/b&gt;... &#39;;
+-        document.getElementById(&quot;msg&quot;).innerHTML = msg;
+-        setInterval(function(){document.location.href = &quot;/&quot;}, 4000);
+-    } else {
+-        attemptRedirect(count);
+-    }
++a {
++  color: #aaa;
+ }
+-
+-// Plain JS because, well, who gives a fuck about $(document).ready()?
+-fuckingScope();
+-
+-    &lt;/script&gt;
++  &lt;/style&gt;
++&lt;/head&gt;
++&lt;body&gt;
++&lt;pre&gt;
++This page doesn&#39;t exist.
++Um, here&#39;s a dinosaur.
++                           .       .
++                          / `.   .&#39; \
++                  .---.  &lt;    &gt; &lt;    &gt;  .---.
++                  |    \  \ - ~ ~ - /  /    |
++                   ~-..-~             ~-..-~
++               \~~~\.&#39;                    `./~~~/
++     .-~~^-.    \__/                        \__/
++   .&#39;  O    \     /               /       \  \
++  (_____,    `._.&#39;               |         }  \/~~~/
++   `----.          /       }     |        /    \__/
++         `-.      |       /      |       /      `. ,~~|
++             ~-.__|      /_ - ~ ^|      /- _      `..-&#39;   f: f:
++                  |     /        |     /     ~-.     `-. _||_||_
++                  |_____|        |_____|         ~ - . _ _ _ _ _&gt;
++
++... Yeah. &lt;a href=&quot;/&quot;&gt;Move along&lt;/a&gt;.
++&lt;/pre&gt;
+ &lt;/body&gt;
+ &lt;/html&gt;
+</pre></body></html>

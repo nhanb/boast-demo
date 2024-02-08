@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[730027c067] half-way through hdviet post | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 730027c067</strong><hr><pre>commit 730027c067681b5313843e3f8da28590d811b724
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Mon Mar 17 23:11:26 2014 +0700
+
+    half-way through hdviet post
+
+diff --git a/content/bypass-rmit-domain-blocker-to-watch-hdviet.md b/content/bypass-rmit-domain-blocker-to-watch-hdviet.md
+new file mode 100644
+index 0000000..0ea076d
+--- /dev/null
++++ b/content/bypass-rmit-domain-blocker-to-watch-hdviet.md
+@@ -0,0 +1,88 @@
++Title: How I bypassed my university&#39;s domain blocker to watch movies on hdviet.com
++Date: 2014-03-17 21:58
++Category: tutorials
++Tags: ubuntu, linux
++Slug: how-i-bypassed-my-university-domain-blocker-to-access-hdviet
++Status: draft
++
++
++**TL;DR**: Clone [my script from GitHub][4], run it with `python2 server.py 8080`, configure your
++browser to use localhost:8080 as HTTP and HTTPS proxy, profit.
++
++**Disclaimer**: The sole reason I came up with this trick and documented it was to satisfy my
++curiosity. I don&#39;t come to campus often anymore so it&#39;s not like I&#39;m going to spend 8 hours a day
++wasting the university&#39;s internet bandwidth for &quot;Two and a half men&quot; anyway...
++
++**Another Note** (last one, promise!): If you&#39;re using Mac OS X or Windows, Proxifier will probably
++do the trick way better and without any hassle. If you&#39;re using Linux or you simply want to learn
++more about this stuff, read on!
++
++## The problem
++
++This semester the RMIT-WPA wifi network no longer requires manual proxy configuration (probably
++because it makes Web Programming students miserable - they have to use Google App Engine), which is
++good news. Nevertheless, that annoying domain filter is still up and running, meaning we still
++can&#39;t go to certain blacklisted websites. (mediafire, fshare, gamevn, vnsharing, etc.)
++
++Hdviet&#39;s case is a bit special: the domain `hdviet.com` itself is not blocked, but the domain of
++the actual server hosting its videos, `v-01.vn-hd.com`, is. A quick look at Google Chrome&#39;s
++excellent Network inspector confirmed that:
++
++[img]
++
++## Going for the IP
++
++Naturally, I wanted to check if I could access the resource directly via the IP. An easy way to look
++up a domain&#39;s IP is using [ping.eu][1]. Once you&#39;ve got the IP, try replacing the domain with it in
++the failed request:
++
++[img]
++
++This time it works, which means only the domain is blocked, not the IP.
++
++One thing worth noting about hdviet: The video is not served as 1 single file, it is instead
++chopped into multiple parts, which are loaded in order. Therefore, our first job is to
++automatically replace `v-01.vn-hd.com` with the IP in all of the request.
++
++## Twisted proxy
++
++Since changing the request destination directly in the browser is probably difficult (I don&#39;t think
++Google Chrome even allows that), we&#39;ll use an HTTP(S) proxy. This is when Twisted comes in handy.
++
++[Twisted][2] is a battery-included framework to build robust network applications. By
++&quot;battery-included&quot; they mean that most of the common functionalities have already been implemented
++so we can use them out of the box. For the purpose of this tutorial, we are only interested in its
++HTTP proxy library.
++
++To install twisted, use `pip`:
++
++    :::bash
++    sudo pip install twisted
++
++Since the default implementation doesn&#39;t support HTTPS, we&#39;ll use a [powered-up one][4] I found on
++GitHub, written by Peter Ruibal. Let&#39;s clone this thing:
++
++    :::bash
++    git clone https://github.com/fmoo/twisted-connect-proxy.git
++
++Now let&#39;s try running the proxy server: `cd` into the cloned directory and run it with `python2`:
++
++    :::bash
++    cd twisted-connect-proxy
++    python2 server.py 8080
++
++Then configure your browser to use **localhost:8080** as the proxy. For Firefox it&#39;s easy:
++
++[img]
++
++You should now be able to surf the web through the running proxy. But hey, you still can&#39;t visit
++any blocked site! Of course you can&#39;t, since we haven&#39;t replaced the domains with IPs. Let&#39;s do
++that.
++
++## Domain to IP
++
++
++[1]: http://ping.eu
++[2]: https://twistedmatrix.com/
++[3]: https://github.com/fmoo/twisted-connect-proxy
++[4]: https://github.com/nhanb/twisted-connect-proxy
+</pre></body></html>

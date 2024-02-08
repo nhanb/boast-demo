@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[39f6ed72c2] subtler blockquote and code block; also fix typo | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 39f6ed72c2</strong><hr><pre>commit 39f6ed72c2bb74b47d7b85d60b6aea226f857ce4
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Jan 6 08:13:08 2023 +0700
+
+    subtler blockquote and code block; also fix typo
+
+diff --git a/content/posts/open-http-link-under-cursor-in-vim.md b/content/posts/open-http-link-under-cursor-in-vim.md
+index 8f3424e..6a4f2e6 100644
+--- a/content/posts/open-http-link-under-cursor-in-vim.md
++++ b/content/posts/open-http-link-under-cursor-in-vim.md
+@@ -109,7 +109,7 @@ ## But why stop there?
+ On a more big-picture note, I can afford to make seemingly sloppy decisions
+ precisely because this serves only myself, and my specific use cases are
+ usually narrow. It&#39;s not very general, but it works, and works precisely the
+-way I want it. This is one of the reasons I&#39;ve always prefered simple tooling
++way I want it. This is one of the reasons I&#39;ve always preferred simple tooling
+ that I can build upon, rather than following the prescribed workflows of more
+ full-fledged IDEs.
+ 
+diff --git a/nhanb-theme/static/css/main.css b/nhanb-theme/static/css/main.css
+index 57e8963..5645036 100644
+--- a/nhanb-theme/static/css/main.css
++++ b/nhanb-theme/static/css/main.css
+@@ -88,8 +88,7 @@ figcaption {
+ }
+ 
+ blockquote {
+-  background-color: blanchedalmond;
+-  border: 1px solid burlywood;
++  border-left: 1px solid black;
+   padding: 5px;
+   padding-left: 7px;
+   margin-left: 2rem;
+@@ -152,8 +151,8 @@ pre {
+ 
+ /* Pygments tweaks */
+ .highlight {
+-  background-color: ivory;
+-  border: 1px solid #ccc;
++  background-color: transparent;
++  border: 1px solid black;
+ }
+ /* When using fenced blockquote without language name, pygments outputs `err`
+  * class for some reason
+</pre></body></html>

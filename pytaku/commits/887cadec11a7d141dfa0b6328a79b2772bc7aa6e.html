@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[887cadec11] site as url param | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 887cadec11</strong><hr><pre>commit 887cadec11a7d141dfa0b6328a79b2772bc7aa6e
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 5 19:32:04 2020 +0700
+
+    site as url param
+
+diff --git a/src/mangoapi/__init__.py b/src/mangoapi/__init__.py
+index 50ff31c..9e66dd7 100644
+--- a/src/mangoapi/__init__.py
++++ b/src/mangoapi/__init__.py
+@@ -108,5 +108,8 @@ def search_title(user_cookies, query):
+     assert md_resp.status_code == 200, md_resp.text
+ 
+     matches = TITLES_PATTERN.findall(md_resp.text)
+-    titles = [{&quot;id&quot;: int(id), &quot;name&quot;: name.strip()} for id, name in matches]
++    titles = [
++        {&quot;id&quot;: int(id), &quot;name&quot;: name.strip(), &quot;site&quot;: &quot;mangadex&quot;}
++        for id, name in matches
++    ]
+     return titles
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index bbfb064..61b98c0 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -38,6 +38,13 @@ def home_view():
+     return render_template(&quot;home.html&quot;)
+ 
+ 
++@app.route(&quot;/follow&quot;, methods=[&quot;POST&quot;])
++def follow_view():
++    title_id = request.form.get(&quot;title_id&quot;)
++    site = request.form.get(&quot;site&quot;, &quot;mangadex&quot;)
++    return redirect(url_for(&quot;&quot;))
++
++
+ @app.route(&quot;/logout&quot;, methods=[&quot;POST&quot;])
+ def logout_view():
+     session.pop(&quot;user&quot;)
+@@ -125,9 +132,9 @@ def auth_view():
+     return render_template(&quot;auth.html&quot;)
+ 
+ 
+-@app.route(&quot;/title/mangadex/&lt;title_id&gt;&quot;)
+-def title_view(title_id):
+-    title = load_title(title_id)
++@app.route(&quot;/title/&lt;site&gt;/&lt;title_id&gt;&quot;)
++def title_view(site, title_id):
++    title = load_title(site, title_id)
+     if not title:
+         print(&quot;Getting title&quot;, title_id)
+         title = get_title(title_id)
+@@ -135,12 +142,13 @@ def title_view(title_id):
+         save_title(title)
+     else:
+         print(&quot;Loading title&quot;, title_id, &quot;from db&quot;)
++    title[&quot;site&quot;] = site
+     return render_template(&quot;title.html&quot;, **title)
+ 
+ 
+-@app.route(&quot;/chapter/mangadex/&lt;chapter_id&gt;&quot;)
+-def chapter_view(chapter_id):
+-    chapter = load_chapter(chapter_id)
++@app.route(&quot;/chapter/&lt;site&gt;/&lt;chapter_id&gt;&quot;)
++def chapter_view(site, chapter_id):
++    chapter = load_chapter(site, chapter_id)
+     if not chapter:
+         print(&quot;Getting chapter&quot;, chapter_id)
+         chapter = get_chapter(chapter_id)
+@@ -153,11 +161,12 @@ def chapter_view(chapter_id):
+     ]
+ 
+     # YIIIIKES
+-    title = load_title(chapter[&quot;title_id&quot;])
++    title = load_title(site, chapter[&quot;title_id&quot;])
+     prev_chapter, next_chapter = get_prev_next_chapters(title, chapter)
+     chapter[&quot;prev_chapter&quot;] = prev_chapter
+     chapter[&quot;next_chapter&quot;] = next_chapter
+ 
++    chapter[&quot;site&quot;] = site
+     return render_template(&quot;chapter.html&quot;, **chapter)
+ 
+ 
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 61bfde4..f8c81ee 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -47,7 +47,7 @@ def save_title(title):
+     )
+ 
+ 
+-def load_title(title_id):
++def load_title(site, title_id):
+     conn = get_conn()
+     result = list(
+         conn.cursor().execute(
+@@ -55,15 +55,16 @@ def load_title(title_id):
+     SELECT id, name, site, cover_ext, chapters, alt_names, descriptions
+     FROM title
+     WHERE id = ?
++      AND site = ?
+       AND datetime(updated_at) &gt; datetime(&#39;now&#39;, &#39;-6 hours&#39;);
+     &quot;&quot;&quot;,
+-            (title_id,),
++            (title_id, site),
+         )
+     )
+     if not result:
+         return None
+     elif len(result) &gt; 1:
+-        raise Exception(f&quot;Found multiple results for title_id {title_id}!&quot;)
++        raise Exception(f&quot;Found multiple results for title_id {title_id} on {site}!&quot;)
+     else:
+         title = result[0]
+         return {
+@@ -117,16 +118,16 @@ def save_chapter(chapter):
+     )
+ 
+ 
+-def load_chapter(chapter_id):
++def load_chapter(site, chapter_id):
+     conn = get_conn()
+     result = list(
+         conn.cursor().execute(
+             &quot;&quot;&quot;
+     SELECT id, title_id, num_major, num_minor, name, pages, groups, is_webtoon
+     FROM chapter
+-    WHERE id = ?;
++    WHERE id = ? AND site=?;
+     &quot;&quot;&quot;,
+-            (chapter_id,),
++            (chapter_id, site),
+         )
+     )
+     if not result:
+diff --git a/src/pytaku/templates/chapter.html b/src/pytaku/templates/chapter.html
+index b6a5665..04aa572 100644
+--- a/src/pytaku/templates/chapter.html
++++ b/src/pytaku/templates/chapter.html
+@@ -9,7 +9,7 @@
+ {% block head %}
+ 
+ {% if next_chapter %}
+-&lt;link rel=&quot;prefetch&quot; href=&quot;{{ url_for(&#39;chapter_view&#39;, chapter_id=next_chapter[&#39;id&#39;])}}&quot;&gt;
++&lt;link rel=&quot;prefetch&quot; href=&quot;{{ url_for(&#39;chapter_view&#39;, site=site, chapter_id=next_chapter[&#39;id&#39;])}}&quot;&gt;
+ {% endif %}
+ 
+ &lt;style&gt;
+@@ -62,15 +62,15 @@ &lt;h1&gt;{{ self.title() }}&lt;/h1&gt;
+ {% block buttons %}
+ &lt;div class=&quot;buttons&quot;&gt;
+   {% if prev_chapter %}
+-  {{ ibutton(href=url_for(&#39;chapter_view&#39;, chapter_id=prev_chapter[&#39;id&#39;]), left_icon=&#39;chevrons-left&#39;, text=&#39;Prev&#39;) }}
++  {{ ibutton(href=url_for(&#39;chapter_view&#39;, site=site, chapter_id=prev_chapter[&#39;id&#39;]), left_icon=&#39;chevrons-left&#39;, text=&#39;Prev&#39;) }}
+   {% else %}
+   {{ ibutton(left_icon=&#39;chevrons-left&#39;, text=&#39;Prev&#39;, disabled=True) }}
+   {% endif %}
+ 
+-  {{ ibutton(href=url_for(&#39;title_view&#39;, title_id=title_id), left_icon=&#39;list&#39;, text=&#39;Chapter list&#39;, color=&#39;blue&#39;) }}
++  {{ ibutton(href=url_for(&#39;title_view&#39;, title_id=title_id, site=title_site), left_icon=&#39;list&#39;, text=&#39;Chapter list&#39;, color=&#39;blue&#39;) }}
+ 
+   {% if next_chapter %}
+-  {{ ibutton(href=url_for(&#39;chapter_view&#39;, chapter_id=next_chapter[&#39;id&#39;]), right_icon=&#39;chevrons-right&#39;, text=&#39;Next&#39;) }}
++  {{ ibutton(href=url_for(&#39;chapter_view&#39;, site=site, chapter_id=next_chapter[&#39;id&#39;]), right_icon=&#39;chevrons-right&#39;, text=&#39;Next&#39;) }}
+   {% else %}
+   {{ ibutton(right_icon=&#39;chevrons-right&#39;, text=&#39;Next&#39;, disabled=True) }}
+   {% endif %}
+diff --git a/src/pytaku/templates/search.html b/src/pytaku/templates/search.html
+index f5240e6..feb098d 100644
+--- a/src/pytaku/templates/search.html
++++ b/src/pytaku/templates/search.html
+@@ -46,7 +46,7 @@ &lt;h1&gt;No results for &quot;{{ query }}&quot;.&lt;/h1&gt;
+ 
+   &lt;div class=&quot;results&quot;&gt;
+   {% for title in titles %}
+-    &lt;a class=&quot;result&quot; href=&quot;{{ url_for(&#39;title_view&#39;, title_id=title[&#39;id&#39;]) }}&quot;
++    &lt;a class=&quot;result&quot; href=&quot;{{ url_for(&#39;title_view&#39;, title_id=title[&#39;id&#39;], site=title[&#39;site&#39;]) }}&quot;
+        title=&quot;{{ title[&#39;name&#39;] }}&quot;&gt;
+       &lt;img src=&quot;https://mangadex.org/images/manga/{{ title[&#39;id&#39;] }}.large.jpg&quot; alt=&quot;&quot;&gt;
+       &lt;span&gt;{{ title[&#39;name&#39;] | truncate(50) }}&lt;/span&gt;
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index d0d098a..5c52ef3 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -30,7 +30,7 @@ &lt;h1&gt;{{ name }}&lt;/h1&gt;
+   {% for chapter in chapters %}
+   &lt;tr&gt;
+     &lt;td&gt;
+-      &lt;a href=&quot;{{ url_for(&#39;chapter_view&#39;, chapter_id=chapter[&#39;id&#39;]) }}&quot;&gt;
++      &lt;a href=&quot;{{ url_for(&#39;chapter_view&#39;, chapter_id=chapter[&#39;id&#39;], site=site) }}&quot;&gt;
+         Chapter {{ chapter[&#39;number&#39;] }}
+         {% if chapter[&#39;volume&#39;] %}Volume {{ chapter[&#39;volume&#39;] }} {% endif %}
+         {% if chapter[&#39;name&#39;] %}- {{ chapter[&#39;name&#39;] }} {% endif %}
+</pre></body></html>

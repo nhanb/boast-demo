@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[f96156b693] allow custom hostname for proxied urls | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / f96156b693</strong><hr><pre>commit f96156b69341664d940f28b718738425d8109f74
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 30 13:09:18 2020 +0700
+
+    allow custom hostname for proxied urls
+    
+    Even with the filesystem cache, serving proxied images through the web
+    worker is still suboptimal.
+    
+    This prefix allows me to optionally point all proxied urls to a CDN&#39;s
+    hostname instead. I&#39;m using BunnyCDN, for example.
+    
+    I&#39;d prefer to solve this on the caddy server side instead, but
+    apparently caddy server doesn&#39;t support the `file server that falls back
+    to reverse proxy if file not found` use case.
+    
+    Of course everything should still work out of the box without any CDN by
+    default.
+
+diff --git a/src/pytaku/conf.py b/src/pytaku/conf.py
+index fd4e2fd..3ceb731 100644
+--- a/src/pytaku/conf.py
++++ b/src/pytaku/conf.py
+@@ -7,6 +7,9 @@ class Config(GoodConf):
+     MANGADEX_USERNAME = Value()
+     MANGADEX_PASSWORD = Value()
+     FLASK_SECRET_KEY = Value(initial=lambda: token_urlsafe(50))
++
++    PROXY_PREFIX = Value(default=&quot;&quot;)
++    # ^ use this to e.g. point to a CDN&#39;s domain
+     PROXY_CACHE_DIR = Value(default=&quot;proxy_cache&quot;)
+     PROXY_CACHE_MAX_SIZE = Value(default=1024 * 1024 * 1024)  # 1GiB in bytes
+     PROXY_CACHE_MAX_AGE = Value(default=3600 * 24 * 7)  # 7 weeks in seconds
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index ec0749e..5cb3b6d 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -80,6 +80,11 @@ def _is_manga_img_url(
+     return pattern.match(url)
+ 
+ 
++def proxied(url) -&gt; str:
++    path = url_for(&quot;proxy_view&quot;, b64_url=_encode_proxy_url(url))
++    return config.PROXY_PREFIX + path
++
++
+ @app.route(&quot;/proxy/&lt;b64_url&gt;&quot;)
+ def proxy_view(b64_url):
+     &quot;&quot;&quot;
+@@ -201,9 +206,7 @@ def _title(site, title_id, user_id=None):
+         print(&quot;Loading title&quot;, title_id, &quot;from db&quot;)
+     title[&quot;cover&quot;] = title_cover(site, title_id, title[&quot;cover_ext&quot;])
+     if site == &quot;mangadex&quot;:
+-        title[&quot;cover&quot;] = url_for(
+-            &quot;proxy_view&quot;, b64_url=_encode_proxy_url(title[&quot;cover&quot;])
+-        )
++        title[&quot;cover&quot;] = proxied(title[&quot;cover&quot;])
+     title[&quot;source_url&quot;] = title_source_url(site, title_id)
+     return title
+ 
+@@ -237,9 +240,7 @@ def spa_chapter_view(site, title_id, chapter_id):
+     title = load_title(site, title_id)
+     title[&quot;cover&quot;] = title_cover(site, title_id, title[&quot;cover_ext&quot;])
+     if site == &quot;mangadex&quot;:
+-        title[&quot;cover&quot;] = url_for(
+-            &quot;proxy_view&quot;, b64_url=_encode_proxy_url(title[&quot;cover&quot;])
+-        )
++        title[&quot;cover&quot;] = proxied(title[&quot;cover&quot;])
+ 
+     chapter[&quot;site&quot;] = site
+     return render_template(
+@@ -273,18 +274,13 @@ def api_chapter(site, title_id, chapter_id):
+         print(&quot;Loading chapter&quot;, chapter_id, &quot;from db&quot;)
+ 
+     if site in (&quot;mangadex&quot;, &quot;mangasee&quot;):
+-        chapter[&quot;pages&quot;] = [
+-            url_for(&quot;proxy_view&quot;, b64_url=_encode_proxy_url(p))
+-            for p in chapter[&quot;pages&quot;]
+-        ]
++        chapter[&quot;pages&quot;] = [proxied(p) for p in chapter[&quot;pages&quot;]]
+ 
+     # YIIIIKES
+     title = load_title(site, title_id)
+     title[&quot;cover&quot;] = title_cover(site, title_id, title[&quot;cover_ext&quot;])
+     if site == &quot;mangadex&quot;:
+-        title[&quot;cover&quot;] = url_for(
+-            &quot;proxy_view&quot;, b64_url=_encode_proxy_url(title[&quot;cover&quot;])
+-        )
++        title[&quot;cover&quot;] = proxied(title[&quot;cover&quot;])
+     prev_chapter, next_chapter = get_prev_next_chapters(title, chapter)
+     chapter[&quot;prev_chapter&quot;] = prev_chapter
+     chapter[&quot;next_chapter&quot;] = next_chapter
+@@ -367,7 +363,7 @@ def api_follows():
+     for title in titles:
+         thumbnail = title_thumbnail(title[&quot;site&quot;], title[&quot;id&quot;])
+         if title[&quot;site&quot;] == &quot;mangadex&quot;:
+-            thumbnail = url_for(&quot;proxy_view&quot;, b64_url=_encode_proxy_url(thumbnail))
++            thumbnail = proxied(thumbnail)
+         title[&quot;thumbnail&quot;] = thumbnail
+     return jsonify({&quot;titles&quot;: titles})
+ 
+@@ -378,9 +374,7 @@ def api_search(query):
+ 
+     if &quot;mangadex&quot; in results:
+         for title in results[&quot;mangadex&quot;]:
+-            title[&quot;thumbnail&quot;] = url_for(
+-                &quot;proxy_view&quot;, b64_url=_encode_proxy_url(title[&quot;thumbnail&quot;])
+-            )
++            title[&quot;thumbnail&quot;] = proxied(title[&quot;thumbnail&quot;])
+     return results
+ 
+ 
+</pre></body></html>

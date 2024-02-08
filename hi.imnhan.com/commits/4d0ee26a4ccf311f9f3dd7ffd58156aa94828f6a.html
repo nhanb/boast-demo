@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[4d0ee26a4c] finish hdviet post | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 4d0ee26a4c</strong><hr><pre>commit 4d0ee26a4ccf311f9f3dd7ffd58156aa94828f6a
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Wed Mar 19 12:34:30 2014 +0700
+
+    finish hdviet post
+
+diff --git a/content/bypass-rmit-domain-blocker-to-watch-hdviet.md b/content/bypass-rmit-domain-blocker-to-watch-hdviet.md
+index 0ea076d..9d8f29f 100644
+--- a/content/bypass-rmit-domain-blocker-to-watch-hdviet.md
++++ b/content/bypass-rmit-domain-blocker-to-watch-hdviet.md
+@@ -3,7 +3,6 @@
+ Category: tutorials
+ Tags: ubuntu, linux
+ Slug: how-i-bypassed-my-university-domain-blocker-to-access-hdviet
+-Status: draft
+ 
+ 
+ **TL;DR**: Clone [my script from GitHub][4], run it with `python2 server.py 8080`, configure your
+@@ -25,10 +24,14 @@ ## The problem
+ can&#39;t go to certain blacklisted websites. (mediafire, fshare, gamevn, vnsharing, etc.)
+ 
+ Hdviet&#39;s case is a bit special: the domain `hdviet.com` itself is not blocked, but the domain of
+-the actual server hosting its videos, `v-01.vn-hd.com`, is. A quick look at Google Chrome&#39;s
++the actual server hosting its playlists &amp; videos, `v-01.vn-hd.com`, is. A quick look at Firefox&#39;s
+ excellent Network inspector confirmed that:
+ 
+-[img]
++![](/images/hdviet_01_forbidden.png)
++
++If you request the file directly:
++
++![](/images/hdviet_02_forbidden_direct.png)
+ 
+ ## Going for the IP
+ 
+@@ -36,7 +39,7 @@ ## Going for the IP
+ up a domain&#39;s IP is using [ping.eu][1]. Once you&#39;ve got the IP, try replacing the domain with it in
+ the failed request:
+ 
+-[img]
++![](/images/hdviet_03_ip.png)
+ 
+ This time it works, which means only the domain is blocked, not the IP.
+ 
+@@ -73,7 +76,7 @@ ## Twisted proxy
+ 
+ Then configure your browser to use **localhost:8080** as the proxy. For Firefox it&#39;s easy:
+ 
+-[img]
++![](/images/hdviet_04_firefox_proxy.png)
+ 
+ You should now be able to surf the web through the running proxy. But hey, you still can&#39;t visit
+ any blocked site! Of course you can&#39;t, since we haven&#39;t replaced the domains with IPs. Let&#39;s do
+@@ -81,8 +84,167 @@ ## Twisted proxy
+ 
+ ## Domain to IP
+ 
++Open `server.py`, look for this part:
++
++    :::python
++    class ConnectProxyRequest(ProxyRequest):
++        &quot;&quot;&quot;HTTP ProxyRequest handler (factory) that supports CONNECT&quot;&quot;&quot;
++        connectedProtocol = None
++
++        def process(self):
++            if self.method == &#39;CONNECT&#39;:
++                self.processConnectRequest()
++            else:
++                ProxyRequest.process(self)
++
++The `process()` method is in charge of forwarding whatever request the proxy receives to the actual
++target server. Let&#39;s intercept it with our own `redirect()` function:
++
++    :::python
++    redirects = {
++        &#39;v-01.vn-hd.com&#39;: &#39;125.212.216.93&#39;,  # video
++        &#39;s.vn-hd.com&#39;: &#39;210.211.120.146&#39;,  # sub
++    }
++
++    def redirect(req):
++        for domain, ip in redirects.items():
++            if req.path.find(domain) != -1:  # check if we&#39;re requesting a blocked domain
++                req.uri = req.uri.replace(domain, ip, 1)
++                req.path = req.path.replace(domain, ip, 1)
++                req.requestHeaders.setRawHeaders(&#39;host&#39;, [ip])  # replace &quot;Host&quot; header too
++                return
++
++    class ConnectProxyRequest(ProxyRequest):
++        &quot;&quot;&quot;HTTP ProxyRequest handler (factory) that supports CONNECT&quot;&quot;&quot;
++        connectedProtocol = None
++
++        def process(self):
++            redirect(self)  # intercept request processing
++            if self.method == &#39;CONNECT&#39;:
++                self.processConnectRequest()
++        # the rest of the file ...
++
++In the snippet above, we defined a dictionary `redirects` that stores the blocked domains that we
++need to replace. Note that I added **s.vn-hd.com** as well, which is the host that stores
++subtitles. In our actual `redirect()` function, we check if the request being processed is pointing
++to any of the blocked domains defined earlier, then replace domain with its corresponding IP if
++there is a match:
++
++    :::python
++    req.uri = req.uri.replace(domain, ip, 1)
++    req.path = req.path.replace(domain, ip, 1)
++    req.requestHeaders.setRawHeaders(&#39;host&#39;, [ip])
++
++Note that the 3rd line also changes the &quot;Host&quot; HTTP header. Yes, our beloved people from IT
++Services do inspect HTTP headers to block stuff too. This line will introduce another problem that
++I will explain later in this post.
++
++Now restart our proxy server and check the link again. It should work. You can now watch stuff, but
++you&#39;ll notice that English subtitles are not shown even if you turn them on:
++
++![](/images/hdviet_05_no_sub.png)
++
++If you open the browser&#39;s network inspector, reload the page and try to enable English subtitles
++again, you&#39;ll see the problem:
++
++![](/images/hdviet_06_404.png)
++
++The link in question is:
++
++    :::text
++    http://s.vn-hd.com/store6/21042013/Two_and_a_Half_Men_S02/E001/Two_and_a_Half_Men_S02_E001_ENG.srt
++
++Since **s.vn-hd.com** is in our blocked domain dictionary (`redirects`), the proxy server will
++request this:
++
++    :::text
++    http://210.211.120.146/store6/21042013/Two_and_a_Half_Men_S02/E001/Two_and_a_Half_Men_S02_E001_ENG.srt
++
++If you try to open it directly in a browser (that isn&#39;t using our proxy server), you&#39;ll get a 404
++too.  Why is that? This is because the **Host** header is also changed to **210.211.120.146**
++instead of the original domain **s.vn-hd.com**. Normally a single web server can be serving
++multiple domains at a time, and when we send an HTTP request, we need to specify `Host: &lt;domain&gt;`
++for the server to know which domain we want to get the resource from. When the **Host** header is
++simply the IP, the server may get confused and therefore cannot serve the correct resource. As for
++**v-01.vn-hd.com**, we got lucky in that case.
++
++On the other hand, if we keep `Host: s.vn-hd.com` as-is, RMIT will be able to block our request.
++This leads to our final trick:
++
++## Google App Engine to the rescue!
++
++Because a subtitle file is just plain text, its size is negligible. We can set up an external
++website that receives our original request, fetches the requested file on hdviet&#39;s server and
++returns the requested file&#39;s content back to us. I have already set up a proof-of-concept Google
++App Engine website at **hdviet-proxy.appspot.com**. It works like this:
++
++![](/images/hdviet_07_graph.png)
++
++Now we need to edit our server code to redirect any **s.vn-hd.com** request to
++**hdviet-proxy.appspot.com/?url=original_url**.
++
++    :::python
++    import urllib
++
++    sub_server = &#39;s.vn-hd.com&#39;
++    remote_server = &#39;hdviet-proxy.appspot.com&#39;
++    redirects = {
++        &#39;v-01.vn-hd.com&#39;: &#39;125.212.216.93&#39;,  # video
++    }
++
++    def redirect(req):
++        for domain, ip in redirects.items():
++            if req.path.find(domain) != -1:
++                req.uri = req.uri.replace(domain, ip, 1)
++                req.path = req.path.replace(domain, ip, 1)
++                req.requestHeaders.setRawHeaders(&#39;host&#39;, [ip])
++                return
++            elif req.path.find(sub_server) != -1:
++                proxied_url = &#39;http://%s/?%s&#39; % (remote_server,
++                                                 urllib.urlencode({&#39;url&#39;: req.uri}))
++                req.uri = proxied_url
++                req.path = req.path.replace(sub_server, remote_server)
++                req.requestHeaders.setRawHeaders(&#39;host&#39;, [remote_server])
++                return
++
++You can view my [finished script on github][4] and clone it to use right away.
++
++If you want to set up your own website instead of using mine, it&#39;s really simple. Just use the new
++site template provided with GAE SDK and edit `main.py` like so:
++
++    :::python
++    import webapp2
++    from google.appengine.api import urlfetch
++
++    class MainHandler(webapp2.RequestHandler):
++        def get(self):
++            url = self.request.get(&#39;url&#39;)
++            resp = urlfetch.fetch(url).content
++            self.response.write(resp)
++
++    app = webapp2.WSGIApplication([
++        (&#39;/&#39;, MainHandler)
++    ], debug=True)
++
++Remember to change the `remote_server` variable in `server.py` to match your appspot link.
++
++Restart the server script, now when the browser requests for this:
++
++    :::text
++    http://s.vn-hd.com/store6/21042013/Two_and_a_Half_Men_S02/E001/Two_and_a_Half_Men_S02_E001_ENG.srt
++
++`server.py` will redirect to this:
++
++    :::text
++    http://hdviet-proxy.appspot.com/?url=http%3A%2F%2Fs.vn-hd.com%2Fstore6%2F21042013%2FTwo_and_a_Half_Men_S02%2FE001%2FTwo_and_a_Half_Men_S02_E001_ENG.srt
++
++And the appspot site will get the original url, fetch its content, and give it right back to us:
++
++![](/images/hdviet_08_srt.png)
++
++You should now be able to watch movies with subtitles. Congratulations!
+ 
+-[1]: http://ping.eu
++[1]: http://ping.eu/ping/
+ [2]: https://twistedmatrix.com/
+ [3]: https://github.com/fmoo/twisted-connect-proxy
+ [4]: https://github.com/nhanb/twisted-connect-proxy
+diff --git a/content/images/hdviet_01_forbidden.png b/content/images/hdviet_01_forbidden.png
+new file mode 100644
+index 0000000..6d40d56
+Binary files /dev/null and b/content/images/hdviet_01_forbidden.png differ
+diff --git a/content/images/hdviet_02_forbidden_direct.png b/content/images/hdviet_02_forbidden_direct.png
+new file mode 100644
+index 0000000..bf6b694
+Binary files /dev/null and b/content/images/hdviet_02_forbidden_direct.png differ
+diff --git a/content/images/hdviet_03_ip.png b/content/images/hdviet_03_ip.png
+new file mode 100644
+index 0000000..4bf0cf0
+Binary files /dev/null and b/content/images/hdviet_03_ip.png differ
+diff --git a/content/images/hdviet_04_firefox_proxy.png b/content/images/hdviet_04_firefox_proxy.png
+new file mode 100644
+index 0000000..8866804
+Binary files /dev/null and b/content/images/hdviet_04_firefox_proxy.png differ
+diff --git a/content/images/hdviet_05_no_sub.png b/content/images/hdviet_05_no_sub.png
+new file mode 100644
+index 0000000..515195e
+Binary files /dev/null and b/content/images/hdviet_05_no_sub.png differ
+diff --git a/content/images/hdviet_06_404.png b/content/images/hdviet_06_404.png
+new file mode 100644
+index 0000000..6de6e32
+Binary files /dev/null and b/content/images/hdviet_06_404.png differ
+diff --git a/content/images/hdviet_07_graph.png b/content/images/hdviet_07_graph.png
+new file mode 100644
+index 0000000..e32d8af
+Binary files /dev/null and b/content/images/hdviet_07_graph.png differ
+diff --git a/content/images/hdviet_08_srt.png b/content/images/hdviet_08_srt.png
+new file mode 100644
+index 0000000..a1c99d0
+Binary files /dev/null and b/content/images/hdviet_08_srt.png differ
+</pre></body></html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[7c17bc9628] cosmetics | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 7c17bc9628</strong><hr><pre>commit 7c17bc9628e26c3c7a182a8129ce4dfd9f1e702c
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 17 17:42:30 2023 +0700
+
+    cosmetics
+
+diff --git a/README.md b/README.md
+index 49b834f..b7995de 100644
+--- a/README.md
++++ b/README.md
+@@ -75,9 +75,9 @@ ## Options
+   -size int
+         Size multiplier: make Gura as big as you want (default 1)
+   -stop int
+-        chance to stop walking, in % (default 40)
++        Chance to stop walking, in % (default 40)
+   -walk int
+-        chance to start walking, in % (default 5)
++        Chance to start walking, in % (default 5)
+   -x int
+         X position on screen (default 9999)
+   -y int
+diff --git a/main.go b/main.go
+index a1b3719..0c354f6 100644
+--- a/main.go
++++ b/main.go
+@@ -112,8 +112,8 @@ func main() {
+ 	)
+ 	flag.IntVar(&amp;xFlag, &quot;x&quot;, 9999, &quot;X position on screen&quot;)
+ 	flag.IntVar(&amp;yFlag, &quot;y&quot;, 9999, &quot;Y position on screen&quot;)
+-	flag.IntVar(&amp;WalkChance, &quot;walk&quot;, 5, &quot;chance to start walking, in %&quot;)
+-	flag.IntVar(&amp;StopChance, &quot;stop&quot;, 40, &quot;chance to stop walking, in %&quot;)
++	flag.IntVar(&amp;WalkChance, &quot;walk&quot;, 5, &quot;Chance to start walking, in %&quot;)
++	flag.IntVar(&amp;StopChance, &quot;stop&quot;, 40, &quot;Chance to stop walking, in %&quot;)
+ 	flag.Parse()
+ 
+ 	DurationTillHungry = time.Duration(secondsUntilHungryFlag) * 1_000_000_000
+</pre></body></html>

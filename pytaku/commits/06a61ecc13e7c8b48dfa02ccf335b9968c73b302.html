@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[06a61ecc13] fix scheduler task too | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 06a61ecc13</strong><hr><pre>commit 06a61ecc13e7c8b48dfa02ccf335b9968c73b302
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 10 23:45:36 2020 +0700
+
+    fix scheduler task too
+
+diff --git a/src/pytaku/scheduler.py b/src/pytaku/scheduler.py
+index 24cbaab..aeea366 100644
+--- a/src/pytaku/scheduler.py
++++ b/src/pytaku/scheduler.py
+@@ -41,6 +41,6 @@ class UpdateOutdatedSeries(Worker):
+     def run(self):
+         for title in find_outdated_titles():
+             print(f&quot;Updating title {title[&#39;id&#39;]} from {title[&#39;site&#39;]}...&quot;, end=&quot;&quot;)
+-            updated_title = get_title(title[&quot;id&quot;])
++            updated_title = get_title(title[&quot;site&quot;], title[&quot;id&quot;])
+             save_title(updated_title)
+             print(&quot; done&quot;)
+</pre></body></html>

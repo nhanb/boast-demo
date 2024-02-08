@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[77e86cbc8d] make it clear only 3 images are loaded at a time | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 77e86cbc8d</strong><hr><pre>commit 77e86cbc8d1e7f89f966d1a0a98bb3f4d78de44a
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 26 21:57:57 2020 +0700
+
+    make it clear only 3 images are loaded at a time
+
+diff --git a/src/pytaku/static/js/routes/chapter.js b/src/pytaku/static/js/routes/chapter.js
+index 4019fe2..a5782f6 100644
+--- a/src/pytaku/static/js/routes/chapter.js
++++ b/src/pytaku/static/js/routes/chapter.js
+@@ -5,6 +5,10 @@ const LoadingPlaceholder = {
+   view: () =&gt; m(&quot;h2&quot;, [m(&quot;i.icon.icon-loader.spin&quot;)]),
+ };
+ 
++const PendingPlaceholder = {
++  view: () =&gt; m(&quot;h2&quot;, [m(&quot;i.icon.icon-loader&quot;)]),
++};
++
+ const RetryImgButton = {
+   view: (vnode) =&gt; {
+     return m(Button, {
+@@ -178,7 +182,7 @@ function Chapter(initialVNode) {
+                   : null,
+               ])
+             ),
+-            pendingPages.map((page) =&gt; m(LoadingPlaceholder)),
++            pendingPages.map((page) =&gt; m(PendingPlaceholder)),
+           ]
+         ),
+         buttons,
+</pre></body></html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[0f4558a907] restart always | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 0f4558a907</strong><hr><pre>commit 0f4558a9077b0e1f31b0f7210cfcc998d13089af
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 29 08:09:53 2020 +0700
+
+    restart always
+
+diff --git a/contrib/systemd/pytaku-scheduler.service b/contrib/systemd/pytaku-scheduler.service
+index d7fc3e7..5f8b9cf 100644
+--- a/contrib/systemd/pytaku-scheduler.service
++++ b/contrib/systemd/pytaku-scheduler.service
+@@ -12,6 +12,7 @@ Description=Pytaku scheduler
+ Environment=&quot;PYTHONUNBUFFERED=1&quot;
+ ExecStart=/home/pytaku/.local/bin/pytaku-scheduler
+ WorkingDirectory=/home/pytaku/pytaku
++Restart=always
+ 
+ [Install]
+ WantedBy=default.target
+diff --git a/contrib/systemd/pytaku.service b/contrib/systemd/pytaku.service
+index 70bd657..d369e16 100644
+--- a/contrib/systemd/pytaku.service
++++ b/contrib/systemd/pytaku.service
+@@ -12,6 +12,7 @@ Description=Pytaku server
+ Environment=&quot;PYTHONUNBUFFERED=1&quot;
+ ExecStart=/bin/bash -c &#39;export PATH=$PATH:$HOME/.local/bin; pytaku -w 10 -b 0.0.0.0:5001&#39;
+ WorkingDirectory=/home/pytaku/pytaku
++Restart=always
+ 
+ [Install]
+ WantedBy=default.target
+</pre></body></html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[324311a381] fix gihub action | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 324311a381</strong><hr><pre>commit 324311a381a2dd5fb786e1308d27549a922bc4d3
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jun 19 00:28:31 2023 +0700
+
+    fix gihub action
+
+diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
+index 1149cba..9ca5f76 100644
+--- a/.github/workflows/build.yml
++++ b/.github/workflows/build.yml
+@@ -10,7 +10,7 @@ permissions:
+ jobs:
+ 
+   build:
+-    runs-on: debian-latest
++    runs-on: ubuntu-latest
+     steps:
+     - uses: actions/checkout@v3
+ 
+</pre></body></html>

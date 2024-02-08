@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[730691dbf7] simplify RightClick logic | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / 730691dbf7</strong><hr><pre>commit 730691dbf7842b362fad8aa8b58d635712cd87ee
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jul 3 16:08:59 2022 +0700
+
+    simplify RightClick logic
+    
+    Make sure it doesn&#39;t interrupt other animations (or itself).
+
+diff --git a/main.go b/main.go
+index cc66e0a..172f394 100644
+--- a/main.go
++++ b/main.go
+@@ -31,14 +31,13 @@ type Anim struct {
+ type Position struct{ x, y int }
+ 
+ type Game struct {
+-	CurrentAnim       *Anim
+-	CurrentFrame      int
+-	Ticks             int
+-	ShouldResetToIdle bool
+-	IsDragging        bool
+-	PreviousMousePos  Vector
+-	WinStartPos       Vector
+-	MouseStartPos     Vector
++	CurrentAnim      *Anim
++	CurrentFrame     int
++	Ticks            int
++	IsDragging       bool
++	PreviousMousePos Vector
++	WinStartPos      Vector
++	MouseStartPos    Vector
+ }
+ 
+ type Vector struct{ x, y int }
+@@ -62,11 +61,11 @@ func GlobalCursorPosition() Vector {
+ 
+ func (g *Game) Update() error {
+ 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
+-		g.CurrentAnim = RightClick
+-		g.Ticks = 0
+-		g.CurrentFrame = 0
+-		g.ShouldResetToIdle = true
+-		return nil
++		if g.CurrentAnim == Idle {
++			g.CurrentAnim = RightClick
++			g.Ticks = 0
++			g.CurrentFrame = 0
++		}
+ 	}
+ 
+ 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+@@ -101,25 +100,14 @@ func (g *Game) Update() error {
+ 	g.CurrentFrame++
+ 	if g.CurrentFrame &gt;= len(g.CurrentAnim.Frames) {
+ 		g.CurrentFrame = 0
+-		if g.ShouldResetToIdle {
++		if g.CurrentAnim == RightClick {
+ 			g.CurrentAnim = Idle
+-			g.ShouldResetToIdle = false
+ 		}
+ 	}
+ 	return nil
+ }
+ 
+ func (g *Game) Draw(screen *ebiten.Image) {
+-	/*
+-		x, y := ebiten.WindowPosition()
+-			ebitenutil.DebugPrint(
+-				screen,
+-				fmt.Sprintf(
+-					&quot;Ticks: %d\nCurrentFrame: %d\nx: %v, y: %v&quot;,
+-					g.Ticks, g.CurrentFrame, x, y,
+-				),
+-			)
+-	*/
+ 	screen.DrawImage(g.CurrentAnim.Frames[g.CurrentFrame], nil)
+ 	/*
+ 		debugStr := &quot;&quot;
+</pre></body></html>

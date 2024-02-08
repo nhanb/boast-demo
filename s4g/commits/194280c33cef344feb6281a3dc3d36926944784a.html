@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[194280c33c] add note on fsnotify not telling dir from file | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 194280c33c</strong><hr><pre>commit 194280c33cef344feb6281a3dc3d36926944784a
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jul 9 13:18:41 2023 +0700
+
+    add note on fsnotify not telling dir from file
+
+diff --git a/main.go b/main.go
+index abaadff..7b8f9ad 100644
+--- a/main.go
++++ b/main.go
+@@ -43,7 +43,8 @@ func main() {
+ 	// - Devise some sort of dependency graph
+ 	// - Filter out relevant FS events: this seems daunting considering the
+ 	// differences between OSes and applications (e.g. vim writes to temp file
+-	// then renames)
++	// then renames), and fsnotify&#39;s inability to tell if the event came from a
++	// directory.
+ 	closeWatcher := WatchLocalFS(fsys, func() {
+ 		fmt.Println(&quot;Change detected. Regenerating...&quot;)
+ 		regenerate(fsys)
+</pre></body></html>

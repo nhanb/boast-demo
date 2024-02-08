@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[d81c7eed62] mcross: shave off the edge a bit | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / d81c7eed62</strong><hr><pre>commit d81c7eed6292171a516d119d4ead469fde88d69f
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jun 13 18:26:25 2020 +0700
+
+    mcross: shave off the edge a bit
+
+diff --git a/content/posts/introducing-mcross.md b/content/posts/introducing-mcross.md
+index aae9464..e9c758f 100644
+--- a/content/posts/introducing-mcross.md
++++ b/content/posts/introducing-mcross.md
+@@ -10,12 +10,11 @@
+ 
+ Personally I&#39;m skeptical if this thing will take off any time soon (or ever).
+ Sure I agree the web is [comically bloated][4], [openly user-hostile][5], and
+-tech&#39;s knight in shining armor of yesteryear has somehow managed to become both
+-a [creepy big brother][6] and a shameless [snake oil][7] peddler at the same
+-time, so on and so forth... But the fact remains that the web is the most
+-convenient thing there is, both from a user&#39;s and developer&#39;s perspective.
+-Gemini is a fun experiment. It may even be a hit among &lt;strike&gt;nerds&lt;/strike&gt;
+-power users and the overly privacy-concious, but that&#39;s it.
++the big players are only [adding to the problem][7], but the fact remains that
++the web is the most convenient thing there is, both from a user&#39;s and
++developer&#39;s perspective. Gemini is a fun experiment. It may even be a hit among
++&lt;strike&gt;nerds&lt;/strike&gt; power users and the overly privacy-concious, but that&#39;s
++it.
+ 
+ But then again, I consider myself among the &quot;&lt;strike&gt;nerds&lt;/strike&gt; power users
+ and the overly privacy-concious&quot; demographic, so I naturally want to see what
+@@ -34,9 +33,10 @@
+ 
+ Why not use one of the existing browsers you ask? Sure enough there are a bunch
+ of existing browsers, with [Castor][8] appearing to be the furthest along in
+-development, but it didn&#39;t work _quite_ the way I would like. Moreover, I&#39;ve
+-always wanted an excuse to try GUI &amp; socket programming in python. Anyway, the
+-following are what I disagree with in the Castor browser:
++development, but it didn&#39;t work _quite_ the way I would like. This made me want
++to find out for myself just how hard it is to build a reasonably user-friendly
++desktop GUI application. For the rest of this blog post I try to elaborate on
++my idea of a _user-friendly desktop GUI application_.
+ 
+ ### Visual feedback:
+ 
+@@ -54,8 +54,8 @@ ### Visual feedback:
+ 
+ ### Aesthetics:
+ 
+-Call me picky but I don&#39;t like how links are presented as buttons and they
+-don&#39;t even have breathing room between them:
++Call me picky but I don&#39;t like how in Castor links are presented as buttons and
++they don&#39;t even have breathing room between them:
+ 
+ ![Castor links](/images/mcross_02_castor.png)
+ 
+@@ -69,8 +69,9 @@ ### Aesthetics:
+ not automatically but it takes trivial work anyway). Linux however doesn&#39;t have
+ such a thing, but the bundled `clam` theme looks pleasing enough for me. Yes, I
+ do think a retro looking theme fares better than the gtk-on-kde look, and its
+-simple scrollbar looks and _works_ way better than those nigh-unclickable
+-abominations that KDE and GTK call their &quot;modern scrollbar&quot;, fight me.
++simple scrollbar looks and, more importantly, _works_ way better than those
++nigh-unclickable abominations that KDE and GTK call their &quot;modern scrollbar&quot;,
++fight me.
+ 
+ Another explicit design decision in McRoss is that while custom styling is
+ applied to special lines (heading, list, code block...), their textual content
+@@ -95,9 +96,8 @@ ### Installation:
+ 
+ # Closing thoughts
+ 
+-To me the whole gemini ecosystem represents the long-lost naive optimism, not
+-necessarily of the early web, but of my younger self when I first hopped on the
+-relatively early iteration of the web. It was not even as far as the &quot;good old
++To me the whole gemini ecosystem represents the long-lost naive optimism of an
++earlier web ecosystem. It was not even as far as the &quot;good old
+ gopher/bbs days&quot; those boomers keep ranting about - it was the days of early
+ MMORPGs, of crappy Yahoo! 360 blogs riced up with copy-pasted html/css all over
+ the place, of numerous Vietnamese warez forums powered by pirated vBulletin
+@@ -115,7 +115,8 @@ # Closing thoughts
+ I make a living out of building webstuff), but it is undeniably a sad thing.
+ Gemini may be a spark that begins a push back against unjustified complexity,
+ or it may end up being just another niche tech curiosity. I&#39;m leaning towards
+-the latter but hey at least with McRoss it&#39;s a halfway usable tech curiosity.
++the latter, but in the meantime, I&#39;ll keep peaking at the geminiverse with my
++comfy trusty browser.
+ 
+ [1]: https://gemini.circumlunar.space/
+ [2]: https://lobste.rs/s/79pu7o/gemini_protocol_inbetween_gopher_web
+</pre></body></html>

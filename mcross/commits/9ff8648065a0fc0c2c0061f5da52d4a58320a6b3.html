@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[9ff8648065] more responsive UI, full disclosure | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 9ff8648065</strong><hr><pre>commit 9ff8648065a0fc0c2c0061f5da52d4a58320a6b3
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun May 17 14:41:49 2020 +0700
+
+    more responsive UI, full disclosure
+
+diff --git a/README.md b/README.md
+index 41f4426..4393e55 100644
+--- a/README.md
++++ b/README.md
+@@ -81,8 +81,11 @@ ## Responsive &amp; pleasant to use
+ ## Lightweight
+ 
+ In terms of both disk space &amp; memory/cpu usage.
+-It&#39;s completely unoptimized at the moment but tkinter and zero-dependency
+-python gives us a fairly good starting point imo.
++It&#39;s completely unoptimized at the moment.
++Actually the way I&#39;m hooking up tkinter and curio is... not ideal. See comments
++in controller.py for more info. TL;DR I&#39;m prioritizing gui responsiveness and
++code simplicity, sacrificing a non-negligible amount of CPU cycles even at
++idle.
+ 
+ 
+ # Server bugs/surprises
+diff --git a/pyproject.toml b/pyproject.toml
+index 2d8ebf7..9d475b3 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;mcross&quot;
+-version = &quot;0.5.2&quot;
++version = &quot;0.5.3&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+diff --git a/src/mcross/gui/controller.py b/src/mcross/gui/controller.py
+index 4cea4c4..d7da00a 100644
+--- a/src/mcross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -58,7 +58,14 @@ async def main():
+                     for coroutine in self.pending_coros:
+                         await coroutine
+                     self.pending_coros = []
+-                    await curio.sleep(0.05)  # 50ms
++                    await curio.sleep(0.016)
++                    # 16ms = 1/60 - we&#39;re targeting around 60fps
++                    # Yes it&#39;s wasteful to call root.update() that fast.
++                    # In practice CPU usage idles around 4% on my i5 but hey it&#39;s not
++                    # spinning up my laptop fans yet.
++                    # Doesn&#39;t seem like there&#39;s a better way atm. The alternative
++                    # described at [1] is multithreading which I&#39;m not a fan of.
++                    # [1] https://github.com/dabeaz/curio/issues/111
+             except TclError as e:
+                 if &quot;application has been destroyed&quot; not in str(e):
+                     raise
+</pre></body></html>

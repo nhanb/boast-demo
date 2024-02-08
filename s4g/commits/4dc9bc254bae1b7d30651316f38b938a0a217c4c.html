@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[4dc9bc254b] various fixes for new empty site | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 4dc9bc254b</strong><hr><pre>commit 4dc9bc254bae1b7d30651316f38b938a0a217c4c
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jul 13 05:56:55 2023 +0700
+
+    various fixes for new empty site
+    
+    - Cope with empty feed
+    - Fix unmarshalling []string for metadata
+    - Fix Root trimming logic
+
+diff --git a/docs/_theme/home.tmpl b/docs/_theme/home.tmpl
+index b777357..d85797f 100644
+--- a/docs/_theme/home.tmpl
++++ b/docs/_theme/home.tmpl
+@@ -21,6 +21,7 @@
+ 
+ {{.Content}}
+ 
++{{if .ArticlesInFeed -}}
+ &lt;p&gt;All posts, newest first:&lt;/p&gt;
+ 
+ &lt;ul&gt;
+@@ -34,6 +35,9 @@
+   {{- end}}
+   {{- end}}
+ &lt;/ul&gt;
++{{else}}
++&lt;p&gt;No posts yet.&lt;/p&gt;
++{{end}}
+ 
+ &lt;style&gt;
+ .site-title {
+diff --git a/docs/index.html b/docs/index.html
+index 36b2cbc..839474d 100644
+--- a/docs/index.html
++++ b/docs/index.html
+@@ -45,6 +45,7 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+   &lt;/li&gt;
+ &lt;/ul&gt;
+ 
++
+ &lt;style&gt;
+ .site-title {
+   margin-bottom: 0;
+diff --git a/main.go b/main.go
+index 18d09c7..6463ca2 100644
+--- a/main.go
++++ b/main.go
+@@ -165,12 +165,14 @@ func regenerate(fsys writablefs.FS) (site SiteMetadata) {
+ 	}
+ 	fmt.Printf(&quot;Processed %d articles\n&quot;, len(articles))
+ 
+-	fsys.WriteFile(
+-		FeedPath,
+-		generateFeed(site, articlesInFeed, site.Root+FeedPath),
+-	)
+-	generatedFiles[FeedPath] = true
+-	fmt.Println(&quot;Generated&quot;, FeedPath)
++	if len(articlesInFeed) &gt; 0 {
++		fsys.WriteFile(
++			FeedPath,
++			generateFeed(site, articlesInFeed, site.Root+FeedPath),
++		)
++		generatedFiles[FeedPath] = true
++		fmt.Println(&quot;Generated&quot;, FeedPath)
++	}
+ 
+ 	DeleteOldGeneratedFiles(fsys, generatedFiles)
+ 	WriteManifest(fsys, generatedFiles)
+diff --git a/makesite.go b/makesite.go
+index 789d243..a45415f 100644
+--- a/makesite.go
++++ b/makesite.go
+@@ -30,6 +30,14 @@ func makeSite(path string, meta SiteMetadata) error {
+ 	// Copy default theme into new site
+ 	copyTheme(defaultTheme, path)
+ 
++	// Write default index page
++	indexData := []byte(`Title: Home
++ShowInFeed: false
++Templates: $_theme/base.tmpl, $_theme/includes.tmpl, $_theme/home.tmpl
++---
++`)
++	err = ioutil.WriteFile(filepath.Join(path, &quot;index.dj&quot;), indexData, 0664)
++
+ 	return nil
+ }
+ 
+diff --git a/metadata.go b/metadata.go
+index 9f77e96..a047d37 100644
+--- a/metadata.go
++++ b/metadata.go
+@@ -36,8 +36,9 @@ type ArticleMetadata struct {
+ 
+ func NewSiteMetadata() SiteMetadata {
+ 	return SiteMetadata{
+-		Root:       &quot;/&quot;,
+-		ShowFooter: true,
++		Root:        &quot;/&quot;,
++		ShowFooter:  true,
++		NavbarLinks: []string{&quot;index.dj&quot;},
+ 	}
+ }
+ 
+@@ -52,7 +53,12 @@ func ReadSiteMetadata(fsys writablefs.FS) SiteMetadata {
+ 	UnmarshalMetadata(data, &amp;sm)
+ 
+ 	// normalize root path to always include leading &amp; trailing slashes
+-	sm.Root = fmt.Sprintf(&quot;/%s/&quot;, strings.Trim(sm.Root, &quot;/&quot;))
++	trimmed := strings.Trim(sm.Root, &quot;/&quot;)
++	if trimmed == &quot;&quot; {
++		sm.Root = &quot;/&quot;
++	} else {
++		sm.Root = fmt.Sprintf(&quot;/%s/&quot;, trimmed)
++	}
+ 
+ 	return sm
+ }
+@@ -124,7 +130,16 @@ func MarshalMetadata(v any) []byte {
+ 		f := s.Field(i)
+ 		key := sType.Field(i).Name
+ 		val := f.Interface()
+-		result += fmt.Sprintf(&quot;%s: %v\n&quot;, key, val)
++
++		var repr string
++		switch f.Type().String() {
++		case &quot;[]string&quot;:
++			repr = strings.Join(val.([]string), &quot;, &quot;)
++		default:
++			repr = fmt.Sprintf(&quot;%v&quot;, val)
++		}
++
++		result += fmt.Sprintf(&quot;%s: %s\n&quot;, key, repr)
+ 	}
+ 
+ 	return []byte(result)
+diff --git a/theme/home.tmpl b/theme/home.tmpl
+index b777357..d85797f 100644
+--- a/theme/home.tmpl
++++ b/theme/home.tmpl
+@@ -21,6 +21,7 @@
+ 
+ {{.Content}}
+ 
++{{if .ArticlesInFeed -}}
+ &lt;p&gt;All posts, newest first:&lt;/p&gt;
+ 
+ &lt;ul&gt;
+@@ -34,6 +35,9 @@
+   {{- end}}
+   {{- end}}
+ &lt;/ul&gt;
++{{else}}
++&lt;p&gt;No posts yet.&lt;/p&gt;
++{{end}}
+ 
+ &lt;style&gt;
+ .site-title {
+</pre></body></html>

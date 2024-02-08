@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[62252173a3] migrate fightstick posts | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 62252173a3</strong><hr><pre>commit 62252173a35668efc2308b29550c8820194d7b9d
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 20 23:47:34 2023 +0700
+
+    migrate fightstick posts
+
+diff --git a/custom-theme/index.dj b/custom-theme/index.dj
+index 5991290..5b846b2 100644
+--- a/custom-theme/index.dj
++++ b/custom-theme/index.dj
+@@ -94,4 +94,4 @@ someday I&#39;ll stop being lazy and fix all that. _Maybe_.
+ [7]: https://github.com/nhanb/motherfucking-pelican-theme
+ [8]: https://github.com/adobe-fonts/source-serif-pro
+ [9]: https://practicaltypography.com/
+-[10]: ../posts/working-with-sqlite-in-python-without-an-orm-or-migration-framework/
++[10]: ../sqlite-python/
+diff --git a/custom-theme/index.html b/custom-theme/index.html
+index 0c4d1dd..f0f8254 100644
+--- a/custom-theme/index.html
++++ b/custom-theme/index.html
+@@ -35,7 +35,7 @@ &lt;h1&gt;Look ma, no stock theme!&lt;/h1&gt;
+ typography again (e.g. making code block text a bit smaller).&lt;/p&gt;
+ &lt;p&gt;The extra http load is not that bad: each woff2 font variant averages at 50KB,
+ and is only loaded if a page’s content actually calls for it. A particularly
+-&lt;a href=&quot;../posts/working-with-sqlite-in-python-without-an-orm-or-migration-framework/&quot;&gt;bad case&lt;/a&gt; loads 6 variants, clocking in at ~300KB. I can live with that.&lt;/p&gt;
++&lt;a href=&quot;../sqlite-python/&quot;&gt;bad case&lt;/a&gt; loads 6 variants, clocking in at ~300KB. I can live with that.&lt;/p&gt;
+ &lt;p&gt;I also took this chance to go full black-on-white, which I think looks way
+ crisper than black-on-cornsilk.&lt;/p&gt;
+ &lt;p&gt;&lt;strong&gt;2020 Update&lt;/strong&gt;: I bit the bullet and removed all web fonts, relying on the
+diff --git a/feed.xml b/feed.xml
+index 7ece612..d8b5f96 100644
+--- a/feed.xml
++++ b/feed.xml
+@@ -22,6 +22,20 @@
+     &lt;published&gt;2020-10-21T11:45:00+07:00&lt;/published&gt;
+     &lt;updated&gt;2020-10-21T11:45:00+07:00&lt;/updated&gt;
+   &lt;/entry&gt;
++  &lt;entry&gt;
++    &lt;title&gt;My first DIY fightstick: Part 2&lt;/title&gt;
++    &lt;id&gt;https://hi.imnhan.com/fightstick-2/&lt;/id&gt;
++    &lt;link href=&quot;https://hi.imnhan.com/fightstick-2/&quot;&gt;&lt;/link&gt;
++    &lt;published&gt;2016-01-23T17:10:00+07:00&lt;/published&gt;
++    &lt;updated&gt;2016-01-23T17:10:00+07:00&lt;/updated&gt;
++  &lt;/entry&gt;
++  &lt;entry&gt;
++    &lt;title&gt;My first DIY fightstick: Part 1&lt;/title&gt;
++    &lt;id&gt;https://hi.imnhan.com/fightstick-1/&lt;/id&gt;
++    &lt;link href=&quot;https://hi.imnhan.com/fightstick-1/&quot;&gt;&lt;/link&gt;
++    &lt;published&gt;2015-12-08T12:50:00+07:00&lt;/published&gt;
++    &lt;updated&gt;2015-12-08T12:50:00+07:00&lt;/updated&gt;
++  &lt;/entry&gt;
+   &lt;entry&gt;
+     &lt;title&gt;Look ma, no stock theme!&lt;/title&gt;
+     &lt;id&gt;https://hi.imnhan.com/custom-theme/&lt;/id&gt;
+diff --git a/content/images/fightstick_01_mdf.jpg b/fightstick-1/fightstick_01_mdf.jpg
+similarity index 100%
+rename from content/images/fightstick_01_mdf.jpg
+rename to fightstick-1/fightstick_01_mdf.jpg
+diff --git a/content/images/fightstick_02_top_plan.jpg b/fightstick-1/fightstick_02_top_plan.jpg
+similarity index 100%
+rename from content/images/fightstick_02_top_plan.jpg
+rename to fightstick-1/fightstick_02_top_plan.jpg
+diff --git a/content/images/fightstick_03_glue.jpg b/fightstick-1/fightstick_03_glue.jpg
+similarity index 100%
+rename from content/images/fightstick_03_glue.jpg
+rename to fightstick-1/fightstick_03_glue.jpg
+diff --git a/content/images/fightstick_04_hole_saw.jpg b/fightstick-1/fightstick_04_hole_saw.jpg
+similarity index 100%
+rename from content/images/fightstick_04_hole_saw.jpg
+rename to fightstick-1/fightstick_04_hole_saw.jpg
+diff --git a/content/images/fightstick_05_nope_saw.jpg b/fightstick-1/fightstick_05_nope_saw.jpg
+similarity index 100%
+rename from content/images/fightstick_05_nope_saw.jpg
+rename to fightstick-1/fightstick_05_nope_saw.jpg
+diff --git a/content/images/fightstick_06_front_holes.jpg b/fightstick-1/fightstick_06_front_holes.jpg
+similarity index 100%
+rename from content/images/fightstick_06_front_holes.jpg
+rename to fightstick-1/fightstick_06_front_holes.jpg
+diff --git a/content/images/fightstick_07_glue_body.jpg b/fightstick-1/fightstick_07_glue_body.jpg
+similarity index 100%
+rename from content/images/fightstick_07_glue_body.jpg
+rename to fightstick-1/fightstick_07_glue_body.jpg
+diff --git a/content/images/fightstick_08_glue_body2.jpg b/fightstick-1/fightstick_08_glue_body2.jpg
+similarity index 100%
+rename from content/images/fightstick_08_glue_body2.jpg
+rename to fightstick-1/fightstick_08_glue_body2.jpg
+diff --git a/content/images/fightstick_09_saw_side.jpg b/fightstick-1/fightstick_09_saw_side.jpg
+similarity index 100%
+rename from content/images/fightstick_09_saw_side.jpg
+rename to fightstick-1/fightstick_09_saw_side.jpg
+diff --git a/content/images/fightstick_10_excess.jpg b/fightstick-1/fightstick_10_excess.jpg
+similarity index 100%
+rename from content/images/fightstick_10_excess.jpg
+rename to fightstick-1/fightstick_10_excess.jpg
+diff --git a/content/images/fightstick_11_sanded.jpg b/fightstick-1/fightstick_11_sanded.jpg
+similarity index 100%
+rename from content/images/fightstick_11_sanded.jpg
+rename to fightstick-1/fightstick_11_sanded.jpg
+diff --git a/content/images/fightstick_12_sanding_block.jpg b/fightstick-1/fightstick_12_sanding_block.jpg
+similarity index 100%
+rename from content/images/fightstick_12_sanding_block.jpg
+rename to fightstick-1/fightstick_12_sanding_block.jpg
+diff --git a/content/images/fightstick_13_inner_support.jpg b/fightstick-1/fightstick_13_inner_support.jpg
+similarity index 100%
+rename from content/images/fightstick_13_inner_support.jpg
+rename to fightstick-1/fightstick_13_inner_support.jpg
+diff --git a/content/images/fightstick_14_inner_support2.jpg b/fightstick-1/fightstick_14_inner_support2.jpg
+similarity index 100%
+rename from content/images/fightstick_14_inner_support2.jpg
+rename to fightstick-1/fightstick_14_inner_support2.jpg
+diff --git a/content/images/fightstick_15_mastic.jpg b/fightstick-1/fightstick_15_mastic.jpg
+similarity index 100%
+rename from content/images/fightstick_15_mastic.jpg
+rename to fightstick-1/fightstick_15_mastic.jpg
+diff --git a/content/images/fightstick_16_first_coat.jpg b/fightstick-1/fightstick_16_first_coat.jpg
+similarity index 100%
+rename from content/images/fightstick_16_first_coat.jpg
+rename to fightstick-1/fightstick_16_first_coat.jpg
+diff --git a/content/images/fightstick_17_top_panel.jpg b/fightstick-1/fightstick_17_top_panel.jpg
+similarity index 100%
+rename from content/images/fightstick_17_top_panel.jpg
+rename to fightstick-1/fightstick_17_top_panel.jpg
+diff --git a/content/images/fightstick_18_joystick_hole.jpg b/fightstick-1/fightstick_18_joystick_hole.jpg
+similarity index 100%
+rename from content/images/fightstick_18_joystick_hole.jpg
+rename to fightstick-1/fightstick_18_joystick_hole.jpg
+diff --git a/content/images/fightstick_19_finished_coat.jpg b/fightstick-1/fightstick_19_finished_coat.jpg
+similarity index 100%
+rename from content/images/fightstick_19_finished_coat.jpg
+rename to fightstick-1/fightstick_19_finished_coat.jpg
+diff --git a/content/images/fightstick_20_top_layout.jpg b/fightstick-1/fightstick_20_top_layout.jpg
+similarity index 100%
+rename from content/images/fightstick_20_top_layout.jpg
+rename to fightstick-1/fightstick_20_top_layout.jpg
+diff --git a/content/images/fightstick_21_joystick_square.jpg b/fightstick-1/fightstick_21_joystick_square.jpg
+similarity index 100%
+rename from content/images/fightstick_21_joystick_square.jpg
+rename to fightstick-1/fightstick_21_joystick_square.jpg
+diff --git a/content/images/fightstick_22_joystick_drills.jpg b/fightstick-1/fightstick_22_joystick_drills.jpg
+similarity index 100%
+rename from content/images/fightstick_22_joystick_drills.jpg
+rename to fightstick-1/fightstick_22_joystick_drills.jpg
+diff --git a/content/images/fightstick_23_bottom.jpg b/fightstick-1/fightstick_23_bottom.jpg
+similarity index 100%
+rename from content/images/fightstick_23_bottom.jpg
+rename to fightstick-1/fightstick_23_bottom.jpg
+diff --git a/content/images/fightstick_24_gap.jpg b/fightstick-1/fightstick_24_gap.jpg
+similarity index 100%
+rename from content/images/fightstick_24_gap.jpg
+rename to fightstick-1/fightstick_24_gap.jpg
+diff --git a/content/images/fightstick_25_loose_screw.jpg b/fightstick-1/fightstick_25_loose_screw.jpg
+similarity index 100%
+rename from content/images/fightstick_25_loose_screw.jpg
+rename to fightstick-1/fightstick_25_loose_screw.jpg
+diff --git a/content/images/fightstick_26_electronics.jpg b/fightstick-1/fightstick_26_electronics.jpg
+similarity index 100%
+rename from content/images/fightstick_26_electronics.jpg
+rename to fightstick-1/fightstick_26_electronics.jpg
+diff --git a/fightstick-1/index.dj b/fightstick-1/index.dj
+index b4e5933..a058178 100644
+--- a/fightstick-1/index.dj
++++ b/fightstick-1/index.dj
+@@ -1,8 +1,9 @@
+ Title: My first DIY fightstick: Part 1
+-Slug: my-first-diy-fightstick-part-1
+-Date: 2015-12-08 12:50
++PostedAt: 2015-12-08 12:50
+ Thumb: images/fightstick_17_top_panel.jpg
+ 
++---
++
+ Ever since I started practicing Street Fighter seriously (albeit with modest results), I&#39;ve
+ always wanted to make myself a custom fightstick. Now that I&#39;m not working full-time for anyone,
+ there&#39;s no better time to Just Do It.
+@@ -28,12 +29,12 @@ to my specifications in small quantity:
+ All that set me back 120,000 VND. The cost was mostly for cutting labor instead of actual material.
+ The items with asterisks (\*) are those I bought in abundance to make room for drilling errors.
+ 
+-![](/images/fightstick_01_mdf.jpg)
++![](fightstick_01_mdf.jpg)
+ 
+ The top panel would be layered with 1 MDF and 2 plexiglass pieces (mad illustrating skillz, I
+ know):
+ 
+-![](/images/fightstick_02_top_plan.jpg)
++![](fightstick_02_top_plan.jpg)
+ 
+ The bottom would simply be 1 MDF and 1 plexiglass so I could also insert bottom artwork.
+ 
+@@ -42,18 +43,18 @@ old wood glue. You&#39;ll notice that there&#39;s a significant gap on one corner - turn
+ wasn&#39;t too accurate with their cutting. It&#39;s not shown here but eventually I had to saw a longer
+ MDF piece to replace it.
+ 
+-![](/images/fightstick_03_glue.jpg)
++![](fightstick_03_glue.jpg)
+ 
+ I already had a hand drill laying around so all it took was buying a couple of hole saws - 24mm and
+ 30mm in diameter respectively. The bigger one was used for drilling main button holes while the
+ other was for joystick hole and smaller front side buttons.
+ 
+-![](/images/fightstick_04_hole_saw.jpg)
++![](fightstick_04_hole_saw.jpg)
+ 
+-**Don&#39;t buy** hole saws like the one below - you will not be able to drill through thick panels
++_Don&#39;t buy_ hole saws like the one below - you will not be able to drill through thick panels
+ (like the 20mm thick one I bought):
+ 
+-![](/images/fightstick_05_nope_saw.jpg)
++![](fightstick_05_nope_saw.jpg)
+ 
+ As for the actual parts, I ordered the joystick and buttons from [Akishop][akishop]. It ships from
+ Japan so the shipping cost to Vietnam is much more reasonable than if I buy from the US. I also
+@@ -62,10 +63,10 @@ China. This kit offers easy solder-free wires too so it saved me from a lot of t
+ can&#39;t find where to quick-disconnect terminals to this date). I connected everything to my PC to
+ test if things worked as expected:
+ 
+-![](/images/fightstick_26_electronics.jpg)
++![](fightstick_26_electronics.jpg)
+ 
+ Quick note: the popular wisdom is to buy screw-in buttons for thick panels and scap-in for thin
+-ones. However, as my panel is *way* too thick even for screw-ins, snap-ins are actually the better
++ones. However, as my panel is _way_ too thick even for screw-ins, snap-ins are actually the better
+ choice: you just need to put the buttons in normally - the 2 sides of the button will push against
+ the hole and keep it there fairly firmly. I never had a problem with my previous stick which was
+ build this way.
+@@ -76,45 +77,45 @@ I drilled holes in the front side: first using the 30mm bit to drill halfway, th
+ with the 24mm bit. This allows a small button to be placed deep into the case, avoiding
+ accidentally button presses.
+ 
+-![](/images/fightstick_06_front_holes.jpg)
++![](fightstick_06_front_holes.jpg)
+ 
+ Then I glued the case body together. I didn&#39;t have big clamps laying around so I had to make do
+ with an elastic string. It worked terribly though.
+ 
+-![](/images/fightstick_07_glue_body.jpg)
++![](fightstick_07_glue_body.jpg)
+ 
+ Note that the bottom panel was just there to keep the whole thing in shape. I took it out later:
+ 
+-![](/images/fightstick_08_glue_body2.jpg)
++![](fightstick_08_glue_body2.jpg)
+ 
+ See the gap in the top left corner? That&#39;s the gap I was talking about earlier. Good thing I had a
+ spare piece laying around, so I sawed it to the correct length to use as a replacement:
+ 
+-![](/images/fightstick_09_saw_side.jpg)
++![](fightstick_09_saw_side.jpg)
+ 
+ Now everything fitted together but there was some excess on one long side. Much sanding awaits!
+ 
+-![](/images/fightstick_10_excess.jpg)
++![](fightstick_10_excess.jpg)
+ 
+ Initial sanding effort with 140 grit sandpaper:
+ 
+-![](/images/fightstick_11_sanded.jpg)
++![](fightstick_11_sanded.jpg)
+ 
+ By the way, I recommend using a sanding block. It helps you apply more pressure evenly. I simply
+ wrapped my sandpaper around a spare piece of MDF:
+ 
+-![](/images/fightstick_12_sanding_block.jpg)
++![](fightstick_12_sanding_block.jpg)
+ 
+ Now on to the inner sides. These would support the top and bottom panels. I used a long piece of
+ scrap plexiglass to apply pressure instead of a clamp. This time I put one 10mm-thick wood panel
+ and one 3mm-thick plexiglass panel under it to make sure the inner supports are glued at the
+ correct position.
+ 
+-![](/images/fightstick_13_inner_support.jpg)
++![](fightstick_13_inner_support.jpg)
+ 
+ With all 3 inner sides glued:
+ 
+-![](/images/fightstick_14_inner_support2.jpg)
++![](fightstick_14_inner_support2.jpg)
+ 
+ Now you must be wondering why I had 2 inner pieces on the left side. I originally wanted to save
+ some space and weight by sawing those into shorter support bits instead of long whole pieces that
+@@ -134,19 +135,19 @@ yellow-ish and much more runny than spackling. It was also difficult as hell to
+ moment it&#39;s spread on the MDF edge, it starts drying, at which point you can&#39;t touch it again
+ unless you want an ugly grungy finish (is that even a word?):
+ 
+-![](/images/fightstick_15_mastic.jpg)
++![](fightstick_15_mastic.jpg)
+ 
+ I waited for the yellow thing to dry, then sanded it again. After a first few coats with glossy
+ black spray paint, things didn&#39;t look too sexy:
+ 
+-![](/images/fightstick_16_first_coat.jpg)
++![](fightstick_16_first_coat.jpg)
+ 
+ It did get better with sanding (1200 grit) and more coats though. But then I made the most stupid
+ decision: glueing the top panel on before drilling:
+ 
+-![](/images/fightstick_17_top_panel.jpg)
++![](fightstick_17_top_panel.jpg)
+ 
+-Now why was this bad? Because now I would be forced to drill top panel holes *with* the whole body
++Now why was this bad? Because now I would be forced to drill top panel holes _with_ the whole body
+ attached, which will expose the whole thing to sawdust, which was generally PITA to clean up - the
+ top panel made it a closed shape with corners and spaces all over the place. Also, if I screwed up
+ the top MDF panel (which I eventually kinda did), the whole thing would be ruined.
+@@ -154,12 +155,12 @@ the top MDF panel (which I eventually kinda did), the whole thing would be ruine
+ As if that wasn&#39;t enough, I did paint it too. The paint layer would later make disgusting drill
+ holes:
+ 
+-![](/images/fightstick_18_joystick_hole.jpg)
++![](fightstick_18_joystick_hole.jpg)
+ 
+ But I&#39;m getting ahead of myself. Here&#39;s how the case looked after a few more black coats and one
+ clear coat (also put buttons in there to see how they fit):
+ 
+-![](/images/fightstick_19_finished_coat.jpg)
++![](fightstick_19_finished_coat.jpg)
+ 
+ I did drill an extra button hole because I realized I&#39;d need the &quot;Playstation&quot; button too if I want
+ to use a PS4 controller PCB later (which I plan to do). Unfortunately I only ordered 2 small
+@@ -168,13 +169,13 @@ buttons from Akishop so I had to use a green Chinese button I had laying around.
+ Now here comes the hard part: drilling the top panel. As mentioned earlier, the top panel would be
+ 3-layer:
+ 
+-![](/images/fightstick_02_top_plan.jpg)
++![](fightstick_02_top_plan.jpg)
+ 
+ I placed all 3 pieces onto the case, but with the 4mm plexiglass on top (in the plan it&#39;s supposed
+ to be in the middle - I&#39;ll explain later). Then I printed the Blast City button layout found on
+ Slagcoin and taped it onto the whole thing:
+ 
+-![](/images/fightstick_20_top_layout.jpg)
++![](fightstick_20_top_layout.jpg)
+ 
+ Notice the extra two holes I drew above and below the joystick hole. Those are for screw holes for
+ mounting the joystick. This is why I put the 4mm piece on top: I was going to drill these two holes
+@@ -186,16 +187,16 @@ After drilling the necessary holes, I removed the plexiglass pieces and drilled
+ joystick mounting holes into to MDF, then I placed the joystick mounting plate onto the surface to
+ plot the rectangular part that needed to be cut off:
+ 
+-![](/images/fightstick_21_joystick_square.jpg)
++![](fightstick_21_joystick_square.jpg)
+ 
+ Since I don&#39;t have any power tool, I used my handy hand drill with the circular hole saw to
+ gradually drill out the shape:
+ 
+-![](/images/fightstick_22_joystick_drills.jpg)
++![](fightstick_22_joystick_drills.jpg)
+ 
+ After much sanding and cleaning:
+ 
+-![](/images/fightstick_18_joystick_hole.jpg)
++![](fightstick_18_joystick_hole.jpg)
+ 
+ See the glorious tears? That&#39;s what premature painting does to you. Friends don&#39;t let friends paint
+ prematurely!
+@@ -203,12 +204,12 @@ prematurely!
+ Anyway, I also drilled 3 hole on the bottom to install the bottom pieces (1 MDF &amp; 1 plexiglass). I
+ also printed a quick picture as a placeholder artwork to see how it would look:
+ 
+-![](/images/fightstick_23_bottom.jpg)
++![](fightstick_23_bottom.jpg)
+ 
+ As I was excited to finish the putting the top panel together, I hit a wall: because I couldn&#39;t
+ possibly drill perfectly perpendicular screw holes, they could not property attach:
+ 
+-![](/images/fightstick_25_loose_screw.jpg)
++![](fightstick_25_loose_screw.jpg)
+ 
+ Also, thanks to the switching positions between the two plexiglass pieces, the button holes didn&#39;t
+ align anymore. I had to waste a buttload of time sanding the lower piece&#39;s holes to make them
+@@ -217,7 +218,7 @@ bigger.
+ But that&#39;s not even the worst issue: because the screw holes were not aligned, once I screwed all
+ four corners, the top plexiglass piece flexed, creating a blatantly noticeable gap:
+ 
+-![](/images/fightstick_24_gap.jpg)
++![](fightstick_24_gap.jpg)
+ 
+ ## Um... that&#39;s it (for now).
+ 
+@@ -226,9 +227,6 @@ have CNC machines and laser cutters so I&#39;ll probably have a chance to produce mo
+ Hell, I may even redo the whole thing using machine-cut pieces for absolute accuracy and save
+ myself from a world of pain.
+ 
+-I took a lot of photos as I went, so if you want to see more photos of my progress, just check out
+-my [flickr album][flickr].
+-
+ Till next time!
+ 
+ [akishop]: https://www.akishop.jp/
+@@ -238,4 +236,3 @@ Till next time!
+ [basic-design]: http://www.slagcoin.com/joystick/example2.html
+ [paint-guide]: http://forums.shoryuken.com/discussion/67501/how-to-paint-mdf-to-a-mirror-finish-worklog
+ [fablab]: http://fablabsaigon.org/
+-[flickr]: https://www.flickr.com/photos/nhanb/albums/72157661059385592
+diff --git a/fightstick-1/index.html b/fightstick-1/index.html
+new file mode 100644
+index 0000000..027368c
+--- /dev/null
++++ b/fightstick-1/index.html
+@@ -0,0 +1,210 @@
++&lt;!DOCTYPE html&gt;
++&lt;html&gt;
++
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;My first DIY fightstick: Part 1 | Hi, I&amp;#39;m Nhân&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;nav&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;span class=&quot;posted-on&quot;&gt;
++    Posted on
++    &lt;time datetime=&quot;2015-12-08&quot;&gt;
++        Tuesday, 08 Dec 2015
++    &lt;/time&gt;
++  &lt;/span&gt;
++
++&lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
++
++
++&lt;main&gt;
++&lt;h1&gt;My first DIY fightstick: Part 1&lt;/h1&gt;
++&lt;p&gt;Ever since I started practicing Street Fighter seriously (albeit with modest results), I’ve
++always wanted to make myself a custom fightstick. Now that I’m not working full-time for anyone,
++there’s no better time to Just Do It.&lt;/p&gt;
++&lt;p&gt;If you’ve done any research on DIY fightsticks, you’ll know that the 2 best places to find guides
++are &lt;a href=&quot;http://www.slagcoin.com/&quot;&gt;Slagcoin&lt;/a&gt; and &lt;a href=&quot;http://forums.shoryuken.com/categories/tech-talk&quot;&gt;Shoryuken Tech Talk&lt;/a&gt;. I decided to follow the &lt;a href=&quot;http://www.slagcoin.com/joystick/example2.html&quot;&gt;basic
++design&lt;/a&gt; on Slagcoin:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;http://www.slagcoin.com/joystick/example2/simple1.jpg&quot;&gt;&lt;/p&gt;
++&lt;section id=&quot;Materials-and-tools&quot;&gt;
++&lt;h2&gt;Materials and tools&lt;/h2&gt;
++&lt;p&gt;If you live in Hồ Chí Minh City like me, you can probably get everything you need from shops on
++Bạch Đằng Street. The only hard part for me was convincing a small wood shop to sell MDF panels cut
++to my specifications in small quantity:&lt;/p&gt;
++&lt;ul&gt;
++&lt;li&gt;
++4 pieces x 30cm x 20cm x 1cm *
++&lt;/li&gt;
++&lt;li&gt;
++2 pieces x 20cm x 4cm x 2cm
++&lt;/li&gt;
++&lt;li&gt;
++2 pieces x 20cm x 7cm x 2cm
++&lt;/li&gt;
++&lt;li&gt;
++1 piece x 26cm x 4cm x 2cm
++&lt;/li&gt;
++&lt;li&gt;
++4 pieces x 34cm x 7cm x 2cm *
++&lt;/li&gt;
++&lt;/ul&gt;
++&lt;p&gt;All that set me back 120,000 VND. The cost was mostly for cutting labor instead of actual material.
++The items with asterisks (*) are those I bought in abundance to make room for drilling errors.&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_01_mdf.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;The top panel would be layered with 1 MDF and 2 plexiglass pieces (mad illustrating skillz, I
++know):&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_02_top_plan.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;The bottom would simply be 1 MDF and 1 plexiglass so I could also insert bottom artwork.&lt;/p&gt;
++&lt;p&gt;Since I had zero woodworking experience, I joined the MDF pieces with simple butt joints and good
++old wood glue. You’ll notice that there’s a significant gap on one corner - turns out the shop
++wasn’t too accurate with their cutting. It’s not shown here but eventually I had to saw a longer
++MDF piece to replace it.&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_03_glue.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;I already had a hand drill laying around so all it took was buying a couple of hole saws - 24mm and
++30mm in diameter respectively. The bigger one was used for drilling main button holes while the
++other was for joystick hole and smaller front side buttons.&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_04_hole_saw.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;&lt;em&gt;Don’t buy&lt;/em&gt; hole saws like the one below - you will not be able to drill through thick panels
++(like the 20mm thick one I bought):&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_05_nope_saw.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;As for the actual parts, I ordered the joystick and buttons from &lt;a href=&quot;https://www.akishop.jp/&quot;&gt;Akishop&lt;/a&gt;. It ships from
++Japan so the shipping cost to Vietnam is much more reasonable than if I buy from the US. I also
++bought a &lt;a href=&quot;http://www.ebay.com/itm/Zero-Delay-USB-Encoder-to-PC-Joystick-For-Arcade-DIY-KIT-Sanwa-Parts-MAME-/191558265304?hash=item2c99c329d8#shpCntId&quot;&gt;Zero Delay PCB kit&lt;/a&gt; from ebay. This one even offers free shipping since it’s from
++China. This kit offers easy solder-free wires too so it saved me from a lot of trouble (I still
++can’t find where to quick-disconnect terminals to this date). I connected everything to my PC to
++test if things worked as expected:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_26_electronics.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;Quick note: the popular wisdom is to buy screw-in buttons for thick panels and scap-in for thin
++ones. However, as my panel is &lt;em&gt;way&lt;/em&gt; too thick even for screw-ins, snap-ins are actually the better
++choice: you just need to put the buttons in normally - the 2 sides of the button will push against
++the hole and keep it there fairly firmly. I never had a problem with my previous stick which was
++build this way.&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Actually-making-it&quot;&gt;
++&lt;h2&gt;Actually making it&lt;/h2&gt;
++&lt;p&gt;I drilled holes in the front side: first using the 30mm bit to drill halfway, then went all the way
++with the 24mm bit. This allows a small button to be placed deep into the case, avoiding
++accidentally button presses.&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_06_front_holes.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;Then I glued the case body together. I didn’t have big clamps laying around so I had to make do
++with an elastic string. It worked terribly though.&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_07_glue_body.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;Note that the bottom panel was just there to keep the whole thing in shape. I took it out later:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_08_glue_body2.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;See the gap in the top left corner? That’s the gap I was talking about earlier. Good thing I had a
++spare piece laying around, so I sawed it to the correct length to use as a replacement:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_09_saw_side.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;Now everything fitted together but there was some excess on one long side. Much sanding awaits!&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_10_excess.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;Initial sanding effort with 140 grit sandpaper:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_11_sanded.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;By the way, I recommend using a sanding block. It helps you apply more pressure evenly. I simply
++wrapped my sandpaper around a spare piece of MDF:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_12_sanding_block.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;Now on to the inner sides. These would support the top and bottom panels. I used a long piece of
++scrap plexiglass to apply pressure instead of a clamp. This time I put one 10mm-thick wood panel
++and one 3mm-thick plexiglass panel under it to make sure the inner supports are glued at the
++correct position.&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_13_inner_support.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;With all 3 inner sides glued:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_14_inner_support2.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;Now you must be wondering why I had 2 inner pieces on the left side. I originally wanted to save
++some space and weight by sawing those into shorter support bits instead of long whole pieces that
++covered the full length. After sawing the first piece I decided that it wasn’t worth the effort
++anyway so… there you have it.&lt;/p&gt;
++&lt;p&gt;Here comes the next challenge: putting paint on the MDF. There is an &lt;a href=&quot;http://forums.shoryuken.com/discussion/67501/how-to-paint-mdf-to-a-mirror-finish-worklog&quot;&gt;extremely elaborate
++method&lt;/a&gt; explained on Shoryuken Tech Talk that helps you achieve a mirror-like glossy
++finish. Of course I don’t have the tools and patience to follow all that, but I followed the first
++few steps (cover edges with non-absorbent material, sand and spray paint multiple times) to achieve
++an acceptably smooth finish.&lt;/p&gt;
++&lt;p&gt;Here’s the first step: cover edges with non-absorbent material. The tutorial suggested using
++spackling, which I have no idea how to obtain from here. I settled with something Vietnamese people
++“matic” (mastic, perhaps?) which my friends said was to be used for the same purpose. The thing was
++yellow-ish and much more runny than spackling. It was also difficult as hell to work with: the
++moment it’s spread on the MDF edge, it starts drying, at which point you can’t touch it again
++unless you want an ugly grungy finish (is that even a word?):&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_15_mastic.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;I waited for the yellow thing to dry, then sanded it again. After a first few coats with glossy
++black spray paint, things didn’t look too sexy:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_16_first_coat.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;It did get better with sanding (1200 grit) and more coats though. But then I made the most stupid
++decision: glueing the top panel on before drilling:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_17_top_panel.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;Now why was this bad? Because now I would be forced to drill top panel holes &lt;em&gt;with&lt;/em&gt; the whole body
++attached, which will expose the whole thing to sawdust, which was generally PITA to clean up - the
++top panel made it a closed shape with corners and spaces all over the place. Also, if I screwed up
++the top MDF panel (which I eventually kinda did), the whole thing would be ruined.&lt;/p&gt;
++&lt;p&gt;As if that wasn’t enough, I did paint it too. The paint layer would later make disgusting drill
++holes:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_18_joystick_hole.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;But I’m getting ahead of myself. Here’s how the case looked after a few more black coats and one
++clear coat (also put buttons in there to see how they fit):&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_19_finished_coat.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;I did drill an extra button hole because I realized I’d need the “Playstation” button too if I want
++to use a PS4 controller PCB later (which I plan to do). Unfortunately I only ordered 2 small
++buttons from Akishop so I had to use a green Chinese button I had laying around.&lt;/p&gt;
++&lt;p&gt;Now here comes the hard part: drilling the top panel. As mentioned earlier, the top panel would be
++3-layer:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_02_top_plan.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;I placed all 3 pieces onto the case, but with the 4mm plexiglass on top (in the plan it’s supposed
++to be in the middle - I’ll explain later). Then I printed the Blast City button layout found on
++Slagcoin and taped it onto the whole thing:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_20_top_layout.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;Notice the extra two holes I drew above and below the joystick hole. Those are for screw holes for
++mounting the joystick. This is why I put the 4mm piece on top: I was going to drill these two holes
++on the 4mm piece only to leave room for screw heads. This way I didn’t need to “route” the extra 2
++holes on my MDF piece like the original plan (I was afraid the 10mm MDF thickness was already too
++thin).&lt;/p&gt;
++&lt;p&gt;After drilling the necessary holes, I removed the plexiglass pieces and drilled the aformentioned 2
++joystick mounting holes into to MDF, then I placed the joystick mounting plate onto the surface to
++plot the rectangular part that needed to be cut off:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_21_joystick_square.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;Since I don’t have any power tool, I used my handy hand drill with the circular hole saw to
++gradually drill out the shape:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_22_joystick_drills.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;After much sanding and cleaning:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_18_joystick_hole.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;See the glorious tears? That’s what premature painting does to you. Friends don’t let friends paint
++prematurely!&lt;/p&gt;
++&lt;p&gt;Anyway, I also drilled 3 hole on the bottom to install the bottom pieces (1 MDF &amp;amp; 1 plexiglass). I
++also printed a quick picture as a placeholder artwork to see how it would look:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_23_bottom.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;As I was excited to finish the putting the top panel together, I hit a wall: because I couldn’t
++possibly drill perfectly perpendicular screw holes, they could not property attach:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_25_loose_screw.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;Also, thanks to the switching positions between the two plexiglass pieces, the button holes didn’t
++align anymore. I had to waste a buttload of time sanding the lower piece’s holes to make them
++bigger.&lt;/p&gt;
++&lt;p&gt;But that’s not even the worst issue: because the screw holes were not aligned, once I screwed all
++four corners, the top plexiglass piece flexed, creating a blatantly noticeable gap:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_24_gap.jpg&quot;&gt;&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Um-that-s-it-for-now&quot;&gt;
++&lt;h2&gt;Um… that’s it (for now).&lt;/h2&gt;
++&lt;p&gt;That’s all of my progress so far. I’m visiting my &lt;a href=&quot;http://fablabsaigon.org/&quot;&gt;local Fablab&lt;/a&gt;, which is advertised to
++have CNC machines and laser cutters so I’ll probably have a chance to produce more accurate panels.
++Hell, I may even redo the whole thing using machine-cut pieces for absolute accuracy and save
++myself from a world of pain.&lt;/p&gt;
++&lt;p&gt;Till next time!&lt;/p&gt;
++&lt;/section&gt;
++
++&lt;/main&gt;
++
++&lt;footer&gt;
++© 2014–2023 nhanb&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++&lt;/footer&gt;
++
++&lt;/body&gt;
++
++&lt;/html&gt;
+diff --git a/content/images/fightstick2_01_wires.jpg b/fightstick-2/fightstick2_01_wires.jpg
+similarity index 100%
+rename from content/images/fightstick2_01_wires.jpg
+rename to fightstick-2/fightstick2_01_wires.jpg
+diff --git a/content/images/fightstick2_02_top.jpg b/fightstick-2/fightstick2_02_top.jpg
+similarity index 100%
+rename from content/images/fightstick2_02_top.jpg
+rename to fightstick-2/fightstick2_02_top.jpg
+diff --git a/content/images/fightstick2_03_front.jpg b/fightstick-2/fightstick2_03_front.jpg
+similarity index 100%
+rename from content/images/fightstick2_03_front.jpg
+rename to fightstick-2/fightstick2_03_front.jpg
+diff --git a/fightstick-2/index.dj b/fightstick-2/index.dj
+index 51b4899..03bc2b3 100644
+--- a/fightstick-2/index.dj
++++ b/fightstick-2/index.dj
+@@ -1,8 +1,8 @@
+ Title: My first DIY fightstick: Part 2
+-Slug: my-first-diy-fightstick-part-2
+-Date: 2016-01-23 17:10
+-Thumb: /images/fightstick2_02_top.jpg
++PostedAt: 2016-01-23 17:10
++Thumb: fightstick2_02_top.jpg
+ 
++---
+ 
+ It&#39;s been a while since I [started][1] my arcade stick project. To be honest I got lazy and paused
+ the whole thing for a while, but yesterday I needed a distraction so... everything came together
+@@ -13,7 +13,7 @@ much more nicely than I thought!
+ I was almost done in Part 1, except for the fact that button holes on the top panels didn&#39;t align,
+ and the topmost panel flexed a bit because of imprecise screw holes:
+ 
+-![Ewww](/images/fightstick_24_gap.jpg)
++![Ewww](../fightstick-1/fightstick_24_gap.jpg)
+ 
+ To fix the button holes, I simply wrapped my roughest sandpaper around the drill bit and used it as
+ a poor man&#39;s sander to make the holes slightly bigger, just enough for buttons to fit. This took a
+@@ -26,7 +26,7 @@ allow its screw to go all the way in properly. No more stupid gaps!
+ Now that every piece was how it should be, the fun part began: assembling. The inside looked like
+ this:
+ 
+-![](/images/fightstick2_01_wires.jpg)
++![](fightstick2_01_wires.jpg)
+ 
+ Notice the knot where the USB cable poked out? It was there as a safeguard against pulling so that
+ the PCB doesn&#39;t get yanked around. Later on I actually labeled every pair of wires for each button
+@@ -38,7 +38,7 @@ printing shop. As luck would have it, I had a black and white printer at home, s
+ random Galford image on the internet and printed out one sheet just to see how it would look. It
+ turned out much better than expected so I kept it that way.
+ 
+-![](/images/fightstick2_02_top.jpg)
++![](fightstick2_02_top.jpg)
+ 
+ Note that I bought translucent buttons. These are worth the higher price tag because it is possible
+ to take them apart and [insert artwork pieces][2] under the cover. Just google custom fightsticks
+@@ -49,11 +49,11 @@ Maybe when I get better inspirations, maybe.
+ Following the monochrome theme, the placeholder &quot;Ken Flowchart&quot; bottom piece from last post became
+ official (I also trimmed the excess paper later):
+ 
+-![](/images/fightstick_23_bottom.jpg)
++![](fightstick_23_bottom.jpg)
+ 
+ Oh, and here&#39;s a front shot for completeness&#39; sake:
+ 
+-![](/images/fightstick2_03_front.jpg)
++![](fightstick2_03_front.jpg)
+ 
+ ## Thoughts
+ 
+@@ -71,7 +71,7 @@ Better be safe than sorry!
+ That&#39;s it! This project has been fun, and to me it served as an awesome gateway drug to the DIY
+ world. Hopefully I inspired some of you to start your own projects too. Let me know how it goes!
+ 
+-[1]: {filename}my-first-diy-fightstick.md
++[1]: ../fightstick-1/
+ [2]: http://forums.shoryuken.com/discussion/25926/guide-how-to-put-art-under-clear-seimitsu-buttons
+ [3]: http://static.giantbomb.com/uploads/original/2/25628/2658140-photo+oct+04,+7+24+53+pm.jpg
+ [4]: http://technabob.com/blog/wp-content/uploads/2011/09/custom-steampunk-fight-stick-by-sam-kurd-aka-b15sdm-designs.jpg
+diff --git a/fightstick-2/index.html b/fightstick-2/index.html
+new file mode 100644
+index 0000000..c0e2f98
+--- /dev/null
++++ b/fightstick-2/index.html
+@@ -0,0 +1,93 @@
++&lt;!DOCTYPE html&gt;
++&lt;html&gt;
++
++&lt;head&gt;
++  &lt;meta charset=&quot;utf-8&quot; /&gt;
++  &lt;title&gt;My first DIY fightstick: Part 2 | Hi, I&amp;#39;m Nhân&lt;/title&gt;
++  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
++  &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++
++&lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/navbar.css&quot;&gt;
++&lt;nav&gt;
++  &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
++  &lt;a href=&quot;/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;/projects/&quot;&gt;Projects&lt;/a&gt;
++  &lt;span class=&quot;posted-on&quot;&gt;
++    Posted on
++    &lt;time datetime=&quot;2016-01-23&quot;&gt;
++        Saturday, 23 Jan 2016
++    &lt;/time&gt;
++  &lt;/span&gt;
++
++&lt;/nav&gt;
++&lt;hr class=&quot;nav-hr&quot;&gt;
++
++
++&lt;main&gt;
++&lt;h1&gt;My first DIY fightstick: Part 2&lt;/h1&gt;
++&lt;p&gt;It’s been a while since I &lt;a href=&quot;../fightstick-1/&quot;&gt;started&lt;/a&gt; my arcade stick project. To be honest I got lazy and paused
++the whole thing for a while, but yesterday I needed a distraction so… everything came together
++much more nicely than I thought!&lt;/p&gt;
++&lt;section id=&quot;I-did-it&quot;&gt;
++&lt;h2&gt;I did it!&lt;/h2&gt;
++&lt;p&gt;I was almost done in Part 1, except for the fact that button holes on the top panels didn’t align,
++and the topmost panel flexed a bit because of imprecise screw holes:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;Ewww&quot; src=&quot;../fightstick-1/fightstick_24_gap.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;To fix the button holes, I simply wrapped my roughest sandpaper around the drill bit and used it as
++a poor man’s sander to make the holes slightly bigger, just enough for buttons to fit. This took a
++while because the sandpaper pieces kept failing on me. Good thing I stock a huge roll in the first
++place! :-)&lt;/p&gt;
++&lt;p&gt;The flexing panel was surprisingly trivial to fix: I simply made one corner’s hole a bit bigger to
++allow its screw to go all the way in properly. No more stupid gaps!&lt;/p&gt;
++&lt;p&gt;Now that every piece was how it should be, the fun part began: assembling. The inside looked like
++this:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick2_01_wires.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;Notice the knot where the USB cable poked out? It was there as a safeguard against pulling so that
++the PCB doesn’t get yanked around. Later on I actually labeled every pair of wires for each button
++and secured the PCB better with more resilient tape, but I forgot to take photos and I’m now too
++lazy to open up the whole thing again so… you get the idea.&lt;/p&gt;
++&lt;p&gt;As for the top panel artwork, I planned quite a few colored designs, but was too lazy to go to a
++printing shop. As luck would have it, I had a black and white printer at home, so I grabbed some
++random Galford image on the internet and printed out one sheet just to see how it would look. It
++turned out much better than expected so I kept it that way.&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick2_02_top.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;Note that I bought translucent buttons. These are worth the higher price tag because it is possible
++to take them apart and &lt;a href=&quot;http://forums.shoryuken.com/discussion/25926/guide-how-to-put-art-under-clear-seimitsu-buttons&quot;&gt;insert artwork pieces&lt;/a&gt; under the cover. Just google custom fightsticks
++and you’ll find people making use of these buttons with &lt;a href=&quot;http://static.giantbomb.com/uploads/original/2/25628/2658140-photo+oct+04,+7+24+53+pm.jpg&quot;&gt;stunning&lt;/a&gt; &lt;a href=&quot;http://technabob.com/blog/wp-content/uploads/2011/09/custom-steampunk-fight-stick-by-sam-kurd-aka-b15sdm-designs.jpg&quot;&gt;results&lt;/a&gt;. But then again,
++I’m a lazy butt so my minimalistic design actually saved me from some tedious button modding.
++Maybe when I get better inspirations, maybe.&lt;/p&gt;
++&lt;p&gt;Following the monochrome theme, the placeholder “Ken Flowchart” bottom piece from last post became
++official (I also trimmed the excess paper later):&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_23_bottom.jpg&quot;&gt;&lt;/p&gt;
++&lt;p&gt;Oh, and here’s a front shot for completeness’ sake:&lt;/p&gt;
++&lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick2_03_front.jpg&quot;&gt;&lt;/p&gt;
++&lt;/section&gt;
++&lt;section id=&quot;Thoughts&quot;&gt;
++&lt;h2&gt;Thoughts&lt;/h2&gt;
++&lt;p&gt;All in all, this turned out much better than I expected. The whole thing feels solid to play with,
++and the plexiglass top panel makes a nice feeling palm rest. However, since I went a bit liberal on
++panel layers, it’s a tad heavier than my previous stick (which is already heavier than your average
++big brand sticks). On the flip side, I can be more aggressive with my joystick spinning sessions
++thanks to the extra weight.&lt;/p&gt;
++&lt;p&gt;I’m also thinking of adding non-slip padding to the bottom. I almost exclusively play with the
++fightstick on my lap so it’s not actually necessary gameplay-wise, but without padding, the bottom
++screw heads stick out and would definitely scratch my table whenever I place the stick on it.
++Better be safe than sorry!&lt;/p&gt;
++&lt;p&gt;That’s it! This project has been fun, and to me it served as an awesome gateway drug to the DIY
++world. Hopefully I inspired some of you to start your own projects too. Let me know how it goes!&lt;/p&gt;
++&lt;/section&gt;
++
++&lt;/main&gt;
++
++&lt;footer&gt;
++© 2014–2023 nhanb&lt;br&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++&lt;/footer&gt;
++
++&lt;/body&gt;
++
++&lt;/html&gt;
+diff --git a/index.html b/index.html
+index 44b5a3c..e9c1141 100644
+--- a/index.html
++++ b/index.html
+@@ -44,6 +44,16 @@ &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
+     &lt;a href=&quot;/video-streaming-3/&quot;&gt;The video streaming finale, or why put.io is awesome&lt;/a&gt;
+     &lt;span class=&quot;time-suffix&quot;&gt;(2020-10-21)&lt;/span&gt;
+   &lt;/li&gt;
++  &lt;li&gt;
++    &lt;span class=&quot;time-prefix&quot;&gt;2016-01-23 — &lt;/span&gt;
++    &lt;a href=&quot;/fightstick-2/&quot;&gt;My first DIY fightstick: Part 2&lt;/a&gt;
++    &lt;span class=&quot;time-suffix&quot;&gt;(2016-01-23)&lt;/span&gt;
++  &lt;/li&gt;
++  &lt;li&gt;
++    &lt;span class=&quot;time-prefix&quot;&gt;2015-12-08 — &lt;/span&gt;
++    &lt;a href=&quot;/fightstick-1/&quot;&gt;My first DIY fightstick: Part 1&lt;/a&gt;
++    &lt;span class=&quot;time-suffix&quot;&gt;(2015-12-08)&lt;/span&gt;
++  &lt;/li&gt;
+   &lt;li&gt;
+     &lt;span class=&quot;time-prefix&quot;&gt;2015-06-05 — &lt;/span&gt;
+     &lt;a href=&quot;/custom-theme/&quot;&gt;Look ma, no stock theme!&lt;/a&gt;
+diff --git a/manifest.txt b/manifest.txt
+index 0bb25ff..efed4a3 100644
+--- a/manifest.txt
++++ b/manifest.txt
+@@ -4,6 +4,8 @@ cool/index.html
+ custom-theme/index.html
+ fcitx/index.html
+ feed.xml
++fightstick-1/index.html
++fightstick-2/index.html
+ ideas/index.html
+ index.html
+ notes/index.html
+</pre></body></html>

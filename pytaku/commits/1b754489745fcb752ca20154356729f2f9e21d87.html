@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1b75448974] drop unique chapter num_major/minor constraint | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 1b75448974</strong><hr><pre>commit 1b754489745fcb752ca20154356729f2f9e21d87
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 29 08:23:00 2020 +0700
+
+    drop unique chapter num_major/minor constraint
+    
+    Because mangadex can have the same chapter uploaded by different groups.
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 8b2a08f..dc48d86 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.6&quot;
++version = &quot;0.3.7&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/database/migrations/latest_schema.sql b/src/pytaku/database/migrations/latest_schema.sql
+index fc65604..894207d 100644
+--- a/src/pytaku/database/migrations/latest_schema.sql
++++ b/src/pytaku/database/migrations/latest_schema.sql
+@@ -34,22 +34,6 @@ CREATE TABLE keyval_store (
+     value text not null,
+     updated_at text default (datetime(&#39;now&#39;))
+ );
+-CREATE TABLE IF NOT EXISTS &quot;chapter&quot; (
+-    id text,
+-    title_id text,
+-    site text,
+-    num_major integer,
+-    num_minor integer,
+-    name text,
+-    pages text,
+-    groups text,
+-    updated_at text default (datetime(&#39;now&#39;)),
+-    is_webtoon boolean,
+-
+-    foreign key (title_id, site) references title (id, site),
+-    unique(site, title_id, id),
+-    unique(site, title_id, num_major, num_minor)
+-);
+ CREATE TABLE token (
+     user_id integer not null,
+     token text unique not null,
+@@ -69,3 +53,18 @@ CREATE TABLE IF NOT EXISTS &quot;read&quot; (
+     foreign key (user_id) references user (id),
+     unique(user_id, site, title_id, chapter_id)
+ );
++CREATE TABLE IF NOT EXISTS &quot;chapter&quot;(
++    id text,
++    title_id text,
++    site text,
++    num_major integer,
++    num_minor integer,
++    name text,
++    pages text,
++    groups text,
++    updated_at text default (datetime(&#39;now&#39;)),
++    is_webtoon boolean,
++
++    foreign key (title_id, site) references title (id, site),
++    unique(site, title_id, id)
++);
+diff --git a/src/pytaku/database/migrations/m0006.sql b/src/pytaku/database/migrations/m0006.sql
+new file mode 100644
+index 0000000..a1aa164
+--- /dev/null
++++ b/src/pytaku/database/migrations/m0006.sql
+@@ -0,0 +1,28 @@
++-- Remove unique num_major, num_minor unique constraint.
++-- Because mangadex can have the same chapter uploaded by different groups.
++
++pragma foreign_keys = off; -- to let us do anything at all
++begin transaction;
++
++create table new_chapter(
++    id text,
++    title_id text,
++    site text,
++    num_major integer,
++    num_minor integer,
++    name text,
++    pages text,
++    groups text,
++    updated_at text default (datetime(&#39;now&#39;)),
++    is_webtoon boolean,
++
++    foreign key (title_id, site) references title (id, site),
++    unique(site, title_id, id)
++);
++insert into new_chapter select * from chapter;
++drop table chapter;
++alter table new_chapter rename to chapter;
++
++pragma foreign_key_check;
++commit;
++pragma foreign_keys = on;
+</pre></body></html>

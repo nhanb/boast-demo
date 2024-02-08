@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[dd33400ce9] ctrl+a to select all | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / dd33400ce9</strong><hr><pre>commit dd33400ce9502f95047782b5f626404b5c80e800
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun May 17 13:17:25 2020 +0700
+
+    ctrl+a to select all
+
+diff --git a/README.md b/README.md
+index 558be81..41f4426 100644
+--- a/README.md
++++ b/README.md
+@@ -1,11 +1,13 @@
+-McRoss is a WIP [gemini://](https://gemini.circumlunar.space/) browser
+-written in python and tkinter, meaning it Just Works (tm) on any
+-self-respecting desktop OS: Linux, Windows, Mac OS, maaaaybe the BSDs?
++McRoss is a minimal and usable [gemini://](https://gemini.circumlunar.space/)
++browser written in python and tkinter, meaning it Just Works (tm) on any
++self-respecting desktop OS: Linux, Windows, Mac OS, and maybe the BSDs?
+ Never tried one of those.
+ 
+ It currently looks like this:
+ 
+-![](https://p.caophim.net/87.png)
++![](https://junk.imnhan.com/mcross.png)
++
++Or check out the demo video: https://junk.imnhan.com/mcross.mp4
+ 
+ Surfing plaintext and gemini content is already working well.
+ See feature checklist below for more details.
+@@ -29,6 +31,7 @@ # Development
+ - python3.7+
+ - idlelib (it&#39;s supposed to be in the standard lib but Ubuntu for example
+   splits it into a separate package)
++- curio - for async I/O so that it doesn&#39;t block the UI.
+ 
+ To get started:
+ 
+diff --git a/pyproject.toml b/pyproject.toml
+index 7899a5f..2d8ebf7 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;mcross&quot;
+-version = &quot;0.5.1&quot;
++version = &quot;0.5.2&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index 6fae076..0eab0db 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -13,7 +13,7 @@
+     TextNode,
+ )
+ from .model import Model
+-from .widgets import ReadOnlyText
++from .widgets import McEntry, ReadOnlyText
+ 
+ # OS-specific values
+ if sys.platform == &quot;win32&quot;:
+@@ -106,7 +106,7 @@ def __init__(self, root: Tk, model: Model):
+         address_prefix.pack(side=&quot;left&quot;)
+ 
+         # Address bar
+-        address_bar = ttk.Entry(row1)
++        address_bar = McEntry(row1)
+         self.address_bar = address_bar
+         address_bar.pack(side=&quot;left&quot;, fill=&quot;both&quot;, expand=True, padx=3, pady=3)
+         address_bar.bind(&quot;&lt;Return&gt;&quot;, self._on_go)
+@@ -211,6 +211,8 @@ def render_page(self):
+         else:
+             for node in self.model.gemini_nodes:
+                 render_node(node, self.text)
++            # delete final trailing newline:
++            self.text.delete(&quot;insert-1c&quot;, &quot;insert&quot;)
+ 
+ 
+ def render_node(node: GeminiNode, widget: Text):
+diff --git a/src/mcross/gui/widgets.py b/src/mcross/gui/widgets.py
+index c9a8b5a..e5d63b8 100644
+--- a/src/mcross/gui/widgets.py
++++ b/src/mcross/gui/widgets.py
+@@ -1,5 +1,5 @@
+ from idlelib.redirector import WidgetRedirector
+-from tkinter import Text
++from tkinter import Text, ttk
+ 
+ 
+ # Can&#39;t just use a Text widget with state=&#39;disabled&#39; because that would
+@@ -8,7 +8,29 @@
+ # https://wiki.tcl-lang.org/page/Read%2Donly+text+widget
+ class ReadOnlyText(Text):
+     def __init__(self, *args, **kwargs):
+-        Text.__init__(self, *args, **kwargs)
++        super().__init__(*args, **kwargs)
+         self.redirector = WidgetRedirector(self)
+         self.insert = self.redirector.register(&quot;insert&quot;, lambda *args, **kw: &quot;break&quot;)
+         self.delete = self.redirector.register(&quot;delete&quot;, lambda *args, **kw: &quot;break&quot;)
++
++        self.bind(&quot;&lt;Control-a&gt;&quot;, self._on_ctrl_a)
++
++    def _on_ctrl_a(self, ev):
++        self.tag_add(&quot;sel&quot;, &quot;1.0&quot;, &quot;end&quot;)
++        return &quot;break&quot;
++
++
++class McEntry(ttk.Entry):
++    &quot;&quot;&quot;
++    Entry widget with reasonable defaults
++    &quot;&quot;&quot;
++
++    def __init__(self, *args, **kwargs):
++        super().__init__(*args, **kwargs)
++
++        self.bind(&quot;&lt;Control-a&gt;&quot;, self._on_ctrl_a)
++
++    def _on_ctrl_a(self, ev):
++        self.select_range(0, &quot;end&quot;)
++        self.icursor(&quot;end&quot;)
++        return &quot;break&quot;
+</pre></body></html>

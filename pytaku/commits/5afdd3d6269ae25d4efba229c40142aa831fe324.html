@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[5afdd3d626] implement db-backed tokens auth | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 5afdd3d626</strong><hr><pre>commit 5afdd3d6269ae25d4efba229c40142aa831fe324
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 16 23:42:58 2020 +0700
+
+    implement db-backed tokens auth
+    
+    TODOs:
+    - require_token decorator queries &quot;token&quot; table, passes user_id to view func
+    - new scheduler worker to clean up expired tokens.
+    
+    With all that done hopefully we&#39;ll be able to get rid of cookies.
+
+diff --git a/README.md b/README.md
+index 9b3df83..dd287a0 100644
+--- a/README.md
++++ b/README.md
+@@ -14,7 +14,7 @@ # Pytaku
+   phone experience may not be as polished.
+ 
+ - KISSFFS, or **K**eep **I**t rea**S**onably **S**imple you **F**-ing
+-  architecture **F**etishi**S**ts! Oftentimes I have enough practice on
++  architecture/tooling **F**etishi**S**ts! Oftentimes I have enough practice on
+   industrial grade power tools at work so at home I want a change of pace.
+   Flask + raw SQL has been surprisingly comfy. On the other side, mithril.js
+   seems to be a no-frills, stable SPA lib made by a person who knows what
+diff --git a/src/pytaku/database/common.py b/src/pytaku/database/common.py
+index dcb443f..15ffeec 100644
+--- a/src/pytaku/database/common.py
++++ b/src/pytaku/database/common.py
+@@ -28,8 +28,11 @@ def get_conn():
+     return _conn
+ 
+ 
+-def run_sql(*args, **kwargs):
+-    return list(run_sql_on_demand(*args, **kwargs))
++def run_sql(*args, return_num_affected=False, **kwargs):
++    cursor = run_sql_on_demand(*args, **kwargs)
++    if return_num_affected:
++        return cursor.execute(&quot;select changes();&quot;).fetchone()
++    return list(cursor)
+ 
+ 
+ def run_sql_on_demand(*args, **kwargs):
+diff --git a/src/pytaku/database/migrations/latest_schema.sql b/src/pytaku/database/migrations/latest_schema.sql
+index 1af6b03..7883803 100644
+--- a/src/pytaku/database/migrations/latest_schema.sql
++++ b/src/pytaku/database/migrations/latest_schema.sql
+@@ -61,3 +61,13 @@ CREATE TABLE IF NOT EXISTS &quot;read&quot; (
+     foreign key (site, title_id, chapter_id) references chapter (site, title_id, id),
+     unique(user_id, site, title_id, chapter_id)
+ );
++CREATE TABLE token (
++    user_id integer not null,
++    token text not null,
++    created_at text not null default (datetime(&#39;now&#39;)),
++    last_accessed_at text not null default (datetime(&#39;now&#39;)),
++    lifespan text not null, -- &#39;+1 day&#39;, &#39;+365 days&#39;, etc.
++
++    foreign key (user_id) references user (id),
++    unique(user_id, token)
++);
+diff --git a/src/pytaku/database/migrations/m0004.sql b/src/pytaku/database/migrations/m0004.sql
+new file mode 100644
+index 0000000..a1641ea
+--- /dev/null
++++ b/src/pytaku/database/migrations/m0004.sql
+@@ -0,0 +1,14 @@
++begin transaction;
++
++create table token (
++    user_id integer not null,
++    token text not null,
++    created_at text not null default (datetime(&#39;now&#39;)),
++    last_accessed_at text not null default (datetime(&#39;now&#39;)),
++    lifespan text not null, -- &#39;+1 day&#39;, &#39;+365 days&#39;, etc.
++
++    foreign key (user_id) references user (id),
++    unique(user_id, token)
++);
++
++commit;
+diff --git a/src/pytaku/decorators.py b/src/pytaku/decorators.py
+index 388731f..6cc1422 100644
+--- a/src/pytaku/decorators.py
++++ b/src/pytaku/decorators.py
+@@ -1,7 +1,9 @@
+ from functools import wraps
+ 
+-from flask import redirect, request, session, url_for
++from flask import jsonify, redirect, request, session, url_for
++from itsdangerous import SignatureExpired, URLSafeTimedSerializer
+ 
++from .conf import config
+ from .persistence import read, unread
+ 
+ 
+@@ -15,6 +17,25 @@ def decorated_function(*args, **kwargs):
+     return decorated_function
+ 
+ 
++def require_token(f):
++    @wraps(f)
++    def decorated_function(*args, **kwargs):
++        token = request.headers.get(&quot;Pytaku-Token&quot;)
++        if not token:
++            return jsonify({&quot;message&quot;: &quot;Please provide Pytaku-Token header.&quot;}), 401
++        s = URLSafeTimedSerializer(config.FLASK_SECRET_KEY, salt=&quot;access_token&quot;)
++        try:
++            user_id = s.loads(token)
++        except SignatureExpired:
++            return jsonify({&quot;message&quot;: &quot;Token expired.&quot;}), 401
++        except Exception:
++            return jsonify({&quot;message&quot;: &quot;Malformed token.&quot;}), 401
++
++        return f(*args, user_id=user_id, **kwargs)
++
++    return decorated_function
++
++
+ def toggle_has_read(f):
+     &quot;&quot;&quot;
+     Augments a view with the ability to toggle a chapter&#39;s read status if there&#39;s a
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 2e37c3a..3bb6018 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -6,17 +6,45 @@
+ from typing import List, Tuple
+ 
+ import requests
+-from flask import (Flask, flash, jsonify, make_response, redirect,
+-                   render_template, request, session, url_for)
++from flask import (
++    Flask,
++    flash,
++    jsonify,
++    make_response,
++    redirect,
++    render_template,
++    request,
++    session,
++    url_for,
++)
+ 
+ from .conf import config
+ from .decorators import require_login, toggle_has_read
+-from .persistence import (follow, get_followed_titles, get_prev_next_chapters,
+-                          import_follows, load_chapter, load_title,
+-                          register_user, save_chapter, save_title, unfollow,
+-                          verify_username_password)
+-from .source_sites import (get_chapter, get_title, search_title_all_sites,
+-                           title_cover, title_source_url, title_thumbnail)
++from .persistence import (
++    create_token,
++    delete_token,
++    follow,
++    get_followed_titles,
++    get_prev_next_chapters,
++    get_username,
++    import_follows,
++    load_chapter,
++    load_title,
++    register_user,
++    save_chapter,
++    save_title,
++    unfollow,
++    verify_token,
++    verify_username_password,
++)
++from .source_sites import (
++    get_chapter,
++    get_title,
++    search_title_all_sites,
++    title_cover,
++    title_source_url,
++    title_thumbnail,
++)
+ 
+ config.load()
+ 
+@@ -383,7 +411,29 @@ def api_login():
+         )
+ 
+     user_id = verify_username_password(username, password)
+-    if user_id:
+-        return jsonify({&quot;user_id&quot;: user_id}), 200
+-    else:
+-        return jsonify({&quot;message&quot;: &quot;Wrong username/password combination.&quot;}), 400
++    if not user_id:
++        return jsonify({&quot;message&quot;: &quot;Wrong username/password combination.&quot;}), 401
++
++    token = create_token(user_id, remember)
++    return jsonify({&quot;user_id&quot;: user_id, &quot;token&quot;: token}), 200
++
++
++@app.route(&quot;/api/verify-token&quot;, methods=[&quot;POST&quot;])
++def api_verify_token():
++    user_id = request.json[&quot;user_id&quot;]
++    token = request.json[&quot;token&quot;]
++    is_valid = verify_token(user_id, token)
++    if not is_valid:
++        return jsonify({&quot;message&quot;: &quot;Invalid token.&quot;}), 401
++    return {&quot;username&quot;: get_username(user_id)}, 200
++
++
++@app.route(&quot;/api/logout&quot;, methods=[&quot;POST&quot;])
++def api_logout():
++    # TODO: should probably be using auth http header like other APIs
++    user_id = request.json[&quot;user_id&quot;]
++    token = request.json[&quot;token&quot;]
++    num_deleted = delete_token(user_id, token)
++    if num_deleted != 1:
++        return jsonify({&quot;message&quot;: &quot;Invalid token.&quot;}), 401
++    return &quot;{}&quot;, 200
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 7fba2d5..ec545b5 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -1,9 +1,11 @@
+ import json
++import secrets
+ from typing import List, Tuple
+ 
+-import apsw
+ import argon2
+ 
++import apsw
++
+ from .database.common import run_sql, run_sql_many, run_sql_on_demand
+ 
+ 
+@@ -335,3 +337,56 @@ def import_follows(user_id: int, site_title_pairs: List[Tuple[str, str]]):
+         &quot;&quot;&quot;,
+         ((user_id, site, title_id) for site, title_id in site_title_pairs),
+     )
++
++
++def create_token(user_id, remember=False):
++    lifespan = &quot;+365 days&quot; if remember else &quot;+1 day&quot;
++    token = secrets.token_urlsafe(64)
++    run_sql(
++        &quot;&quot;&quot;
++        INSERT INTO token (user_id, token, lifespan) VALUES (?,?,?);
++        &quot;&quot;&quot;,
++        (user_id, token, lifespan),
++    )
++    return token
++
++
++def verify_token(user_id, token):
++    &quot;&quot;&quot;
++    Checks if there&#39;s a matching token that hasn&#39;t exceeded its lifespan.
++    If there&#39;s a match, refreshes its last_accessed_at value, effectively expanding
++    its life.
++    &quot;&quot;&quot;
++    result = run_sql(
++        &quot;&quot;&quot;
++        SELECT 1 FROM token
++        WHERE user_id=? AND token=?
++          AND datetime(last_accessed_at, lifespan) &gt; datetime(&#39;now&#39;);
++        &quot;&quot;&quot;,
++        (user_id, token),
++    )
++    is_success = len(result) == 1
++    if is_success:
++        run_sql(
++            &quot;&quot;&quot;
++            UPDATE token SET last_accessed_at = datetime(&#39;now&#39;)
++            WHERE user_id=? AND token=?;
++            &quot;&quot;&quot;,
++            (user_id, token),
++        )
++    return is_success
++
++
++def get_username(user_id):
++    result = run_sql(&quot;SELECT username FROM user WHERE id=?;&quot;, (user_id,))
++    assert len(result) == 1
++    return result[0]
++
++
++def delete_token(user_id, token):
++    num_deleted = run_sql(
++        &quot;DELETE FROM token WHERE user_id=? AND token=?&quot;,
++        (user_id, token),
++        return_num_affected=True,
++    )
++    return num_deleted
+diff --git a/src/pytaku/static/js/models.js b/src/pytaku/static/js/models.js
+new file mode 100644
+index 0000000..ecaee29
+--- /dev/null
++++ b/src/pytaku/static/js/models.js
+@@ -0,0 +1,73 @@
++const Auth = {
++  username: sessionStorage.getItem(&quot;username&quot;),
++  token: localStorage.getItem(&quot;token&quot;),
++  userId: localStorage.getItem(&quot;user_id&quot;),
++  isLoggedIn: () =&gt; Auth.username !== null,
++  init: () =&gt; {
++    // Already logged in, probably from another tab:
++    if (Auth.username !== null) {
++      return;
++    }
++
++    // No previous login session:
++    if (Auth.token === null || Auth.userId === null) {
++      return;
++    }
++
++    // Verify token &amp; user_id saved from previous login session:
++    return m
++      .request({
++        method: &quot;POST&quot;,
++        url: &quot;/api/verify-token&quot;,
++        body: { token: Auth.token, user_id: Auth.userId },
++      })
++      .then((result) =&gt; {
++        // Success! Set username for this session now
++        sessionStorage.setItem(&quot;username&quot;, result.username);
++        Auth.username = result.username;
++      })
++      .catch((err) =&gt; {
++        // If server responded with 401 Unauthorized, clear any local trace of
++        // these invalid credentials.
++        if (err.code == 401) {
++          Auth.clearCredentials();
++        }
++      });
++  },
++
++  saveLoginResults: ({ userId, username, token }) =&gt; {
++    sessionStorage.setItem(&quot;username&quot;, username);
++    localStorage.setItem(&quot;user_id&quot;, userId);
++    localStorage.setItem(&quot;token&quot;, token);
++    Auth.userId = userId;
++    Auth.username = username;
++    Auth.token = token;
++  },
++
++  logout: () =&gt; {
++    return m
++      .request({
++        method: &quot;POST&quot;,
++        url: &quot;/api/logout&quot;,
++        body: { token: Auth.token, user_id: Auth.userId },
++      })
++      .then(Auth.clearCredentials)
++      .catch((err) =&gt; {
++        if (err.code == 401) {
++          Auth.clearCredentials();
++        } else {
++          console.log(err);
++        }
++      });
++  },
++
++  clearCredentials: () =&gt; {
++    Auth.username = null;
++    Auth.token = null;
++    Auth.userId = null;
++    localStorage.clear();
++    sessionStorage.clear();
++  },
++};
++
++export { Auth };
+diff --git a/src/pytaku/static/spa.js b/src/pytaku/static/js/spa.js
+similarity index 73%
+rename from src/pytaku/static/spa.js
+rename to src/pytaku/static/js/spa.js
+index b7cecb8..5776261 100644
+--- a/src/pytaku/static/spa.js
++++ b/src/pytaku/static/js/spa.js
+@@ -1,6 +1,10 @@
+ /* Top-level Components */
++import { Auth } from &quot;./models.js&quot;;
+ 
+ const Home = {
++  oncreate: (vnode) =&gt; {
++    document.title = &quot;Pytaku&quot;;
++  },
+   view: (vnode) =&gt; {
+     return m(&quot;div.main&quot;, [
+       m(Navbar),
+@@ -13,21 +17,23 @@ const Home = {
+ };
+ 
+ function Authentication(initialVNode) {
+-  let loginUsername = &quot;admin&quot;;
+-  let loginPassword = &quot;admin&quot;;
+-  let rememberMe = false;
+-  let loginErrorMessage = &quot;&quot;;
+-
+-  let registerUsername = &quot;admin&quot;;
+-  let registerPassword = &quot;admin&quot;;
+-  let confirmPassword = &quot;admin&quot;;
+-  let registerMessage = &quot;&quot;;
+-  let registerSuccess = false;
++  let loginUsername;
++  let loginPassword;
++  let rememberMe;
++  let loginErrorMessage;
++  let registerUsername;
++  let registerPassword;
++  let confirmPassword;
++  let registerMessage;
++  let registerSuccess;
+ 
+   let registering = false;
+   let loggingIn = false;
+ 
+   return {
++    oncreate: (vnode) =&gt; {
++      document.title = &quot;Authentication - Pytaku&quot;;
++    },
+     view: (vnode) =&gt; {
+       return m(&quot;div.main&quot;, [
+         m(Navbar),
+@@ -52,10 +58,14 @@ function Authentication(initialVNode) {
+                 })
+                   .then((result) =&gt; {
+                     loggingIn = false;
+-                    console.log(&quot;Success:&quot;, result);
+-                    alert(&quot;TODO&quot;);
++                    let userId = result.user_id;
++                    let token = result.token;
++                    let username = loginUsername;
++                    Auth.saveLoginResults({ userId, username, token });
++                    m.route.set(&quot;/&quot;);
+                   })
+                   .catch((e) =&gt; {
++                    console.log(e);
+                     loggingIn = false;
+                     loginErrorMessage = e.response.message;
+                   });
+@@ -191,32 +201,62 @@ function Authentication(initialVNode) {
+   };
+ }
+ 
+-const Navbar = {
+-  view: (vnode) =&gt; {
+-    return m(&quot;nav&quot;, [
+-      m(m.route.Link, { class: &quot;nav--logo&quot;, href: &quot;/&quot; }, [
+-        m(&quot;img.nav--logo--img&quot;, {
+-          src: &quot;/static/pytaku.svg&quot;,
+-          alt: &quot;home&quot;,
+-        }),
+-      ]),
+-      m(&quot;form.nav--search-form&quot;, [
+-        m(&quot;input&quot;, { placeholder: &quot;search title name&quot; }),
+-        m(&quot;button&quot;, { type: &quot;submit&quot; }, [m(&quot;i.icon.icon-search&quot;)]),
+-      ]),
+-      m(m.route.Link, { class: &quot;nav--link&quot;, href: &quot;/a&quot; }, [
+-        m(&quot;i.icon.icon-log-in&quot;),
+-        &quot;login / register&quot;,
+-      ]),
+-    ]);
+-  },
+-};
++function Navbar(initialVNode) {
++  let isLoggingOut = false;
++  return {
++    view: (vnode) =&gt; {
++      let userLink;
++      if (Auth.isLoggedIn()) {
++        userLink = m(&quot;span.nav--greeting&quot;, [
++          &quot;Welcome, &quot;,
++          m(&quot;b&quot;, Auth.username),
++          &quot; &quot;,
++          m(
++            &quot;button&quot;,
++            {
++              onclick: (ev) =&gt; {
++                isLoggingOut = true;
++                m.redraw();
++                Auth.logout();
++              },
++              disabled: isLoggingOut ? &quot;disabled&quot; : null,
++            },
++            [
++              m(&quot;i.icon.icon-log-out&quot;),
++              isLoggingOut ? &quot; logging out&quot; : &quot; logout&quot;,
++            ]
++          ),
++        ]);
++      } else {
++        userLink = m(m.route.Link, { class: &quot;nav--link&quot;, href: &quot;/a&quot; }, [
++          m(&quot;i.icon.icon-log-in&quot;),
++          &quot;login / register&quot;,
++        ]);
++      }
++
++      return m(&quot;nav&quot;, [
++        m(m.route.Link, { class: &quot;nav--logo&quot;, href: &quot;/&quot; }, [
++          m(&quot;img.nav--logo--img&quot;, {
++            src: &quot;/static/pytaku.svg&quot;,
++            alt: &quot;home&quot;,
++          }),
++        ]),
++        m(&quot;form.nav--search-form&quot;, [
++          m(&quot;input&quot;, { placeholder: &quot;search title name&quot; }),
++          m(&quot;button&quot;, { type: &quot;submit&quot; }, [m(&quot;i.icon.icon-search&quot;)]),
++        ]),
++        userLink,
++      ]);
++    },
++  };
++}
+ 
+ /* Entry point */
+ 
+-root = document.getElementById(&quot;spa-root&quot;);
++const root = document.getElementById(&quot;spa-root&quot;);
+ m.route.prefix = &quot;&quot;;
+ m.route(root, &quot;/h&quot;, {
+   &quot;/h&quot;: Home,
+   &quot;/a&quot;: Authentication,
+ });
++Auth.init();
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index 34ad26f..ec92e72 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -24,6 +24,13 @@ .nav--search-form {
+ .nav--search-form &gt; input {
+   width: 15rem;
+ }
++.nav--greeting {
++  color: white;
++  align-items: center;
++  margin-left: auto;
++  margin-top: auto;
++  margin-bottom: auto;
++}
+ .nav--link {
+   color: white;
+   text-decoration: none;
+@@ -93,6 +100,7 @@ .auth--form {
+   display: inline-flex;
+   flex-direction: column;
+   margin: 0.5rem;
++  width: 300px;
+   max-width: 100%;
+ }
+ .auth--form &gt; * {
+diff --git a/src/pytaku/templates/spa.html b/src/pytaku/templates/spa.html
+index 62ad43b..3d43b80 100644
+--- a/src/pytaku/templates/spa.html
++++ b/src/pytaku/templates/spa.html
+@@ -44,6 +44,6 @@
+ 
+     &lt;script&gt;const initialState = &quot;{{ initial_state }}&quot;;&lt;/script&gt;
+     &lt;script src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;vendored/mithril.min.js&#39;) }}&quot;&gt;&lt;/script&gt;
+-    &lt;script src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;spa.js&#39;) }}&quot;&gt;&lt;/script&gt;
++    &lt;script src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;js/spa.js&#39;) }}&quot; type=&quot;module&quot;&gt;&lt;/script&gt;
+   &lt;/body&gt;
+ &lt;/html&gt;
+</pre></body></html>

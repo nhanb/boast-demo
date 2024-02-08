@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a6bca3328c] follow redirects, max 3 times | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / a6bca3328c</strong><hr><pre>commit a6bca3328c4d18cb7d42ee7b1f9a9f152d0ff8e8
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat May 16 15:59:33 2020 +0700
+
+    follow redirects, max 3 times
+
+diff --git a/README.md b/README.md
+index 07fd1c3..b50a3ff 100644
+--- a/README.md
++++ b/README.md
+@@ -48,7 +48,7 @@ # to publish, first bump version in pyproject.toml then
+ # Feature checklist
+ 
+ - [x] back-forward buttons
+-- [ ] handle redirects
++- [x] handle redirects
+ - [ ] separate I/O thread to avoid blocking GUI
+ - [ ] more visual indicators - maybe a status bar at the bottom
+ - [x] parse gemini&#39;s advanced line types
+@@ -61,7 +61,7 @@ # Feature checklist
+ 
+ ## Easy for end users to install
+ 
+-If the word `rustup` exists in the installation guide for your G U I
++If the words `cargo build` exists in the installation guide for your G U I
+ application then I&#39;m sorry it&#39;s not software made for people to _use_.
+ 
+ ## What-you-see-is-what-you-write
+diff --git a/pyproject.toml b/pyproject.toml
+index 9efa363..2d80b51 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;mcross&quot;
+-version = &quot;0.4.1&quot;
++version = &quot;0.4.2&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+diff --git a/src/mcross/gui/controller.py b/src/mcross/gui/controller.py
+index 672e8fd..6bcaefb 100644
+--- a/src/mcross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -53,8 +53,8 @@ def link_click_callback(self, raw_url):
+             )
+ 
+     def visit_link(self, url: GeminiUrl):
+-        self.load_page(url)
+-        self.model.history.visit(url)
++        resp = self.load_page(url)
++        self.model.history.visit(resp.url)
+         self.view.render_page()
+ 
+     def back_callback(self):
+@@ -84,3 +84,4 @@ def load_page(self, url: GeminiUrl):
+                     ]
+                 )
+             )
++        return resp
+diff --git a/src/mcross/transport.py b/src/mcross/transport.py
+index 10e4ff0..0a74c05 100644
+--- a/src/mcross/transport.py
++++ b/src/mcross/transport.py
+@@ -5,6 +5,7 @@
+ 
+ MAX_RESP_HEADER_BYTES = 2 + 1 + 1024 + 2  # &lt;STATUS&gt;&lt;whitespace&gt;&lt;META&gt;&lt;CR&gt;&lt;LF&gt;
+ MAX_RESP_BODY_BYTES = 1024 * 1024 * 5
++MAX_REDIRECTS = 3
+ 
+ 
+ # Wanted to use a dataclass here but ofc it doesn&#39;t allow a slotted class to
+@@ -12,12 +13,13 @@
+ # https://stackoverflow.com/questions/50180735/how-can-dataclasses-be-made-to-work-better-with-slots
+ # Maaaaybe I should just use attrs and call it a day.
+ class Response:
+-    __slots__ = (&quot;status&quot;, &quot;meta&quot;, &quot;body&quot;)
++    __slots__ = (&quot;status&quot;, &quot;meta&quot;, &quot;body&quot;, &quot;url&quot;)
+ 
+-    def __init__(self, status: str, meta: str, body: bytes = None):
++    def __init__(self, status: str, meta: str, url, body: bytes = None):
+         self.status = status
+         self.meta = meta
+         self.body = body
++        self.url = url
+ 
+     def __repr__(self):
+         return f&quot;Response(status={repr(self.status)}, meta={repr(self.meta)})&quot;
+@@ -106,16 +108,26 @@ def parse_absolute_url(text):
+         return GeminiUrl(parsed.hostname, parsed.port or 1965, parsed.path)
+ 
+ 
+-def get(url: GeminiUrl):
++def raw_get(url: GeminiUrl):
+     context = ssl.create_default_context()
+     with socket.create_connection((url.host, url.port)) as sock:
+         with context.wrap_socket(sock, server_hostname=url.host) as ssock:
+             ssock.send(f&quot;gemini://{url.host}{url.path}\r\n&quot;.encode())
+             header = ssock.recv(MAX_RESP_HEADER_BYTES).decode()
+             status, meta = _parse_resp_header(header)
+-            resp = Response(status=status, meta=meta)
++            resp = Response(status=status, meta=meta, url=url)
+ 
+             if status.startswith(&quot;2&quot;):
+                 resp.body = ssock.recv(MAX_RESP_BODY_BYTES)
+ 
+             return resp
++
++
++def get(url: GeminiUrl, redirect_count=0):
++    resp = raw_get(url)
++    if resp.status.startswith(&quot;3&quot;) and redirect_count &lt; MAX_REDIRECTS:
++        redirect_count += 1
++        new_url = GeminiUrl.parse_absolute_url(resp.meta)
++        print(f&quot;Redirecting to {new_url}, count={redirect_count}&quot;)
++        return get(new_url, redirect_count)
++    return resp
+</pre></body></html>

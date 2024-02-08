@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1f2cd6c36c] better inline &lt;code&gt; | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 1f2cd6c36c</strong><hr><pre>commit 1f2cd6c36c5c64773f957cc86d738a6cd51cf4df
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Sep 28 13:12:05 2021 +0700
+
+    better inline &lt;code&gt;
+    
+    Distinguishable on e-ink, also ensure font-size (on chrome it was
+    smaller by default).
+
+diff --git a/nhanb-theme/static/css/main.css b/nhanb-theme/static/css/main.css
+index 1d45387..d866d66 100644
+--- a/nhanb-theme/static/css/main.css
++++ b/nhanb-theme/static/css/main.css
+@@ -109,11 +109,12 @@ .clearfix {
+ 
+ code {
+   font-family: monospace;
++  font-size: 1rem;
+ }
+ 
+ p code,
+ li code {
+-  background-color: ivory;
++  background-color: blanchedalmond;
+ }
+ a:hover code {
+   background-color: var(--link-color);
+</pre></body></html>

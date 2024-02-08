@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[c94ffc8188] implement register/login | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / c94ffc8188</strong><hr><pre>commit c94ffc818876ed3e534a17435f59400a511ed6c4
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Aug 4 23:22:18 2020 +0700
+
+    implement register/login
+
+diff --git a/poetry.lock b/poetry.lock
+index da61531..76c4725 100644
+--- a/poetry.lock
++++ b/poetry.lock
+@@ -1,3 +1,20 @@
++[[package]]
++name = &quot;argon2-cffi&quot;
++version = &quot;20.1.0&quot;
++description = &quot;The secure Argon2 password hashing algorithm.&quot;
++category = &quot;main&quot;
++optional = false
++python-versions = &quot;*&quot;
++
++[package.extras]
++dev = [&quot;coverage (&gt;=5.0.2)&quot;, &quot;hypothesis&quot;, &quot;pytest&quot;, &quot;sphinx&quot;, &quot;wheel&quot;, &quot;pre-commit&quot;]
++docs = [&quot;sphinx&quot;]
++tests = [&quot;coverage (&gt;=5.0.2)&quot;, &quot;hypothesis&quot;, &quot;pytest&quot;]
++
++[package.dependencies]
++cffi = &quot;&gt;=1.0.0&quot;
++six = &quot;*&quot;
++
+ [[package]]
+ name = &quot;certifi&quot;
+ version = &quot;2020.6.20&quot;
+@@ -6,6 +23,17 @@ category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+ 
++[[package]]
++name = &quot;cffi&quot;
++version = &quot;1.14.1&quot;
++description = &quot;Foreign Function Interface for Python calling C code.&quot;
++category = &quot;main&quot;
++optional = false
++python-versions = &quot;*&quot;
++
++[package.dependencies]
++pycparser = &quot;*&quot;
++
+ [[package]]
+ name = &quot;chardet&quot;
+ version = &quot;3.0.4&quot;
+@@ -109,6 +137,14 @@ category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*&quot;
+ 
++[[package]]
++name = &quot;pycparser&quot;
++version = &quot;2.20&quot;
++description = &quot;C parser in Python&quot;
++category = &quot;main&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
++
+ [[package]]
+ name = &quot;requests&quot;
+ version = &quot;2.24.0&quot;
+@@ -127,6 +163,14 @@ chardet = &quot;&gt;=3.0.2,&lt;4&quot;
+ idna = &quot;&gt;=2.5,&lt;3&quot;
+ urllib3 = &quot;&gt;=1.21.1,&lt;1.25.0 || &gt;1.25.0,&lt;1.25.1 || &gt;1.25.1,&lt;1.26&quot;
+ 
++[[package]]
++name = &quot;six&quot;
++version = &quot;1.15.0&quot;
++description = &quot;Python 2 and 3 compatibility utilities&quot;
++category = &quot;main&quot;
++optional = false
++python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*&quot;
++
+ [[package]]
+ name = &quot;urllib3&quot;
+ version = &quot;1.25.10&quot;
+@@ -155,13 +199,61 @@ watchdog = [&quot;watchdog&quot;]
+ [metadata]
+ lock-version = &quot;1.0&quot;
+ python-versions = &quot;^3.7&quot;
+-content-hash = &quot;4c5557f7eb25c9e75ce9983a3ba5cabcddb59a6d26ff11185732aa13f954a326&quot;
++content-hash = &quot;5efa8d3aa125259ad269866dce833dcfd765044a16533d68c65897d73d9eaff4&quot;
+ 
+ [metadata.files]
++argon2-cffi = [
++    {file = &quot;argon2-cffi-20.1.0.tar.gz&quot;, hash = &quot;sha256:d8029b2d3e4b4cea770e9e5a0104dd8fa185c1724a0f01528ae4826a6d25f97d&quot;},
++    {file = &quot;argon2_cffi-20.1.0-cp27-cp27m-macosx_10_6_intel.whl&quot;, hash = &quot;sha256:6ea92c980586931a816d61e4faf6c192b4abce89aa767ff6581e6ddc985ed003&quot;},
++    {file = &quot;argon2_cffi-20.1.0-cp27-cp27m-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:05a8ac07c7026542377e38389638a8a1e9b78f1cd8439cd7493b39f08dd75fbf&quot;},
++    {file = &quot;argon2_cffi-20.1.0-cp27-cp27m-win32.whl&quot;, hash = &quot;sha256:0bf066bc049332489bb2d75f69216416329d9dc65deee127152caeb16e5ce7d5&quot;},
++    {file = &quot;argon2_cffi-20.1.0-cp27-cp27m-win_amd64.whl&quot;, hash = &quot;sha256:57358570592c46c420300ec94f2ff3b32cbccd10d38bdc12dc6979c4a8484fbc&quot;},
++    {file = &quot;argon2_cffi-20.1.0-cp27-cp27mu-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:7d455c802727710e9dfa69b74ccaab04568386ca17b0ad36350b622cd34606fe&quot;},
++    {file = &quot;argon2_cffi-20.1.0-cp35-abi3-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:b160416adc0f012fb1f12588a5e6954889510f82f698e23ed4f4fa57f12a0647&quot;},
++    {file = &quot;argon2_cffi-20.1.0-cp35-cp35m-win32.whl&quot;, hash = &quot;sha256:9bee3212ba4f560af397b6d7146848c32a800652301843df06b9e8f68f0f7361&quot;},
++    {file = &quot;argon2_cffi-20.1.0-cp35-cp35m-win_amd64.whl&quot;, hash = &quot;sha256:392c3c2ef91d12da510cfb6f9bae52512a4552573a9e27600bdb800e05905d2b&quot;},
++    {file = &quot;argon2_cffi-20.1.0-cp36-cp36m-win32.whl&quot;, hash = &quot;sha256:ba7209b608945b889457f949cc04c8e762bed4fe3fec88ae9a6b7765ae82e496&quot;},
++    {file = &quot;argon2_cffi-20.1.0-cp36-cp36m-win_amd64.whl&quot;, hash = &quot;sha256:da7f0445b71db6d3a72462e04f36544b0de871289b0bc8a7cc87c0f5ec7079fa&quot;},
++    {file = &quot;argon2_cffi-20.1.0-cp37-abi3-macosx_10_6_intel.whl&quot;, hash = &quot;sha256:cc0e028b209a5483b6846053d5fd7165f460a1f14774d79e632e75e7ae64b82b&quot;},
++    {file = &quot;argon2_cffi-20.1.0-cp37-cp37m-win32.whl&quot;, hash = &quot;sha256:18dee20e25e4be86680b178b35ccfc5d495ebd5792cd00781548d50880fee5c5&quot;},
++    {file = &quot;argon2_cffi-20.1.0-cp37-cp37m-win_amd64.whl&quot;, hash = &quot;sha256:6678bb047373f52bcff02db8afab0d2a77d83bde61cfecea7c5c62e2335cb203&quot;},
++    {file = &quot;argon2_cffi-20.1.0-cp38-cp38-win32.whl&quot;, hash = &quot;sha256:77e909cc756ef81d6abb60524d259d959bab384832f0c651ed7dcb6e5ccdbb78&quot;},
++    {file = &quot;argon2_cffi-20.1.0-cp38-cp38-win_amd64.whl&quot;, hash = &quot;sha256:9dfd5197852530294ecb5795c97a823839258dfd5eb9420233c7cfedec2058f2&quot;},
++]
+ certifi = [
+     {file = &quot;certifi-2020.6.20-py2.py3-none-any.whl&quot;, hash = &quot;sha256:8fc0819f1f30ba15bdb34cceffb9ef04d99f420f68eb75d901e9560b8749fc41&quot;},
+     {file = &quot;certifi-2020.6.20.tar.gz&quot;, hash = &quot;sha256:5930595817496dd21bb8dc35dad090f1c2cd0adfaf21204bf6732ca5d8ee34d3&quot;},
+ ]
++cffi = [
++    {file = &quot;cffi-1.14.1-cp27-cp27m-macosx_10_9_x86_64.whl&quot;, hash = &quot;sha256:66dd45eb9530e3dde8f7c009f84568bc7cac489b93d04ac86e3111fb46e470c2&quot;},
++    {file = &quot;cffi-1.14.1-cp27-cp27m-manylinux1_i686.whl&quot;, hash = &quot;sha256:4f53e4128c81ca3212ff4cf097c797ab44646a40b42ec02a891155cd7a2ba4d8&quot;},
++    {file = &quot;cffi-1.14.1-cp27-cp27m-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:833401b15de1bb92791d7b6fb353d4af60dc688eaa521bd97203dcd2d124a7c1&quot;},
++    {file = &quot;cffi-1.14.1-cp27-cp27m-win32.whl&quot;, hash = &quot;sha256:26f33e8f6a70c255767e3c3f957ccafc7f1f706b966e110b855bfe944511f1f9&quot;},
++    {file = &quot;cffi-1.14.1-cp27-cp27m-win_amd64.whl&quot;, hash = &quot;sha256:b87dfa9f10a470eee7f24234a37d1d5f51e5f5fa9eeffda7c282e2b8f5162eb1&quot;},
++    {file = &quot;cffi-1.14.1-cp27-cp27mu-manylinux1_i686.whl&quot;, hash = &quot;sha256:effd2ba52cee4ceff1a77f20d2a9f9bf8d50353c854a282b8760ac15b9833168&quot;},
++    {file = &quot;cffi-1.14.1-cp27-cp27mu-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:bac0d6f7728a9cc3c1e06d4fcbac12aaa70e9379b3025b27ec1226f0e2d404cf&quot;},
++    {file = &quot;cffi-1.14.1-cp35-cp35m-macosx_10_9_x86_64.whl&quot;, hash = &quot;sha256:d6033b4ffa34ef70f0b8086fd4c3df4bf801fee485a8a7d4519399818351aa8e&quot;},
++    {file = &quot;cffi-1.14.1-cp35-cp35m-manylinux1_i686.whl&quot;, hash = &quot;sha256:8416ed88ddc057bab0526d4e4e9f3660f614ac2394b5e019a628cdfff3733849&quot;},
++    {file = &quot;cffi-1.14.1-cp35-cp35m-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:892daa86384994fdf4856cb43c93f40cbe80f7f95bb5da94971b39c7f54b3a9c&quot;},
++    {file = &quot;cffi-1.14.1-cp35-cp35m-win32.whl&quot;, hash = &quot;sha256:c991112622baee0ae4d55c008380c32ecfd0ad417bcd0417ba432e6ba7328caa&quot;},
++    {file = &quot;cffi-1.14.1-cp35-cp35m-win_amd64.whl&quot;, hash = &quot;sha256:fcf32bf76dc25e30ed793145a57426064520890d7c02866eb93d3e4abe516948&quot;},
++    {file = &quot;cffi-1.14.1-cp36-cp36m-macosx_10_9_x86_64.whl&quot;, hash = &quot;sha256:f960375e9823ae6a07072ff7f8a85954e5a6434f97869f50d0e41649a1c8144f&quot;},
++    {file = &quot;cffi-1.14.1-cp36-cp36m-manylinux1_i686.whl&quot;, hash = &quot;sha256:a6d28e7f14ecf3b2ad67c4f106841218c8ab12a0683b1528534a6c87d2307af3&quot;},
++    {file = &quot;cffi-1.14.1-cp36-cp36m-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:cda422d54ee7905bfc53ee6915ab68fe7b230cacf581110df4272ee10462aadc&quot;},
++    {file = &quot;cffi-1.14.1-cp36-cp36m-win32.whl&quot;, hash = &quot;sha256:4a03416915b82b81af5502459a8a9dd62a3c299b295dcdf470877cb948d655f2&quot;},
++    {file = &quot;cffi-1.14.1-cp36-cp36m-win_amd64.whl&quot;, hash = &quot;sha256:4ce1e995aeecf7cc32380bc11598bfdfa017d592259d5da00fc7ded11e61d022&quot;},
++    {file = &quot;cffi-1.14.1-cp37-cp37m-macosx_10_9_x86_64.whl&quot;, hash = &quot;sha256:e23cb7f1d8e0f93addf0cae3c5b6f00324cccb4a7949ee558d7b6ca973ab8ae9&quot;},
++    {file = &quot;cffi-1.14.1-cp37-cp37m-manylinux1_i686.whl&quot;, hash = &quot;sha256:ddff0b2bd7edcc8c82d1adde6dbbf5e60d57ce985402541cd2985c27f7bec2a0&quot;},
++    {file = &quot;cffi-1.14.1-cp37-cp37m-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:f90c2267101010de42f7273c94a1f026e56cbc043f9330acd8a80e64300aba33&quot;},
++    {file = &quot;cffi-1.14.1-cp37-cp37m-win32.whl&quot;, hash = &quot;sha256:3cd2c044517f38d1b577f05927fb9729d3396f1d44d0c659a445599e79519792&quot;},
++    {file = &quot;cffi-1.14.1-cp37-cp37m-win_amd64.whl&quot;, hash = &quot;sha256:4fa72a52a906425416f41738728268072d5acfd48cbe7796af07a923236bcf96&quot;},
++    {file = &quot;cffi-1.14.1-cp38-cp38-macosx_10_9_x86_64.whl&quot;, hash = &quot;sha256:267adcf6e68d77ba154334a3e4fc921b8e63cbb38ca00d33d40655d4228502bc&quot;},
++    {file = &quot;cffi-1.14.1-cp38-cp38-manylinux1_i686.whl&quot;, hash = &quot;sha256:d3148b6ba3923c5850ea197a91a42683f946dba7e8eb82dfa211ab7e708de939&quot;},
++    {file = &quot;cffi-1.14.1-cp38-cp38-manylinux1_x86_64.whl&quot;, hash = &quot;sha256:98be759efdb5e5fa161e46d404f4e0ce388e72fbf7d9baf010aff16689e22abe&quot;},
++    {file = &quot;cffi-1.14.1-cp38-cp38-win32.whl&quot;, hash = &quot;sha256:6923d077d9ae9e8bacbdb1c07ae78405a9306c8fd1af13bfa06ca891095eb995&quot;},
++    {file = &quot;cffi-1.14.1-cp38-cp38-win_amd64.whl&quot;, hash = &quot;sha256:b1d6ebc891607e71fd9da71688fcf332a6630b7f5b7f5549e6e631821c0e5d90&quot;},
++    {file = &quot;cffi-1.14.1.tar.gz&quot;, hash = &quot;sha256:b2a2b0d276a136146e012154baefaea2758ef1f56ae9f4e01c612b0831e0bd2f&quot;},
++]
+ chardet = [
+     {file = &quot;chardet-3.0.4-py2.py3-none-any.whl&quot;, hash = &quot;sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691&quot;},
+     {file = &quot;chardet-3.0.4.tar.gz&quot;, hash = &quot;sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae&quot;},
+@@ -229,10 +321,18 @@ markupsafe = [
+     {file = &quot;MarkupSafe-1.1.1-cp38-cp38-win_amd64.whl&quot;, hash = &quot;sha256:e8313f01ba26fbbe36c7be1966a7b7424942f670f38e666995b88d012765b9be&quot;},
+     {file = &quot;MarkupSafe-1.1.1.tar.gz&quot;, hash = &quot;sha256:29872e92839765e546828bb7754a68c418d927cd064fd4708fab9fe9c8bb116b&quot;},
+ ]
++pycparser = [
++    {file = &quot;pycparser-2.20-py2.py3-none-any.whl&quot;, hash = &quot;sha256:7582ad22678f0fcd81102833f60ef8d0e57288b6b5fb00323d101be910e35705&quot;},
++    {file = &quot;pycparser-2.20.tar.gz&quot;, hash = &quot;sha256:2d475327684562c3a96cc71adf7dc8c4f0565175cf86b6d7a404ff4c771f15f0&quot;},
++]
+ requests = [
+     {file = &quot;requests-2.24.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:fe75cc94a9443b9246fc7049224f75604b113c36acb93f87b80ed42c44cbb898&quot;},
+     {file = &quot;requests-2.24.0.tar.gz&quot;, hash = &quot;sha256:b3559a131db72c33ee969480840fff4bb6dd111de7dd27c8ee1f820f4f00231b&quot;},
+ ]
++six = [
++    {file = &quot;six-1.15.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced&quot;},
++    {file = &quot;six-1.15.0.tar.gz&quot;, hash = &quot;sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259&quot;},
++]
+ urllib3 = [
+     {file = &quot;urllib3-1.25.10-py2.py3-none-any.whl&quot;, hash = &quot;sha256:e7983572181f5e1522d9c98453462384ee92a0be7fac5f1413a1e35c56cc0461&quot;},
+     {file = &quot;urllib3-1.25.10.tar.gz&quot;, hash = &quot;sha256:91056c15fa70756691db97756772bb1eb9678fa585d9184f24534b100dc60f4a&quot;},
+diff --git a/pyproject.toml b/pyproject.toml
+index ed83127..0ec75e8 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -19,6 +19,7 @@ flask = &quot;^1.1.2&quot;
+ gunicorn = &quot;^20.0.4&quot;
+ requests = &quot;^2.24.0&quot;
+ goodconf = &quot;^1.0.0&quot;
++argon2-cffi = &quot;^20.1.0&quot;
+ 
+ [tool.poetry.dev-dependencies]
+ 
+diff --git a/src/pytaku/conf.py b/src/pytaku/conf.py
+index dc1786e..1004b16 100644
+--- a/src/pytaku/conf.py
++++ b/src/pytaku/conf.py
+@@ -1,3 +1,5 @@
++from secrets import token_urlsafe
++
+ from goodconf import GoodConf, Value
+ 
+ 
+@@ -5,5 +7,7 @@ class Config(GoodConf):
+     MANGADEX_USERNAME = Value()
+     MANGADEX_PASSWORD = Value()
+ 
++    FLASK_SECRET_KEY = Value(initial=lambda: token_urlsafe(50))
++
+ 
+ config = Config(default_files=[&quot;pytaku.conf.json&quot;], load=True)
+diff --git a/src/pytaku/database/migrations/latest_schema.sql b/src/pytaku/database/migrations/latest_schema.sql
+index 92857ab..cdff562 100644
+--- a/src/pytaku/database/migrations/latest_schema.sql
++++ b/src/pytaku/database/migrations/latest_schema.sql
+@@ -28,3 +28,19 @@ CREATE TABLE chapter (
+     unique(id, title_id, site),
+     unique(num_major, num_minor, title_id)
+ );
++CREATE TABLE user (
++    id integer primary key,
++    username text unique,
++    password text,
++    created_at text default (datetime(&#39;now&#39;))
++);
++CREATE TABLE follow (
++    user_id integer not null,
++    title_id text not null,
++    site text not null,
++    created_at text default (datetime(&#39;now&#39;)),
++
++    foreign key (title_id, site) references title (id, site),
++    foreign key (user_id) references user (id),
++    unique(user_id, title_id, site)
++);
+diff --git a/src/pytaku/database/migrations/m0003.sql b/src/pytaku/database/migrations/m0003.sql
+new file mode 100644
+index 0000000..1cd8c9b
+--- /dev/null
++++ b/src/pytaku/database/migrations/m0003.sql
+@@ -0,0 +1,18 @@
++create table user (
++    id integer primary key,
++    username text unique,
++    password text,
++    created_at text default (datetime(&#39;now&#39;))
++);
++
++
++create table follow (
++    user_id integer not null,
++    title_id text not null,
++    site text not null,
++    created_at text default (datetime(&#39;now&#39;)),
++
++    foreign key (title_id, site) references title (id, site),
++    foreign key (user_id) references user (id),
++    unique(user_id, title_id, site)
++);
+diff --git a/src/pytaku/decorators.py b/src/pytaku/decorators.py
+new file mode 100644
+index 0000000..ff5f4e2
+--- /dev/null
++++ b/src/pytaku/decorators.py
+@@ -0,0 +1,13 @@
++from functools import wraps
++
++from flask import redirect, request, session, url_for
++
++
++def require_login(f):
++    @wraps(f)
++    def decorated_function(*args, **kwargs):
++        if session.get(&quot;user&quot;) is None:
++            return redirect(url_for(&quot;auth_view&quot;, next=request.url))
++        return f(*args, **kwargs)
++
++    return decorated_function
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 0a23275..bbfb064 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -1,21 +1,36 @@
+ import base64
+ import re
++from datetime import timedelta
+ 
+ import requests
+-from flask import Flask, make_response, render_template, request, url_for
++from flask import (
++    Flask,
++    make_response,
++    redirect,
++    render_template,
++    request,
++    session,
++    url_for,
++)
+ 
+ from mangoapi import get_chapter, get_title, search_title
+ 
+ from . import mangadex
++from .conf import config
+ from .persistence import (
+     get_prev_next_chapters,
+     load_chapter,
+     load_title,
++    register_user,
+     save_chapter,
+     save_title,
++    verify_username_password,
+ )
+ 
+ app = Flask(__name__)
++app.config.update(
++    SECRET_KEY=config.FLASK_SECRET_KEY, PERMANENT_SESSION_LIFETIME=timedelta(days=365),
++)
+ 
+ 
+ @app.route(&quot;/&quot;)
+@@ -23,6 +38,93 @@ def home_view():
+     return render_template(&quot;home.html&quot;)
+ 
+ 
++@app.route(&quot;/logout&quot;, methods=[&quot;POST&quot;])
++def logout_view():
++    session.pop(&quot;user&quot;)
++    return redirect(&quot;/&quot;)
++
++
++@app.route(&quot;/auth&quot;, methods=[&quot;GET&quot;, &quot;POST&quot;])
++def auth_view():
++    if session.get(&quot;user&quot;):
++        return redirect(url_for(&quot;home_view&quot;))
++
++    if request.method == &quot;POST&quot;:
++
++        if request.form[&quot;action&quot;] == &quot;register&quot;:
++            username = request.form[&quot;username&quot;].strip()
++            password = request.form[&quot;password&quot;]
++            confirm_password = request.form[&quot;confirm-password&quot;]
++            message = None
++            if password != confirm_password:
++                message = &quot;Password confirmation didn&#39;t match.&quot;
++                status_code = 400
++            elif not (username and password and confirm_password):
++                message = &quot;Empty field(s) spotted. Protip: spaces don&#39;t count.&quot;
++                status_code = 400
++            elif (
++                len(username) &lt; 2
++                or len(username) &gt; 15
++                or len(password) &lt; 5
++                or len(password) &gt; 50
++            ):
++                message = &quot;Invalid username/password length. Username length should be 2~15, password 5~50.&quot;
++                status_code = 400
++            else:  # success!
++                err = register_user(username, password)
++                if err:
++                    message = err
++                    status_code = 400
++                else:
++                    username = &quot;&quot;
++                    password = &quot;&quot;
++                    confirm_password = &quot;&quot;
++                    message = &quot;Registration successful! You can login now.&quot;
++                    status_code = 200
++            return (
++                render_template(
++                    &quot;auth.html&quot;,
++                    register_username=username,
++                    register_password=password,
++                    register_confirm_password=confirm_password,
++                    register_message=message,
++                    register_has_error=status_code != 200,
++                ),
++                status_code,
++            )
++
++        else:  # action == &#39;login&#39;
++            username = request.form[&quot;username&quot;].strip()
++            password = request.form[&quot;password&quot;]
++            remember = request.form.get(&quot;remember&quot;) == &quot;on&quot;
++            if not (username and password):
++                message = &quot;Empty field(s) spotted. Protip: spaces don&#39;t count.&quot;
++                status_code = 400
++            elif not verify_username_password(username, password):
++                message = &quot;Wrong username/password combination.&quot;
++                status_code = 400
++            else:  # success!
++                resp = redirect(request.args.get(&quot;next&quot;, url_for(&quot;home_view&quot;)))
++                session.permanent = remember
++                session[&quot;user&quot;] = {&quot;username&quot;: username}
++                return resp
++
++            return (
++                render_template(
++                    &quot;auth.html&quot;,
++                    login_username=username,
++                    login_password=password,
++                    login_remember=remember,
++                    login_message=message,
++                    login_has_error=status_code != 200,
++                ),
++                status_code,
++            )
++
++    # Just a plain ol&#39; GET request:
++    return render_template(&quot;auth.html&quot;)
++
++
+ @app.route(&quot;/title/mangadex/&lt;title_id&gt;&quot;)
+ def title_view(title_id):
+     title = load_title(title_id)
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index e12c15e..61bfde4 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -1,5 +1,8 @@
+ import json
+ 
++import apsw
++import argon2
++
+ from .database.common import get_conn
+ 
+ 
+@@ -161,3 +164,38 @@ def get_prev_next_chapters(title, chapter):
+                 prev_chapter = chapters[i + 1]
+ 
+     return prev_chapter, next_chapter
++
++
++def register_user(username, password):
++    hasher = argon2.PasswordHasher()
++    hashed_password = hasher.hash(password)
++    try:
++        get_conn().cursor().execute(
++            &quot;INSERT INTO user (username, password) VALUES (?, ?);&quot;,
++            (username, hashed_password),
++        )
++        return None
++    except apsw.ConstraintError as e:
++        if &quot;UNIQUE&quot; in str(e):
++            return &quot;Username already exists.&quot;
++        raise
++
++
++def verify_username_password(username, password):
++    data = list(
++        get_conn()
++        .cursor()
++        .execute(&quot;SELECT password FROM user WHERE username = ?;&quot;, (username,))
++    )
++    if len(data) != 1:
++        print(f&quot;User {username} doesn&#39;t exist.&quot;)
++        return False
++
++    hasher = argon2.PasswordHasher()
++    hash = data[0][0]
++    try:
++        hasher.verify(hash, password)
++        return True
++    except argon2.exceptions.VerifyMismatchError:
++        print(f&quot;User {username} exists but password doesn&#39;t match.&quot;)
++        return False
+diff --git a/src/pytaku/static/base.css b/src/pytaku/static/base.css
+index e366545..6b9f446 100644
+--- a/src/pytaku/static/base.css
++++ b/src/pytaku/static/base.css
+@@ -131,6 +131,7 @@ .links {
+   display: inline-flex;
+   justify-content: center;
+   align-items: center;
++  color: white;
+ }
+ .links &gt; * {
+   margin-right: 1rem;
+diff --git a/src/pytaku/static/icons/log-in.svg b/src/pytaku/static/icons/log-in.svg
+new file mode 100644
+index 0000000..7bfc566
+--- /dev/null
++++ b/src/pytaku/static/icons/log-in.svg
+@@ -0,0 +1 @@
++&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; class=&quot;feather feather-log-in&quot;&gt;&lt;path d=&quot;M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4&quot;&gt;&lt;/path&gt;&lt;polyline points=&quot;10 17 15 12 10 7&quot;&gt;&lt;/polyline&gt;&lt;line x1=&quot;15&quot; y1=&quot;12&quot; x2=&quot;3&quot; y2=&quot;12&quot;&gt;&lt;/line&gt;&lt;/svg&gt;
+\ No newline at end of file
+diff --git a/src/pytaku/static/icons/log-out.svg b/src/pytaku/static/icons/log-out.svg
+new file mode 100644
+index 0000000..628a96d
+--- /dev/null
++++ b/src/pytaku/static/icons/log-out.svg
+@@ -0,0 +1 @@
++&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; class=&quot;feather feather-log-out&quot;&gt;&lt;path d=&quot;M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4&quot;&gt;&lt;/path&gt;&lt;polyline points=&quot;16 17 21 12 16 7&quot;&gt;&lt;/polyline&gt;&lt;line x1=&quot;21&quot; y1=&quot;12&quot; x2=&quot;9&quot; y2=&quot;12&quot;&gt;&lt;/line&gt;&lt;/svg&gt;
+\ No newline at end of file
+diff --git a/src/pytaku/templates/auth.html b/src/pytaku/templates/auth.html
+new file mode 100644
+index 0000000..96b042a
+--- /dev/null
++++ b/src/pytaku/templates/auth.html
+@@ -0,0 +1,67 @@
++{% extends &#39;base.html&#39; %}
++
++{% block title %}
++Login / Register
++{% endblock %}
++
++{% block head %}
++&lt;style&gt;
++.content {
++  display: flex;
++  flex-direction: row;
++  flex-wrap: wrap;
++  margin: auto;
++  max-width: 900px;
++  padding: 0;
++}
++
++.content &gt; form {
++  display: flex;
++  flex-direction: column;
++  flex: 1;
++  margin: 0 1rem;
++}
++
++.content input,
++.content button {
++  margin: .5rem 0;
++}
++
++.success {
++  color: inherit;
++}
++.error {
++  color: red;
++}
++
++&lt;/style&gt;
++{% endblock %}
++
++{% block content %}
++&lt;form method=&quot;POST&quot;&gt;
++  &lt;h1&gt;Login&lt;/h1&gt;
++  &lt;input type=&quot;hidden&quot; name=&quot;action&quot; value=&quot;login&quot;&gt;
++  &lt;input name=&quot;username&quot; placeholder=&quot;Username&quot; required value=&quot;{{ login_username }}&quot;&gt;
++  &lt;input name=&quot;password&quot; type=&quot;password&quot; placeholder=&quot;Password&quot; required value=&quot;{{ login_password }}&quot;&gt;
++  &lt;label for=&quot;remember&quot;&gt;
++    &lt;input name=&quot;remember&quot; id=&quot;remember&quot; type=&quot;checkbox&quot; {% if login_remember %}checked{% endif %}&gt;
++    Remember me
++  &lt;/label&gt;
++  &lt;button class=&quot;green button&quot; type=&quot;submit&quot;&gt;Login&lt;/button&gt;
++  &lt;p class=&quot;{{ &#39;error&#39; if login_has_error else &#39;success&#39;}}&quot;&gt;
++  {{ login_message }}
++  &lt;/p&gt;
++&lt;/form&gt;
++
++&lt;form method=&quot;POST&quot;&gt;
++  &lt;h1&gt;Register&lt;/h1&gt;
++  &lt;input type=&quot;hidden&quot; name=&quot;action&quot; value=&quot;register&quot;&gt;
++  &lt;input name=&quot;username&quot; placeholder=&quot;Username (2~15 chars)&quot; required value=&quot;{{ register_username }}&quot;&gt;
++  &lt;input name=&quot;password&quot; type=&quot;password&quot; placeholder=&quot;Password (5~50 chars)&quot; required value=&quot;{{ register_password }}&quot;&gt;
++  &lt;input name=&quot;confirm-password&quot; type=&quot;password&quot; placeholder=&quot;Confirm password&quot; required value=&quot;{{ register_confirm_password }}&quot;&gt;
++  &lt;button class=&quot;blue button&quot; type=&quot;submit&quot;&gt;Register&lt;/button&gt;
++  &lt;p class=&quot;{{ &#39;error&#39; if register_has_error else &#39;success&#39;}}&quot;&gt;
++  {{ register_message }}
++  &lt;/p&gt;
++&lt;/form&gt;
++{% endblock %}
+diff --git a/src/pytaku/templates/base.html b/src/pytaku/templates/base.html
+index 022fefc..6fef79e 100644
+--- a/src/pytaku/templates/base.html
++++ b/src/pytaku/templates/base.html
+@@ -47,14 +47,17 @@
+         &lt;/button&gt;
+       &lt;/form&gt;
+       &lt;span class=&quot;links&quot;&gt;
+-        &lt;a href=&quot;/bookmarks&quot;&gt;
+-          &lt;img src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;icons/bookmark.svg&#39;)}}&quot; alt=&quot;bookmarks&quot; /&gt;
+-          &lt;span&gt;Bookmarks&lt;/span&gt;
+-        &lt;/a&gt;
+-        &lt;a href=&quot;/account&quot;&gt;
+-          &lt;img src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;icons/user.svg&#39;)}}&quot; alt=&quot;account&quot; /&gt;
+-          &lt;span&gt;Account&lt;/span&gt;
++        {% if session.get(&#39;user&#39;) %}
++        &lt;span&gt;Hi there &lt;strong&gt;{{ session.user[&#39;username&#39;] }}&lt;/strong&gt;!&lt;/span&gt;
++        &lt;form method=&quot;POST&quot; action=&quot;{{ url_for(&#39;logout_view&#39;) }}&quot;&gt;
++          {{ ibutton(left_icon=&#39;log-out&#39;, text=&#39;Logout&#39;) }}
++        &lt;/form&gt;
++        {% else %}
++        &lt;a href=&quot;/auth&quot;&gt;
++          &lt;img src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;icons/log-in.svg&#39;)}}&quot; alt=&quot;login/register&quot; /&gt;
++          &lt;span&gt;Login/Register&lt;/span&gt;
+         &lt;/a&gt;
++        {% endif %}
+       &lt;/span&gt;
+       &lt;/ul&gt;
+     &lt;/nav&gt;
+</pre></body></html>

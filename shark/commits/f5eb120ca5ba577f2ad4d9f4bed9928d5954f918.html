@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[f5eb120ca5] prevent moving window out of bounds | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / f5eb120ca5</strong><hr><pre>commit f5eb120ca5ba577f2ad4d9f4bed9928d5954f918
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Sep 17 17:31:54 2023 +0700
+
+    prevent moving window out of bounds
+    
+    Still a bug in KDE: taskbar pushes the boundary inward but that
+    difference isn&#39;t reflected in ebiten.ScreenSizeInFullscreen().
+
+diff --git a/main.go b/main.go
+index b20622f..a1b3719 100644
+--- a/main.go
++++ b/main.go
+@@ -49,6 +49,7 @@ type Position struct{
+ 
+ var DurationTillHungry time.Duration
+ var WalkChance, StopChance int
++var WindowWidth, WindowHeight int
+ 
+ type Vector struct{ x, y int }
+ 
+@@ -118,9 +119,11 @@ func main() {
+ 	DurationTillHungry = time.Duration(secondsUntilHungryFlag) * 1_000_000_000
+ 
+ 	ebiten.SetWindowPosition(xFlag, yFlag)
+-	ebiten.SetWindowSize(SPRITE_X*sizeFlag, SPRITE_Y*sizeFlag)
++	WindowWidth = SPRITE_X * sizeFlag
++	WindowHeight = SPRITE_Y * sizeFlag
++	ebiten.SetWindowSize(WindowWidth, WindowHeight)
+ 	ebiten.SetWindowTitle(&quot;Shark!&quot;)
+-	//ebiten.SetWindowDecorated(false)
++	ebiten.SetWindowDecorated(false)
+ 	ebiten.SetWindowFloating(true)
+ 
+ 	AppIcon, _ := must.Two(image.Decode(bytes.NewReader(IconFile)))
+diff --git a/states.go b/states.go
+index e220662..a6cf0e4 100644
+--- a/states.go
++++ b/states.go
+@@ -8,6 +8,8 @@
+ 	&quot;github.com/hajimehoshi/ebiten/v2/inpututil&quot;
+ )
+ 
++var screenW, screenH = ebiten.ScreenSizeInFullscreen()
++
+ type StateMachine struct {
+ 	state          State
+ 	anim           *Anim
+@@ -48,6 +50,8 @@ func (sm *StateMachine) Update() error {
+ 
+ 	sm.state.Update(sm)
+ 
++	sm.x = min(max(sm.x, 0), screenW-WindowWidth)
++	sm.y = min(max(sm.y, 0), screenH-WindowHeight)
+ 	ebiten.SetWindowPosition(sm.x, sm.y)
+ 
+ 	// Advance to next animation frame
+</pre></body></html>

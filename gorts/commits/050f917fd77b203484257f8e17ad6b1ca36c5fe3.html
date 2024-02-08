@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[050f917fd7] fetch players from smashgg | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 050f917fd7</strong><hr><pre>commit 050f917fd77b203484257f8e17ad6b1ca36c5fe3
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jun 22 21:23:42 2023 +0700
+
+    fetch players from smashgg
+
+diff --git a/main.go b/main.go
+index e4f9420..28b0206 100644
+--- a/main.go
++++ b/main.go
+@@ -14,7 +14,6 @@
+ 	&quot;os/exec&quot;
+ 	&quot;strconv&quot;
+ 	&quot;strings&quot;
+-	&quot;time&quot;
+ 
+ 	&quot;go.imnhan.com/gorts/netstring&quot;
+ 	&quot;go.imnhan.com/gorts/players&quot;
+@@ -175,10 +174,17 @@ func startGUI(tclPath string) {
+ 		case &quot;fetchplayers&quot;:
+ 			startggInputs.Token = req[1]
+ 			startggInputs.Slug = req[2]
+-			time.Sleep(3 * time.Second)
++			ps, err := startgg.FetchPlayers(startggInputs)
+ 			fmt.Fprintln(stdin, &quot;fetchplayers__resp&quot;)
+-			respond(&quot;All done.&quot;)
++			if err != nil {
++				respond(&quot;err&quot;, fmt.Sprintf(&quot;Error: %s&quot;, err))
++				break
++			}
++			allplayers = ps
++			// TODO: show write errors to user instead of ignoring
+ 			startggInputs.Write(StartggFile)
++			players.Write(PlayersFile, allplayers)
++			respond(&quot;ok&quot;, fmt.Sprintf(&quot;Successfully fetched %d players.&quot;, len(allplayers)))
+ 		}
+ 	}
+ 
+diff --git a/players/players.go b/players/players.go
+index 18b7895..25cde1c 100644
+--- a/players/players.go
++++ b/players/players.go
+@@ -2,6 +2,7 @@
+ 
+ import (
+ 	&quot;encoding/csv&quot;
++	&quot;fmt&quot;
+ 	&quot;log&quot;
+ 	&quot;os&quot;
+ 	&quot;regexp&quot;
+@@ -57,3 +58,17 @@ func normalize(in string) (out string) {
+ func (p *Player) MatchesName(query string) bool {
+ 	return strings.Contains(normalize(p.Name), normalize(query))
+ }
++
++func Write(filepath string, ps []Player) error {
++	f, err := os.Create(filepath)
++	if err != nil {
++		return fmt.Errorf(&quot;write players to file: %w&quot;, err)
++	}
++	defer f.Close()
++
++	writer := csv.NewWriter(f)
++	for _, p := range ps {
++		writer.Write([]string{p.Name, p.Country, p.Team})
++	}
++	return nil
++}
+diff --git a/startgg/startgg.go b/startgg/startgg.go
+index c62cc74..1ea76d1 100644
+--- a/startgg/startgg.go
++++ b/startgg/startgg.go
+@@ -5,6 +5,7 @@
+ 	&quot;bytes&quot;
+ 	_ &quot;embed&quot;
+ 	&quot;encoding/json&quot;
++	&quot;errors&quot;
+ 	&quot;fmt&quot;
+ 	&quot;io/ioutil&quot;
+ 	&quot;net/http&quot;
+@@ -49,6 +50,7 @@ func (c *Inputs) Write(filepath string) {
+ 	}
+ }
+ 
++// TODO: follow pagination
+ func FetchPlayers(i Inputs) ([]players.Player, error) {
+ 	query := `
+ {
+@@ -99,10 +101,67 @@ func FetchPlayers(i Inputs) ([]players.Player, error) {
+ 	defer resp.Body.Close()
+ 
+ 	respdata, err := ioutil.ReadAll(resp.Body)
+-	fmt.Println(&quot;&gt;&gt;&gt;&gt;&quot;, string(respdata))
++	//fmt.Println(&quot;&gt;&gt;&gt;&gt;&quot;, string(respdata[:50]))
+ 
+-	//var res map[string]interface{}
+-	//json.NewDecoder(resp.Body).Decode(&amp;res)
+-	//fmt.Println(res[&quot;json&quot;])
+-	return nil, nil
++	if resp.StatusCode != http.StatusOK {
++		respJson := struct {
++			Message string `json:&quot;message&quot;`
++		}{}
++		err = json.Unmarshal(respdata, &amp;respJson)
++		if err != nil {
++			return nil, fmt.Errorf(
++				&quot;Unexpected %d response: %s&quot;, resp.StatusCode, respdata,
++			)
++		}
++		return nil, errors.New(respJson.Message)
++	}
++
++	respJson := struct {
++		Data struct {
++			Tournament struct {
++				Participants struct {
++					Nodes []struct {
++						// TODO: read team names from entrants too
++						GamerTag string `json:&quot;gamerTag&quot;`
++						Prefix   string `json:&quot;prefix&quot;`
++						User     struct {
++							Location struct {
++								Country string `json:&quot;country&quot;`
++							} `json:&quot;location&quot;`
++						} `json:&quot;user&quot;`
++					} `json:&quot;nodes&quot;`
++				} `json:&quot;participants&quot;`
++			} `json:&quot;tournament&quot;`
++		} `json:&quot;data&quot;`
++	}{}
++
++	err = json.Unmarshal(respdata, &amp;respJson)
++	if err != nil {
++		return nil, fmt.Errorf(
++			&quot;Unexpected %d response: %s&quot;, resp.StatusCode, respdata,
++		)
++	}
++
++	participants := respJson.Data.Tournament.Participants.Nodes
++	results := make([]players.Player, len(participants))
++	for i, part := range participants {
++		p := players.Player{}
++
++		if part.Prefix == &quot;&quot; {
++			p.Name = part.GamerTag
++		} else {
++			p.Name = fmt.Sprintf(&quot;%s %s&quot;, part.Prefix, part.GamerTag)
++		}
++
++		code, ok := countryNameToCode[part.User.Location.Country]
++		if ok {
++			p.Country = code
++		} else if code != &quot;&quot; {
++			fmt.Printf(&quot;*** Unknown country: %s\n&quot;, part.User.Location.Country)
++		}
++
++		results[i] = p
++	}
++
++	return results, nil
+ }
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index 006f7d1..cab8226 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -296,7 +296,16 @@ proc fetchplayers {} {
+ }
+ 
+ proc fetchplayers__resp {} {
+-    set ::startgg(msg) [lindex [ipc_read] 0]
++    set resp [ipc_read]
++    set status [lindex $resp 0]
++    set msg [lindex $resp 1]
++
++    set ::startgg(msg) $msg
++
++    if {$status == &quot;ok&quot;} {
++        loadplayernames
++    }
++
+     .n.s.fetch configure -state normal
+     .n.s.token configure -state normal
+     .n.s.tournamentslug configure -state normal
+</pre></body></html>

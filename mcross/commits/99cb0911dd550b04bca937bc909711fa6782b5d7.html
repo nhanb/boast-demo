@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[99cb0911dd] improve scrollbar, remove unnecessary frame | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 99cb0911dd</strong><hr><pre>commit 99cb0911dd550b04bca937bc909711fa6782b5d7
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri May 15 12:25:27 2020 +0700
+
+    improve scrollbar, remove unnecessary frame
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 1fca648..eaf1700 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;mcross&quot;
+-version = &quot;0.2.0&quot;
++version = &quot;0.2.1&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index f47e637..e8a8840 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -25,7 +25,6 @@ class View:
+     model: Model
+     address_bar: ttk.Entry
+     go_button: ttk.Button
+-    viewport: ttk.Frame
+     text: Text
+ 
+     go_callback = None
+@@ -58,13 +57,8 @@ def __init__(self, root: Tk, model: Model):
+         self.go_button = go_button
+         go_button.pack(side=&quot;left&quot;, pady=3)
+ 
+-        # Web viewport
+-        viewport = ttk.Frame(row2)
+-        self.viewport = viewport
+-        viewport.pack(fill=&quot;both&quot;, expand=True)
+-
+-        # Viewport content: just do text for now
+-        text = ReadOnlyText(viewport)
++        # Main viewport implemented as a Text widget.
++        text = ReadOnlyText(row2)
+         self.text = text
+         self.render_page()
+         text_font = pick_font(
+@@ -86,7 +80,10 @@ def __init__(self, root: Tk, model: Model):
+             fg=&quot;black&quot;,
+             padx=5,
+             pady=5,
+-            insertontime=0,  # hide blinking insertion cursor
++            # hide blinking insertion cursor:
++            insertontime=0,
++            # prevent verticle scrollbar from disappearing when window gets small:
++            width=1,
+         )
+         text.tag_config(&quot;link&quot;, foreground=&quot;brown&quot;)
+         text.tag_bind(&quot;link&quot;, &quot;&lt;Enter&gt;&quot;, self._on_link_enter)
+@@ -95,7 +92,7 @@ def __init__(self, root: Tk, model: Model):
+         text.tag_config(&quot;pre&quot;, font=(mono_font, 13))
+         text.pack(side=&quot;left&quot;, fill=&quot;both&quot;, expand=True)
+ 
+-        text_scrollbar = ttk.Scrollbar(viewport, command=text.yview)
++        text_scrollbar = ttk.Scrollbar(row2, command=text.yview)
+         text[&quot;yscrollcommand&quot;] = text_scrollbar.set
+         text_scrollbar.pack(side=&quot;left&quot;, fill=&quot;y&quot;)
+ 
+</pre></body></html>

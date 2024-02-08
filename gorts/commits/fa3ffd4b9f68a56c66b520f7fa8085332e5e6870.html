@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[fa3ffd4b9f] set tk window icon too | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / fa3ffd4b9f</strong><hr><pre>commit fa3ffd4b9f68a56c66b520f7fa8085332e5e6870
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jun 17 23:11:54 2023 +0700
+
+    set tk window icon too
+
+diff --git a/Makefile b/Makefile
+index 3c17458..30dd7c8 100644
+--- a/Makefile
++++ b/Makefile
+@@ -9,10 +9,14 @@ dist-windows:
+ 		go build -o dist/windows/gorts.exe -ldflags -H=windowsgui
+ 	cp -r web dist/windows/web
+ 
+-# gorts.ico was produced from Haiku OS&#39;s midiplayer icon using imagemagick:
+-# convert -background transparent -density 300 \
+-#   -define &#39;icon:auto-resize=256,128,64,32,24,16&#39; \
+-#   App_MidiPlayer.svg ~/pj/gorts/gorts.ico
++gorts.png: gorts.svg
++	convert -background transparent -density 300 -resize 256x256 gorts.svg gorts.png
++
++gorts.ico: gorts.svg
++	convert -background transparent -density 300 \
++		-define &#39;icon:auto-resize=256,128,64,32,24,16&#39; \
++		gorts.svg gorts.ico
++
+ gorts.syso: gorts.ico
+ 	# needs `go install github.com/akavel/rsrc@latest`
+ 	rsrc -ico gorts.ico -o gorts.syso
+diff --git a/gorts.png b/gorts.png
+new file mode 100644
+index 0000000..c4f08de
+Binary files /dev/null and b/gorts.png differ
+diff --git a/gorts.svg b/gorts.svg
+new file mode 100644
+index 0000000..e3522e8
+--- /dev/null
++++ b/gorts.svg
+@@ -0,0 +1,139 @@
++&lt;!--
++This icon was originally named App_MidiPlayer.svg,
++taken from https://github.com/darealshinji/haiku-icons.
++The following is its original license:
++
++The MIT License (MIT)
++
++Copyright (c) 2007-2020 Haiku, Inc.
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the &quot;Software&quot;), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.
++--&gt;
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;yes&quot;?&gt;
++&lt;svg version=&quot;1.1&quot; width=&quot;64&quot; height=&quot;64&quot; color-interpolation=&quot;linearRGB&quot;
++     xmlns:svg=&quot;http://www.w3.org/2000/svg&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;
++ &lt;g&gt;
++  &lt;path style=&quot;fill:#000000; fill-opacity:0.3882&quot;
++        d=&quot;M60 31.39L32 60H38L64 33.39L60 31.39z&quot;
++  /&gt;
++  &lt;path style=&quot;fill:none; stroke:#000000; stroke-width:4&quot;
++        d=&quot;M2 31V43L32 58L58 32V20L30 10L2 31z&quot;
++  /&gt;
++  &lt;linearGradient id=&quot;gradient0&quot; gradientUnits=&quot;userSpaceOnUse&quot; x1=&quot;45.2&quot; y1=&quot;-3.44&quot; x2=&quot;66.1&quot; y2=&quot;20.77&quot;&gt;
++   &lt;stop offset=&quot;0&quot; stop-color=&quot;#3578dc&quot;/&gt;
++   &lt;stop offset=&quot;1&quot; stop-color=&quot;#124ea9&quot;/&gt;
++  &lt;/linearGradient&gt;
++  &lt;path style=&quot;fill:url(#gradient0)&quot;
++        d=&quot;M32 44L2 31V43L32 58V44z&quot;
++  /&gt;
++  &lt;linearGradient id=&quot;gradient1&quot; gradientUnits=&quot;userSpaceOnUse&quot; x1=&quot;56.48&quot; y1=&quot;3.36&quot; x2=&quot;71.86&quot; y2=&quot;12.73&quot;&gt;
++   &lt;stop offset=&quot;0&quot; stop-color=&quot;#033177&quot;/&gt;
++   &lt;stop offset=&quot;1&quot; stop-color=&quot;#154ea2&quot;/&gt;
++  &lt;/linearGradient&gt;
++  &lt;path style=&quot;fill:url(#gradient1)&quot;
++        d=&quot;M32 44L58 20V32L32 58V44z&quot;
++  /&gt;
++  &lt;linearGradient id=&quot;gradient2&quot; gradientUnits=&quot;userSpaceOnUse&quot; x1=&quot;8&quot; y1=&quot;-64&quot; x2=&quot;56&quot; y2=&quot;-64&quot;&gt;
++   &lt;stop offset=&quot;0&quot; stop-color=&quot;#c0d9ff&quot;/&gt;
++   &lt;stop offset=&quot;1&quot; stop-color=&quot;#5e95e8&quot;/&gt;
++  &lt;/linearGradient&gt;
++  &lt;path style=&quot;fill:url(#gradient2)&quot;
++        d=&quot;M32 44L58 20L30 10L2 31L32 44z&quot;
++  /&gt;
++  &lt;path style=&quot;fill:#c7ddff&quot;
++        d=&quot;M34.62 13.91L34.82 15.62L36.82 16.38L17.33 33.86L17.52 34.59L38.51 15.6L34.62 13.91z&quot;
++  /&gt;
++  &lt;linearGradient id=&quot;gradient3&quot; gradientUnits=&quot;userSpaceOnUse&quot; x1=&quot;56.48&quot; y1=&quot;3.36&quot; x2=&quot;71.86&quot; y2=&quot;12.73&quot;&gt;
++   &lt;stop offset=&quot;0&quot; stop-color=&quot;#033177&quot;/&gt;
++   &lt;stop offset=&quot;1&quot; stop-color=&quot;#154ea2&quot;/&gt;
++  &lt;/linearGradient&gt;
++  &lt;path style=&quot;fill:url(#gradient3)&quot;
++        d=&quot;M15.33 32.87L34.81 15.62L34.62 13.91L13.64 32.64L17.52 34.59L17.33 33.86L15.33 32.87z&quot;
++  /&gt;
++  &lt;path style=&quot;fill:#140262&quot;
++        d=&quot;M17.33 33.86L36.81 16.38L34.81 15.62L15.33 32.87L17.33 33.86z&quot;
++  /&gt;
++  &lt;path style=&quot;fill:none; stroke:#000000; stroke-width:4&quot;
++        d=&quot;M22 20L19 23V26L25 29L28 26V23C28 23 26.52 21.76 25 21C23.52 20.26 22 20 22 20z&quot;
++  /&gt;
++  &lt;linearGradient id=&quot;gradient4&quot; gradientUnits=&quot;userSpaceOnUse&quot; x1=&quot;29.57&quot; y1=&quot;15.76&quot; x2=&quot;33.84&quot; y2=&quot;20.45&quot;&gt;
++   &lt;stop offset=&quot;0&quot; stop-color=&quot;#ffffff&quot;/&gt;
++   &lt;stop offset=&quot;1&quot; stop-color=&quot;#c9c9c9&quot;/&gt;
++  &lt;/linearGradient&gt;
++  &lt;path style=&quot;fill:url(#gradient4)&quot;
++        d=&quot;M22 20L19 23C19 23 20.5 23.25 22 24C23.5 24.75 25 26 25 26L28 23C28 23 26.5 21.75 25 21C23.5 20.25 22 20 22 20z&quot;
++  /&gt;
++  &lt;linearGradient id=&quot;gradient5&quot; gradientUnits=&quot;userSpaceOnUse&quot; x1=&quot;62.28&quot; y1=&quot;-13.24&quot; x2=&quot;69.02&quot; y2=&quot;-5.42&quot;&gt;
++   &lt;stop offset=&quot;0&quot; stop-color=&quot;#e2e2e2&quot;/&gt;
++   &lt;stop offset=&quot;1&quot; stop-color=&quot;#898989&quot;/&gt;
++  &lt;/linearGradient&gt;
++  &lt;path style=&quot;fill:url(#gradient5)&quot;
++        d=&quot;M19 23V26L25 29V26C25 26 23.5 24.75 22 24C20.5 23.25 19 23 19 23z&quot;
++  /&gt;
++  &lt;path style=&quot;fill:#979797&quot;
++        d=&quot;M25 26V29L28 26V23L25 26z&quot;
++  /&gt;
++  &lt;path style=&quot;fill:none; stroke:#000000; stroke-width:2&quot;
++        d=&quot;M29 35C27.89 35 27 35.67 27 36.5C27 37.32 27.89 38 29 38C30.1 38 31 37.32 31 36.5C31 35.67 30.1 35 29 35z&quot;
++  /&gt;
++  &lt;radialGradient id=&quot;gradient6&quot; gradientUnits=&quot;userSpaceOnUse&quot; cx=&quot;0&quot; cy=&quot;0&quot; r=&quot;64&quot; gradientTransform=&quot;matrix(0.0781,0,0,0.0468,30,37)&quot;&gt;
++   &lt;stop offset=&quot;0&quot; stop-color=&quot;#75ff75&quot;/&gt;
++   &lt;stop offset=&quot;1&quot; stop-color=&quot;#04a904&quot;/&gt;
++  &lt;/radialGradient&gt;
++  &lt;path style=&quot;fill:url(#gradient6)&quot;
++        d=&quot;M29 35C27.89 35 27 35.67 27 36.5C27 37.32 27.89 38 29 38C30.1 38 31 37.32 31 36.5C31 35.67 30.1 35 29 35z&quot;
++  /&gt;
++  &lt;path style=&quot;fill:none; stroke:#000000; stroke-width:2&quot;
++        d=&quot;M29 35C27.89 35 27 35.67 27 36.5C27 37.32 27.89 38 29 38C30.1 38 31 37.32 31 36.5C31 35.67 30.1 35 29 35z&quot;
++        transform=&quot;matrix(1,0,0,1,5,-5)&quot;
++  /&gt;
++  &lt;radialGradient id=&quot;gradient7&quot; gradientUnits=&quot;userSpaceOnUse&quot; cx=&quot;0&quot; cy=&quot;0&quot; r=&quot;64&quot; gradientTransform=&quot;matrix(0.0781,0,0,0.0468,30,37)&quot;&gt;
++   &lt;stop offset=&quot;0&quot; stop-color=&quot;#75ff75&quot;/&gt;
++   &lt;stop offset=&quot;1&quot; stop-color=&quot;#04a904&quot;/&gt;
++  &lt;/radialGradient&gt;
++  &lt;path style=&quot;fill:url(#gradient7)&quot;
++        d=&quot;M29 35C27.89 35 27 35.67 27 36.5C27 37.32 27.89 38 29 38C30.1 38 31 37.32 31 36.5C31 35.67 30.1 35 29 35z&quot;
++        transform=&quot;matrix(1,0,0,1,5,-5)&quot;
++  /&gt;
++  &lt;path style=&quot;fill:none; stroke:#000000; stroke-width:2&quot;
++        d=&quot;M29 35C27.89 35 27 35.67 27 36.5C27 37.32 27.89 38 29 38C30.1 38 31 37.32 31 36.5C31 35.67 30.1 35 29 35z&quot;
++        transform=&quot;matrix(1,0,0,1,10,-10)&quot;
++  /&gt;
++  &lt;radialGradient id=&quot;gradient8&quot; gradientUnits=&quot;userSpaceOnUse&quot; cx=&quot;0&quot; cy=&quot;0&quot; r=&quot;64&quot; gradientTransform=&quot;matrix(0.0781,0,0,0.0468,30,37)&quot;&gt;
++   &lt;stop offset=&quot;0&quot; stop-color=&quot;#fff589&quot;/&gt;
++   &lt;stop offset=&quot;1&quot; stop-color=&quot;#ff9630&quot;/&gt;
++  &lt;/radialGradient&gt;
++  &lt;path style=&quot;fill:url(#gradient8)&quot;
++        d=&quot;M29 35C27.89 35 27 35.67 27 36.5C27 37.32 27.89 38 29 38C30.1 38 31 37.32 31 36.5C31 35.67 30.1 35 29 35z&quot;
++        transform=&quot;matrix(1,0,0,1,10,-10)&quot;
++  /&gt;
++  &lt;path style=&quot;fill:none; stroke:#000000; stroke-width:2&quot;
++        d=&quot;M29 35C27.89 35 27 35.67 27 36.5C27 37.32 27.89 38 29 38C30.1 38 31 37.32 31 36.5C31 35.67 30.1 35 29 35z&quot;
++        transform=&quot;matrix(1,0,0,1,15,-15)&quot;
++  /&gt;
++  &lt;radialGradient id=&quot;gradient9&quot; gradientUnits=&quot;userSpaceOnUse&quot; cx=&quot;0&quot; cy=&quot;0&quot; r=&quot;64&quot; gradientTransform=&quot;matrix(0.0781,0,0,0.0468,30,37)&quot;&gt;
++   &lt;stop offset=&quot;0&quot; stop-color=&quot;#ffb3b3&quot;/&gt;
++   &lt;stop offset=&quot;1&quot; stop-color=&quot;#ed0606&quot;/&gt;
++  &lt;/radialGradient&gt;
++  &lt;path style=&quot;fill:url(#gradient9)&quot;
++        d=&quot;M29 35C27.89 35 27 35.67 27 36.5C27 37.32 27.89 38 29 38C30.1 38 31 37.32 31 36.5C31 35.67 30.1 35 29 35z&quot;
++        transform=&quot;matrix(1,0,0,1,15,-15)&quot;
++  /&gt;
++ &lt;/g&gt;
++&lt;/svg&gt;
+diff --git a/main.go b/main.go
+index c011b33..9602b59 100644
+--- a/main.go
++++ b/main.go
+@@ -3,7 +3,9 @@
+ import (
+ 	&quot;bufio&quot;
+ 	_ &quot;embed&quot;
++	&quot;encoding/base64&quot;
+ 	&quot;encoding/json&quot;
++	&quot;fmt&quot;
+ 	&quot;io&quot;
+ 	&quot;io/ioutil&quot;
+ 	&quot;log&quot;
+@@ -21,6 +23,9 @@
+ //go:embed tcl/main.tcl
+ var mainTcl string
+ 
++//go:embed gorts.png
++var gortsPngIcon []byte
++
+ func main() {
+ 	// No need to wait on the http server,
+ 	// just let it die when the GUI is closed.
+@@ -65,6 +70,9 @@ func startGUI() {
+ 	// TODO: this should probably be refactored out
+ 	state := initState()
+ 
++	b64icon := base64.StdEncoding.EncodeToString(gortsPngIcon)
++	fmt.Fprintf(stdin, &quot;seticon %s\n&quot;, b64icon)
++
+ 	io.WriteString(stdin, &quot;readstate\n&quot;)
+ 
+ 	scanner := bufio.NewScanner(stdout)
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index bafb957..f23fb36 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -77,8 +77,16 @@ grid columnconfigure .c.buttons 1 -pad 15
+ grid columnconfigure .c.buttons 3 -pad 15
+ 
+ 
+-# Very simple line-based IPC where Tcl client talks to Go server
+-# via stdin/stdout.
++# The following procs constitute a very simple line-based IPC system where Tcl
++# client talks to Go server via stdin/stdout.
++
++proc seticon {b64data} {
++    image create photo applicationIcon -data [
++        binary decode base64 $b64data
++    ]
++    wm iconphoto . -default applicationIcon
++}
++
+ proc readstate {} {
+     puts &quot;readstate&quot;
+     variable description
+</pre></body></html>

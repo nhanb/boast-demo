@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[3a52c77137] implement history + back/forward buttons | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 3a52c77137</strong><hr><pre>commit 3a52c77137265200339be92ade9cd6abc0567f05
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri May 15 15:43:32 2020 +0700
+
+    implement history + back/forward buttons
+
+diff --git a/README.md b/README.md
+index fad4930..ea00469 100644
+--- a/README.md
++++ b/README.md
+@@ -28,7 +28,7 @@ # Deps
+ 
+ # Feature checklist
+ 
+-- [ ] back-forward buttons
++- [x] back-forward buttons
+ - [ ] separate I/O thread to avoid blocking GUI
+ - [ ] more visual indicators - maybe a status bar at the bottom
+ - [ ] parse gemini&#39;s advanced line types
+diff --git a/pyproject.toml b/pyproject.toml
+index eaf1700..29d7446 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;mcross&quot;
+-version = &quot;0.2.1&quot;
++version = &quot;0.3.0&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+diff --git a/src/mcross/gui/controller.py b/src/mcross/gui/controller.py
+index 3f1dca9..672e8fd 100644
+--- a/src/mcross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -18,6 +18,8 @@ def __init__(self):
+         self.view = View(self.root, self.model)
+         self.view.go_callback = self.go_callback
+         self.view.link_click_callback = self.link_click_callback
++        self.view.back_callback = self.back_callback
++        self.view.forward_callback = self.forward_callback
+ 
+     def run(self):
+         self.root.title(&quot;McRoss Browser&quot;)
+@@ -33,7 +35,7 @@ def go_callback(self, url: str):
+     def link_click_callback(self, raw_url):
+         # FIXME ugh
+         try:
+-            url = GeminiUrl.parse(raw_url, self.model.current_url)
++            url = GeminiUrl.parse(raw_url, self.model.history.get_current_url())
+             self.visit_link(url)
+         except NonAbsoluteUrlWithoutContextError:
+             messagebox.showwarning(
+@@ -51,6 +53,21 @@ def link_click_callback(self, raw_url):
+             )
+ 
+     def visit_link(self, url: GeminiUrl):
++        self.load_page(url)
++        self.model.history.visit(url)
++        self.view.render_page()
++
++    def back_callback(self):
++        self.model.history.go_back()
++        self.load_page(self.model.history.get_current_url())
++        self.view.render_page()
++
++    def forward_callback(self):
++        self.model.history.go_forward()
++        self.load_page(self.model.history.get_current_url())
++        self.view.render_page()
++
++    def load_page(self, url: GeminiUrl):
+         print(&quot;Requesting&quot;, url)
+         resp = get(url)
+         print(&quot;Received&quot;, resp)
+@@ -67,5 +84,3 @@ def visit_link(self, url: GeminiUrl):
+                     ]
+                 )
+             )
+-        self.model.current_url = url
+-        self.view.render_page()
+diff --git a/src/mcross/gui/model.py b/src/mcross/gui/model.py
+index 5164785..4549ba1 100644
+--- a/src/mcross/gui/model.py
++++ b/src/mcross/gui/model.py
+@@ -1,4 +1,7 @@
++from typing import List
++
+ from .. import document
++from ..transport import GeminiUrl
+ 
+ DEMO_TEXT = &quot;&quot;&quot;\
+ # Welcome to McRoss Browser
+@@ -33,12 +36,49 @@
+ &quot;&quot;&quot;
+ 
+ 
++class History:
++    h: List[GeminiUrl]
++    current_index: int
++
++    def __init__(self):
++        self.h = []
++        self.current_index = None
++
++    def visit(self, url: GeminiUrl):
++        # remove forward history first:
++        if self.current_index is not None:
++            self.h = self.h[: self.current_index + 1]
++        self.h.append(url)
++        self.current_index = len(self.h) - 1
++
++    def go_back(self):
++        if self.can_go_back():
++            self.current_index -= 1
++
++    def go_forward(self):
++        if self.can_go_forward():
++            self.current_index += 1
++
++    def can_go_back(self):
++        return self.current_index not in [None, 0]
++
++    def can_go_forward(self):
++        return self.current_index is not None and self.current_index &lt; len(self.h) - 1
++
++    def get_current_url(self):
++        try:
++            return self.h[self.current_index]
++        except (IndexError, TypeError):
++            return None
++
++
+ class Model:
+-    current_url = None
+     plaintext = &quot;&quot;
+     gemini_nodes = None
++    history: History
+ 
+     def __init__(self):
++        self.history = History()
+         self.update_content(DEMO_TEXT)
+ 
+     def update_content(self, plaintext):
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index e8a8840..cb74883 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -24,15 +24,20 @@ def pick_font(names):
+ class View:
+     model: Model
+     address_bar: ttk.Entry
+-    go_button: ttk.Button
++    go_btn: ttk.Button
++    back_btn: ttk.Button
++    forward_btn: ttk.Button
+     text: Text
+ 
+     go_callback = None
++    link_click_callback = None
++    back_callback = None
++    forward_callback = None
+ 
+     def __init__(self, root: Tk, model: Model):
+         self.model = model
+ 
+-        # first row - address bar + button
++        # first row - address bar + buttons
+         row1 = ttk.Frame(root)
+         row1.pack(fill=&quot;x&quot;)
+ 
+@@ -40,6 +45,18 @@ def __init__(self, root: Tk, model: Model):
+         row2 = ttk.Frame(root)
+         row2.pack(fill=&quot;both&quot;, expand=True)
+ 
++        # Back/Forward buttons
++        back_btn = ttk.Button(
++            row1, text=&quot;🡄&quot;, width=3, command=lambda: self.back_callback()
++        )
++        forward_btn = ttk.Button(
++            row1, text=&quot;🡆&quot;, width=3, command=lambda: self.forward_callback()
++        )
++        back_btn.pack(side=&quot;left&quot;, padx=2)
++        forward_btn.pack(side=&quot;left&quot;, padx=2)
++        self.back_btn = back_btn
++        self.forward_btn = forward_btn
++
+         # Address bar prefix
+         address_prefix = ttk.Label(row1, text=&quot;gemini://&quot;)
+         address_prefix.pack(side=&quot;left&quot;)
+@@ -53,9 +70,9 @@ def __init__(self, root: Tk, model: Model):
+         address_bar.focus_set()
+ 
+         # Go button
+-        go_button = ttk.Button(row1, text=&quot;go&quot;, command=self._on_go)
+-        self.go_button = go_button
+-        go_button.pack(side=&quot;left&quot;, pady=3)
++        go_btn = ttk.Button(row1, text=&quot;go&quot;, command=self._on_go)
++        self.go_btn = go_btn
++        go_btn.pack(side=&quot;left&quot;, pady=3)
+ 
+         # Main viewport implemented as a Text widget.
+         text = ReadOnlyText(row2)
+@@ -119,10 +136,19 @@ def _on_link_click(self, ev):
+         self.link_click_callback(raw_url)
+ 
+     def render_page(self):
++        # Enable/Disable forward/back buttons according to history
++        self.back_btn.config(
++            state=&quot;normal&quot; if self.model.history.can_go_back() else &quot;disabled&quot;
++        )
++        self.forward_btn.config(
++            state=&quot;normal&quot; if self.model.history.can_go_forward() else &quot;disabled&quot;
++        )
++
+         # Update url in address bar
+-        if self.model.current_url is not None:
++        current_url = self.model.history.get_current_url()
++        if current_url is not None:
+             self.address_bar.delete(0, &quot;end&quot;)
+-            self.address_bar.insert(0, self.model.current_url.without_protocol())
++            self.address_bar.insert(0, current_url.without_protocol())
+ 
+         # Update viewport
+         self.text.delete(&quot;1.0&quot;, &quot;end&quot;)
+</pre></body></html>

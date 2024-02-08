@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[aaf3be3f0a] add PyQt5 article | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / aaf3be3f0a</strong><hr><pre>commit aaf3be3f0a0f7e42fd32372d2436e22c16e840f8
+Author: nhanb &lt;nhan@nerdyweekly.com&gt;
+Date:   Sat Feb 14 23:01:12 2015 +0700
+
+    add PyQt5 article
+
+diff --git a/content/how-to-install-pyqt5-on-virtualenv-on-ubuntu-14.04.md b/content/how-to-install-pyqt5-on-virtualenv-on-ubuntu-14.04.md
+new file mode 100644
+index 0000000..1bd09ce
+--- /dev/null
++++ b/content/how-to-install-pyqt5-on-virtualenv-on-ubuntu-14.04.md
+@@ -0,0 +1,32 @@
++Title: How to install PyQt5 on a virtualenv on Ubuntu 14.04
++Slug: how-to-install-pyqt5-on-virtualenv-on-ubuntu-14.04
++Date: 2015-02-14 22:33
++Category: tutorials
++
++The official way to install PyQt5 for development is to download and compile SIP + PyQt5 from
++source, which is painstakingly slow (compiling PyQt5 took like 10 minutes on my PC). If you&#39;re
++[compiling it against a virtualenv][1], rinse and repeat for each new virtualenv you create.
++Alhough it is doable, I prefer something faster.
++
++And yes, there is something faster. Today I came across a [Stack Overflow answer][2] that suggested
++a neat trick: installing PyQt globally, then copy the whole thing to your virtualenv
++**site-packages** directory. Here&#39;s how I did it on Ubuntu 14.04, python3.4 and PyQt5:
++
++```bash
++# assuming you already have virtualenv &amp; virtualenvwrapper installed
++
++# install pyqt5 globally
++sudo apt-get install python3-pyqt5
++
++mkvirtualenv -p `which python3` cookies
++# (replace &quot;cookies&quot; with your actual virtualenv name, duh!)
++
++LIBDIR=&quot;$HOME/virtualenvs/cookies/lib/python3.4/site-packages&quot;
++cp -r /usr/lib/python3/dist-packages/PyQt5 &quot;$LIBDIR/PyQt5&quot;
++cp /usr/lib/python3/dist-packages/sip.cpython-*.so &quot;$LIBDIR/&quot;
++```
++
++And you&#39;re done with no compiling involved. Isn&#39;t that neat? :)
++
++[1]: https://michalcodes4life.wordpress.com/2014/03/16/pyqt5-python-3-3-in-virtualenv-on-ubuntu/
++[2]: http://stackoverflow.com/a/1962076
+</pre></body></html>

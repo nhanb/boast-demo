@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[891c6c1e46] add voxel post | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 891c6c1e46</strong><hr><pre>commit 891c6c1e46536ab90e07143b2c23bedfb8f16f25
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Apr 23 01:02:15 2023 +0700
+
+    add voxel post
+
+diff --git a/content/images/voxel_audio_device.png b/content/images/voxel_audio_device.png
+new file mode 100644
+index 0000000..e181c33
+Binary files /dev/null and b/content/images/voxel_audio_device.png differ
+diff --git a/content/images/voxel_battery.jpg b/content/images/voxel_battery.jpg
+new file mode 100644
+index 0000000..ef576cc
+Binary files /dev/null and b/content/images/voxel_battery.jpg differ
+diff --git a/content/images/voxel_chromebook_cp7133w.pdf b/content/images/voxel_chromebook_cp7133w.pdf
+new file mode 100644
+index 0000000..7fab76d
+Binary files /dev/null and b/content/images/voxel_chromebook_cp7133w.pdf differ
+diff --git a/content/images/voxel_internals.jpg b/content/images/voxel_internals.jpg
+new file mode 100644
+index 0000000..3171a64
+Binary files /dev/null and b/content/images/voxel_internals.jpg differ
+diff --git a/content/images/voxel_size.jpg b/content/images/voxel_size.jpg
+new file mode 100644
+index 0000000..cd886bc
+Binary files /dev/null and b/content/images/voxel_size.jpg differ
+diff --git a/content/images/voxel_thickness.jpg b/content/images/voxel_thickness.jpg
+new file mode 100644
+index 0000000..d4e610f
+Binary files /dev/null and b/content/images/voxel_thickness.jpg differ
+diff --git a/content/posts/acer-chromebook-spin.md b/content/posts/acer-chromebook-spin.md
+index 9312891..56bf166 100644
+--- a/content/posts/acer-chromebook-spin.md
++++ b/content/posts/acer-chromebook-spin.md
+@@ -2,27 +2,53 @@
+ Date: 2023-04-22 15:55
+ Slug: acer-chromebook-spin
+ Category: consoom
++Thumb: images/voxel_battery.jpg
++
+ 
+ **TL;DR:** bright crisp screen, acceptable keyboard, thin &amp; light build, buggy
+-touchpad even on ChromeOS, almost usable on MrChromebox UEFI + Arch Linux
+-except for the fact that sound crashes most of the time. It&#39;s absolutely not
+-worth the sticker price at [$1,099.99][1] (lol). Maybe consider buying if you can
+-find it at a heavy discount and the Linux sound issue has been fixed somehow.
++touchpad on both ChromeOS and Linux, almost usable on MrChromebox UEFI + Arch
++Linux except for the fact that sound crashes most of the time. It&#39;s absolutely
++not worth the sticker price at [$1,099.99][1] (lol). Maybe consider buying if
++you can find it at a heavy discount and the Linux sound issue has been fixed
++somehow.
+ 
+ ## Context
+ 
+-Sometime in 2022 I was looking for a replacement for my T530---something
+-lighter with a better screen---and saw a listing for a used Acer Chromebook
+-Spin 713-3W at only 10mil VND ($425, give or take). A recently released HiDPI
+-laptop with an i5-1135G7 at 425 freedom dollars? And I get to play with
+-ChromeOS/Crostini on a not-pathetically-weak x86 device? Sign me right up, I
+-thought. The plan was to run ChromeOS/Android apps for GUI stuff, and install
+-my usual tmux+vim based development [environment][2] on Crostini.
++Around 2022 I was looking for a replacement for my T530---something lighter
++with a better screen---and saw a listing for a used Acer Chromebook Spin 713-3W
++at only 10mil VND ($425, give or take). A recently released HiDPI laptop with
++an i5-1135G7 at 425 freedom dollars? And I get to play with ChromeOS/Crostini
++on a not-pathetically-weak x86 device? Sign me right up, I thought. The plan
++was to run ChromeOS/Android apps for GUI stuff, and install my usual tmux+vim
++based development [environment][2] on Crostini.
++
++## The hardware
++
++- Specs: i5-1135G7 (Tiger Lake), Xe graphics, 8GB RAM, 256GB SSD
++- Keyboard: acceptable
++- Screen: 2256x1504 (3:2) at 13.5&quot; (200dpi). Subjectively speaking, it&#39;s
++  bright, colorful and delivers crisp text---I have nothing but praise here.
++- Speakers: worse and quieter than my Samsung Tab S8 tablet
++
++Here it is sandwiched between a Samsung Tab S8 and a Thinkpad T530:
++
++![size](/images/voxel_size.jpg)
++
++![thickness](/images/voxel_thickness.jpg)
+ 
+ ## ChromeOS/Crostini
+ 
+-As advertised, the laptop can run ChromeOS apps, Android apps, and Linux apps
+-via containers. By default I got a Debian container, but since I need
++&gt; I&#39;d just like to interject for a moment. What you&#39;re referring to as Linux,
++&gt; is in fact, CHROME/Linux, or as I&#39;ve recently taken to calling it, CHROME
++&gt; plus Linux. Linux is not an operating system unto itself, but rather another
++&gt; free component of a fully functioning CHROME system made useful by the CHROME
++&gt; v8, css utililties, and other vital system components comprising a full OS as
++&gt; defined by the W3C.
++&gt;
++&gt; _-- [some weird internet person][6]_
++
++As advertised, the laptop could run ChromeOS apps, Android apps, and Linux apps
++via containers. By default I got a Debian container, but since I needed
+ up-to-date software for development, I set up an Arch container instead. [The
+ process][3] itself was straightforward enough.
+ 
+@@ -30,9 +56,92 @@ ## ChromeOS/Crostini
+ managed to wrangle traffic correctly for programs running inside Crostini too!
+ The only hiccup was that Magic DNS didn&#39;t work, so I needed to put the
+ hostname-IP pairs into /etc/hosts manually. I also had to change the temp dir
+-from /tmp to ~/tmp for golang tools to work, because Crostini programs weren&#39;t
+-allowed to exec files inside /tmp or something like that.
++from /tmp to ~/tmp for [Go][4] tools to work, because Crostini programs weren&#39;t
++allowed to exec files inside /tmp. Once I&#39;d worked out those kinks, I could
++open up a terminal and start working as if I were on one of my Arch PCs. Hell,
++even docker/docker-compose Just Worked™ inside the container.
++
++But then came the papercuts.
++
++The touchpad would randomly lag, as in, dragging still
++worked but there was a noticeable delay between my dragging and seeing the
++cursor actually moving. The problem would just go away as randomly as it
++happened.
++
++Back when I used an actual Linux machine, I was used to having 10 virtual
++desktops, numbered from 1 to 10, with Alt-n mapped to &quot;jump to desktop #n&quot;, and
++Windows-n mapped to &quot;move window to desktop #n&quot; (the `0` key maps to
++desktop #10, naturally). While ChromeOS has a &quot;workspaces&quot; feature, there&#39;s no
++way to navigate and juggle windows between them precisely and instantly.
++_Instantly_ is an important keyword here: many tasks, while doable, suffered
++from gratuitous animations and tedious step-by-step navigation. This reminded
++me of when I tried to use a Macbook professionally: things kinda worked, but
++the experience would always be intrinsically worse.
++
++While Linux GUI programs were automagically put on the ChromeOS applications
++list as first class citizens, certain quality-of-life features didn&#39;t work. For
++example, on KDE I used to be able to drag a video streaming link from the
++browser onto MPV&#39;s taskbar icon [to play it][5]. This no longer worked on
++ChromeOS.
++
++So I jumped ship.
++
++## Real Arch Linux on MrChromebox UEFI
++
++Installing _real_ Linux on this device requires installing the MrChromebox
++custom UEFI firmware, which in turn requires disabling the firmware write
++protection. Fortunately, for this device all I needed to do was opening up the
++laptop and [disconnecting the battery][7]:
++
++![internals](/images/voxel_internals.jpg)
++
++![battery-connector](/images/voxel_battery.jpg)
++
++If you need more detailed instructions, here&#39;s the [official manual][8].
++
++Then go [here][9] for instructions on how to download and run the MrChromebox
++utility script. In my case, I also needed to enable developer mode to get
++access to the chrosh shell.
++
++After this I got a normal UEFI boot menu so I could pop in an Arch installer
++USB drive and carried out the installation as usual.
++
++I managed to install KDE plasma and everything worked except for audio: the
++usual &quot;default&quot; audio profile wouldn&#39;t show up, even after I installed the
++necessary packages: `sof-firmware` (sound firmware for recent Intel
++generations) and `alsa-ucm-conf` (so-called topologies for these newer
++devices). After some desperate googling I found
++&lt;https://github.com/eupnea-linux/audio-scripts&gt; which installed some missing
++configs lifted straight from ChromeOS upstream. Sure enough, the device showed
++up:
++
++![default-profile-get](/images/voxel_audio_device.png)
++
++And it would actually play sound... for a while until it crashes.
++
++I collected logs and tried googling but nothing comes up that matches my case.
++Asking in the eupnea discord server yielded an uncertain response:
++
++&gt; looks like yet again intel broke something
++
++Oh, and the random touchpad delay issue was still there, so I&#39;m starting to
++think the touchpad hardware itself is problematic.
++
++And that&#39;s where I&#39;m at. I&#39;ll probably gather more logs and submit an issue to
++the SOF project. For now, consider this a warning: the laptop as of now is
++probably not worth buying. Hell, in Vietnam you can get a second hand X1 Carbon
++6th gen with an i7-8650U and 16GB of RAM for $460 right now from
++&lt;https://chotot.com&gt;; that&#39;s a guaranteed best-in-class keyboard, decent
++screen and Linux compatibility, at just a slight decrease in performance.
++
++But hey, I would have never known any of this if I hadn&#39;t tried, right?
+ 
+ [1]: https://www.acer.com/us-en/chromebooks/acer-chromebook-enterprise-spin-713-cp713-3w/pdp/NX.AHAAA.006
+ [2]: https://git.sr.ht/~nhanb/neodots
+ [3]: https://wiki.archlinux.org/title/Chrome_OS_devices/Crostini
++[4]: https://go.dev/
++[5]: /images/put.io_01_mpv.mp4
++[6]: https://orib.dev/interject.html
++[7]: https://wiki.mrchromebox.tech/Firmware_Write_Protect#Hardware_Write_Protection
++[8]: /images/voxel_chromebook_cp7133w.pdf
++[9]: https://mrchromebox.tech/#fwscript
+</pre></body></html>

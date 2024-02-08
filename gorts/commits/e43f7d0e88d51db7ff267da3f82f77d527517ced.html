@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e43f7d0e88] set available country codes | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / e43f7d0e88</strong><hr><pre>commit e43f7d0e88d51db7ff267da3f82f77d527517ced
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jun 20 12:35:23 2023 +0700
+
+    set available country codes
+
+diff --git a/go.mod b/go.mod
+index 11b8bbe..118e815 100644
+--- a/go.mod
++++ b/go.mod
+@@ -1,3 +1,5 @@
+ module go.imnhan.com/gorts
+ 
+ go 1.20
++
++require golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
+diff --git a/go.sum b/go.sum
+new file mode 100644
+index 0000000..001575f
+--- /dev/null
++++ b/go.sum
+@@ -0,0 +1,2 @@
++golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 h1:k/i9J1pBpvlfR+9QsetwPyERsqu1GIbi967PQMq3Ivc=
++golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1/go.mod h1:V1LtkGg67GoY2N1AnLN78QLrzxkLyJw7RJb1gzOOz9w=
+diff --git a/main.go b/main.go
+index 0ff2862..e079c2f 100644
+--- a/main.go
++++ b/main.go
+@@ -14,6 +14,9 @@
+ 	&quot;os/exec&quot;
+ 	&quot;runtime&quot;
+ 	&quot;strconv&quot;
++	&quot;strings&quot;
++
++	&quot;go.imnhan.com/gorts/startgg&quot;
+ )
+ 
+ const WebPort = &quot;1337&quot;
+@@ -84,7 +87,11 @@ func startGUI() {
+ 
+ 	b64icon := base64.StdEncoding.EncodeToString(gortsPngIcon)
+ 
+-	fmt.Fprintf(stdin, &quot;initialize %s %s\n&quot;, b64icon, WebPort)
++	fmt.Fprintf(
++		stdin,
++		&quot;initialize %s %s {%s}\n&quot;,
++		b64icon, WebPort, strings.Join(startgg.CountryCodes, &quot; &quot;),
++	)
+ 
+ 	scanner := bufio.NewScanner(stdout)
+ 
+diff --git a/startgg/countries.go b/startgg/countries.go
+index 5d1ed9e..51abdb8 100644
+--- a/startgg/countries.go
++++ b/startgg/countries.go
+@@ -1,10 +1,16 @@
+ package startgg
+ 
++import (
++	&quot;sort&quot;
++
++	&quot;golang.org/x/exp/maps&quot;
++)
++
+ // Startgg only shows (non-standard) country names (ongoing problem for years,
+ // probably will never be fixed), so we need this mapping to convert these
+ // names to alpha-2 codes.
+ // From https://gist.github.com/morleym/a39c43f6544a350c109c5f7b0b055155
+-var nameToCode = map[string]string{
++var countryNameToCode = map[string]string{
+ 	&quot;Bangladesh&quot;:                         &quot;bd&quot;,
+ 	&quot;Belgium&quot;:                            &quot;be&quot;,
+ 	&quot;Burkina Faso&quot;:                       &quot;bf&quot;,
+@@ -260,3 +266,9 @@
+ 	&quot;Wales&quot;:                                &quot;gb-wls&quot;,
+ 	&quot;Scotland&quot;:                             &quot;gb-sct&quot;,
+ }
++
++var CountryCodes []string = maps.Values(countryNameToCode)
++
++func init() {
++	sort.Strings(CountryCodes)
++}
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index 184f97a..2be2888 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -135,11 +135,14 @@ grid columnconfigure .c.buttons 3 -pad 15
+ # The following procs constitute a very simple line-based IPC system where Tcl
+ # client talks to Go server via stdin/stdout.
+ 
+-proc initialize {b64icon webport} {
++proc initialize {b64icon webport countrycodes} {
+     seticon $b64icon
+     set ::mainstatus &quot;Point your OBS browser source to http://localhost:${webport}&quot;
+     readstate
+     setupdiffcheck
++
++    .c.players.p1country configure -values $countrycodes
++    .c.players.p2country configure -values $countrycodes
+ }
+ 
+ proc seticon {b64data} {
+</pre></body></html>

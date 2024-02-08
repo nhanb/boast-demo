@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[d5968844ce] fix setting chapter route&#39;s title | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / d5968844ce</strong><hr><pre>commit d5968844ce68bdc360feb0625f564d860d1338b1
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Aug 25 22:35:33 2020 +0700
+
+    fix setting chapter route&#39;s title
+
+diff --git a/pyproject.toml b/pyproject.toml
+index cffb1ee..8b2a08f 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.5&quot;
++version = &quot;0.3.6&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/static/js/routes/chapter.js b/src/pytaku/static/js/routes/chapter.js
+index d98e36a..4019fe2 100644
+--- a/src/pytaku/static/js/routes/chapter.js
++++ b/src/pytaku/static/js/routes/chapter.js
+@@ -63,8 +63,8 @@ function Chapter(initialVNode) {
+         },
+       })
+         .then((resp) =&gt; {
+-          document.title = fullChapterName(chapter);
+           chapter = resp;
++          document.title = fullChapterName(chapter);
+           pendingPages = chapter.pages;
+           // start loading pages, 3 at a time:
+           loadNextPage();
+</pre></body></html>

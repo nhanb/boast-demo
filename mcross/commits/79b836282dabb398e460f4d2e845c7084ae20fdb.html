@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[79b836282d] makeshift url parsing | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 79b836282d</strong><hr><pre>commit 79b836282dabb398e460f4d2e845c7084ae20fdb
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu May 14 00:19:50 2020 +0700
+
+    makeshift url parsing
+
+diff --git a/client.py b/client.py
+index 0f06883..ebdef02 100644
+--- a/client.py
++++ b/client.py
+@@ -1,6 +1,7 @@
+ import re
+ import socket
+ import ssl
++from urllib.parse import urlparse
+ 
+ MAX_RESP_HEADER_BYTES = 2 + 1 + 1024 + 2  # &lt;STATUS&gt;&lt;whitespace&gt;&lt;META&gt;&lt;CR&gt;&lt;LF&gt;
+ MAX_RESP_BODY_BYTES = 1024 * 1024 * 5
+@@ -22,12 +23,14 @@ def __repr__(self):
+         return f&quot;Response(status={repr(self.status)}, meta={repr(self.meta)})&quot;
+ 
+ 
+-def get(hostname=&quot;gemini.circumlunar.space&quot;, path=&quot;/&quot;, port=1965):
+-    assert path.startswith(&quot;/&quot;), f&quot;Malformed path: {path}&quot;
++def get(absolute_url=&quot;gemini://gemini.circumlunar.space/&quot;):
++    url = parse_absolute_url(absolute_url)
++    port = url.port or 1965
++
+     context = ssl.create_default_context()
+-    with socket.create_connection((hostname, port)) as sock:
+-        with context.wrap_socket(sock, server_hostname=hostname) as ssock:
+-            ssock.send(f&quot;gemini://{hostname}{path}\r\n&quot;.encode())
++    with socket.create_connection((url.netloc, port)) as sock:
++        with context.wrap_socket(sock, server_hostname=url.netloc) as ssock:
++            ssock.send(f&quot;gemini://{url.netloc}{url.path}\r\n&quot;.encode())
+             header = ssock.recv(MAX_RESP_HEADER_BYTES).decode()
+             status, meta = _parse_resp_header(header)
+             resp = Response(status=status, meta=meta)
+@@ -44,3 +47,11 @@ def _parse_resp_header(header, pattern=re.compile(r&quot;^(\d\d) (.{,1024})\r\n$&quot;)):
+     status = match.group(1)
+     meta = match.group(2)
+     return status, meta
++
++
++def parse_absolute_url(absolute_url):
++    # TODO: this is not exactly safe. Do proper parsing later.
++    assert absolute_url.startswith(&quot;gemini://&quot;), f&quot;Malformed url: {absolute_url}&quot;
++    parsed = urlparse(absolute_url)
++    print(&quot;Parsed url:&quot;, parsed)
++    return parsed
+</pre></body></html>

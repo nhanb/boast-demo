@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[fc0a146c98] allow arbitrary navlinks | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / fc0a146c98</strong><hr><pre>commit fc0a146c988f28c39d33889c191778ddf7dc9920
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 23 21:37:20 2023 +0700
+
+    allow arbitrary navlinks
+
+diff --git a/docs/_s4g/settings.txt b/docs/_s4g/settings.txt
+index d2055b0..20657f2 100644
+--- a/docs/_s4g/settings.txt
++++ b/docs/_s4g/settings.txt
+@@ -2,7 +2,7 @@ Address: https://coolzone.example.com
+ Name: CoolZone
+ Tagline: Cool people only.
+ Root: /s4g/
+-NavbarLinks: index.dj, about/index.dj
++NavbarLinks: index.dj, about/index.dj, #GitHub#https://github.com/nhanb/s4g
+ 
+ AuthorName: Coolio McCool
+ AuthorURI: https://author.example.com
+diff --git a/docs/_s4g/theme/home.tmpl b/docs/_s4g/theme/home.tmpl
+index 394df5a..0c286f0 100644
+--- a/docs/_s4g/theme/home.tmpl
++++ b/docs/_s4g/theme/home.tmpl
+@@ -9,8 +9,8 @@
+ &lt;hr&gt;
+ 
+ &lt;div class=&quot;pages&quot;&gt;
+-{{- range .ArticlesInNav}}
+-  &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
++{{- range .NavLinks}}
++  &lt;a href=&quot;{{.Url}}&quot;&gt;{{.Text}}&lt;/a&gt;
+ {{- end}}
+   &lt;a class=&quot;feed-link&quot; href=&quot;{{.Feed}}&quot;&gt;
+     &lt;img src=&quot;{{.ThemePath}}/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
+diff --git a/docs/_s4g/theme/includes.tmpl b/docs/_s4g/theme/includes.tmpl
+index f4c14b8..652d4a1 100644
+--- a/docs/_s4g/theme/includes.tmpl
++++ b/docs/_s4g/theme/includes.tmpl
+@@ -1,8 +1,8 @@
+ {{define &quot;navbar&quot;}}
+ &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.ThemePath}}/navbar.css&quot;&gt;
+ &lt;nav&gt;
+-  {{- range .ArticlesInNav}}
+-  &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
++  {{- range .NavLinks}}
++  &lt;a href=&quot;{{.Url}}&quot;&gt;{{.Text}}&lt;/a&gt;
+   {{- end}}
+ 
+   {{- if not .Post.PostedAt.IsZero}}
+diff --git a/docs/about/index.html b/docs/about/index.html
+index ee026a6..691703d 100644
+--- a/docs/about/index.html
++++ b/docs/about/index.html
+@@ -19,6 +19,7 @@
+ &lt;nav&gt;
+   &lt;a href=&quot;/s4g/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/s4g/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;GitHub&lt;/a&gt;
+ 
+ &lt;/nav&gt;
+ &lt;hr class=&quot;nav-hr&quot;&gt;
+diff --git a/docs/index.html b/docs/index.html
+index 519a861..e9dddfd 100644
+--- a/docs/index.html
++++ b/docs/index.html
+@@ -25,6 +25,7 @@ &lt;h1 class=&quot;site-title&quot;&gt;CoolZone&lt;/h1&gt;
+ &lt;div class=&quot;pages&quot;&gt;
+   &lt;a href=&quot;/s4g/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/s4g/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;GitHub&lt;/a&gt;
+   &lt;a class=&quot;feed-link&quot; href=&quot;/s4g/feed.xml&quot;&gt;
+     &lt;img src=&quot;/s4g/_s4g/theme/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
+   &lt;/a&gt;
+diff --git a/docs/mfws.html b/docs/mfws.html
+index af1fd44..b85bf6a 100644
+--- a/docs/mfws.html
++++ b/docs/mfws.html
+@@ -19,6 +19,7 @@
+ &lt;nav&gt;
+   &lt;a href=&quot;/s4g/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/s4g/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;GitHub&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2023-04-05&quot;&gt;
+diff --git a/docs/scale/index.html b/docs/scale/index.html
+index acb415e..b0e33c7 100644
+--- a/docs/scale/index.html
++++ b/docs/scale/index.html
+@@ -19,6 +19,7 @@
+ &lt;nav&gt;
+   &lt;a href=&quot;/s4g/&quot;&gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/s4g/about/&quot;&gt;About&lt;/a&gt;
++  &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;GitHub&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+     Posted on
+     &lt;time datetime=&quot;2008-04-24&quot;&gt;
+diff --git a/main.go b/main.go
+index 7077598..36e707d 100644
+--- a/main.go
++++ b/main.go
+@@ -171,6 +171,11 @@ func runServer(fsys writablefs.FS, webRoot, addr string) *http.Server {
+ 	return srv
+ }
+ 
++type Link struct {
++	Text string
++	Url  string
++}
++
+ func regenerate(fsys writablefs.FS) (site *SiteMetadata, err error) {
+ 	defer timer(&quot;Took %s&quot;)()
+ 
+@@ -193,17 +198,27 @@ func regenerate(fsys writablefs.FS) (site *SiteMetadata, err error) {
+ 
+ 	generatedFiles := make(map[string]bool)
+ 
+-	var articlesInNav []*Article
+-	for _, link := range site.NavbarLinks {
+-		a, ok := articles[link]
++	var navLinks []Link
++	// A NavbarLinks item can either be a path to a .dj file,
++	// or an arbitrary link in the form of: #Text#Url
++	for _, item := range site.NavbarLinks {
++
++		if item[0] == &#39;#&#39; {
++			var link Link
++			link.Text, link.Url, _ = strings.Cut(item[1:], &quot;#&quot;)
++			navLinks = append(navLinks, link)
++			continue
++		}
++
++		ar, ok := articles[item]
+ 		if !ok {
+ 			return nil, &amp;errs.UserErr{
+ 				File:  SettingsPath,
+ 				Field: &quot;NavbarLinks&quot;,
+-				Msg:   fmt.Sprintf(`&quot;%s&quot; does not exist`, link),
++				Msg:   fmt.Sprintf(`&quot;%s&quot; does not exist`, item),
+ 			}
+ 		}
+-		articlesInNav = append(articlesInNav, a)
++		navLinks = append(navLinks, Link{Text: ar.Title, Url: ar.WebPath})
+ 	}
+ 
+ 	var articlesInFeed []*Article
+@@ -233,7 +248,7 @@ func regenerate(fsys writablefs.FS) (site *SiteMetadata, err error) {
+ 	}
+ 
+ 	for _, a := range articles {
+-		err := a.WriteHtmlFile(site, articlesInNav, articlesInFeed, startYear)
++		err := a.WriteHtmlFile(site, navLinks, articlesInFeed, startYear)
+ 		if err != nil {
+ 			return nil, fmt.Errorf(&quot;Article %s: %w&quot;, a.Path, err)
+ 		}
+@@ -348,7 +363,7 @@ func (a *Article) computeTemplatePaths() {
+ 
+ func (a *Article) WriteHtmlFile(
+ 	site *SiteMetadata,
+-	articlesInNav []*Article,
++	navLinks []Link,
+ 	articlesInFeed []*Article,
+ 	startYear int,
+ ) error {
+@@ -368,7 +383,7 @@ func (a *Article) WriteHtmlFile(
+ 		Content        template.HTML
+ 		Title          string
+ 		Post           *Article
+-		ArticlesInNav  []*Article
++		NavLinks       []Link
+ 		ArticlesInFeed []*Article
+ 		Feed           string
+ 		Now            time.Time
+@@ -379,7 +394,7 @@ func (a *Article) WriteHtmlFile(
+ 		Content:        template.HTML(contentHtml),
+ 		Title:          a.Title,
+ 		Post:           a,
+-		ArticlesInNav:  articlesInNav,
++		NavLinks:       navLinks,
+ 		ArticlesInFeed: articlesInFeed,
+ 		Feed:           site.Root + FeedPath,
+ 		Now:            time.Now(),
+diff --git a/theme/home.tmpl b/theme/home.tmpl
+index 394df5a..0c286f0 100644
+--- a/theme/home.tmpl
++++ b/theme/home.tmpl
+@@ -9,8 +9,8 @@
+ &lt;hr&gt;
+ 
+ &lt;div class=&quot;pages&quot;&gt;
+-{{- range .ArticlesInNav}}
+-  &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
++{{- range .NavLinks}}
++  &lt;a href=&quot;{{.Url}}&quot;&gt;{{.Text}}&lt;/a&gt;
+ {{- end}}
+   &lt;a class=&quot;feed-link&quot; href=&quot;{{.Feed}}&quot;&gt;
+     &lt;img src=&quot;{{.ThemePath}}/feed.svg&quot; alt=&quot;Atom Feed&quot; title=&quot;Atom Feed&quot;&gt;
+diff --git a/theme/includes.tmpl b/theme/includes.tmpl
+index f4c14b8..652d4a1 100644
+--- a/theme/includes.tmpl
++++ b/theme/includes.tmpl
+@@ -1,8 +1,8 @@
+ {{define &quot;navbar&quot;}}
+ &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.ThemePath}}/navbar.css&quot;&gt;
+ &lt;nav&gt;
+-  {{- range .ArticlesInNav}}
+-  &lt;a href=&quot;{{.WebPath}}&quot;&gt;{{.Title}}&lt;/a&gt;
++  {{- range .NavLinks}}
++  &lt;a href=&quot;{{.Url}}&quot;&gt;{{.Text}}&lt;/a&gt;
+   {{- end}}
+ 
+   {{- if not .Post.PostedAt.IsZero}}
+</pre></body></html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[fef0847f53] consistent read icon | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / fef0847f53</strong><hr><pre>commit fef0847f5376ad85d2f0f62ee10871ad99c7f4f4
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 24 19:27:57 2020 +0700
+
+    consistent read icon
+    
+    Also using icon font is safer than direct unicode char, which isn&#39;t
+    guaranteed to render correctly on all devices.
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 5e59ea2..06bc4d0 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.3&quot;
++version = &quot;0.3.4&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/static/js/routes/title.js b/src/pytaku/static/js/routes/title.js
+index c5a368e..bd865ff 100644
+--- a/src/pytaku/static/js/routes/title.js
++++ b/src/pytaku/static/js/routes/title.js
+@@ -82,13 +82,13 @@ function Title(initialVNode) {
+                         },
+                       }),
+                       m(Button, {
+-                        icon: &quot;eye&quot;,
++                        icon: &quot;check-square&quot;,
+                         disabled:
+                           isMarkingAllAsRead || allAreRead ? &quot;disabled&quot; : null,
+                         text: isMarkingAllAsRead
+                           ? &quot;submitting...&quot;
+                           : allAreRead
+-                          ? &quot;no new chapters&quot;
++                          ? &quot;all read!&quot;
+                           : &quot;read all&quot;,
+                         color: &quot;green&quot;,
+                         title: allAreRead
+diff --git a/src/pytaku/static/js/utils.js b/src/pytaku/static/js/utils.js
+index dd428a2..db9fd9e 100644
+--- a/src/pytaku/static/js/utils.js
++++ b/src/pytaku/static/js/utils.js
+@@ -16,7 +16,7 @@ const Button = {
+ 
+ const Chapter = {
+   view: (vnode) =&gt;
+-    m(&quot;div.utils--chapter&quot; + (vnode.attrs.chapter.is_read ? &quot; read&quot; : &quot;&quot;), [
++    m(&quot;div.utils--chapter&quot;, [
+       m(
+         m.route.Link,
+         {
+@@ -24,6 +24,9 @@ const Chapter = {
+           class: &quot;touch-friendly&quot;,
+         },
+         [
++          vnode.attrs.chapter.is_read
++            ? m(&quot;i.icon.icon-check-square.utils--chapter--read-icon&quot;)
++            : null,
+           m(&quot;span&quot;, fullChapterName(vnode.attrs.chapter)),
+           vnode.attrs.chapter.groups.map((group) =&gt;
+             m(&quot;span.utils--chapter--group&quot;, truncate(group, 20))
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index f2bebf5..358858b 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -346,3 +346,6 @@ .utils--chapter--group {
+   border: 1px solid #aaa;
+   background-color: #eee;
+ }
++.utils--chapter--read-icon {
++  color: green;
++}
+</pre></body></html>

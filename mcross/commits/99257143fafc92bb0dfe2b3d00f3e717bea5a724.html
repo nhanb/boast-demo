@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[99257143fa] dark mode with --dark cli arg | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 99257143fa</strong><hr><pre>commit 99257143fafc92bb0dfe2b3d00f3e717bea5a724
+Author: Frederick Yin &lt;fkfd@macaw.me&gt;
+Date:   Sun Jun 14 20:46:46 2020 +0800
+
+    dark mode with --dark cli arg
+
+diff --git a/src/mcross/__init__.py b/src/mcross/__init__.py
+index 200999f..eb8be0e 100644
+--- a/src/mcross/__init__.py
++++ b/src/mcross/__init__.py
+@@ -9,6 +9,7 @@ def run():
+     argparser = argparse.ArgumentParser()
+     argparser.add_argument(&quot;--textfont&quot;)
+     argparser.add_argument(&quot;--monofont&quot;)
++    argparser.add_argument(&quot;--dark&quot;, action=&quot;store_true&quot;)
+     args = argparser.parse_args()
+ 
+     # Actually start the program
+diff --git a/src/mcross/gui/controller.py b/src/mcross/gui/controller.py
+index 92d59c7..ca6b684 100644
+--- a/src/mcross/gui/controller.py
++++ b/src/mcross/gui/controller.py
+@@ -25,7 +25,9 @@ def __init__(self, args):
+         self.root = Tk()
+         self.root.alt_shortcuts = set()
+         self.model = Model()
+-        self.view = View(self.root, self.model, fonts=(args.textfont, args.monofont))
++        self.view = View(
++            self.root, self.model, fonts=(args.textfont, args.monofont), dark=args.dark
++        )
+         self.root.title(&quot;McRoss Browser&quot;)
+         self.root.geometry(&quot;800x600&quot;)
+ 
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index a52f30c..7e5ed33 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -71,7 +71,7 @@ class View:
+     back_callback = None
+     forward_callback = None
+ 
+-    def __init__(self, root: Tk, model: Model, fonts=(None, None)):
++    def __init__(self, root: Tk, model: Model, fonts=(None, None), dark=False):
+         self.model = model
+ 
+         # first row - address bar + buttons
+@@ -165,8 +165,8 @@ def on_ctrl_l(ev):
+ 
+         text.config(
+             font=(text_font, 13),
+-            bg=&quot;#fff8dc&quot;,
+-            fg=&quot;black&quot;,
++            bg=&quot;#212121&quot; if dark else &quot;#fff8dc&quot;,
++            fg=&quot;#eee&quot; if dark else &quot;black&quot;,
+             padx=5,
+             pady=5,
+             # hide blinking insertion cursor:
+@@ -176,12 +176,12 @@ def on_ctrl_l(ev):
+             height=1,
+         )
+         text.pack(side=&quot;left&quot;, fill=&quot;both&quot;, expand=True)
+-        text.tag_config(&quot;link&quot;, foreground=&quot;brown&quot;)
++        text.tag_config(&quot;link&quot;, foreground=&quot;#ff8a65&quot; if dark else &quot;brown&quot;)
+         text.tag_bind(&quot;link&quot;, &quot;&lt;Enter&gt;&quot;, self._on_link_enter)
+         text.tag_bind(&quot;link&quot;, &quot;&lt;Leave&gt;&quot;, self._on_link_leave)
+         text.tag_bind(&quot;link&quot;, &quot;&lt;Button-1&gt;&quot;, self._on_link_click)
+         text.tag_config(&quot;pre&quot;, font=(mono_font, 13))
+-        text.tag_config(&quot;listitem&quot;, foreground=&quot;#044604&quot;)
++        text.tag_config(&quot;listitem&quot;, foreground=&quot;#64c664&quot; if dark else &quot;#044604&quot;)
+ 
+         base_heading_font = font.Font(font=text[&quot;font&quot;])
+         base_heading_font.config(weight=&quot;bold&quot;)
+</pre></body></html>

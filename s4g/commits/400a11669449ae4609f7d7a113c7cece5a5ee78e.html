@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[400a116694] remove redundant logs | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 400a116694</strong><hr><pre>commit 400a11669449ae4609f7d7a113c7cece5a5ee78e
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jul 17 10:32:16 2023 +0700
+
+    remove redundant logs
+
+diff --git a/main.go b/main.go
+index 6060cef..375ef2c 100644
+--- a/main.go
++++ b/main.go
+@@ -124,9 +124,7 @@ func handleServeCmd(folder, port string) {
+ 		newSite, err := regenerate(fsys)
+ 		livereload.SetError(err)
+ 		if err == nil {
+-			fmt.Println(&quot;Sending&quot;, newSite.Root)
+ 			webRootUpdates &lt;- newSite.Root
+-			fmt.Println(&quot;Done&quot;, newSite.Root)
+ 		}
+ 	})
+ 	defer closeWatcher()
+</pre></body></html>

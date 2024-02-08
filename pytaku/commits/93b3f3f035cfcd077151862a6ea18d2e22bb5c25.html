@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[93b3f3f035] filter out chapters not yet accessible | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 93b3f3f035</strong><hr><pre>commit 93b3f3f035cfcd077151862a6ea18d2e22bb5c25
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Sep 21 07:33:53 2020 +0700
+
+    filter out chapters not yet accessible
+
+diff --git a/pyproject.toml b/pyproject.toml
+index be89ed1..4ed6912 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.21&quot;
++version = &quot;0.3.22&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index 425218f..ceab26f 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -1,5 +1,6 @@
+ import html
+ import re
++import time
+ 
+ from mangoapi.base_site import Site, requires_login
+ 
+@@ -14,6 +15,8 @@ def get_title(self, title_id):
+         cover = md_json[&quot;manga&quot;][&quot;cover_url&quot;].split(&quot;/&quot;)[-1]
+         cover_ext = cover[cover.find(&quot;.&quot;) + 1 : cover.rfind(&quot;?&quot;)]
+ 
++        current_timestamp = time.time()
++
+         title = {
+             &quot;id&quot;: title_id,
+             &quot;name&quot;: md_json[&quot;manga&quot;][&quot;title&quot;],
+@@ -32,7 +35,12 @@ def get_title(self, title_id):
+                     **_parse_chapter_number(chap[&quot;chapter&quot;]),
+                 }
+                 for chap_id, chap in md_json.get(&quot;chapter&quot;, {}).items()
+-                if chap[&quot;lang_code&quot;] == &quot;gb&quot; and chap[&quot;group_name&quot;] != &quot;MangaPlus&quot;
++                if chap[&quot;lang_code&quot;] == &quot;gb&quot;
++                and chap[&quot;group_name&quot;] != &quot;MangaPlus&quot;
++                and chap[&quot;timestamp&quot;] &lt;= current_timestamp
++                # ^ Chapter may be listed but with access delayed for a certain amount
++                # of time set by uploader, in which case we just filter it out. God I
++                # hate this generation of Patreon &quot;scanlators&quot;.
+             ],
+         }
+         return title
+</pre></body></html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[94029f78a8] don&#39;t use flexbox &quot;gap&quot; anymore | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 94029f78a8</strong><hr><pre>commit 94029f78a87ea956c000ca7cce4070048f4b155d
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 1 20:21:05 2020 +0700
+
+    don&#39;t use flexbox &quot;gap&quot; anymore
+    
+    Because it&#39;s barely supported atm.
+
+diff --git a/src/pytaku/static/base.css b/src/pytaku/static/base.css
+index e4558ac..f2211b1 100644
+--- a/src/pytaku/static/base.css
++++ b/src/pytaku/static/base.css
+@@ -50,7 +50,6 @@ .button {
+   align-items: center;
+   justify-content: center;
+   vertical-align: bottom;
+-  gap: 0.3rem;
+ 
+   cursor: pointer;
+   border: 0;
+@@ -59,6 +58,12 @@ .button {
+   color: white;
+   text-decoration: none;
+ }
++.button &gt; * {
++  margin-right: 0.3rem;
++}
++.button &gt; *:last-child {
++  margin-right: 0;
++}
+ .button:hover {
+   filter: brightness(110%);
+ }
+@@ -88,10 +93,17 @@ .button &gt; img {
+ 
+ nav {
+   display: flex;
+-  gap: 1rem;
+   flex-wrap: wrap;
+   padding: var(--body-padding);
+ }
++nav &gt; * {
++  margin-right: 1rem;
++  margin-top: 0.2rem;
++  margin-bottom: 0.2rem;
++}
++nav &gt; *:last-child {
++  margin-right: 0;
++}
+ 
+ .logo {
+   width: 150px;
+@@ -108,10 +120,15 @@ .search {
+ .links {
+   margin-left: auto; /* to pull to the right */
+   display: inline-flex;
+-  gap: 1rem;
+   justify-content: center;
+   align-items: center;
+ }
++.links &gt; * {
++  margin-right: 1rem;
++}
++.links &gt; *:last-child {
++  margin-right: 0;
++}
+ .links a * {
+   vertical-align: middle;
+ }
+diff --git a/src/pytaku/templates/chapter.html b/src/pytaku/templates/chapter.html
+index fbca8e1..c39eb8a 100644
+--- a/src/pytaku/templates/chapter.html
++++ b/src/pytaku/templates/chapter.html
+@@ -30,10 +30,17 @@
+   .buttons {
+     display: flex;
+     flex-direction: row;
+-    gap: .5rem;
+     justify-content: center;
+     flex-wrap: wrap;
+   }
++  .buttons &gt; * {
++    margin-right: .5rem;
++    margin-top: .2rem;
++    margin-bottom: .2rem;
++  }
++  .buttons &gt; *:last-child {
++    margin-right: 0;
++  }
+ &lt;/style&gt;
+ {% endblock %}
+ 
+</pre></body></html>

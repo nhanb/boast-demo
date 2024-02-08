@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[5b2e7a62b4] implement scheduled task that updates titles | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 5b2e7a62b4</strong><hr><pre>commit 5b2e7a62b4f31d8d2b3ef28092a8323ed2295107
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 8 02:30:44 2020 +0700
+
+    implement scheduled task that updates titles
+    
+    And potentially other things.
+    Usage: just run `pytaku-scheduler`.
+
+diff --git a/README.md b/README.md
+index c45f7c9..c21953a 100644
+--- a/README.md
++++ b/README.md
+@@ -9,4 +9,8 @@
+ 
+ pytaku-generate-config &gt; pytaku.conf.json
+ # fill stuff as needed
++
++# run 2 processes:
++gunicorn pytaku.main:app -w 7 -b 0.0.0.0:5001  # web server
++pytaku-scheduler  # scheduled tasks e.g. update titles
+ ```
+diff --git a/pyproject.toml b/pyproject.toml
+index da4e8cf..680d4a2 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.1.7&quot;
++version = &quot;0.1.8&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+@@ -12,6 +12,7 @@ packages = [
+ [tool.poetry.scripts]
+ pytaku-migrate = &quot;pytaku:migrate&quot;
+ pytaku-generate-config = &quot;pytaku:generate_config&quot;
++pytaku-scheduler = &quot;pytaku:scheduler&quot;
+ 
+ [tool.poetry.dependencies]
+ python = &quot;^3.7&quot;
+diff --git a/src/pytaku/__init__.py b/src/pytaku/__init__.py
+index bd3e1b9..fca72ae 100644
+--- a/src/pytaku/__init__.py
++++ b/src/pytaku/__init__.py
+@@ -19,3 +19,9 @@ def migrate():
+ 
+ def generate_config():
+     print(config.generate_json(DEBUG=True))
++
++
++def scheduler():
++    from .scheduler import main_loop
++
++    main_loop()
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index a03efbd..32e16a7 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -277,3 +277,9 @@ def unread(user_id, site, chapter_id):
+         &quot;DELETE FROM read WHERE user_id=? AND site=? AND chapter_id=?;&quot;,
+         (user_id, site, chapter_id),
+     )
++
++
++def find_outdated_titles(since=&quot;-6 hours&quot;):
++    return run_sql(
++        &quot;SELECT id, site FROM title WHERE updated_at &lt;= datetime(&#39;now&#39;, ?);&quot;, (since,)
++    )
+diff --git a/src/pytaku/scheduler.py b/src/pytaku/scheduler.py
+new file mode 100644
+index 0000000..5c7176d
+--- /dev/null
++++ b/src/pytaku/scheduler.py
+@@ -0,0 +1,47 @@
++import time
++from datetime import datetime, timedelta
++
++from mangoapi import get_title
++
++from .persistence import find_outdated_titles, save_title
++
++now = datetime.now
++
++
++def main_loop():
++    workers = [UpdateOutdatedSeries()]
++
++    while True:
++        for worker in workers:
++            if worker.should_run():
++                print(&quot;Running&quot;, worker.__class__.__name__)
++                worker.run()
++                worker.after_run()
++        time.sleep(5)
++
++
++class Worker:
++    interval = timedelta(days=1)
++
++    def __init__(self):
++        self.last_run = datetime(1, 1, 1)
++
++    def should_run(self):
++        return now() - self.last_run &gt;= self.interval
++
++    def run(self):
++        raise NotImplementedError()
++
++    def after_run(self):
++        self.last_run = now()
++
++
++class UpdateOutdatedSeries(Worker):
++    interval = timedelta(seconds=9)
++
++    def run(self):
++        for title in find_outdated_titles():
++            print(f&quot;Updating title {title[&#39;id&#39;]} from {title[&#39;site&#39;]}...&quot;, end=&quot;&quot;)
++            updated_title = get_title(title[&quot;id&quot;])
++            save_title(updated_title)
++            print(&quot; done&quot;)
+</pre></body></html>

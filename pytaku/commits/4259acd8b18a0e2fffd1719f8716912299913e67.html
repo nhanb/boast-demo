@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[4259acd8b1] change unique constraint to support mangasee | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 4259acd8b1</strong><hr><pre>commit 4259acd8b18a0e2fffd1719f8716912299913e67
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 9 20:40:35 2020 +0700
+
+    change unique constraint to support mangasee
+    
+    Unlike mangadex, mangasee doesn&#39;t expose site-wide unique chapter IDs.
+    This means a chapter&#39;s primary key must now be (site, title_id,
+    chapter_id) instead of just (site, chapter_id).
+    
+    With this, mangasee is done, I think.
+
+diff --git a/src/mangoapi/base_site.py b/src/mangoapi/base_site.py
+index b7f6df2..23f97ee 100644
+--- a/src/mangoapi/base_site.py
++++ b/src/mangoapi/base_site.py
+@@ -13,7 +13,7 @@ def get_title(self, title_id):
+         pass
+ 
+     @abstractmethod
+-    def get_chapter(self, chapter_id):
++    def get_chapter(self, title_id, chapter_id):
+         pass
+ 
+     @abstractmethod
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index 3ba5cfe..ff9c5b1 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -36,7 +36,7 @@ def get_title(self, title_id):
+         }
+         return title
+ 
+-    def get_chapter(self, chapter_id):
++    def get_chapter(self, title_id, chapter_id):
+         md_resp = requests.get(
+             f&quot;https://mangadex.org/api/?id={chapter_id}&amp;type=chapter&amp;saver=0&quot;
+         )
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+index 36e5cae..07b3524 100644
+--- a/src/mangoapi/mangasee.py
++++ b/src/mangoapi/mangasee.py
+@@ -9,6 +9,9 @@
+ regexes = {
+     &quot;title_name&quot;: re.compile(r&quot;&lt;title&gt;\s*([^|]+) | MangaSee&lt;/title&gt;&quot;),
+     &quot;title_chapters&quot;: re.compile(r&quot;vm\.Chapters = (\[[^\]]+\])&quot;),
++    &quot;chapter_title_name&quot;: re.compile(r&#39;vm\.IndexName = &quot;([^&quot;]+)&quot;&#39;),
++    &quot;chapter_data&quot;: re.compile(r&quot;vm\.CurChapter = (\{[^\}]+\})&quot;),
++    &quot;chapter_img_server&quot;: re.compile(r&#39;vm\.CurPathName = &quot;([^&quot;]+)&quot;&#39;),
+ }
+ 
+ 
+@@ -24,16 +27,18 @@ def get_title(self, title_id):
+         html = resp.text
+         name = regexes[&quot;title_name&quot;].search(html).group(1).strip()
+         chapters_str = regexes[&quot;title_chapters&quot;].search(html).group(1)
+-        chapters = [
+-            {
+-                &quot;id&quot;: ch[&quot;Chapter&quot;],
+-                &quot;name&quot;: ch[&quot;ChapterName&quot;],
+-                &quot;volume&quot;: &quot;&quot;,
+-                &quot;groups&quot;: [],
+-                **_parse_chapter_number(ch[&quot;Chapter&quot;]),
+-            }
+-            for ch in json.loads(chapters_str)
+-        ]
++        chapters = []
++        for ch in json.loads(chapters_str):
++            numbers = _parse_chapter_number(ch[&quot;Chapter&quot;])
++            chapters.append(
++                {
++                    &quot;id&quot;: numbers[&quot;number&quot;],
++                    &quot;name&quot;: ch[&quot;ChapterName&quot;],
++                    &quot;volume&quot;: &quot;&quot;,
++                    &quot;groups&quot;: [],
++                    **numbers,
++                }
++            )
+         return {
+             &quot;id&quot;: title_id,
+             &quot;name&quot;: name,
+@@ -44,8 +49,33 @@ def get_title(self, title_id):
+             &quot;descriptions&quot;: [],
+         }
+ 
+-    def get_chapter(self, chapter_id):
+-        pass
++    def get_chapter(self, title_id, chapter_id):
++        resp = requests.get(
++            f&quot;https://mangasee123.com/read-online/{title_id}-chapter-{chapter_id}.html&quot;
++        )
++        assert resp.status_code == 200
++        html = resp.text
++
++        title_id = regexes[&quot;chapter_title_name&quot;].search(html).group(1)
++        chapter_data = json.loads(regexes[&quot;chapter_data&quot;].search(html).group(1))
++        num_pages = int(chapter_data[&quot;Page&quot;])
++        img_server = regexes[&quot;chapter_img_server&quot;].search(html).group(1)
++
++        numbers = _parse_chapter_number(chapter_data[&quot;Chapter&quot;])
++
++        result = {
++            &quot;id&quot;: chapter_id,
++            &quot;title_id&quot;: title_id,
++            &quot;name&quot;: chapter_data[&quot;ChapterName&quot;] or &quot;&quot;,
++            &quot;pages&quot;: [
++                _generate_img_src(img_server, title_id, chapter_data[&quot;Chapter&quot;], p)
++                for p in range(1, num_pages + 1)
++            ],
++            &quot;groups&quot;: [],
++            &quot;is_webtoon&quot;: False,
++            **numbers,
++        }
++        return result
+ 
+     def search_title(self, query):
+         &quot;&quot;&quot;
+@@ -116,8 +146,9 @@ def __init__(self, titles: list):
+         )
+ 
+     def search(self, query):
++        query = &#39;&quot;&#39; + query.replace(&#39;&quot;&#39;, &#39;&quot;&quot;&#39;) + &#39;&quot;&#39;
+         return self.db.cursor().execute(
+-            &quot;SELECT id, name FROM titles(?) ORDER BY rank;&quot;, (query,)
++            &quot;SELECT id, name FROM titles WHERE titles MATCH ? ORDER BY rank;&quot;, (query,),
+         )
+ 
+ 
+@@ -138,8 +169,33 @@ def _parse_chapter_number(e):
+     &quot;&quot;&quot;
+     major = int(e[1:-1])
+     minor = int(e[-1])
+-    return {
++    result = {
+         &quot;num_major&quot;: major,
+-        &quot;num_minor&quot;: minor,
+         &quot;number&quot;: str(major) if not minor else f&quot;{major}.{minor}&quot;,
+     }
++    if minor:
++        result[&quot;num_minor&quot;] = minor
++    return result
++
++
++def _generate_img_src(img_srv, title_id, chapter_id, page):
++    &quot;&quot;&quot;
++    Chapter ID padding logic:
++
++        vm.ChapterImage = function (ChapterString) {
++          var Chapter = ChapterString.slice(1, -1);
++          var Odd = ChapterString[ChapterString.length - 1];
++          if (Odd == 0) {
++            return Chapter;
++          } else {
++            return Chapter + &quot;.&quot; + Odd;
++          }
++        };
++    &quot;&quot;&quot;
++    chapter = chapter_id[1:-1]
++    odd = chapter_id[len(chapter_id) - 1]
++    if odd == &quot;0&quot;:
++        padded_chapter = chapter
++    else:
++        padded_chapter = f&quot;{chapter}.{odd}&quot;
++    return f&quot;https://{img_srv}/manga/{title_id}/{padded_chapter}-{page:03d}.png&quot;
+diff --git a/src/pytaku/database/migrations/latest_schema.sql b/src/pytaku/database/migrations/latest_schema.sql
+index 21255b4..e1dd9b5 100644
+--- a/src/pytaku/database/migrations/latest_schema.sql
++++ b/src/pytaku/database/migrations/latest_schema.sql
+@@ -13,7 +13,7 @@ CREATE TABLE title (
+ 
+     unique(id, site)
+ );
+-CREATE TABLE chapter (
++CREATE TABLE IF NOT EXISTS &quot;old_chapter&quot; (
+     id text,
+     title_id text,
+     site text,
+@@ -52,7 +52,7 @@ CREATE TABLE read (
+     updated_at text default (datetime(&#39;now&#39;)),
+ 
+     foreign key (user_id) references user (id),
+-    foreign key (chapter_id, site) references chapter (id, site),
++    foreign key (chapter_id, site) references &quot;old_chapter&quot; (id, site),
+     unique(user_id, chapter_id, site)
+ );
+ CREATE TABLE keyval_store (
+@@ -60,3 +60,18 @@ CREATE TABLE keyval_store (
+     value text not null,
+     updated_at text default (datetime(&#39;now&#39;))
+ );
++CREATE TABLE chapter (
++    id text,
++    title_id text,
++    site text,
++    num_major integer,
++    num_minor integer,
++    name text,
++    pages text,
++    groups text,
++    updated_at text default (datetime(&#39;now&#39;)), is_webtoon boolean,
++
++    foreign key (title_id, site) references title (id, site),
++    unique(site, title_id, id),
++    unique(site, title_id, num_major, num_minor)
++);
+diff --git a/src/pytaku/database/migrations/m0002.sql b/src/pytaku/database/migrations/m0002.sql
+index 35d184e..15f1c6e 100644
+--- a/src/pytaku/database/migrations/m0002.sql
++++ b/src/pytaku/database/migrations/m0002.sql
+@@ -1,3 +1,5 @@
++-- Add key-value store table, for a poor man&#39;s inefficient cache
++
+ create table keyval_store (
+     key text primary key,
+     value text not null,
+diff --git a/src/pytaku/database/migrations/m0003.sql b/src/pytaku/database/migrations/m0003.sql
+new file mode 100644
+index 0000000..14d89ec
+--- /dev/null
++++ b/src/pytaku/database/migrations/m0003.sql
+@@ -0,0 +1,23 @@
++-- Dropping the unique(id, site) constraint.
++-- SQLite doesn&#39;t let you do that directly so gotta create a new table
++-- then copy existing data over.
++
++alter table chapter rename to old_chapter;
++
++create table chapter (
++    id text,
++    title_id text,
++    site text,
++    num_major integer,
++    num_minor integer,
++    name text,
++    pages text,
++    groups text,
++    updated_at text default (datetime(&#39;now&#39;)), is_webtoon boolean,
++
++    foreign key (title_id, site) references title (id, site),
++    unique(site, title_id, id),
++    unique(site, title_id, num_major, num_minor)
++);
++
++insert into chapter select * from old_chapter;
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index ade49d3..fc182a4 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -51,7 +51,7 @@ def home_view():
+     return render_template(&quot;home.html&quot;)
+ 
+ 
+-@app.route(&quot;/me&quot;, methods=[&quot;GET&quot;])
++@app.route(&quot;/following&quot;, methods=[&quot;GET&quot;])
+ @ensure_session_version
+ @require_login
+ def follows_view():
+@@ -168,7 +168,7 @@ def auth_view():
+     return render_template(&quot;auth.html&quot;)
+ 
+ 
+-@app.route(&quot;/title/&lt;site&gt;/&lt;title_id&gt;&quot;)
++@app.route(&quot;/m/&lt;site&gt;/&lt;title_id&gt;&quot;)
+ @ensure_session_version
+ @toggle_has_read
+ def title_view(site, title_id):
+@@ -188,24 +188,27 @@ def title_view(site, title_id):
+     return render_template(&quot;title.html&quot;, **title)
+ 
+ 
+-@app.route(&quot;/chapter/&lt;site&gt;/&lt;chapter_id&gt;&quot;)
++@app.route(&quot;/m/&lt;site&gt;/&lt;title_id&gt;/&lt;chapter_id&gt;&quot;)
+ @ensure_session_version
+ @toggle_has_read
+-def chapter_view(site, chapter_id):
+-    chapter = load_chapter(site, chapter_id)
++def chapter_view(site, title_id, chapter_id):
++    chapter = load_chapter(site, title_id, chapter_id)
+     if not chapter:
+         print(&quot;Getting chapter&quot;, chapter_id)
+-        chapter = get_chapter(chapter_id)
++        chapter = get_chapter(site, title_id, chapter_id)
++        chapter[&quot;site&quot;] = site
+         save_chapter(chapter)
+     else:
+         print(&quot;Loading chapter&quot;, chapter_id, &quot;from db&quot;)
+ 
+-    chapter[&quot;pages&quot;] = [
+-        url_for(&quot;proxy_view&quot;, b64_url=_encode_proxy_url(p)) for p in chapter[&quot;pages&quot;]
+-    ]
++    if site in (&quot;mangadex&quot;, &quot;mangasee&quot;):
++        chapter[&quot;pages&quot;] = [
++            url_for(&quot;proxy_view&quot;, b64_url=_encode_proxy_url(p))
++            for p in chapter[&quot;pages&quot;]
++        ]
+ 
+     # YIIIIKES
+-    title = load_title(site, chapter[&quot;title_id&quot;])
++    title = load_title(site, title_id)
+     prev_chapter, next_chapter = get_prev_next_chapters(title, chapter)
+     chapter[&quot;prev_chapter&quot;] = prev_chapter
+     chapter[&quot;next_chapter&quot;] = next_chapter
+@@ -229,6 +232,7 @@ def proxy_view(b64_url):
+     &quot;&quot;&quot;Fine I&#39;ll do it&quot;&quot;&quot;
+     url = _decode_proxy_url(b64_url)
+     if not _is_manga_img_url(url):
++        print(&quot;Invalid img url:&quot;, url)
+         return &quot;Nope&quot;, 400
+     md_resp = requests.get(url)
+     resp = make_response(md_resp.content, md_resp.status_code)
+@@ -245,6 +249,9 @@ def _decode_proxy_url(b64_url):
+ 
+ 
+ def _is_manga_img_url(
+-    url, pattern=re.compile(r&quot;^https://(\w+\.)?mangadex\.org/data/.+$&quot;)
++    url,
++    pattern=re.compile(
++        r&quot;^https://([\w_-]+\.)?(mangadex\.org/data|mangabeast\d{0,4}.com/manga)/&quot;
++    ),
+ ):
+     return pattern.match(url)
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 82f2df8..3b2ef01 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -121,7 +121,7 @@ def save_chapter(chapter):
+         {
+             &quot;id&quot;: chapter[&quot;id&quot;],
+             &quot;title_id&quot;: chapter[&quot;title_id&quot;],
+-            &quot;site&quot;: &quot;mangadex&quot;,
++            &quot;site&quot;: chapter[&quot;site&quot;],
+             &quot;num_major&quot;: chapter.get(&quot;num_major&quot;),
+             &quot;num_minor&quot;: chapter.get(&quot;num_minor&quot;),
+             &quot;name&quot;: chapter[&quot;name&quot;],
+@@ -132,14 +132,14 @@ def save_chapter(chapter):
+     )
+ 
+ 
+-def load_chapter(site, chapter_id):
++def load_chapter(site, title_id, chapter_id):
+     result = run_sql(
+         &quot;&quot;&quot;
+         SELECT id, title_id, num_major, num_minor, name, pages, groups, is_webtoon
+         FROM chapter
+-        WHERE id = ? AND site=?;
++        WHERE site=? AND title_id=? AND id=?;
+         &quot;&quot;&quot;,
+-        (chapter_id, site),
++        (site, title_id, chapter_id),
+     )
+     if not result:
+         return None
+diff --git a/src/pytaku/source_sites.py b/src/pytaku/source_sites.py
+index 44577b6..71a0d98 100644
+--- a/src/pytaku/source_sites.py
++++ b/src/pytaku/source_sites.py
+@@ -26,8 +26,8 @@ def _get_site(name):
+     return site
+ 
+ 
+-def get_chapter(site_name, chapter_id):
+-    return _get_site(site_name).get_chapter(chapter_id)
++def get_chapter(site_name, title_id, chapter_id):
++    return _get_site(site_name).get_chapter(title_id, chapter_id)
+ 
+ 
+ def get_title(site_name, title_id):
+@@ -51,4 +51,7 @@ def search_title_all_sites(query):
+     Returns dict in the form of {site_name: List[Title]}
+     I should really look into proper type annotations huh.
+     &quot;&quot;&quot;
+-    return {site_name: search_title(site_name, query) for site_name in (&quot;mangasee&quot;,)}
++    return {
++        site_name: search_title(site_name, query)
++        for site_name in (&quot;mangasee&quot;, &quot;mangadex&quot;)
++    }
+diff --git a/src/pytaku/templates/chapter.html b/src/pytaku/templates/chapter.html
+index 05248bd..5ad18fa 100644
+--- a/src/pytaku/templates/chapter.html
++++ b/src/pytaku/templates/chapter.html
+@@ -1,14 +1,14 @@
+ {% extends &#39;base.html&#39; %}
+ 
+ {% block title %}
+-Ch.{{ num_major }}{% if num_minor %}.{{ num_minor }}{% endif %}
++Chapter {{ num_major }}{% if num_minor %}.{{ num_minor }}{% endif %}
+ {% if name %} - {{ name }}{% endif %}
+ {% endblock %}
+ 
+ {% block head %}
+ 
+ {% if next_chapter %}
+-&lt;link rel=&quot;prefetch&quot; href=&quot;{{ url_for(&#39;chapter_view&#39;, site=site, chapter_id=next_chapter[&#39;id&#39;])}}&quot;&gt;
++&lt;link rel=&quot;prefetch&quot; href=&quot;{{ url_for(&#39;chapter_view&#39;, site=site, title_id=title_id, chapter_id=next_chapter[&#39;id&#39;])}}&quot;&gt;
+ {% endif %}
+ 
+ &lt;style&gt;
+@@ -61,7 +61,7 @@ &lt;h1&gt;{{ self.title() }}&lt;/h1&gt;
+ {% block buttons %}
+ &lt;div class=&quot;buttons&quot;&gt;
+   {% if prev_chapter %}
+-  {{ ibutton(href=url_for(&#39;chapter_view&#39;, site=site, chapter_id=prev_chapter[&#39;id&#39;]), left_icon=&#39;chevrons-left&#39;, text=&#39;Prev&#39;) }}
++  {{ ibutton(href=url_for(&#39;chapter_view&#39;, site=site, title_id=title_id, chapter_id=prev_chapter[&#39;id&#39;]), left_icon=&#39;chevrons-left&#39;, text=&#39;Prev&#39;) }}
+   {% else %}
+   {{ ibutton(left_icon=&#39;chevrons-left&#39;, text=&#39;Prev&#39;, disabled=True) }}
+   {% endif %}
+@@ -70,7 +70,7 @@ &lt;h1&gt;{{ self.title() }}&lt;/h1&gt;
+ 
+   {% if next_chapter %}
+ 
+-    {% set next_url = url_for(&#39;chapter_view&#39;, site=site, chapter_id=next_chapter[&#39;id&#39;]) %}
++    {% set next_url = url_for(&#39;chapter_view&#39;, site=site, title_id=title_id, chapter_id=next_chapter[&#39;id&#39;]) %}
+     {% if session[&#39;user&#39;] %}
+       {% set next_url = next_url + &#39;?has_read=&#39; + id %}
+     {% endif %}
+diff --git a/src/pytaku/templates/follows.html b/src/pytaku/templates/follows.html
+index ee57dc9..ec88dde 100644
+--- a/src/pytaku/templates/follows.html
++++ b/src/pytaku/templates/follows.html
+@@ -84,7 +84,7 @@
+     &lt;a class=&quot;more chapter&quot; href=&quot;{{ title_url }}&quot;&gt;and {{ title[&#39;chapters&#39;]|length - 4 }} more...&lt;/a&gt;
+     {% endif %}
+     {% for ch in title[&#39;chapters&#39;][-4:] %}
+-    &lt;a class=&quot;chapter&quot; href=&quot;{{ url_for(&#39;chapter_view&#39;, site=title[&#39;site&#39;], chapter_id=ch[&#39;id&#39;]) }}&quot;&gt;
++    &lt;a class=&quot;chapter&quot; href=&quot;{{ url_for(&#39;chapter_view&#39;, site=title[&#39;site&#39;], title_id=title[&#39;id&#39;], chapter_id=ch[&#39;id&#39;]) }}&quot;&gt;
+       Chapter {{ ch[&#39;num_major&#39;] }}{% if ch[&#39;num_minor&#39;] %}.{{ ch[&#39;num_minor&#39;] }}{% endif %}
+               {% if ch[&#39;volume&#39;] %}Volume {{ ch[&#39;volume&#39;] }} {% endif %}
+               {% if ch[&#39;name&#39;] %} - {{ ch[&#39;name&#39;] }}{% endif %}
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index e39ea1d..b5a7b2c 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -59,7 +59,7 @@ &lt;h1&gt;{{ name }}&lt;/h1&gt;
+     &lt;/td&gt;
+     {% endif %}
+     &lt;td&gt;
+-      &lt;a href=&quot;{{ url_for(&#39;chapter_view&#39;, chapter_id=chapter[&#39;id&#39;], site=site) }}&quot;&gt;
++      &lt;a href=&quot;{{ url_for(&#39;chapter_view&#39;, chapter_id=chapter[&#39;id&#39;], title_id=id, site=site) }}&quot;&gt;
+         Chapter {{ chapter[&#39;number&#39;] }}
+         {% if chapter[&#39;volume&#39;] %}Volume {{ chapter[&#39;volume&#39;] }} {% endif %}
+         {% if chapter[&#39;name&#39;] %}- {{ chapter[&#39;name&#39;] }} {% endif %}
+</pre></body></html>

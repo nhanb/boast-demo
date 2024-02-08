@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[5c2e15a85a] fix extra blank space below spoiler | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 5c2e15a85a</strong><hr><pre>commit 5c2e15a85a83471889083cb3cf759076fa4cf7dc
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jan 27 23:07:41 2021 +0700
+
+    fix extra blank space below spoiler
+
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index bed5285..43efd93 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -347,10 +347,28 @@ .title--details &gt; * {
+   margin-right: 0.3rem;
+   flex-shrink: 1;
+ }
++
+ .title--descriptions {
+   background-color: #eee;
+   padding: 0.5em;
+ }
++.title--descriptions details + br {
++  display: none;
++  /* Mangadex tweak:
++   *
++   * Their &quot;spoiler&quot; implementation is an inline button which doesn&#39;t naturally
++   * have a line break, so description writers usually compensate by 2 &lt;brs&gt;.
++   *
++   * Ours is a bog standard &lt;details&gt; tag which already causes a natural line
++   * break, adding to the 2 &lt;br&gt;s causing too much vertical whitespace. This
++   * selector practically throws out the first &lt;br&gt; to make it look the same as
++   * kissmanga&#39;s.
++   *
++   * Maybe the &lt;br&gt; should be removed in mangadex source site logic instead.
++   * TODO: revisit this choice when a new source site with rich text
++   * description is implemented.
++   */
++}
+ 
+ @media (max-width: 399px) {
+   .title--details {
+</pre></body></html>

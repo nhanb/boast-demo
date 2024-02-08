@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1d6652824b] implement twitter card so previews show up | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 1d6652824b</strong><hr><pre>commit 1d6652824b01cd669ecdcf901f05159f36814b5e
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jan 31 10:12:51 2022 +0700
+
+    implement twitter card so previews show up
+
+diff --git a/nhanb-theme/templates/article.html b/nhanb-theme/templates/article.html
+index 3b7396b..dcf2f51 100644
+--- a/nhanb-theme/templates/article.html
++++ b/nhanb-theme/templates/article.html
+@@ -5,6 +5,9 @@
+ {% block header_extras %}
+ 
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/theme/css/article.css&quot;&gt;
++
++  &lt;meta name=&quot;twitter:card&quot; content=&quot;summary&quot; /&gt;
++  &lt;meta name=&quot;twitter:creator&quot; content=&quot;@nhanbt&quot; /&gt;
+   &lt;meta property=&quot;og:title&quot; content=&quot;{{ article.title|striptags }}&quot; /&gt;
+   &lt;meta property=&quot;og:description&quot; content=&quot;{{ article.content|striptags|truncate(255) }}&quot; /&gt;
+ 
+</pre></body></html>

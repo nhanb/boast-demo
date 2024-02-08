@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[29497250c0] introduce new theme | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 29497250c0</strong><hr><pre>commit 29497250c054db307ed27b6a56310491cf68834c
+Author: nhanb &lt;nhan@nerdyweekly.com&gt;
+Date:   Fri Jun 5 15:18:49 2015 +0700
+
+    introduce new theme
+
+diff --git a/content/images/mofo_01_loads.png b/content/images/mofo_01_loads.png
+new file mode 100644
+index 0000000..f79fad1
+Binary files /dev/null and b/content/images/mofo_01_loads.png differ
+diff --git a/content/look-ma-no-stock-theme.md b/content/look-ma-no-stock-theme.md
+new file mode 100644
+index 0000000..cbb7541
+--- /dev/null
++++ b/content/look-ma-no-stock-theme.md
+@@ -0,0 +1,66 @@
++Title: Look ma, no stock theme!
++Date: 2015-06-05 13:54
++
++I just redesigned my blog.
++
++To be totally honest, the previous design was not mine at all. I&#39;ve always been using
++[pelican-octopress-them][1], which is a Pelican port of the default theme for Octopress. It&#39;s not
++that I have anything to complain about that theme: it was clean, readable and easy on the eyes. I
++just want my site to look unique. Content is king, sure, but it wouldn&#39;t hurt to stand out from the
++crowd once in a while.
++
++I&#39;m not a professional designer, but everything turned out quite well if I could say so. In this
++post I&#39;ll explain my design goals and how I (hopefully) achieved them.
++
++## Clean and lightweight
++
++The web is messy. I&#39;m not talking blinking-marquee-fire-animated-header messy (thank god we&#39;re done
++with that... [or are we?][2]). I&#39;m talking megabytes-of-useless-javascript-and-css messy. For
++whatever reason, some people now think it&#39;s cool to include Bootstrap/Foundation to every project,
++or to include that new shiny parallax library to ruin scrolling for everybody. Oh, and don&#39;t forget
++the marvellous invention that is [&quot;infinite scrolling&quot;][3]:
++
++![](http://imgs.xkcd.com/comics/infinite_scrolling.png)
++
++In fact, the main motivation of my new theme is [this satire page][4] on the sad state of the web
++we&#39;re in today.
++
++That&#39;s why I decided to do no fancy cosmetic JS and try to keep my use of static assets to a
++minimum:
++
++![](/images/mofo_01_loads.png)
++
++I guess I can do nothing about the font files though. Oh well, at least it looks awesome.
++
++## Content is king
++
++No more distracting sidebar with &quot;latest news&quot;, &quot;related posts&quot;, etc. with thumbnails popping up
++all over the place, just a good old article body from start to finish.
++
++## Easy on the eye
++
++While [bettermotherfuckingwebsite][5] does a good job at demonstrating how far you can go with a
++few simple CSS rules (hint: very far), I found Tommi Kaikkonen&#39;s [Interactive Guide to Blog
++Typography][6] much more comprehensive and informative. I implemented many of the ideas found
++in that guide:
++
++- Big body font
++- Constrained line width to aid reading
++- Generous line height, liberal whitespace to help with visual hierarchy
++- Lower background-foreground contrast. I also find the slightly yellow-ish background somewhat
++  soothing.
++
++## That&#39;s it!
++
++You can find the source code to my theme [on GitHub][7]. I don&#39;t recommend using it as-is though,
++since I haven&#39;t implemented many required templates (authors, tags, categories, etc.) because I
++don&#39;t use them. There&#39;s also the hardcoded footer. But honestly, the main reason is I just want my
++site to stay unique :P
++
++[1]: https://github.com/duilio/pelican-octopress-theme/
++[2]: https://developers.google.com/fonts/docs/getting_started#Effects
++[3]: https://xkcd.com/1309/
++[4]: http://motherfuckingwebsite.com/
++[5]: http://bettermotherfuckingwebsite.com/
++[6]: http://www.kaikkonendesign.fi/typography/
++[7]: https://github.com/nhanb/motherfucking-pelican-theme
+diff --git a/content/pages/about.md b/content/pages/about.md
+index b324950..56cb568 100644
+--- a/content/pages/about.md
++++ b/content/pages/about.md
+@@ -18,13 +18,13 @@ ## About this blog
+ too, but hopefully those will be rare.
+ 
+ This blog uses [Pelican][1] - a static site generator written in Python. The static files are
+-hosted on Github Pages. The theme used here is a (very slightly) modified fork from
+-[pelican-octopress-theme][2]. All the markdown files can also be found on my [github repo][3].
++hosted on Github Pages. All the markdown files can also be found on my [github repo][3]. The
++Pelican theme I wrote for this blog can be found [here][2].
+ 
+ I always appreciate feedback or further discussion on my posts, so feel free to point out if you
+ think I said something stupid. That&#39;s it. Enjoy reading!
+ 
+ [1]: http://getpelican.com
+-[2]: https://github.com/duilio/pelican-octopress-theme
++[2]: https://github.com/nhanb/motherfucking-pelican-theme
+ [3]: https://github.com/nhanb/blog
+ [4]: http://resume.nerdyweekly.com
+diff --git a/motherfucking-pelican-theme b/motherfucking-pelican-theme
+index aa3df9d..1a7af2f 160000
+--- a/motherfucking-pelican-theme
++++ b/motherfucking-pelican-theme
+@@ -1 +1 @@
+-Subproject commit aa3df9d3020e7754441b5963e3e753eeca4e8c6d
++Subproject commit 1a7af2f35778a5200bb24c6d049c35c573bed4ee
+</pre></body></html>

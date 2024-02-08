@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[2154e55d94] use alpine for CI | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 2154e55d94</strong><hr><pre>commit 2154e55d9406cec1933490eb75831dcbc6156f74
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jun 18 14:51:46 2023 +0700
+
+    use alpine for CI
+
+diff --git a/.builds/alpine.yml b/.builds/alpine.yml
+index 9359c99..db7f9b0 100644
+--- a/.builds/alpine.yml
++++ b/.builds/alpine.yml
+@@ -1,5 +1,7 @@
+-image: alpine/latest
+-oauth: git.sr.ht/OBJECTS:RW
++# Among builds.sr.ht images, alpine/arch/debian-unstable have the necessary packages.
++# I&#39;ve tried them all: speedwise, alpine &gt; debian &gt; arch.
++image: alpine/edge
++oauth: git.sr.ht/OBJECTS:RW git.sr.ht/REPOSITORIES:RO git.sr.ht/PROFILE:RO
+ 
+ packages:
+   - curl
+diff --git a/.builds/archlinux.yml b/.builds/archlinux.yml
+deleted file mode 100644
+index bf4909e..0000000
+--- a/.builds/archlinux.yml
++++ /dev/null
+@@ -1,36 +0,0 @@
+-image: archlinux
+-oauth: git.sr.ht/OBJECTS:RW
+-
+-packages:
+-  - curl
+-  - zip
+-  - hut
+-  - go
+-
+-tasks:
+-  - make-linux: |
+-      cd gorts
+-      make dist-linux
+-      cd dist/linux
+-      zip -r ../GORTS-Linux.zip .
+-
+-  - make-windows: |
+-      cd gorts
+-      make dist-windows
+-      cd dist/windows
+-      curl -L &#39;https://tclkits.rkeene.org/fossil/raw/tclkit-8.6.3-win32-x86_64.exe?name=403c507437d0b10035c7839f22f5bb806ec1f491&#39; &gt; tclkit.exe
+-      zip -r ../GORTS-Windows.zip .
+-
+-  - check-tag: |
+-      # Stop if HEAD is not a tagged commit.
+-      cd gorts
+-      git describe --exact-match HEAD || complete-build
+-
+-  - release: |
+-      cd gorts
+-      hut git artifact upload dist/GORTS-Linux.zip
+-      hut git artifact upload dist/GORTS-Windows.zip
+-
+-artifacts:
+-  - gorts/dist/GORTS-Linux.zip
+-  - gorts/dist/GORTS-Windows.zip
+diff --git a/.builds/debian.yml b/.builds/debian.yml
+deleted file mode 100644
+index 03626df..0000000
+--- a/.builds/debian.yml
++++ /dev/null
+@@ -1,36 +0,0 @@
+-image: debian/unstable
+-oauth: git.sr.ht/OBJECTS:RW
+-
+-packages:
+-  - curl
+-  - zip
+-  - hut
+-  - golang
+-
+-tasks:
+-  - make-linux: |
+-      cd gorts
+-      make dist-linux
+-      cd dist/linux
+-      zip -r ../GORTS-Linux.zip .
+-
+-  - make-windows: |
+-      cd gorts
+-      make dist-windows
+-      cd dist/windows
+-      curl -L &#39;https://tclkits.rkeene.org/fossil/raw/tclkit-8.6.3-win32-x86_64.exe?name=403c507437d0b10035c7839f22f5bb806ec1f491&#39; &gt; tclkit.exe
+-      zip -r ../GORTS-Windows.zip .
+-
+-  - check-tag: |
+-      # Stop if HEAD is not a tagged commit.
+-      cd gorts
+-      git describe --exact-match HEAD || complete-build
+-
+-  - release: |
+-      cd gorts
+-      hut git artifact upload dist/GORTS-Linux.zip
+-      hut git artifact upload dist/GORTS-Windows.zip
+-
+-artifacts:
+-  - gorts/dist/GORTS-Linux.zip
+-  - gorts/dist/GORTS-Windows.zip
+</pre></body></html>

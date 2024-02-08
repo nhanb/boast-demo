@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a5880f6e55] bump 0.5.13, add mailing list instructions | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / a5880f6e55</strong><hr><pre>commit a5880f6e55318665a80288b69e23577b5b1d72a8
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jun 6 11:51:21 2020 +0700
+
+    bump 0.5.13, add mailing list instructions
+
+diff --git a/README.md b/README.md
+index 4ba5d9f..c91d21e 100644
+--- a/README.md
++++ b/README.md
+@@ -55,6 +55,18 @@ # to publish, first bump version in pyproject.toml then
+ poetry publish --build
+ ```
+ 
++There are 2 McRoss-related mailing lists:
++
++- [~nhanb/mcross-devel](https://lists.sr.ht/~nhanb/mcross-devel): discuss and
++  submit your patches here
++- [~nhanb/mcross-announce](https://lists.sr.ht/~nhanb/mcross-announce):
++  low-volume announcement-only list
++
++If you&#39;re not familiar with the mailing list workflow, check out
++[git-send-email.io][3] and [mailing list etiquette][4]. [useplaintext.email][5]
++also has useful plaintext setup tips for various email clients, though I don&#39;t
++necessarily agree with its &quot;plaintext or nothing&quot; stance.
++
+ 
+ # Feature checklist
+ 
+@@ -106,3 +118,6 @@ ## Newline
+ 
+ [1]: https://hi.imnhan.com/posts/introducing-mcross-a-minimal-gemini-browser/
+ [2]: https://todo.sr.ht/~nhanb/mcross/3
++[3]: https://git-send-email.io/
++[4]: https://man.sr.ht/lists.sr.ht/etiquette.md
++[5]: https://useplaintext.email/
+diff --git a/pyproject.toml b/pyproject.toml
+index 9910a78..b4f6775 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;mcross&quot;
+-version = &quot;0.5.12&quot;
++version = &quot;0.5.13&quot;
+ description = &quot;Do you remember www?&quot;
+ authors = [&quot;nhanb &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;MIT&quot;
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index ddea0bb..a52f30c 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -159,14 +159,7 @@ def on_ctrl_l(ev):
+             text_font = fonts[0]
+ 
+         if fonts[1] is None:
+-            mono_font = pick_font(
+-                [
+-                    &quot;Ubuntu Mono&quot;,
+-                    &quot;Consolas&quot;,
+-                    &quot;Courier&quot;,
+-                    &quot;TkFixedFont&quot;
+-                ]
+-            )
++            mono_font = pick_font([&quot;Ubuntu Mono&quot;, &quot;Consolas&quot;, &quot;Courier&quot;, &quot;TkFixedFont&quot;])
+         else:
+             mono_font = fonts[1]
+ 
+</pre></body></html>

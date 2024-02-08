@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[cada3c35ca] use import_follwos instead of dumb loop | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / cada3c35ca</strong><hr><pre>commit cada3c35ca8a6a5f6286e9c7140bb1a4e07549a5
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 15 10:58:02 2020 +0700
+
+    use import_follwos instead of dumb loop
+
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index e5339d8..d7a3288 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -284,7 +284,7 @@ def import_view():
+         file = request.files[&quot;tachiyomi&quot;]
+ 
+         # if user does not select file, browser also
+-        # submit an empty part without filename
++        # submits an empty part without filename
+         if file.filename == &quot;&quot;:
+             flash(&quot;No selected file&quot;)
+             return redirect(request.url)
+@@ -300,11 +300,7 @@ def import_view():
+             ensure_titles(site_title_pairs)
+ 
+             # Then follow them all
+-            for site, title_id in site_title_pairs:
+-                follow(session[&quot;user&quot;][&quot;id&quot;], site, title_id)
+-
+-            # Mark them all as &quot;read&quot; too.
+-            print(&quot;TODO&quot;)
++            import_follows(session[&quot;user&quot;][&quot;id&quot;], site_title_pairs)
+ 
+             flash(f&quot;Added {len(site_title_pairs)} follows.&quot;)
+ 
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 27e9d36..b651f75 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -332,5 +332,5 @@ def import_follows(user_id: int, site_title_pairs: List[Tuple[str, str]]):
+         &quot;&quot;&quot;
+         INSERT INTO follow (user_id, site, title_id) VALUES (?, ?, ?);
+         &quot;&quot;&quot;,
+-        [(user_id, site, title_id) for site, title_id in site_title_pairs],
++        ((user_id, site, title_id) for site, title_id in site_title_pairs),
+     )
+</pre></body></html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[2471fdfcbf] mangasee has new img domain | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 2471fdfcbf</strong><hr><pre>commit 2471fdfcbf118982f6a5a217169be48688b83648
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Dec 26 20:00:07 2020 +0700
+
+    mangasee has new img domain
+    
+    hopefully this doesn&#39;t become a habit
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 6880fc8..6e5a3db 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.26&quot;
++version = &quot;0.3.27&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 0ec696a..7cf1df5 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -75,7 +75,7 @@ def _is_manga_img_url(
+     url,
+     pattern=re.compile(
+         r&quot;^https://(&quot;
+-        r&quot;([\w-]+\.)?(mangadex\.org/(data|images)|mangabeast\d{0,4}.com/manga)/&quot;
++        r&quot;([\w-]+\.)?(mangadex\.org/(data|images)|(mangabeast\d{0,4}.com|hot\.granpulse\.us)/manga)/&quot;
+         r&quot;|&quot;
+         r&quot;([\w-]+\.)+mangadex\.network:\d{2,6}/[\w-]+/data/&quot;
+         r&quot;)&quot;
+</pre></body></html>

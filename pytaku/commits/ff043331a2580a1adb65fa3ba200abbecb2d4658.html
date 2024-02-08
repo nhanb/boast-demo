@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ff043331a2] base Site class, add mangasee placeholder | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / ff043331a2</strong><hr><pre>commit ff043331a2580a1adb65fa3ba200abbecb2d4658
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 9 10:56:03 2020 +0700
+
+    base Site class, add mangasee placeholder
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 68b798e..2187bf6 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.2.12&quot;
++version = &quot;0.2.13&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/mangoapi/__init__.py b/src/mangoapi/__init__.py
+index cbbc5d1..8fc7490 100644
+--- a/src/mangoapi/__init__.py
++++ b/src/mangoapi/__init__.py
+@@ -1,118 +1,17 @@
+-import re
++from .mangadex import Mangadex
++from .mangasee import Mangasee
+ 
+-import requests
++&quot;&quot;&quot;
++The mangoapi package is designed to be self-contained as if it was an external library.
++Each Site object represents a user session on source site.
++Instantiating and managing Site objects is the responsibility of the caller.
++&quot;&quot;&quot;
+ 
+-# Titles regex slightly adapted from https://github.com/md-y/mangadex-full-api
+-# Thanks!
+-TITLES_PATTERN = re.compile(
+-    r&quot;&quot;&quot;&lt;a[^&gt;]*href=[&quot;&#39;]\/title\/(\d+)\/\S+[&quot;&#39;][^&gt;]*manga_title[^&gt;]*&gt;([^&lt;]*)&lt;&quot;&quot;&quot;
+-)
++SITES = {
++    &quot;mangadex&quot;: Mangadex,
++    &quot;mangasee&quot;: Mangasee,
++}
+ 
+ 
+-def _parse_chapter_number(string):
+-    if string == &quot;&quot;:
+-        # most likely a oneshot
+-        return {&quot;number&quot;: &quot;&quot;}
+-    nums = string.split(&quot;.&quot;)
+-    count = len(nums)
+-    assert count == 1 or count == 2
+-    result = {&quot;number&quot;: string}
+-    result[&quot;num_major&quot;] = int(nums[0])
+-    if count == 2:
+-        result[&quot;num_minor&quot;] = int(nums[1])
+-    return result
+-
+-
+-def _extract_groups(chap):
+-    return [
+-        group.strip()
+-        for group in [chap[&quot;group_name&quot;], chap[&quot;group_name_2&quot;], chap[&quot;group_name_3&quot;]]
+-        if group
+-    ]
+-
+-
+-def get_title(title_id):
+-    url = f&quot;https://mangadex.org/api/?id={title_id}&amp;type=manga&quot;
+-    md_resp = requests.get(url)
+-    assert md_resp.status_code == 200, md_resp.text
+-    md_json = md_resp.json()
+-    assert md_json[&quot;status&quot;] == &quot;OK&quot;
+-
+-    cover = md_json[&quot;manga&quot;][&quot;cover_url&quot;].split(&quot;/&quot;)[-1]
+-    cover_ext = cover[cover.find(&quot;.&quot;) + 1 : cover.rfind(&quot;?&quot;)]
+-
+-    title = {
+-        &quot;id&quot;: title_id,
+-        &quot;name&quot;: md_json[&quot;manga&quot;][&quot;title&quot;],
+-        &quot;cover_ext&quot;: cover_ext,
+-        &quot;alt_names&quot;: md_json[&quot;manga&quot;][&quot;alt_names&quot;],
+-        &quot;descriptions&quot;: md_json[&quot;manga&quot;][&quot;description&quot;].split(&quot;\r\n\r\n&quot;),
+-        &quot;chapters&quot;: [
+-            {
+-                &quot;id&quot;: str(chap_id),
+-                &quot;name&quot;: chap[&quot;title&quot;],
+-                &quot;volume&quot;: int(chap[&quot;volume&quot;]) if chap[&quot;volume&quot;] else None,
+-                &quot;groups&quot;: _extract_groups(chap),
+-                **_parse_chapter_number(chap[&quot;chapter&quot;]),
+-            }
+-            for chap_id, chap in md_json.get(&quot;chapter&quot;, {}).items()
+-            if chap[&quot;lang_code&quot;] == &quot;gb&quot; and chap[&quot;group_name&quot;] != &quot;MangaPlus&quot;
+-        ],
+-    }
+-    return title
+-
+-
+-def get_chapter(chapter_id):
+-    md_resp = requests.get(
+-        f&quot;https://mangadex.org/api/?id={chapter_id}&amp;type=chapter&amp;saver=0&quot;
+-    )
+-    assert md_resp.status_code == 200, md_resp.text
+-    md_json = md_resp.json()
+-    assert md_json[&quot;status&quot;] == &quot;OK&quot;
+-
+-    server = md_json.get(&quot;server_fallback&quot;) or md_json[&quot;server&quot;]
+-    img_path = f&quot;{server}{md_json[&#39;hash&#39;]}&quot;
+-
+-    chapter = {
+-        &quot;id&quot;: chapter_id,
+-        &quot;title_id&quot;: md_json[&quot;manga_id&quot;],
+-        &quot;name&quot;: md_json[&quot;title&quot;],
+-        &quot;pages&quot;: [f&quot;{img_path}/{page}&quot; for page in md_json[&quot;page_array&quot;]],
+-        &quot;groups&quot;: _extract_groups(md_json),
+-        &quot;is_webtoon&quot;: md_json[&quot;long_strip&quot;] == 1,
+-        **_parse_chapter_number(md_json[&quot;chapter&quot;]),
+-    }
+-    return chapter
+-
+-
+-def login(username, password):
+-    &quot;&quot;&quot;
+-    Returns cookies of a logged in user.
+-    &quot;&quot;&quot;
+-    form_data = {
+-        &quot;login_username&quot;: username,
+-        &quot;login_password&quot;: password,
+-        &quot;two_factor&quot;: &quot;&quot;,
+-        &quot;remember_me&quot;: &quot;1&quot;,
+-    }
+-    md_resp = requests.post(
+-        &quot;https://mangadex.org/ajax/actions.ajax.php?function=login&quot;,
+-        data=form_data,
+-        headers={&quot;X-Requested-With&quot;: &quot;XMLHttpRequest&quot;},
+-    )
+-    assert md_resp.status_code == 200, md_resp.text
+-    return dict(md_resp.cookies)
+-
+-
+-def search_title(user_cookies, query):
+-    md_resp = requests.get(
+-        f&quot;https://mangadex.org/quick_search/{query}&quot;, cookies=user_cookies,
+-    )
+-    assert md_resp.status_code == 200, md_resp.text
+-
+-    matches = TITLES_PATTERN.findall(md_resp.text)
+-    titles = [
+-        {&quot;id&quot;: int(id), &quot;name&quot;: name.strip(), &quot;site&quot;: &quot;mangadex&quot;}
+-        for id, name in matches
+-    ]
+-    return titles
++def get_site_class(name):
++    return SITES.get(name)
+diff --git a/src/mangoapi/base_site.py b/src/mangoapi/base_site.py
+new file mode 100644
+index 0000000..79fa6d1
+--- /dev/null
++++ b/src/mangoapi/base_site.py
+@@ -0,0 +1,42 @@
++import functools
++from abc import ABC, abstractmethod
++
++
++class Site(ABC):
++    def __init__(self):
++        self._cookies = None
++        self.username = None
++        self.password = None
++
++    @abstractmethod
++    def get_title(self, title_id):
++        pass
++
++    @abstractmethod
++    def get_chapter(self, chapter_id):
++        pass
++
++    @abstractmethod
++    def search_title(self, query):
++        pass
++
++    # optional abstract method
++    def login(self, username, password):
++        raise NotImplementedError()
++
++
++def requires_login(func):
++    &quot;&quot;&quot;
++    Decorator designed for use on a Site&#39;s instance methods.
++    It ensures cookies are ready before running the method.
++    &quot;&quot;&quot;
++
++    @functools.wraps(func)
++    def wrapper(self, *args, **kwargs):
++        if self._cookies is None:
++            assert self.username
++            assert self.password
++            self._cookies = self.login(self.username, self.password)
++        return func(self, *args, **kwargs)
++
++    return wrapper
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+new file mode 100644
+index 0000000..c78103b
+--- /dev/null
++++ b/src/mangoapi/mangadex.py
+@@ -0,0 +1,120 @@
++import re
++
++import requests
++
++from mangoapi.base_site import Site, requires_login
++
++
++class Mangadex(Site):
++    def get_title(self, title_id):
++        url = f&quot;https://mangadex.org/api/?id={title_id}&amp;type=manga&quot;
++        md_resp = requests.get(url)
++        assert md_resp.status_code == 200, md_resp.text
++        md_json = md_resp.json()
++        assert md_json[&quot;status&quot;] == &quot;OK&quot;
++
++        cover = md_json[&quot;manga&quot;][&quot;cover_url&quot;].split(&quot;/&quot;)[-1]
++        cover_ext = cover[cover.find(&quot;.&quot;) + 1 : cover.rfind(&quot;?&quot;)]
++
++        title = {
++            &quot;id&quot;: title_id,
++            &quot;name&quot;: md_json[&quot;manga&quot;][&quot;title&quot;],
++            &quot;cover_ext&quot;: cover_ext,
++            &quot;alt_names&quot;: md_json[&quot;manga&quot;][&quot;alt_names&quot;],
++            &quot;descriptions&quot;: md_json[&quot;manga&quot;][&quot;description&quot;].split(&quot;\r\n\r\n&quot;),
++            &quot;chapters&quot;: [
++                {
++                    &quot;id&quot;: str(chap_id),
++                    &quot;name&quot;: chap[&quot;title&quot;],
++                    &quot;volume&quot;: int(chap[&quot;volume&quot;]) if chap[&quot;volume&quot;] else None,
++                    &quot;groups&quot;: _extract_groups(chap),
++                    **_parse_chapter_number(chap[&quot;chapter&quot;]),
++                }
++                for chap_id, chap in md_json.get(&quot;chapter&quot;, {}).items()
++                if chap[&quot;lang_code&quot;] == &quot;gb&quot; and chap[&quot;group_name&quot;] != &quot;MangaPlus&quot;
++            ],
++        }
++        return title
++
++    def get_chapter(self, chapter_id):
++        md_resp = requests.get(
++            f&quot;https://mangadex.org/api/?id={chapter_id}&amp;type=chapter&amp;saver=0&quot;
++        )
++        assert md_resp.status_code == 200, md_resp.text
++        md_json = md_resp.json()
++        assert md_json[&quot;status&quot;] == &quot;OK&quot;
++
++        server = md_json.get(&quot;server_fallback&quot;) or md_json[&quot;server&quot;]
++        img_path = f&quot;{server}{md_json[&#39;hash&#39;]}&quot;
++
++        chapter = {
++            &quot;id&quot;: chapter_id,
++            &quot;title_id&quot;: md_json[&quot;manga_id&quot;],
++            &quot;name&quot;: md_json[&quot;title&quot;],
++            &quot;pages&quot;: [f&quot;{img_path}/{page}&quot; for page in md_json[&quot;page_array&quot;]],
++            &quot;groups&quot;: _extract_groups(md_json),
++            &quot;is_webtoon&quot;: md_json[&quot;long_strip&quot;] == 1,
++            **_parse_chapter_number(md_json[&quot;chapter&quot;]),
++        }
++        return chapter
++
++    @requires_login
++    def search_title(self, query):
++        md_resp = requests.get(
++            f&quot;https://mangadex.org/quick_search/{query}&quot;, cookies=self._cookies,
++        )
++        assert md_resp.status_code == 200, md_resp.text
++
++        matches = TITLES_PATTERN.findall(md_resp.text)
++        titles = [
++            {&quot;id&quot;: int(id), &quot;name&quot;: name.strip(), &quot;site&quot;: &quot;mangadex&quot;}
++            for id, name in matches
++        ]
++        return titles
++
++    def login(self, username, password):
++        &quot;&quot;&quot;
++        Returns cookies of a logged in user.
++        &quot;&quot;&quot;
++        form_data = {
++            &quot;login_username&quot;: username,
++            &quot;login_password&quot;: password,
++            &quot;two_factor&quot;: &quot;&quot;,
++            &quot;remember_me&quot;: &quot;1&quot;,
++        }
++        md_resp = requests.post(
++            &quot;https://mangadex.org/ajax/actions.ajax.php?function=login&quot;,
++            data=form_data,
++            headers={&quot;X-Requested-With&quot;: &quot;XMLHttpRequest&quot;},
++        )
++        assert md_resp.status_code == 200, md_resp.text
++        return dict(md_resp.cookies)
++
++
++# Titles regex slightly adapted from https://github.com/md-y/mangadex-full-api
++# Thanks!
++TITLES_PATTERN = re.compile(
++    r&quot;&quot;&quot;&lt;a[^&gt;]*href=[&quot;&#39;]\/title\/(\d+)\/\S+[&quot;&#39;][^&gt;]*manga_title[^&gt;]*&gt;([^&lt;]*)&lt;&quot;&quot;&quot;
++)
++
++
++def _parse_chapter_number(string):
++    if string == &quot;&quot;:
++        # most likely a oneshot
++        return {&quot;number&quot;: &quot;&quot;}
++    nums = string.split(&quot;.&quot;)
++    count = len(nums)
++    assert count == 1 or count == 2
++    result = {&quot;number&quot;: string}
++    result[&quot;num_major&quot;] = int(nums[0])
++    if count == 2:
++        result[&quot;num_minor&quot;] = int(nums[1])
++    return result
++
++
++def _extract_groups(chap):
++    return [
++        group.strip()
++        for group in [chap[&quot;group_name&quot;], chap[&quot;group_name_2&quot;], chap[&quot;group_name_3&quot;]]
++        if group
++    ]
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+new file mode 100644
+index 0000000..0cfd85c
+--- /dev/null
++++ b/src/mangoapi/mangasee.py
+@@ -0,0 +1,12 @@
++from mangoapi.base_site import Site
++
++
++class Mangasee(Site):
++    def get_title(self, title_id):
++        pass
++
++    def get_chapter(self, chapter_id):
++        pass
++
++    def search_title(self, query):
++        return []
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 11181ac..2642a42 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -13,9 +13,6 @@
+     url_for,
+ )
+ 
+-from mangoapi import get_chapter, get_title, search_title
+-
+-from . import mangadex
+ from .conf import config
+ from .decorators import ensure_session_version, require_login, toggle_has_read
+ from .persistence import (
+@@ -30,6 +27,7 @@
+     unfollow,
+     verify_username_password,
+ )
++from .source_sites import get_chapter, get_title, search_title_all_sites
+ 
+ config.load()
+ 
+@@ -210,11 +208,10 @@ def chapter_view(site, chapter_id):
+ @ensure_session_version
+ def search_view():
+     query = request.args.get(&quot;q&quot;, &quot;&quot;).strip()
+-    titles = []
++    results = {}
+     if query:
+-        cookies = mangadex.get_cookies()
+-        titles = search_title(cookies, query)
+-    return render_template(&quot;search.html&quot;, titles=titles, query=query)
++        results = search_title_all_sites(query)
++    return render_template(&quot;search.html&quot;, results=results, query=query)
+ 
+ 
+ @app.route(&quot;/proxy/&lt;b64_url&gt;&quot;)
+diff --git a/src/pytaku/mangadex.py b/src/pytaku/mangadex.py
+deleted file mode 100644
+index f231611..0000000
+--- a/src/pytaku/mangadex.py
++++ /dev/null
+@@ -1,14 +0,0 @@
+-from mangoapi import login
+-from pytaku.conf import config
+-
+-_cookies = None
+-
+-
+-def get_cookies():
+-    global _cookies
+-    if _cookies is None:
+-        print(&quot;Logging in to mangadex&quot;)
+-        _cookies = login(config.MANGADEX_USERNAME, config.MANGADEX_PASSWORD)
+-    else:
+-        print(&quot;Reusing mangadex cookies&quot;)
+-    return _cookies
+diff --git a/src/pytaku/scheduler.py b/src/pytaku/scheduler.py
+index 69aa702..24cbaab 100644
+--- a/src/pytaku/scheduler.py
++++ b/src/pytaku/scheduler.py
+@@ -1,9 +1,8 @@
+ import time
+ from datetime import datetime, timedelta
+ 
+-from mangoapi import get_title
+-
+ from .persistence import find_outdated_titles, save_title
++from .source_sites import get_title
+ 
+ now = datetime.now
+ 
+diff --git a/src/pytaku/source_sites.py b/src/pytaku/source_sites.py
+new file mode 100644
+index 0000000..a3cc247
+--- /dev/null
++++ b/src/pytaku/source_sites.py
+@@ -0,0 +1,46 @@
++from mangoapi import get_site_class
++
++from .conf import config
++
++&quot;&quot;&quot;
++This module adapts mangoapi&#39;s API to a more convenient one for app-wide use.
++States are all handled here, exposing only a functional API to the rest of the app.
++&quot;&quot;&quot;
++
++_site_objs = {}
++
++
++def _get_site(name):
++    global _site_objs
++    site = _site_objs.get(name)
++    if not site:
++        site_class = get_site_class(name)
++        assert site_class is not None
++        site = site_class()
++        if name == &quot;mangadex&quot;:
++            site.username = config.MANGADEX_USERNAME
++            site.password = config.MANGADEX_PASSWORD
++    return site
++
++
++def get_chapter(site_name, chapter_id):
++    return _get_site(site_name).get_chapter(chapter_id)
++
++
++def get_title(site_name, title_id):
++    return _get_site(site_name).get_title(title_id)
++
++
++def search_title(site_name, query):
++    return _get_site(site_name).search_title(query)
++
++
++def search_title_all_sites(query):
++    &quot;&quot;&quot;
++    Returns dict in the form of {site_name: List[Title]}
++    I should really look into proper type annotations huh.
++    &quot;&quot;&quot;
++    return {
++        site_name: search_title(site_name, query)
++        for site_name in (&quot;mangasee&quot;, &quot;mangadex&quot;)
++    }
+diff --git a/src/pytaku/templates/search.html b/src/pytaku/templates/search.html
+index d0dd325..c38f548 100644
+--- a/src/pytaku/templates/search.html
++++ b/src/pytaku/templates/search.html
+@@ -10,6 +10,9 @@
+ 
+ {% block head %}
+ &lt;style&gt;
++  .site-heading {
++    text-transform: capitalize;
++  }
+   .results {
+     display: flex;
+     flex-direction: row;
+@@ -29,6 +32,10 @@
+     width: 0;
+     min-width: 100%;
+   }
++
++  .result-text {
++    margin-bottom: 1rem;
++  }
+ &lt;/style&gt;
+ {% endblock %}
+ 
+@@ -38,10 +45,14 @@
+   &lt;h1&gt;Please enter a search query above.&lt;/h1&gt;
+ 
+ {% else %}
++{% for site, titles in results.items() %}
++&lt;div&gt;
++  &lt;h1 class=&quot;site-heading&quot;&gt;{{ site }}&lt;/h1&gt;
++
+   {% if titles %}
+-  &lt;h1&gt;Showing {{ titles | length }} result(s) for &quot;{{ query }}&quot;:&lt;/h1&gt;
++  &lt;h2 class=&quot;result-text&quot;&gt;Showing &lt;strong&gt;{{ titles | length }}&lt;/strong&gt; result(s) for &quot;{{ query }}&quot;:&lt;/h2&gt;
+   {% else %}
+-  &lt;h1&gt;No results for &quot;{{ query }}&quot;.&lt;/h1&gt;
++  &lt;h2 class=&quot;result-text&quot;&gt;No results for &quot;{{ query }}&quot;.&lt;/h2&gt;
+   {% endif %}
+ 
+   &lt;div class=&quot;results&quot;&gt;
+@@ -53,7 +64,8 @@ &lt;h1&gt;No results for &quot;{{ query }}&quot;.&lt;/h1&gt;
+     &lt;/a&gt;
+   {% endfor %}
+   &lt;/div&gt;
+-
++&lt;/div&gt;
++{% endfor %}
+ {% endif %}
+ 
+ 
+</pre></body></html>

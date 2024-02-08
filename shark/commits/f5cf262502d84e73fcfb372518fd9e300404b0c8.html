@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[f5cf262502] size x2 seems to be preferred | shark | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">shark</a> / f5cf262502</strong><hr><pre>commit f5cf262502d84e73fcfb372518fd9e300404b0c8
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jun 29 22:22:24 2022 +0700
+
+    size x2 seems to be preferred
+
+diff --git a/main.go b/main.go
+index a2f10bb..9a7b27f 100644
+--- a/main.go
++++ b/main.go
+@@ -163,7 +163,7 @@ func main() {
+ 	var game Game
+ 	game.CurrentAnim = Idle
+ 
+-	ebiten.SetWindowSize(SPRITE_X*3, SPRITE_Y*3)
++	ebiten.SetWindowSize(SPRITE_X*2, SPRITE_Y*2)
+ 	ebiten.SetWindowTitle(&quot;Shark!&quot;)
+ 	ebiten.SetWindowDecorated(false)
+ 	ebiten.SetScreenTransparent(true)
+</pre></body></html>

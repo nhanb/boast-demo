@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[80621120ad] highlight targeted anchor too | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 80621120ad</strong><hr><pre>commit 80621120ad0f57017861116d44b03a9ef0166f1b
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Feb 13 23:46:51 2023 +0700
+
+    highlight targeted anchor too
+
+diff --git a/nhanb-theme/static/css/main.css b/nhanb-theme/static/css/main.css
+index c5c0623..2220e36 100644
+--- a/nhanb-theme/static/css/main.css
++++ b/nhanb-theme/static/css/main.css
+@@ -26,16 +26,6 @@ button {
+   padding: 0.2rem;
+ }
+ 
+-a.headerlink {
+-    margin-left: 0.5rem;
+-    text-decoration: none;
+-    visibility: hidden;
+-}
+-
+-*:hover &gt; a.headerlink {
+-    visibility: visible;
+-}
+-
+ a {
+   color: var(--link-color);
+   text-decoration-skip-ink: none;
+@@ -145,6 +135,32 @@ pre {
+   font-size: 0.9rem;
+ }
+ 
++
++/* Python markdown&#39;s &quot;toc&quot; extension creates an &lt;a class=&quot;headerlink&quot;&gt; inside
++ * each heading. The following styling makes the anchor only visible on hover
++ * and highlights the currently targeted heading.
++ */
++a.headerlink {
++    margin-left: 0.5rem;
++    text-decoration: none;
++    visibility: hidden;
++}
++:hover &gt; a.headerlink {
++    visibility: visible;
++}
++h1:target,
++h2:target,
++h3:target,
++h4:target {
++    background-color: moccasin;
++    margin-left: -1rem;
++    padding-left: 1rem;
++}
++:target &gt; a.headerlink:hover {
++    color: moccasin;
++}
++
++
+ /* Pygments tweaks */
+ .highlight {
+   background-color: transparent;
+</pre></body></html>

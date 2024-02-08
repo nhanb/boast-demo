@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[bcc2b10444] allow custom footer msg | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / bcc2b10444</strong><hr><pre>commit bcc2b104449d667b121ef3651aa90b8d8b8c30c5
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 23 22:02:14 2023 +0700
+
+    allow custom footer msg
+
+diff --git a/docs/_s4g/theme/includes.tmpl b/docs/_s4g/theme/includes.tmpl
+index 652d4a1..018b4d4 100644
+--- a/docs/_s4g/theme/includes.tmpl
++++ b/docs/_s4g/theme/includes.tmpl
+@@ -23,7 +23,7 @@
+ {{- if .Site.ShowFooter -}}
+ &lt;footer&gt;
+ © {{if eq .StartYear .Now.Year}}{{.StartYear}}{{else}}{{.StartYear}}–{{.Now.Year}}{{end}} {{.Site.AuthorName}}&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++{{.Site.FooterText}}
+ &lt;/footer&gt;
+ {{- end -}}
+ {{- end}}
+diff --git a/metadata.go b/metadata.go
+index 98981dc..fb90aee 100644
+--- a/metadata.go
++++ b/metadata.go
+@@ -4,6 +4,7 @@
+ 	&quot;bufio&quot;
+ 	&quot;bytes&quot;
+ 	&quot;fmt&quot;
++	&quot;html/template&quot;
+ 	&quot;io&quot;
+ 	&quot;io/fs&quot;
+ 	&quot;reflect&quot;
+@@ -21,6 +22,7 @@ type SiteMetadata struct {
+ 	Tagline       string
+ 	Root          string
+ 	ShowFooter    bool
++	FooterText    template.HTML
+ 	NavbarLinks   []string
+ 	DefaultThumb  string
+ 	AuthorName    string
+@@ -83,6 +85,7 @@ func NewSiteMetadata() SiteMetadata {
+ 	return SiteMetadata{
+ 		Root:        &quot;/&quot;,
+ 		ShowFooter:  true,
++		FooterText:  `Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;`,
+ 		NavbarLinks: []string{&quot;index.dj&quot;},
+ 	}
+ }
+@@ -199,6 +202,10 @@ func UnmarshalMetadata(data []byte, dest any) *errs.UserErr {
+ 				}
+ 				s.Field(i).Set(reflect.ValueOf(pt))
+ 
++			case &quot;template.HTML&quot;:
++				html := template.HTML(val)
++				s.Field(i).Set(reflect.ValueOf(html))
++
+ 			default:
+ 				panic(fmt.Sprintf(
+ 					`unsupported metadata field type: &quot;%s&quot;`,
+diff --git a/theme/includes.tmpl b/theme/includes.tmpl
+index 652d4a1..018b4d4 100644
+--- a/theme/includes.tmpl
++++ b/theme/includes.tmpl
+@@ -23,7 +23,7 @@
+ {{- if .Site.ShowFooter -}}
+ &lt;footer&gt;
+ © {{if eq .StartYear .Now.Year}}{{.StartYear}}{{else}}{{.StartYear}}–{{.Now.Year}}{{end}} {{.Site.AuthorName}}&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;
++{{.Site.FooterText}}
+ &lt;/footer&gt;
+ {{- end -}}
+ {{- end}}
+</pre></body></html>

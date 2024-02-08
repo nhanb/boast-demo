@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[02dc2384ac] applystate | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 02dc2384ac</strong><hr><pre>commit 02dc2384ace736093cd0dff6f3a13a072839f053
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Jun 16 23:20:20 2023 +0700
+
+    applystate
+
+diff --git a/main.go b/main.go
+index c81e011..f49a57f 100644
+--- a/main.go
++++ b/main.go
+@@ -68,18 +68,48 @@ func connectTclProc() {
+ 	// TODO: this should probably be refactored out
+ 	state := initState()
+ 
+-	io.WriteString(stdin, &quot;readvars\n&quot;)
++	io.WriteString(stdin, &quot;readstate\n&quot;)
+ 
+-	reqscanner := bufio.NewScanner(stdout)
+-	for reqscanner.Scan() {
+-		req := reqscanner.Text()
++	scanner := bufio.NewScanner(stdout)
++	for scanner.Scan() {
++		req := scanner.Text()
+ 		println(&quot;=&gt; &quot; + req)
+ 		switch req {
+-		case &quot;readvars&quot;:
+-			for _, line := range serveReadvars(state) {
++		case &quot;readstate&quot;:
++			for _, line := range []string{
++				&quot;description &quot; + state.Description,
++				&quot;p1name &quot; + state.P1name,
++				&quot;p1country &quot; + state.P1country,
++				&quot;p1score &quot; + strconv.Itoa(state.P1score),
++				&quot;p1team &quot; + state.P1team,
++				&quot;p2name &quot; + state.P2name,
++				&quot;p2country &quot; + state.P2country,
++				&quot;p2score &quot; + strconv.Itoa(state.P2score),
++				&quot;p2team &quot; + state.P2team,
++				&quot;end&quot;,
++			} {
+ 				println(&quot;&lt;= &quot; + line)
+ 				io.WriteString(stdin, line+&quot;\n&quot;)
+ 			}
++		case &quot;applystate&quot;:
++			next := func() string {
++				scanner.Scan()
++				v := scanner.Text()
++				println(&quot;=&gt;&quot;, v)
++				return v
++			}
++			// TODO: there must be more... civilized way.
++			state.Description = next()
++			state.P1name = next()
++			state.P1country = next()
++			state.P1score, _ = strconv.Atoi(next())
++			state.P1team = next()
++			state.P2name = next()
++			state.P2country = next()
++			state.P2score, _ = strconv.Atoi(next())
++			state.P2team = next()
++			state.Write()
++
+ 		default:
+ 			println(&quot;Skipping bogus command: &quot; + req)
+ 		}
+@@ -87,26 +117,11 @@ func connectTclProc() {
+ 
+ 	println(&quot;Tcl process terminated.&quot;)
+ 
+-	if err := reqscanner.Err(); err != nil {
++	if err := scanner.Err(); err != nil {
+ 		log.Fatal(err)
+ 	}
+ }
+ 
+-func serveReadvars(s State) []string {
+-	return []string{
+-		&quot;description &quot; + s.Description,
+-		&quot;p1name &quot; + s.P1name,
+-		&quot;p1country &quot; + s.P1country,
+-		&quot;p1score &quot; + strconv.Itoa(s.P1score),
+-		&quot;p1team &quot; + s.P1team,
+-		&quot;p2name &quot; + s.P2name,
+-		&quot;p2country &quot; + s.P2country,
+-		&quot;p2score &quot; + strconv.Itoa(s.P2score),
+-		&quot;p2team &quot; + s.P2team,
+-		&quot;end&quot;,
+-	}
+-}
+-
+ type State struct {
+ 	Description string `json:&quot;description&quot;`
+ 	P1name      string `json:&quot;p1name&quot;`
+@@ -123,6 +138,7 @@ func initState() State {
+ 	var state State
+ 	file, err := os.Open(StateFile)
+ 	if err == nil {
++		defer file.Close()
+ 		bytes, err := ioutil.ReadAll(file)
+ 		if err != nil {
+ 			panic(err)
+@@ -131,3 +147,14 @@ func initState() State {
+ 	}
+ 	return state
+ }
++
++func (s *State) Write() {
++	blob, err := json.MarshalIndent(s, &quot;&quot;, &quot;    &quot;)
++	if err != nil {
++		panic(err)
++	}
++	err = ioutil.WriteFile(StateFile, blob, 0644)
++	if err != nil {
++		panic(err)
++	}
++}
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index 0e4b9dc..593a6bf 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -39,7 +39,7 @@ ttk::button .c.players.p2win -text &quot;▲ Win&quot; -width 5
+ ttk::label .c.players.p2teamlbl -text &quot;Team 2&quot;
+ ttk::combobox .c.players.p2team -textvariable p2team
+ ttk::frame .c.buttons
+-ttk::button .c.buttons.apply -text &quot;▶ Apply&quot;
++ttk::button .c.buttons.apply -text &quot;▶ Apply&quot; -command applystate
+ ttk::button .c.buttons.discard -text &quot;✖ Discard&quot;
+ ttk::button .c.buttons.reset -text &quot;↶ Reset scores&quot;
+ ttk::button .c.buttons.swap -text &quot;⇄ Swap players&quot;
+@@ -79,19 +79,19 @@ grid columnconfigure .c.buttons 3 -pad 15
+ # Very simple line-based IPC where Tcl client talks to Go server
+ # via stdin/stdout.
+ #
+-# For this &quot;readvars&quot; method, the Go server returns multiple lines
++# For this &quot;readstate&quot; method, the Go server returns multiple lines
+ # where each line starts with variable name, followed by a space,
+ # with the rest of the line being its value. When done, the server
+ # sends a literal &quot;end&quot; line.
+ #
+-# =&gt; readvars
++# =&gt; readstate
+ # &lt;= description Saigon Cup 2023
+ # &lt;= p1name BST Diego Umejuarez
+ # &lt;= p1score 0
+ # [etc.]
+ # &lt;= end
+-proc readvars {} {
+-    puts &quot;readvars&quot;
++proc readstate {} {
++    puts &quot;readstate&quot;
+     set line [gets stdin]
+     while {$line != &quot;end&quot;} {
+         set spaceindex [string first &quot; &quot; $line]
+@@ -103,3 +103,25 @@ proc readvars {} {
+         set line [gets stdin]
+     }
+ }
++
++proc applystate {} {
++    puts &quot;applystate&quot;
++    variable description
++    variable p1name
++    variable p1country
++    variable p1score
++    variable p1team
++    variable p2name
++    variable p2country
++    variable p2score
++    variable p2team
++    puts $description
++    puts $p1name
++    puts $p1country
++    puts $p1score
++    puts $p1team
++    puts $p2name
++    puts $p2country
++    puts $p2score
++    puts $p2team
++}
+</pre></body></html>

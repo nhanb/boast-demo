@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[343f2cbb88] mangadex oneshots don&#39;t have chap number at all | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 343f2cbb88</strong><hr><pre>commit 343f2cbb8831288a59fb223c6a484290fa03dbfa
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 6 20:22:42 2020 +0700
+
+    mangadex oneshots don&#39;t have chap number at all
+
+diff --git a/src/mangoapi/__init__.py b/src/mangoapi/__init__.py
+index 9e66dd7..7bb4fa5 100644
+--- a/src/mangoapi/__init__.py
++++ b/src/mangoapi/__init__.py
+@@ -10,6 +10,9 @@
+ 
+ 
+ def _parse_chapter_number(string):
++    if string == &quot;&quot;:
++        # most likely a oneshot
++        return {&quot;number&quot;: &quot;&quot;}
+     nums = string.split(&quot;.&quot;)
+     count = len(nums)
+     assert count == 1 or count == 2
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 41e0a00..ab3a2be 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -118,8 +118,8 @@ def save_chapter(chapter):
+             &quot;id&quot;: chapter[&quot;id&quot;],
+             &quot;title_id&quot;: chapter[&quot;title_id&quot;],
+             &quot;site&quot;: &quot;mangadex&quot;,
+-            &quot;num_major&quot;: chapter[&quot;num_major&quot;],
+-            &quot;num_minor&quot;: chapter.get(&quot;num_minor&quot;, None),
++            &quot;num_major&quot;: chapter.get(&quot;num_major&quot;),
++            &quot;num_minor&quot;: chapter.get(&quot;num_minor&quot;),
+             &quot;name&quot;: chapter[&quot;name&quot;],
+             &quot;pages&quot;: json.dumps(chapter[&quot;pages&quot;]),
+             &quot;groups&quot;: json.dumps(chapter[&quot;groups&quot;]),
+</pre></body></html>

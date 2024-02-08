@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[3cd65b5032] bypass mangasee&#39;s cloudflare protection | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 3cd65b5032</strong><hr><pre>commit 3cd65b503233e118b6cdc21588666df1af3a2971
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jun 15 21:18:06 2021 +0700
+
+    bypass mangasee&#39;s cloudflare protection
+
+diff --git a/README.md b/README.md
+index fb4b0e2..69c7bde 100644
+--- a/README.md
++++ b/README.md
+@@ -24,6 +24,7 @@ # Development
+ 
+ ```sh
+ ## Backend ##
++doas pacman -S nodejs  # used by cloudscraper to bypass Cloudflare
+ 
+ poetry install
+ pip install --upgrade pip
+@@ -71,6 +72,7 @@ ## Code QA tools
+ # Production
+ 
+ ```sh
++sudo apt install nodejs  # used by cloudscraper to bypass Cloudflare
+ pip install --user --upgrade pip
+ pip install --user pytaku
+ pip install https://github.com/rogerbinns/apsw/releases/download/3.32.2-r1/apsw-3.32.2-r1.zip \
+diff --git a/poetry.lock b/poetry.lock
+index 92ef442..361dd90 100644
+--- a/poetry.lock
++++ b/poetry.lock
+@@ -5,7 +5,6 @@ description = &quot;Disable App Nap on OS X 10.9&quot;
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+-marker = &quot;python_version &gt;= \&quot;3.4\&quot; and sys_platform == \&quot;darwin\&quot;&quot;
+ 
+ [[package]]
+ name = &quot;argon2-cffi&quot;
+@@ -15,15 +14,15 @@ category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+ 
+-[package.extras]
+-dev = [&quot;coverage (&gt;=5.0.2)&quot;, &quot;hypothesis&quot;, &quot;pytest&quot;, &quot;sphinx&quot;, &quot;wheel&quot;, &quot;pre-commit&quot;]
+-docs = [&quot;sphinx&quot;]
+-tests = [&quot;coverage (&gt;=5.0.2)&quot;, &quot;hypothesis&quot;, &quot;pytest&quot;]
+-
+ [package.dependencies]
+ cffi = &quot;&gt;=1.0.0&quot;
+ six = &quot;*&quot;
+ 
++[package.extras]
++dev = [&quot;coverage[toml] (&gt;=5.0.2)&quot;, &quot;hypothesis&quot;, &quot;pytest&quot;, &quot;sphinx&quot;, &quot;wheel&quot;, &quot;pre-commit&quot;]
++docs = [&quot;sphinx&quot;]
++tests = [&quot;coverage[toml] (&gt;=5.0.2)&quot;, &quot;hypothesis&quot;, &quot;pytest&quot;]
++
+ [[package]]
+ name = &quot;atomicwrites&quot;
+ version = &quot;1.4.0&quot;
+@@ -31,7 +30,6 @@ description = &quot;Atomic file writes.&quot;
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
+-marker = &quot;sys_platform == \&quot;win32\&quot;&quot;
+ 
+ [[package]]
+ name = &quot;attrs&quot;
+@@ -54,7 +52,6 @@ description = &quot;Specifications for callback functions passed in to an API&quot;
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+-marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
+ 
+ [[package]]
+ name = &quot;bbcode&quot;
+@@ -99,6 +96,19 @@ category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
+ 
++[[package]]
++name = &quot;cloudscraper&quot;
++version = &quot;1.2.58&quot;
++description = &quot;A Python module to bypass Cloudflare&#39;s anti-bot page.&quot;
++category = &quot;main&quot;
++optional = false
++python-versions = &quot;*&quot;
++
++[package.dependencies]
++pyparsing = &quot;&gt;=2.4.7&quot;
++requests = &quot;&gt;=2.9.2&quot;
++requests-toolbelt = &quot;&gt;=0.9.1&quot;
++
+ [[package]]
+ name = &quot;colorama&quot;
+ version = &quot;0.4.3&quot;
+@@ -106,7 +116,6 @@ description = &quot;Cross-platform colored terminal text.&quot;
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
+-marker = &quot;python_version &gt;= \&quot;3.4\&quot; and sys_platform == \&quot;win32\&quot; or sys_platform == \&quot;win32\&quot;&quot;
+ 
+ [[package]]
+ name = &quot;decorator&quot;
+@@ -115,7 +124,6 @@ description = &quot;Decorators for Humans&quot;
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.6, !=3.0.*, !=3.1.*&quot;
+-marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
+ 
+ [[package]]
+ name = &quot;flask&quot;
+@@ -125,17 +133,17 @@ category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
+ 
+-[package.extras]
+-dev = [&quot;pytest&quot;, &quot;coverage&quot;, &quot;tox&quot;, &quot;sphinx&quot;, &quot;pallets-sphinx-themes&quot;, &quot;sphinxcontrib-log-cabinet&quot;, &quot;sphinx-issues&quot;]
+-docs = [&quot;sphinx&quot;, &quot;pallets-sphinx-themes&quot;, &quot;sphinxcontrib-log-cabinet&quot;, &quot;sphinx-issues&quot;]
+-dotenv = [&quot;python-dotenv&quot;]
+-
+ [package.dependencies]
+ click = &quot;&gt;=5.1&quot;
+ itsdangerous = &quot;&gt;=0.24&quot;
+ Jinja2 = &quot;&gt;=2.10.1&quot;
+ Werkzeug = &quot;&gt;=0.15&quot;
+ 
++[package.extras]
++dev = [&quot;pytest&quot;, &quot;coverage&quot;, &quot;tox&quot;, &quot;sphinx&quot;, &quot;pallets-sphinx-themes&quot;, &quot;sphinxcontrib-log-cabinet&quot;, &quot;sphinx-issues&quot;]
++docs = [&quot;sphinx&quot;, &quot;pallets-sphinx-themes&quot;, &quot;sphinxcontrib-log-cabinet&quot;, &quot;sphinx-issues&quot;]
++dotenv = [&quot;python-dotenv&quot;]
++
+ [[package]]
+ name = &quot;goodconf&quot;
+ version = &quot;1.0.0&quot;
+@@ -146,7 +154,7 @@ python-versions = &quot;*&quot;
+ 
+ [package.extras]
+ maintainer = [&quot;zest.releaser&quot;]
+-tests = [&quot;django (&lt;2.1)&quot;, &quot;ruamel.yaml&quot;, &quot;pytest (3.5.0)&quot;, &quot;pytest-cov (2.5.1)&quot;, &quot;pytest-mock (1.7.1)&quot;]
++tests = [&quot;django (&lt;2.1)&quot;, &quot;ruamel.yaml&quot;, &quot;pytest (==3.5.0)&quot;, &quot;pytest-cov (==2.5.1)&quot;, &quot;pytest-mock (==1.7.1)&quot;]
+ yaml = [&quot;ruamel.yaml&quot;]
+ 
+ [[package]]
+@@ -163,9 +171,6 @@ gevent = [&quot;gevent (&gt;=0.13)&quot;]
+ setproctitle = [&quot;setproctitle&quot;]
+ tornado = [&quot;tornado (&gt;=0.2)&quot;]
+ 
+-[package.dependencies]
+-setuptools = &quot;&gt;=3.0&quot;
+-
+ [[package]]
+ name = &quot;idna&quot;
+ version = &quot;2.10&quot;
+@@ -181,15 +186,14 @@ description = &quot;Read metadata from Python packages&quot;
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,&gt;=2.7&quot;
+-marker = &quot;python_version &lt; \&quot;3.8\&quot;&quot;
++
++[package.dependencies]
++zipp = &quot;&gt;=0.5&quot;
+ 
+ [package.extras]
+ docs = [&quot;sphinx&quot;, &quot;rst.linker&quot;]
+ testing = [&quot;packaging&quot;, &quot;pep517&quot;, &quot;importlib-resources (&gt;=1.3)&quot;]
+ 
+-[package.dependencies]
+-zipp = &quot;&gt;=0.5&quot;
+-
+ [[package]]
+ name = &quot;iniconfig&quot;
+ version = &quot;1.0.1&quot;
+@@ -207,11 +211,7 @@ optional = false
+ python-versions = &quot;&gt;=2.7&quot;
+ 
+ [package.dependencies]
+-setuptools = &quot;*&quot;
+-
+-[package.dependencies.ipython]
+-version = &quot;&gt;=5.1.0&quot;
+-python = &quot;&gt;=3.4&quot;
++ipython = {version = &quot;&gt;=5.1.0&quot;, markers = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;}
+ 
+ [[package]]
+ name = &quot;ipython&quot;
+@@ -220,7 +220,18 @@ description = &quot;IPython: Productive Interactive Computing&quot;
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;&gt;=3.7&quot;
+-marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
++
++[package.dependencies]
++appnope = {version = &quot;*&quot;, markers = &quot;sys_platform == \&quot;darwin\&quot;&quot;}
++backcall = &quot;*&quot;
++colorama = {version = &quot;*&quot;, markers = &quot;sys_platform == \&quot;win32\&quot;&quot;}
++decorator = &quot;*&quot;
++jedi = &quot;&gt;=0.10&quot;
++pexpect = {version = &quot;*&quot;, markers = &quot;sys_platform != \&quot;win32\&quot;&quot;}
++pickleshare = &quot;*&quot;
++prompt-toolkit = &quot;&gt;=2.0.0,&lt;3.0.0 || &gt;3.0.0,&lt;3.0.1 || &gt;3.0.1,&lt;3.1.0&quot;
++pygments = &quot;*&quot;
++traitlets = &quot;&gt;=4.2&quot;
+ 
+ [package.extras]
+ all = [&quot;Sphinx (&gt;=1.3)&quot;, &quot;ipykernel&quot;, &quot;ipyparallel&quot;, &quot;ipywidgets&quot;, &quot;nbconvert&quot;, &quot;nbformat&quot;, &quot;nose (&gt;=0.10.1)&quot;, &quot;notebook&quot;, &quot;numpy (&gt;=1.14)&quot;, &quot;pygments&quot;, &quot;qtconsole&quot;, &quot;requests&quot;, &quot;testpath&quot;]
+@@ -233,19 +244,6 @@ parallel = [&quot;ipyparallel&quot;]
+ qtconsole = [&quot;qtconsole&quot;]
+ test = [&quot;nose (&gt;=0.10.1)&quot;, &quot;requests&quot;, &quot;testpath&quot;, &quot;pygments&quot;, &quot;nbformat&quot;, &quot;ipykernel&quot;, &quot;numpy (&gt;=1.14)&quot;]
+ 
+-[package.dependencies]
+-appnope = &quot;*&quot;
+-backcall = &quot;*&quot;
+-colorama = &quot;*&quot;
+-decorator = &quot;*&quot;
+-jedi = &quot;&gt;=0.10&quot;
+-pexpect = &quot;*&quot;
+-pickleshare = &quot;*&quot;
+-prompt-toolkit = &quot;&gt;=2.0.0,&lt;3.0.0 || &gt;3.0.0,&lt;3.0.1 || &gt;3.0.1,&lt;3.1.0&quot;
+-pygments = &quot;*&quot;
+-setuptools = &quot;&gt;=18.5&quot;
+-traitlets = &quot;&gt;=4.2&quot;
+-
+ [[package]]
+ name = &quot;ipython-genutils&quot;
+ version = &quot;0.2.0&quot;
+@@ -253,7 +251,6 @@ description = &quot;Vestigial utilities from IPython&quot;
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+-marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
+ 
+ [[package]]
+ name = &quot;itsdangerous&quot;
+@@ -270,15 +267,14 @@ description = &quot;An autocompletion tool for Python that can be used for text edito
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
+-marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
+-
+-[package.extras]
+-qa = [&quot;flake8 (3.7.9)&quot;]
+-testing = [&quot;Django (&lt;3.1)&quot;, &quot;colorama&quot;, &quot;docopt&quot;, &quot;pytest (&gt;=3.9.0,&lt;5.0.0)&quot;]
+ 
+ [package.dependencies]
+ parso = &quot;&gt;=0.7.0,&lt;0.8.0&quot;
+ 
++[package.extras]
++qa = [&quot;flake8 (==3.7.9)&quot;]
++testing = [&quot;Django (&lt;3.1)&quot;, &quot;colorama&quot;, &quot;docopt&quot;, &quot;pytest (&gt;=3.9.0,&lt;5.0.0)&quot;]
++
+ [[package]]
+ name = &quot;jinja2&quot;
+ version = &quot;2.11.2&quot;
+@@ -287,12 +283,12 @@ category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
+ 
+-[package.extras]
+-i18n = [&quot;Babel (&gt;=0.8)&quot;]
+-
+ [package.dependencies]
+ MarkupSafe = &quot;&gt;=0.23&quot;
+ 
++[package.extras]
++i18n = [&quot;Babel (&gt;=0.8)&quot;]
++
+ [[package]]
+ name = &quot;markupsafe&quot;
+ version = &quot;1.1.1&quot;
+@@ -328,7 +324,6 @@ description = &quot;A Python Parser&quot;
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
+-marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
+ 
+ [package.extras]
+ testing = [&quot;docopt&quot;, &quot;pytest (&gt;=3.0.7)&quot;]
+@@ -340,7 +335,6 @@ description = &quot;Pexpect allows easy control of interactive console applications.&quot;
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+-marker = &quot;python_version &gt;= \&quot;3.4\&quot; and sys_platform != \&quot;win32\&quot;&quot;
+ 
+ [package.dependencies]
+ ptyprocess = &quot;&gt;=0.5&quot;
+@@ -352,7 +346,6 @@ description = &quot;Tiny &#39;shelve&#39;-like database with concurrency support&quot;
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+-marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
+ 
+ [[package]]
+ name = &quot;pluggy&quot;
+@@ -362,14 +355,12 @@ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*&quot;
+ 
++[package.dependencies]
++importlib-metadata = {version = &quot;&gt;=0.12&quot;, markers = &quot;python_version &lt; \&quot;3.8\&quot;&quot;}
++
+ [package.extras]
+ dev = [&quot;pre-commit&quot;, &quot;tox&quot;]
+ 
+-[package.dependencies]
+-[package.dependencies.importlib-metadata]
+-version = &quot;&gt;=0.12&quot;
+-python = &quot;&lt;3.8&quot;
+-
+ [[package]]
+ name = &quot;prompt-toolkit&quot;
+ version = &quot;3.0.6&quot;
+@@ -377,7 +368,6 @@ description = &quot;Library for building powerful interactive command lines in Python
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;&gt;=3.6.1&quot;
+-marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
+ 
+ [package.dependencies]
+ wcwidth = &quot;*&quot;
+@@ -389,7 +379,6 @@ description = &quot;Run a subprocess in a pseudo terminal&quot;
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+-marker = &quot;python_version &gt;= \&quot;3.4\&quot; and sys_platform != \&quot;win32\&quot;&quot;
+ 
+ [[package]]
+ name = &quot;py&quot;
+@@ -414,13 +403,12 @@ description = &quot;Pygments is a syntax highlighting package written in Python.&quot;
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;&gt;=3.5&quot;
+-marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
+ 
+ [[package]]
+ name = &quot;pyparsing&quot;
+ version = &quot;2.4.7&quot;
+ description = &quot;Python parsing module&quot;
+-category = &quot;dev&quot;
++category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.6, !=3.0.*, !=3.1.*, !=3.2.*&quot;
+ 
+@@ -432,14 +420,11 @@ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;&gt;=3.5&quot;
+ 
+-[package.extras]
+-checkqa_mypy = [&quot;mypy (0.780)&quot;]
+-testing = [&quot;argcomplete&quot;, &quot;hypothesis (&gt;=3.56)&quot;, &quot;mock&quot;, &quot;nose&quot;, &quot;requests&quot;, &quot;xmlschema&quot;]
+-
+ [package.dependencies]
+-atomicwrites = &quot;&gt;=1.0&quot;
++atomicwrites = {version = &quot;&gt;=1.0&quot;, markers = &quot;sys_platform == \&quot;win32\&quot;&quot;}
+ attrs = &quot;&gt;=17.4.0&quot;
+-colorama = &quot;*&quot;
++colorama = {version = &quot;*&quot;, markers = &quot;sys_platform == \&quot;win32\&quot;&quot;}
++importlib-metadata = {version = &quot;&gt;=0.12&quot;, markers = &quot;python_version &lt; \&quot;3.8\&quot;&quot;}
+ iniconfig = &quot;*&quot;
+ more-itertools = &quot;&gt;=4.0.0&quot;
+ packaging = &quot;*&quot;
+@@ -447,9 +432,9 @@ pluggy = &quot;&gt;=0.12,&lt;1.0&quot;
+ py = &quot;&gt;=1.8.2&quot;
+ toml = &quot;*&quot;
+ 
+-[package.dependencies.importlib-metadata]
+-version = &quot;&gt;=0.12&quot;
+-python = &quot;&lt;3.8&quot;
++[package.extras]
++checkqa_mypy = [&quot;mypy (==0.780)&quot;]
++testing = [&quot;argcomplete&quot;, &quot;hypothesis (&gt;=3.56)&quot;, &quot;mock&quot;, &quot;nose&quot;, &quot;requests&quot;, &quot;xmlschema&quot;]
+ 
+ [[package]]
+ name = &quot;requests&quot;
+@@ -459,16 +444,27 @@ category = &quot;main&quot;
+ optional = false
+ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*&quot;
+ 
+-[package.extras]
+-security = [&quot;pyOpenSSL (&gt;=0.14)&quot;, &quot;cryptography (&gt;=1.3.4)&quot;]
+-socks = [&quot;PySocks (&gt;=1.5.6,&lt;1.5.7 || &gt;1.5.7)&quot;, &quot;win-inet-pton&quot;]
+-
+ [package.dependencies]
+ certifi = &quot;&gt;=2017.4.17&quot;
+ chardet = &quot;&gt;=3.0.2,&lt;4&quot;
+ idna = &quot;&gt;=2.5,&lt;3&quot;
+ urllib3 = &quot;&gt;=1.21.1,&lt;1.25.0 || &gt;1.25.0,&lt;1.25.1 || &gt;1.25.1,&lt;1.26&quot;
+ 
++[package.extras]
++security = [&quot;pyOpenSSL (&gt;=0.14)&quot;, &quot;cryptography (&gt;=1.3.4)&quot;]
++socks = [&quot;PySocks (&gt;=1.5.6,!=1.5.7)&quot;, &quot;win-inet-pton&quot;]
++
++[[package]]
++name = &quot;requests-toolbelt&quot;
++version = &quot;0.9.1&quot;
++description = &quot;A utility belt for advanced users of python-requests&quot;
++category = &quot;main&quot;
++optional = false
++python-versions = &quot;*&quot;
++
++[package.dependencies]
++requests = &quot;&gt;=2.0.1,&lt;3.0.0&quot;
++
+ [[package]]
+ name = &quot;six&quot;
+ version = &quot;1.15.0&quot;
+@@ -492,16 +488,15 @@ description = &quot;Traitlets Python config system&quot;
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+-marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
+-
+-[package.extras]
+-test = [&quot;pytest&quot;, &quot;mock&quot;]
+ 
+ [package.dependencies]
+ decorator = &quot;*&quot;
+ ipython-genutils = &quot;*&quot;
+ six = &quot;*&quot;
+ 
++[package.extras]
++test = [&quot;pytest&quot;, &quot;mock&quot;]
++
+ [[package]]
+ name = &quot;urllib3&quot;
+ version = &quot;1.25.10&quot;
+@@ -513,7 +508,7 @@ python-versions = &quot;&gt;=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, &lt;4&quot;
+ [package.extras]
+ brotli = [&quot;brotlipy (&gt;=0.6.0)&quot;]
+ secure = [&quot;certifi&quot;, &quot;cryptography (&gt;=1.3.4)&quot;, &quot;idna (&gt;=2.0.0)&quot;, &quot;pyOpenSSL (&gt;=0.14)&quot;, &quot;ipaddress&quot;]
+-socks = [&quot;PySocks (&gt;=1.5.6,&lt;1.5.7 || &gt;1.5.7,&lt;2.0)&quot;]
++socks = [&quot;PySocks (&gt;=1.5.6,!=1.5.7,&lt;2.0)&quot;]
+ 
+ [[package]]
+ name = &quot;wcwidth&quot;
+@@ -522,7 +517,6 @@ description = &quot;Measures the displayed width of unicode strings in a terminal&quot;
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;*&quot;
+-marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
+ 
+ [[package]]
+ name = &quot;werkzeug&quot;
+@@ -543,16 +537,15 @@ description = &quot;Backport of pathlib-compatible object wrapper for zip files&quot;
+ category = &quot;dev&quot;
+ optional = false
+ python-versions = &quot;&gt;=3.6&quot;
+-marker = &quot;python_version &lt; \&quot;3.8\&quot;&quot;
+ 
+ [package.extras]
+ docs = [&quot;sphinx&quot;, &quot;jaraco.packaging (&gt;=3.2)&quot;, &quot;rst.linker (&gt;=1.9)&quot;]
+ testing = [&quot;jaraco.itertools&quot;, &quot;func-timeout&quot;]
+ 
+ [metadata]
+-lock-version = &quot;1.0&quot;
++lock-version = &quot;1.1&quot;
+ python-versions = &quot;^3.7&quot;
+-content-hash = &quot;1753bef74f04a35a21914127fef75ab7bfc5c14e04c0c48613c0d637bcc6df91&quot;
++content-hash = &quot;6ab6afb2d27321e79013421b33c1fa4011bdc5b33b04ffd20906b4a4122c0900&quot;
+ 
+ [metadata.files]
+ appnope = [
+@@ -578,6 +571,10 @@ argon2-cffi = [
+     {file = &quot;argon2_cffi-20.1.0-cp38-cp38-win_amd64.whl&quot;, hash = &quot;sha256:9dfd5197852530294ecb5795c97a823839258dfd5eb9420233c7cfedec2058f2&quot;},
+     {file = &quot;argon2_cffi-20.1.0-cp39-cp39-win32.whl&quot;, hash = &quot;sha256:e2db6e85c057c16d0bd3b4d2b04f270a7467c147381e8fd73cbbe5bc719832be&quot;},
+     {file = &quot;argon2_cffi-20.1.0-cp39-cp39-win_amd64.whl&quot;, hash = &quot;sha256:8a84934bd818e14a17943de8099d41160da4a336bcc699bb4c394bbb9b94bd32&quot;},
++    {file = &quot;argon2_cffi-20.1.0-pp36-pypy36_pp73-macosx_10_7_x86_64.whl&quot;, hash = &quot;sha256:b94042e5dcaa5d08cf104a54bfae614be502c6f44c9c89ad1535b2ebdaacbd4c&quot;},
++    {file = &quot;argon2_cffi-20.1.0-pp36-pypy36_pp73-win32.whl&quot;, hash = &quot;sha256:8282b84ceb46b5b75c3a882b28856b8cd7e647ac71995e71b6705ec06fc232c3&quot;},
++    {file = &quot;argon2_cffi-20.1.0-pp37-pypy37_pp73-macosx_10_7_x86_64.whl&quot;, hash = &quot;sha256:3aa804c0e52f208973845e8b10c70d8957c9e5a666f702793256242e9167c4e0&quot;},
++    {file = &quot;argon2_cffi-20.1.0-pp37-pypy37_pp73-win_amd64.whl&quot;, hash = &quot;sha256:36320372133a003374ef4275fbfce78b7ab581440dfca9f9471be3dd9a522428&quot;},
+ ]
+ atomicwrites = [
+     {file = &quot;atomicwrites-1.4.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197&quot;},
+@@ -637,6 +634,10 @@ click = [
+     {file = &quot;click-7.1.2-py2.py3-none-any.whl&quot;, hash = &quot;sha256:dacca89f4bfadd5de3d7489b7c8a566eee0d3676333fbb50030263894c38c0dc&quot;},
+     {file = &quot;click-7.1.2.tar.gz&quot;, hash = &quot;sha256:d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a&quot;},
+ ]
++cloudscraper = [
++    {file = &quot;cloudscraper-1.2.58-py2.py3-none-any.whl&quot;, hash = &quot;sha256:674fd739f9412188aae8d6614e3e6316939fc0670ef5646abd3d316f1a59d3c2&quot;},
++    {file = &quot;cloudscraper-1.2.58.tar.gz&quot;, hash = &quot;sha256:dda29028c5628b5ba3e4dc43816ed38fd46bd945ef938c420f185586a6d8dff2&quot;},
++]
+ colorama = [
+     {file = &quot;colorama-0.4.3-py2.py3-none-any.whl&quot;, hash = &quot;sha256:7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff&quot;},
+     {file = &quot;colorama-0.4.3.tar.gz&quot;, hash = &quot;sha256:e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1&quot;},
+@@ -783,6 +784,10 @@ requests = [
+     {file = &quot;requests-2.24.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:fe75cc94a9443b9246fc7049224f75604b113c36acb93f87b80ed42c44cbb898&quot;},
+     {file = &quot;requests-2.24.0.tar.gz&quot;, hash = &quot;sha256:b3559a131db72c33ee969480840fff4bb6dd111de7dd27c8ee1f820f4f00231b&quot;},
+ ]
++requests-toolbelt = [
++    {file = &quot;requests-toolbelt-0.9.1.tar.gz&quot;, hash = &quot;sha256:968089d4584ad4ad7c171454f0a5c6dac23971e9472521ea3b6d49d610aa6fc0&quot;},
++    {file = &quot;requests_toolbelt-0.9.1-py2.py3-none-any.whl&quot;, hash = &quot;sha256:380606e1d10dc85c3bd47bf5a6095f815ec007be7a8b69c878507068df059e6f&quot;},
++]
+ six = [
+     {file = &quot;six-1.15.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced&quot;},
+     {file = &quot;six-1.15.0.tar.gz&quot;, hash = &quot;sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259&quot;},
+diff --git a/pyproject.toml b/pyproject.toml
+index db670a0..c61cc32 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -27,6 +27,7 @@ requests = &quot;^2.24.0&quot;
+ goodconf = &quot;^1.0.0&quot;
+ argon2-cffi = &quot;^20.1.0&quot;
+ bbcode = &quot;^1.1.0&quot;
++cloudscraper = &quot;^1.2.58&quot;
+ 
+ [tool.poetry.dev-dependencies]
+ pytest = &quot;^6.0.1&quot;
+diff --git a/src/mangoapi/base_site.py b/src/mangoapi/base_site.py
+index 9bb4dde..b3a6479 100644
+--- a/src/mangoapi/base_site.py
++++ b/src/mangoapi/base_site.py
+@@ -1,6 +1,7 @@
+ import functools
+ from abc import ABC, abstractmethod
+ 
++import cloudscraper
+ import requests
+ 
+ from .exceptions import (
+@@ -15,12 +16,7 @@ def __init__(self):
+         self.username = None
+         self.password = None
+         self.is_logged_in = False
+-        self._session = requests.Session()
+-        self._session.headers.update(
+-            {
+-                &quot;User-Agent&quot;: &quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36&quot;
+-            }
+-        )
++        self._session = cloudscraper.create_scraper(browser=&quot;chrome&quot;)
+ 
+     @abstractmethod
+     def get_title(self, title_id):
+</pre></body></html>

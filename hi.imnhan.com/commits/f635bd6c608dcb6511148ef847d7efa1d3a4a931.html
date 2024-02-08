@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[f635bd6c60] global target=&quot;_blank&quot; indicator | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / f635bd6c60</strong><hr><pre>commit f635bd6c608dcb6511148ef847d7efa1d3a4a931
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 31 18:06:48 2023 +0700
+
+    global target=&quot;_blank&quot; indicator
+
+diff --git a/_s4g/settings.txt b/_s4g/settings.txt
+index 91e9de6..c5f3b2c 100644
+--- a/_s4g/settings.txt
++++ b/_s4g/settings.txt
+@@ -3,8 +3,8 @@ Name: Hi, I&#39;m Nhân
+ Tagline: and this is my humble corner on the intertubes
+ Root: /
+ ShowFooter: true
+-FooterText: Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
+-NavbarLinks: index.dj, about/index.dj, projects/index.dj, #CV↗#https://cv.imnhan.com
++FooterText: Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
++NavbarLinks: index.dj, about/index.dj, projects/index.dj, #CV^#https://cv.imnhan.com
+ DefaultThumb: about/keyboard-warrior.jpg
+ 
+ AuthorName: Bùi Thành Nhân
+diff --git a/_s4g/theme/base.css b/_s4g/theme/base.css
+index 82e9532..1d5a594 100644
+--- a/_s4g/theme/base.css
++++ b/_s4g/theme/base.css
+@@ -34,6 +34,9 @@ a {
+ a:hover {
+   background-color: yellow;
+ }
++a[target=&quot;_blank&quot;]::after {
++  content: &quot;↗&quot;;
++}
+ 
+ main img,
+ main video {
+diff --git a/about/index.html b/about/index.html
+index 8155286..907bb60 100644
+--- a/about/index.html
++++ b/about/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+ 
+@@ -47,7 +47,7 @@ &lt;h1&gt;About&lt;/h1&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/chromebook/index.html b/chromebook/index.html
+index f12df58..95bca27 100644
+--- a/chromebook/index.html
++++ b/chromebook/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -187,7 +187,7 @@ &lt;h2&gt;Aside: Chromebook keyboard quirks on KDE&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/cool/index.html b/cool/index.html
+index dbcb778..fbc6d11 100644
+--- a/cool/index.html
++++ b/cool/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -184,7 +184,7 @@ &lt;h2&gt;To sum it up…&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/custom-theme/index.html b/custom-theme/index.html
+index 5a84914..6673a38 100644
+--- a/custom-theme/index.html
++++ b/custom-theme/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -122,7 +122,7 @@ &lt;h2&gt;That’s it!&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/fcitx/index.html b/fcitx/index.html
+index df0eb28..c17beda 100644
+--- a/fcitx/index.html
++++ b/fcitx/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -104,7 +104,7 @@ &lt;h2&gt;vim-fcitx&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/fightstick-1/index.html b/fightstick-1/index.html
+index 0d767a7..fa7e48c 100644
+--- a/fightstick-1/index.html
++++ b/fightstick-1/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -213,7 +213,7 @@ &lt;h2&gt;Um… that’s it (for now).&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/fightstick-2/index.html b/fightstick-2/index.html
+index 4064ad2..47b2cf0 100644
+--- a/fightstick-2/index.html
++++ b/fightstick-2/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -96,7 +96,7 @@ &lt;h2&gt;Thoughts&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/go-stack/index.html b/go-stack/index.html
+index 380a5e3..b7ea63a 100644
+--- a/go-stack/index.html
++++ b/go-stack/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -274,7 +274,7 @@ &lt;h2&gt;Closing remarks&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/hdviet/index.html b/hdviet/index.html
+index 40da224..ea44de9 100644
+--- a/hdviet/index.html
++++ b/hdviet/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -236,7 +236,7 @@ &lt;h2&gt;Google App Engine to the rescue!&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/ideas.html b/ideas.html
+index 6615226..bc9bb72 100644
+--- a/ideas.html
++++ b/ideas.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+ 
+@@ -97,7 +97,7 @@ &lt;h2&gt;Discord bot that launches CSGO/etc. server on demand&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/index.html b/index.html
+index 6b68179..e4d6660 100644
+--- a/index.html
++++ b/index.html
+@@ -28,7 +28,7 @@ &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+ 
+@@ -208,7 +208,7 @@ &lt;h1 class=&quot;site-title&quot;&gt;Hi, I&amp;#39;m Nhân&lt;/h1&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ 
+diff --git a/linux-automation/index.html b/linux-automation/index.html
+index ea52752..ae45b5d 100644
+--- a/linux-automation/index.html
++++ b/linux-automation/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -141,7 +141,7 @@ &lt;h2&gt;Putting them all together&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/manjaro-xfce/index.html b/manjaro-xfce/index.html
+index 0d04278..4111468 100644
+--- a/manjaro-xfce/index.html
++++ b/manjaro-xfce/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -98,7 +98,7 @@ &lt;h2&gt;Install international fonts&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/mcross/index.html b/mcross/index.html
+index 3af4e20..81750db 100644
+--- a/mcross/index.html
++++ b/mcross/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -146,7 +146,7 @@ &lt;h1&gt;Closing thoughts&lt;/h1&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/movie-streaming/gflick-fixed/index.html b/movie-streaming/gflick-fixed/index.html
+index e9279f5..76cd4ab 100644
+--- a/movie-streaming/gflick-fixed/index.html
++++ b/movie-streaming/gflick-fixed/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -168,7 +168,7 @@ &lt;h2&gt;In conclusion&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/movie-streaming/gflick/index.html b/movie-streaming/gflick/index.html
+index 082506d..30afa25 100644
+--- a/movie-streaming/gflick/index.html
++++ b/movie-streaming/gflick/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -201,7 +201,7 @@ &lt;h2&gt;Other failed attempts&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/movie-streaming/index.html b/movie-streaming/index.html
+index 91aeae8..265ead9 100644
+--- a/movie-streaming/index.html
++++ b/movie-streaming/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+ 
+@@ -64,7 +64,7 @@ &lt;h1&gt;The movie streaming saga&lt;/h1&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/movie-streaming/put.io/index.html b/movie-streaming/put.io/index.html
+index f703c14..b365447 100644
+--- a/movie-streaming/put.io/index.html
++++ b/movie-streaming/put.io/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -96,7 +96,7 @@ &lt;h1&gt;The video streaming finale, or why put.io is awesome&lt;/h1&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/node-webkit/index.html b/node-webkit/index.html
+index fc5a8c2..3046d3a 100644
+--- a/node-webkit/index.html
++++ b/node-webkit/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -242,7 +242,7 @@ &lt;h2&gt;Simple cross-platform build command&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/notes.html b/notes.html
+index 90f15a0..6b6a775 100644
+--- a/notes.html
++++ b/notes.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+ 
+@@ -80,7 +80,7 @@ &lt;h2&gt;SRE&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/pathogen-vs-vundle/index.html b/pathogen-vs-vundle/index.html
+index 5f4f09c..aa0daea 100644
+--- a/pathogen-vs-vundle/index.html
++++ b/pathogen-vs-vundle/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -285,7 +285,7 @@ &lt;h2&gt;Vundle, the new cool kid&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/petition-fraud/index.html b/petition-fraud/index.html
+index 44bbbb4..b967151 100644
+--- a/petition-fraud/index.html
++++ b/petition-fraud/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -92,7 +92,7 @@ &lt;h2&gt;Why do I even care?&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/pippable-webapp/index.html b/pippable-webapp/index.html
+index 56fce0d..fe1caa2 100644
+--- a/pippable-webapp/index.html
++++ b/pippable-webapp/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -196,7 +196,7 @@ &lt;h2&gt;But why bother?&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/projects/index.html b/projects/index.html
+index fe6adb4..e34287c 100644
+--- a/projects/index.html
++++ b/projects/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+ 
+@@ -103,7 +103,7 @@ &lt;h2&gt;Caophim&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/pyqt5/index.html b/pyqt5/index.html
+index 04b9f1a..3e944b6 100644
+--- a/pyqt5/index.html
++++ b/pyqt5/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -65,7 +65,7 @@ &lt;h1&gt;How to install PyQt5 on a virtualenv on Ubuntu 14.04&lt;/h1&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/pytaku-old/index.html b/pytaku-old/index.html
+index 4b20458..7945f77 100644
+--- a/pytaku-old/index.html
++++ b/pytaku-old/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -100,7 +100,7 @@ &lt;h2&gt;Give it a spin&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/rmit-wifi/index.html b/rmit-wifi/index.html
+index d92c7de..84ef817 100644
+--- a/rmit-wifi/index.html
++++ b/rmit-wifi/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -78,7 +78,7 @@ &lt;h3&gt;Update (Dec 16, 2013)&lt;/h3&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/s4g/index.html b/s4g/index.html
+index f4129da..1c2648d 100644
+--- a/s4g/index.html
++++ b/s4g/index.html
+@@ -23,7 +23,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -264,7 +264,7 @@ &lt;h3&gt;I just looked at the code and holy crap what’s with all those (non) data
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/sqlite-python/index.html b/sqlite-python/index.html
+index b2d0091..56dc933 100644
+--- a/sqlite-python/index.html
++++ b/sqlite-python/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -212,7 +212,7 @@ &lt;h2&gt;A quick note on SQL injection&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/stepmania-pad/index.html b/stepmania-pad/index.html
+index 288501a..5654ba4 100644
+--- a/stepmania-pad/index.html
++++ b/stepmania-pad/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -108,7 +108,7 @@ &lt;h1&gt;Simplest possible stepmania soft-to-hard pad mod&lt;/h1&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/tmux-italics/index.html b/tmux-italics/index.html
+index 58d961f..4bc33b5 100644
+--- a/tmux-italics/index.html
++++ b/tmux-italics/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -121,7 +121,7 @@ &lt;h2&gt;References:&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/ubuntu-programs/index.html b/ubuntu-programs/index.html
+index b212c41..e156574 100644
+--- a/ubuntu-programs/index.html
++++ b/ubuntu-programs/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -174,7 +174,7 @@ &lt;h2&gt;Synaptic, Ubuntu Software Center&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/vim-open-link/index.html b/vim-open-link/index.html
+index 126f22a..3b8e4c5 100644
+--- a/vim-open-link/index.html
++++ b/vim-open-link/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -147,7 +147,7 @@ &lt;h2&gt;But why stop there?&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/virtualenvwrapper/index.html b/virtualenvwrapper/index.html
+index 4e6e724..2d0f0c9 100644
+--- a/virtualenvwrapper/index.html
++++ b/virtualenvwrapper/index.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+   &lt;span class=&quot;posted-on&quot;&gt;
+@@ -62,7 +62,7 @@ &lt;h1&gt;Virtualenv(wrapper), python2 and python3&lt;/h1&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+diff --git a/yaks.html b/yaks.html
+index a08afaf..2f3c03a 100644
+--- a/yaks.html
++++ b/yaks.html
+@@ -22,7 +22,7 @@
+   &lt;a href=&quot;/&quot; &gt;Home&lt;/a&gt;
+   &lt;a href=&quot;/about/&quot; &gt;About&lt;/a&gt;
+   &lt;a href=&quot;/projects/&quot; &gt;Projects&lt;/a&gt;
+-  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV↗&lt;/a&gt;
++  &lt;a href=&quot;https://cv.imnhan.com&quot; target=&quot;_blank&quot;&gt;CV&lt;/a&gt;
+ 
+   &lt;a class=&quot;feed-link&quot; href=&quot;/feed.xml&quot; title=&quot;Actually Atom&quot;&gt;RSS&lt;/a&gt;
+ 
+@@ -104,7 +104,7 @@ &lt;h2&gt;Home server&lt;/h2&gt;
+ 
+ &lt;footer&gt;
+ © 2013–2023 Bùi Thành Nhân&lt;br&gt;
+-Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot;&gt;cà phê sữa đá&lt;/a&gt;
++Made with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt; and probably too much &lt;a href=&quot;https://www.instagram.com/cheese.coffee/&quot; target=&quot;_blank&quot;&gt;cà phê sữa đá&lt;/a&gt;
+ &lt;/footer&gt;
+ 
+ &lt;/body&gt;
+</pre></body></html>

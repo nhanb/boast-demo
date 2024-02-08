@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[010368c363] Parse absolute url links with scheme omitted | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 010368c363</strong><hr><pre>commit 010368c363c793c6844912b5a8465d640da65983
+Author: Frederick Yin &lt;fkfd@macaw.me&gt;
+Date:   Fri Jun 5 15:47:06 2020 +0800
+
+    Parse absolute url links with scheme omitted
+    
+    This enables McRoss to parse links that start with &quot;//&quot;, which is just
+    &quot;gemini://&quot; but with &quot;gemini:&quot; omitted but implied, in accordance with
+    the Gemini spec, section 1.2.
+    
+    Additionally, this patch takes McRoss all the way to #0008 of the
+    conman.org torture test, instead of #0002.
+
+diff --git a/src/mcross/gui/model.py b/src/mcross/gui/model.py
+index 4549ba1..23667bd 100644
+--- a/src/mcross/gui/model.py
++++ b/src/mcross/gui/model.py
+@@ -21,6 +21,7 @@
+ 
+ =&gt; relative/ Relative link
+ =&gt; /relative/ Relative link starting with &quot;/&quot;
++=&gt; //republic.circumlunar.space/ Absolute link with scheme omitted
+ =&gt; https://lists.orbitalfox.eu/listinfo/gemini?foo=bar HTTP link
+ 
+ ## Codes
+diff --git a/src/mcross/transport.py b/src/mcross/transport.py
+index c925baa..d25f7ba 100644
+--- a/src/mcross/transport.py
++++ b/src/mcross/transport.py
+@@ -79,6 +79,11 @@ def parse(cls, text, current_url):
+         if protocol:
+             raise UnsupportedProtocolError(protocol)
+ 
++        # absolute url with scheme omitted
++        # for example, &quot;//example.com/foo&quot;
++        if text.startswith(&quot;//&quot;):
++            return cls.parse_absolute_url(&quot;gemini:&quot; + text)
++
+         if current_url is None:
+             raise NonAbsoluteUrlWithoutContextError(text)
+ 
+</pre></body></html>

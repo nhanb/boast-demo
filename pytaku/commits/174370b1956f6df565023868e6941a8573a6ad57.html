@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[174370b195] don&#39;t split mangadex descriptions by papragraphs | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 174370b195</strong><hr><pre>commit 174370b1956f6df565023868e6941a8573a6ad57
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jan 27 21:30:59 2021 +0700
+
+    don&#39;t split mangadex descriptions by papragraphs
+    
+    Because if a spoiler tag&#39;s content has multiple paragraphs, it would be
+    cut short.
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 11eedc3..de0b1f2 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.4.0&quot;
++version = &quot;0.4.1&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index 98d73ea..3d45d33 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -38,9 +38,7 @@ def get_title(self, title_id):
+             &quot;cover_ext&quot;: cover_ext,
+             &quot;alt_names&quot;: manga[&quot;altTitles&quot;],
+             &quot;descriptions&quot;: [
+-                _bbparser.format(paragraph)
+-                for paragraph in html.unescape(manga[&quot;description&quot;]).split(&quot;\r\n&quot;)
+-                if paragraph.strip()
++                _bbparser.format(html.unescape(manga[&quot;description&quot;]).strip())
+             ],
+             &quot;descriptions_format&quot;: &quot;html&quot;,
+             &quot;is_webtoon&quot;: LONG_STRIP_TAG_ID in manga[&quot;tags&quot;],
+</pre></body></html>

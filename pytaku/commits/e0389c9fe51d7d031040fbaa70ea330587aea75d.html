@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e0389c9fe5] save both md &amp; md@h links; fallback logic on FE | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / e0389c9fe5</strong><hr><pre>commit e0389c9fe51d7d031040fbaa70ea330587aea75d
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Oct 30 14:09:58 2020 +0700
+
+    save both md &amp; md@h links; fallback logic on FE
+    
+    Preload logic is still wonky though: if fallback happens while
+    preloading, the alt urls (md@h ones) are cached but when user actually
+    navigates to next chapter, browser will try the default urls first, fail
+    again, then try alt urls again whose cache has expired (at least on
+    firefox when I tested it).
+
+diff --git a/README.md b/README.md
+index 28a5153..fb4b0e2 100644
+--- a/README.md
++++ b/README.md
+@@ -44,11 +44,11 @@ # run 2 processes:
+ 
+ ## Frontend ##
+ 
+-sudo pacman -S entr  # to watch source files
++doas pacman -S entr  # to watch source files
+ npm install -g --prefix ~/.node_modules esbuild # to bundle js
+ 
+ # Listen for changes in js-src dir, automatically build minified bundle:
+-find src/pytaku/js-src -name &#39;*.js&#39; | entr -r \
++find src/pytaku/js-src -name &#39;*.js&#39; | entr -rc \
+      esbuild src/pytaku/js-src/main.js \
+      --bundle --sourcemap --minify \
+      --outfile=src/pytaku/static/js/main.min.js
+@@ -63,6 +63,11 @@ ## Code QA tools
+ - Python: black, isort, flake8 without mccabe
+ - JavaScript: jshint, prettier
+ 
++```sh
++doas pacman python-black python-isort flake8 prettier
++npm install -g --prefix ~/.node_modules jshint
++```
++
+ # Production
+ 
+ ```sh
+diff --git a/pyproject.toml b/pyproject.toml
+index 763ce36..6880fc8 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.25&quot;
++version = &quot;0.3.26&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index 044ed4a..da2f705 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -52,24 +52,37 @@ def get_chapter(self, title_id, chapter_id):
+         md_json = md_resp.json()
+         assert md_json[&quot;status&quot;] == &quot;OK&quot;
+ 
+-        # &#39;server&#39; value points to a likely temporary MangaDex@Home instance, while
+-        # &#39;server_fallback&#39; would be MD&#39;s own server e.g. s5.mangadex.org...
+-        # The latter may be down (like, literally at the time of writing), so for now
+-        # let&#39;s prioritize the MD@Home server.
+-        # I don&#39;t know how stable MD@Home links are, but it probably won&#39;t matter,
+-        # since `persistence.load_chapter()` will re-fetch if existing db record is more
+-        # than 1 day old anyway.
+-        # TODO: A more robust solution is to save both links to db, but I&#39;m not in the
+-        # mood for it atm.
+-        server = md_json[&quot;server&quot;] or md_json.get(&quot;server_fallback&quot;)
+-        img_path = f&quot;{server}{md_json[&#39;hash&#39;]}&quot;
++        # 2 cases:
++        # - If &#39;server_fallback&#39; is absent, it means &#39;server&#39; points to MD&#39;s own server
++        #   e.g. s5.mangadex.org...
++        # - Otherwise, &#39;server&#39; points to a likely ephemeral MD@H node, while
++        # &#39;server_fallback&#39; now points to MD&#39;s own server.
++        #
++        # MD&#39;s own links apparently go dead sometimes, but MD@H links seem to expire
++        # quickly all the time, so it&#39;s probably a good idea to store both anyway.
++
++        server_fallback = md_json.get(&quot;server_fallback&quot;)
++        if server_fallback:
++            md_server = server_fallback
++            mdah_server = md_json[&quot;server&quot;]
++        else:
++            md_server = md_json[&quot;server&quot;]
++            mdah_server = None
+ 
+         chapter = {
+             &quot;id&quot;: chapter_id,
+             &quot;title_id&quot;: str(md_json[&quot;manga_id&quot;]),
+             &quot;site&quot;: &quot;mangadex&quot;,
+             &quot;name&quot;: md_json[&quot;title&quot;],
+-            &quot;pages&quot;: [f&quot;{img_path}/{page}&quot; for page in md_json[&quot;page_array&quot;]],
++            &quot;pages&quot;: [
++                f&quot;{md_server}{md_json[&#39;hash&#39;]}/{page}&quot; for page in md_json[&quot;page_array&quot;]
++            ],
++            &quot;pages_alt&quot;: [
++                f&quot;{mdah_server}{md_json[&#39;hash&#39;]}/{page}&quot;
++                for page in md_json[&quot;page_array&quot;]
++            ]
++            if mdah_server
++            else [],
+             &quot;groups&quot;: _extract_groups(md_json),
+             &quot;is_webtoon&quot;: md_json[&quot;long_strip&quot;] == 1,
+             **_parse_chapter_number(md_json[&quot;chapter&quot;]),
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+index 03d852d..a34fe54 100644
+--- a/src/mangoapi/mangasee.py
++++ b/src/mangoapi/mangasee.py
+@@ -74,6 +74,7 @@ def get_chapter(self, title_id, chapter_id):
+                 _generate_img_src(img_server, title_id, chapter_data[&quot;Chapter&quot;], p)
+                 for p in range(1, num_pages + 1)
+             ],
++            &quot;pages_alt&quot;: [],
+             &quot;groups&quot;: [],
+             &quot;is_webtoon&quot;: False,
+             **numbers,
+diff --git a/src/pytaku/database/migrations/latest_schema.sql b/src/pytaku/database/migrations/latest_schema.sql
+index 894207d..307e5a7 100644
+--- a/src/pytaku/database/migrations/latest_schema.sql
++++ b/src/pytaku/database/migrations/latest_schema.sql
+@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS &quot;chapter&quot;(
+     pages text,
+     groups text,
+     updated_at text default (datetime(&#39;now&#39;)),
+-    is_webtoon boolean,
++    is_webtoon boolean, pages_alt text not null default &#39;[]&#39;,
+ 
+     foreign key (title_id, site) references title (id, site),
+     unique(site, title_id, id)
+diff --git a/src/pytaku/database/migrations/m0007.sql b/src/pytaku/database/migrations/m0007.sql
+new file mode 100644
+index 0000000..a90530f
+--- /dev/null
++++ b/src/pytaku/database/migrations/m0007.sql
+@@ -0,0 +1,6 @@
++-- Add alternative page urls as backup because mangadex is flaky.
++begin transaction;
++
++alter table chapter add column pages_alt text not null default &#39;[]&#39;;
++
++commit;
+diff --git a/src/pytaku/js-src/routes/chapter.js b/src/pytaku/js-src/routes/chapter.js
+index f2489d8..ea4d77a 100644
+--- a/src/pytaku/js-src/routes/chapter.js
++++ b/src/pytaku/js-src/routes/chapter.js
+@@ -35,6 +35,29 @@ const ImgStatus = {
+   FAILED: &quot;failed&quot;,
+ };
+ 
++function FallbackableImg(initialVNode) {
++  let currentSrc;
++  return {
++    oninit: (vnode) =&gt; {
++      currentSrc = vnode.attrs.src;
++    },
++    view: (vnode) =&gt; {
++      return m(&quot;img&quot;, {
++        src: currentSrc,
++        style: vnode.attrs.style,
++        onload: vnode.attrs.onload,
++        onerror: (ev) =&gt; {
++          if (currentSrc === vnode.attrs.src &amp;&amp; vnode.attrs.altsrc !== null) {
++            currentSrc = vnode.attrs.altsrc;
++          } else {
++            vnode.attrs.onerror(ev);
++          }
++        },
++      });
++    },
++  };
++}
++
+ function Chapter(initialVNode) {
+   let isLoading = false;
+   let chapter = {};
+@@ -48,9 +71,11 @@ function Chapter(initialVNode) {
+ 
+   function loadNextPage() {
+     if (pendingPages.length &gt; 0) {
++      let [src, altsrc] = pendingPages.splice(0, 1)[0];
+       loadedPages.push({
+         status: ImgStatus.LOADING,
+-        src: pendingPages.splice(0, 1)[0],
++        src,
++        altsrc,
+       });
+     } else if (chapter.next_chapter &amp;&amp; nextChapterPromise === null) {
+       /* Once all pages of this chapter have been loaded,
+@@ -62,7 +87,15 @@ function Chapter(initialVNode) {
+         chapterId: chapter.next_chapter.id,
+       }).then((nextChapter) =&gt; {
+         console.log(&quot;Preloading next chapter:&quot;, fullChapterName(nextChapter));
+-        nextChapterPendingPages = nextChapter.pages.slice();
++        if (nextChapter.pages_alt.length &gt; 0) {
++          nextChapterPendingPages = nextChapter.pages.map((page, i) =&gt; {
++            return [page, nextChapter.pages_alt[i]];
++          });
++        } else {
++          nextChapterPendingPages = nextChapter.pages.map((page) =&gt; {
++            return [page, null];
++          });
++        }
+         // Apparently preloading one at a time was too slow so let&#39;s go with 2.
+         preloadNextChapterPage();
+         preloadNextChapterPage();
+@@ -73,7 +106,8 @@ function Chapter(initialVNode) {
+   function preloadNextChapterPage() {
+     if (nextChapterPendingPages !== null) {
+       if (nextChapterPendingPages.length &gt; 0) {
+-        nextChapterLoadedPages.push(nextChapterPendingPages.splice(0, 1)[0]);
++        const [src, altsrc] = nextChapterPendingPages.splice(0, 1)[0];
++        nextChapterLoadedPages.push({ src, altsrc });
+       }
+     }
+   }
+@@ -96,8 +130,16 @@ function Chapter(initialVNode) {
+           chapter = resp;
+           document.title = fullChapterName(chapter);
+ 
+-          // Clone array here to avoid mutating the model
+-          pendingPages = chapter.pages.slice();
++          // &quot;zip&quot; pages &amp; pages_alt into pendingPages
++          if (chapter.pages_alt.length &gt; 0) {
++            pendingPages = chapter.pages.map((page, i) =&gt; {
++              return [page, chapter.pages_alt[i]];
++            });
++          } else {
++            pendingPages = chapter.pages.map((page) =&gt; {
++              return [page, null];
++            });
++          }
+ 
+           // start loading pages, 3 at a time:
+           loadNextPage();
+@@ -184,8 +226,9 @@ function Chapter(initialVNode) {
+           [
+             loadedPages.map((page, pageIndex) =&gt;
+               m(&quot;div&quot;, { key: page.src }, [
+-                m(&quot;img&quot;, {
++                m(FallbackableImg, {
+                   src: page.src,
++                  altsrc: page.altsrc,
+                   style: {
+                     display:
+                       page.status === ImgStatus.SUCCEEDED ? &quot;block&quot; : &quot;none&quot;,
+@@ -211,16 +254,17 @@ function Chapter(initialVNode) {
+                   : null,
+               ])
+             ),
+-            pendingPages.map((page) =&gt; m(PendingPlaceholder)),
++            pendingPages.map(() =&gt; m(PendingPlaceholder)),
+           ]
+         ),
+         buttons,
+         nextChapterLoadedPages.map((page) =&gt;
+-          m(&quot;img.chapter--preloader&quot;, {
++          m(FallbackableImg, {
+             style: { display: &quot;none&quot; },
+             onload: preloadNextChapterPage,
+             onerror: preloadNextChapterPage,
+-            src: page,
++            src: page.src,
++            altsrc: page.altsrc,
+           })
+         ),
+       ]);
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 68c7e83..0ec696a 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -283,6 +283,7 @@ def api_chapter(site, title_id, chapter_id):
+ 
+     if site in (&quot;mangadex&quot;, &quot;mangasee&quot;):
+         chapter[&quot;pages&quot;] = [proxied(p) for p in chapter[&quot;pages&quot;]]
++        chapter[&quot;pages_alt&quot;] = [proxied(p) for p in chapter[&quot;pages_alt&quot;]]
+ 
+     # YIIIIKES
+     title = load_title(site, title_id)
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index 4152a89..bb2a9af 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -105,6 +105,7 @@ def save_chapter(chapter):
+         num_minor,
+         name,
+         pages,
++        pages_alt,
+         groups,
+         is_webtoon
+     ) VALUES (
+@@ -115,6 +116,7 @@ def save_chapter(chapter):
+         :num_minor,
+         :name,
+         :pages,
++        :pages_alt,
+         :groups,
+         :is_webtoon
+     ) ON CONFLICT (id, title_id, site) DO UPDATE SET
+@@ -122,6 +124,7 @@ def save_chapter(chapter):
+         num_minor=excluded.num_minor,
+         name=excluded.name,
+         pages=excluded.pages,
++        pages_alt=excluded.pages_alt,
+         groups=excluded.groups,
+         is_webtoon=excluded.is_webtoon,
+         updated_at=datetime(&#39;now&#39;)
+@@ -135,6 +138,7 @@ def save_chapter(chapter):
+             &quot;num_minor&quot;: chapter.get(&quot;num_minor&quot;),
+             &quot;name&quot;: chapter[&quot;name&quot;],
+             &quot;pages&quot;: json.dumps(chapter[&quot;pages&quot;]),
++            &quot;pages_alt&quot;: json.dumps(chapter[&quot;pages_alt&quot;]),
+             &quot;groups&quot;: json.dumps(chapter[&quot;groups&quot;]),
+             &quot;is_webtoon&quot;: chapter[&quot;is_webtoon&quot;],
+         },
+@@ -145,7 +149,7 @@ def load_chapter(site, title_id, chapter_id, ignore_old=True):
+     updated_at = &quot;datetime(&#39;now&#39;, &#39;-1 days&#39;)&quot; if ignore_old else &quot;&#39;1980-01-01&#39;&quot;
+     result = run_sql(
+         f&quot;&quot;&quot;
+-        SELECT id, title_id, site, num_major, num_minor, name, pages, groups, is_webtoon
++        SELECT id, title_id, site, num_major, num_minor, name, pages, pages_alt, groups, is_webtoon
+         FROM chapter
+         WHERE site=? AND title_id=? AND id=? AND updated_at &gt; {updated_at};
+         &quot;&quot;&quot;,
+@@ -158,6 +162,7 @@ def load_chapter(site, title_id, chapter_id, ignore_old=True):
+     else:
+         chapter = result[0]
+         chapter[&quot;pages&quot;] = json.loads(chapter[&quot;pages&quot;])
++        chapter[&quot;pages_alt&quot;] = json.loads(chapter[&quot;pages_alt&quot;])
+         chapter[&quot;groups&quot;] = json.loads(chapter[&quot;groups&quot;])
+         return chapter
+ 
+diff --git a/tests/mangoapi/test_mangadex.py b/tests/mangoapi/test_mangadex.py
+index 7bc8883..1dec5a5 100644
+--- a/tests/mangoapi/test_mangadex.py
++++ b/tests/mangoapi/test_mangadex.py
+@@ -85,6 +85,7 @@ def test_get_title():
+ def test_get_chapter():
+     chap = Mangadex().get_chapter(&quot;doesn&#39;t matter&quot;, &quot;696882&quot;)
+     pages = chap.pop(&quot;pages&quot;)
++    pages_alt = chap.pop(&quot;pages_alt&quot;)
+     assert chap == {
+         &quot;id&quot;: &quot;696882&quot;,
+         &quot;title_id&quot;: &quot;12088&quot;,
+@@ -97,6 +98,7 @@ def test_get_chapter():
+         &quot;num_minor&quot;: 5,
+     }
+     assert len(pages) == 16
++    assert len(pages_alt) == 16
+ 
+ 
+ def test_search():
+diff --git a/tests/mangoapi/test_mangasee.py b/tests/mangoapi/test_mangasee.py
+index e4cb3b9..fb943ec 100644
+--- a/tests/mangoapi/test_mangasee.py
++++ b/tests/mangoapi/test_mangasee.py
+@@ -29,6 +29,7 @@ def test_get_title():
+ def test_get_chapter():
+     chapter = Mangasee().get_chapter(&quot;Yu-Yu-Hakusho&quot;, &quot;63.5&quot;)
+     pages = chapter.pop(&quot;pages&quot;)
++    pages_alt = chapter.pop(&quot;pages_alt&quot;)
+     assert chapter == {
+         &quot;groups&quot;: [],
+         &quot;id&quot;: &quot;63.5&quot;,
+@@ -42,6 +43,7 @@ def test_get_chapter():
+     }
+     assert pages[0] == &quot;https://s1.mangabeast01.com/manga/Yu-Yu-Hakusho/0063.5-001.png&quot;
+     assert pages[-1] == &quot;https://s1.mangabeast01.com/manga/Yu-Yu-Hakusho/0063.5-031.png&quot;
++    assert pages_alt == []
+ 
+ 
+ def test_search_title():
+</pre></body></html>

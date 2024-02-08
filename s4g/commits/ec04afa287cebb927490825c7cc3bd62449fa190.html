@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ec04afa287] update readme | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / ec04afa287</strong><hr><pre>commit ec04afa287cebb927490825c7cc3bd62449fa190
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jul 12 16:19:39 2023 +0700
+
+    update readme
+
+diff --git a/README.md b/README.md
+index 7b6b91d..b8ebe59 100644
+--- a/README.md
++++ b/README.md
+@@ -9,15 +9,19 @@
+ only Markdown derivative that actually tries to be both unambiguous _and_
+ useful.
+ 
+-Requirements: `go`, `node`.
++Requirements: `go` (build), `node` (runtime).
+ 
+ ```sh
+ # Install
+ go install go.imnhan.com/webmaker2000@latest
+ 
+ # Create new site
+-webmaker2000 -new ~/my-blog
++webmaker2000 new -f ~/my-blog
+ 
+-# Run program
+-webmaker2000 -folder ~/my-blog
++# Run program, which:
++# - listens to changes and automatically re-generates
++# - starts a local HTTP server for preview, also livereloads on changes
++webmaker2000 serve -f ~/my-blog
+ ```
++
++GUI Coming Soon (tm).
+</pre></body></html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[02de0c169a] make sure to deploy new static assets | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 02de0c169a</strong><hr><pre>commit 02de0c169a8511e151d530730ca88e49bfccb408
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Aug 24 19:30:43 2020 +0700
+
+    make sure to deploy new static assets
+    
+    Not the cleanest but hey it works for now.
+
+diff --git a/.builds/ubuntu.yml b/.builds/ubuntu.yml
+index effecf0..0d4c98c 100644
+--- a/.builds/ubuntu.yml
++++ b/.builds/ubuntu.yml
+@@ -79,6 +79,8 @@ tasks:
+         ~/.local/bin/pip install --user pytaku*.whl &amp;&amp;
+         cd ~/pytaku &amp;&amp;
+         ~/.local/bin/pytaku-migrate &amp;&amp;
++        rm -r static &amp;&amp;
++        cp -r ~/.local/lib/python3.7/site-packages/pytaku/static ./ &amp;&amp;
+         systemctl --user daemon-reload &amp;&amp;
+         systemctl --user restart pytaku &amp;&amp;
+         systemctl --user restart pytaku-scheduler &amp;&amp;
+</pre></body></html>

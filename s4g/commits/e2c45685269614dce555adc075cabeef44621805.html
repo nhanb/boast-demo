@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e2c4568526] put Post style into separate css file too | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / e2c4568526</strong><hr><pre>commit e2c45685269614dce555adc075cabeef44621805
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jul 5 01:02:05 2023 +0700
+
+    put Post style into separate css file too
+
+diff --git a/www/_theme/base.tmpl b/www/_theme/base.tmpl
+index 70d9099..9ef2b9e 100644
+--- a/www/_theme/base.tmpl
++++ b/www/_theme/base.tmpl
+@@ -7,6 +7,7 @@
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;{{.Feed}}&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.Site.HomePath}}_theme/base.css&quot;&gt;
++  {{- template &quot;head&quot; .}}
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+diff --git a/www/_theme/home.tmpl b/www/_theme/home.tmpl
+index b16dd45..60e9a4a 100644
+--- a/www/_theme/home.tmpl
++++ b/www/_theme/home.tmpl
+@@ -1,3 +1,5 @@
++{{define &quot;head&quot;}}{{end}}
++
+ {{define &quot;body&quot;}}
+ &lt;header&gt;
+   &lt;h1 class=&quot;site-title&quot;&gt;{{.Site.Name}}&lt;/h1&gt;
+diff --git a/www/_theme/post.css b/www/_theme/post.css
+new file mode 100644
+index 0000000..e1b7a1c
+--- /dev/null
++++ b/www/_theme/post.css
+@@ -0,0 +1,8 @@
++nav &gt; a {
++  margin-right: 0.5rem;
++}
++
++.posted-on {
++  float: right;
++  font-style: italic;
++}
+diff --git a/www/_theme/post.tmpl b/www/_theme/post.tmpl
+index 4570873..934c934 100644
+--- a/www/_theme/post.tmpl
++++ b/www/_theme/post.tmpl
+@@ -1,3 +1,7 @@
++{{- define &quot;head&quot;}}
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;{{.Site.HomePath}}_theme/post.css&quot;&gt;
++{{- end}}
++
+ {{define &quot;body&quot;}}
+ &lt;nav&gt;
+   &lt;a href=&quot;{{.Site.HomePath}}&quot;&gt;Home&lt;/a&gt;
+@@ -23,13 +27,4 @@
+ {{.Content}}
+ &lt;/content&gt;
+ 
+-&lt;style&gt;
+-nav &gt; a {
+-  margin-right: 0.5rem;
+-}
+-.posted-on {
+-  float: right;
+-  font-style: italic;
+-}
+-&lt;/style&gt;
+-{{end}}
++{{- end}}
+diff --git a/www/about/index.html b/www/about/index.html
+index b85f9f3..7eefe28 100644
+--- a/www/about/index.html
++++ b/www/about/index.html
+@@ -7,6 +7,7 @@
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/post.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+@@ -32,17 +33,6 @@ &lt;h2&gt;No really&lt;/h2&gt;
+ &lt;/section&gt;
+ 
+ &lt;/content&gt;
+-
+-&lt;style&gt;
+-nav &gt; a {
+-  margin-right: 0.5rem;
+-}
+-.posted-on {
+-  float: right;
+-  font-style: italic;
+-}
+-&lt;/style&gt;
+-
+ &lt;footer&gt;
+ © 2022–2023 Coolio McCool&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+diff --git a/www/hello/index.html b/www/hello/index.html
+index 6ff14fc..f9c85c7 100644
+--- a/www/hello/index.html
++++ b/www/hello/index.html
+@@ -7,6 +7,7 @@
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/post.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+@@ -30,17 +31,6 @@ &lt;h1 class=&quot;post-title&quot;&gt;Hello&lt;/h1&gt;
+ &lt;p&gt;Hello world.&lt;/p&gt;
+ 
+ &lt;/content&gt;
+-
+-&lt;style&gt;
+-nav &gt; a {
+-  margin-right: 0.5rem;
+-}
+-.posted-on {
+-  float: right;
+-  font-style: italic;
+-}
+-&lt;/style&gt;
+-
+ &lt;footer&gt;
+ © 2022–2023 Coolio McCool&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+diff --git a/www/mfws.html b/www/mfws.html
+index 9ff5b9e..83eb6c9 100644
+--- a/www/mfws.html
++++ b/www/mfws.html
+@@ -7,6 +7,7 @@
+   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+   &lt;link rel=&quot;alternate&quot; type=&quot;application/atom+xml&quot; title=&quot;Atom feed&quot; href=&quot;/feed.xml&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/base.css&quot;&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;/_theme/post.css&quot;&gt;
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+@@ -119,17 +120,6 @@ &lt;h2&gt;Epilogue&lt;/h2&gt;
+ &lt;/section&gt;
+ 
+ &lt;/content&gt;
+-
+-&lt;style&gt;
+-nav &gt; a {
+-  margin-right: 0.5rem;
+-}
+-.posted-on {
+-  float: right;
+-  font-style: italic;
+-}
+-&lt;/style&gt;
+-
+ &lt;footer&gt;
+ © 2022–2023 Coolio McCool&lt;br&gt;
+ Made with &lt;a href=&quot;https://github.com/nhanb/webmaker2000&quot;&gt;WebMaker2000&lt;/a&gt;
+</pre></body></html>

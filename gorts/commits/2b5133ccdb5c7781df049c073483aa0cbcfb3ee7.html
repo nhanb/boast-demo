@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[2b5133ccdb] fix artifact uploading | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 2b5133ccdb</strong><hr><pre>commit 2b5133ccdb5c7781df049c073483aa0cbcfb3ee7
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jun 18 18:54:42 2023 +0700
+
+    fix artifact uploading
+
+diff --git a/.builds/alpine.yml b/.builds/alpine.yml
+index 8278a5c..9af1e13 100644
+--- a/.builds/alpine.yml
++++ b/.builds/alpine.yml
+@@ -31,9 +31,17 @@ tasks:
+       git describe --exact-match HEAD || complete-build
+ 
+   - release: |
+-      cd gorts
+-      hut git artifact upload dist/GORTS-Linux.zip
+-      hut git artifact upload dist/GORTS-Windows.zip
++      # Sourcehut doesn&#39;t allow artifacts with the same name, even if they&#39;re
++      # attached to different tags, so we have to make unique zip filenames.
++      # But then we can&#39;t use these unique names for the per-build `artifacts`
++      # list down below, because there&#39;s no wildcarding allowed there, so we&#39;ll
++      # need to keep the generic filenames around too.
++      cd gorts/dist
++      TAG=`git describe`
++      cp GORTS-Linux.zip &quot;GORTS-Linux-${TAG}.zip&quot;
++      cp GORTS-Windows.zip &quot;GORTS-Windows-${TAG}.zip&quot;
++      hut git artifact upload &quot;GORTS-Linux-${TAG}.zip&quot;
++      hut git artifact upload &quot;GORTS-Windows-${TAG}.zip&quot;
+ 
+ artifacts:
+   - gorts/dist/GORTS-Linux.zip
+</pre></body></html>

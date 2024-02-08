@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e413805f7c] pin poetry version | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / e413805f7c</strong><hr><pre>commit e413805f7cae417eba310b25d60870cc97fd1c6a
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Oct 2 21:34:09 2020 +0700
+
+    pin poetry version
+
+diff --git a/.builds/ubuntu.yml b/.builds/ubuntu.yml
+index e920897..5c39d1c 100644
+--- a/.builds/ubuntu.yml
++++ b/.builds/ubuntu.yml
+@@ -36,7 +36,11 @@ tasks:
+       python3.7 -m venv ~/venv
+       source ~/venv/bin/activate
+       curl https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py
+-      python get-poetry.py -y
++      # Apparently the spanking new poetry 1.1 has a bug where the wheel
++      # distribution won&#39;t honor pyproject&#39;s `include` setting, leaving out our
++      # built js assets (tar.gz file does work correctly though).
++      # Let&#39;s pin it to 1.0 for now.
++      python get-poetry.py -y --version 1.0.10
+       cd pytaku
+       poetry install
+       pip install https://github.com/rogerbinns/apsw/releases/download/3.32.2-r1/apsw-3.32.2-r1.zip \
+diff --git a/pyproject.toml b/pyproject.toml
+index 679fba8..11c9416 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.23&quot;
++version = &quot;0.3.24&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+</pre></body></html>

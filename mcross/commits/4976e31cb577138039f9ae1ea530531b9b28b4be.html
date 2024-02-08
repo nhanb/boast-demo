@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[4976e31cb5] explicit &quot;go&quot; button sizing | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 4976e31cb5</strong><hr><pre>commit 4976e31cb577138039f9ae1ea530531b9b28b4be
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri May 15 16:14:21 2020 +0700
+
+    explicit &quot;go&quot; button sizing
+
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index cb74883..99ac122 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -70,7 +70,7 @@ def __init__(self, root: Tk, model: Model):
+         address_bar.focus_set()
+ 
+         # Go button
+-        go_btn = ttk.Button(row1, text=&quot;go&quot;, command=self._on_go)
++        go_btn = ttk.Button(row1, text=&quot;三三ᕕ( ᐛ )ᕗ&quot;, command=self._on_go, width=10)
+         self.go_btn = go_btn
+         go_btn.pack(side=&quot;left&quot;, pady=3)
+ 
+</pre></body></html>

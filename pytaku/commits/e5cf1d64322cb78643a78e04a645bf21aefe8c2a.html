@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e5cf1d6432] opengraph for chapter view too | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / e5cf1d6432</strong><hr><pre>commit e5cf1d64322cb78643a78e04a645bf21aefe8c2a
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Aug 11 20:45:22 2020 +0700
+
+    opengraph for chapter view too
+
+diff --git a/pyproject.toml b/pyproject.toml
+index dca39b9..075389a 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.2.17&quot;
++version = &quot;0.2.18&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index d55cba4..8c38967 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -208,12 +208,17 @@ def chapter_view(site, title_id, chapter_id):
+ 
+     # YIIIIKES
+     title = load_title(site, title_id)
++    title[&quot;cover&quot;] = title_cover(site, title_id, title[&quot;cover_ext&quot;])
++    if site == &quot;mangadex&quot;:
++        title[&quot;cover&quot;] = url_for(
++            &quot;proxy_view&quot;, b64_url=_encode_proxy_url(title[&quot;cover&quot;])
++        )
+     prev_chapter, next_chapter = get_prev_next_chapters(title, chapter)
+     chapter[&quot;prev_chapter&quot;] = prev_chapter
+     chapter[&quot;next_chapter&quot;] = next_chapter
+ 
+     chapter[&quot;site&quot;] = site
+-    return render_template(&quot;chapter.html&quot;, **chapter)
++    return render_template(&quot;chapter.html&quot;, title=title, **chapter)
+ 
+ 
+ @app.route(&quot;/search&quot;)
+@@ -240,7 +245,7 @@ def proxy_view(b64_url):
+         return &quot;Nope&quot;, 400
+     md_resp = requests.get(url)
+     resp = make_response(md_resp.content, md_resp.status_code)
+-    resp.headers.extend(**md_resp.headers)
++    resp.headers[&quot;Content-Type&quot;] = md_resp.headers[&quot;Content-Type&quot;]
+     return resp
+ 
+ 
+diff --git a/src/pytaku/templates/chapter.html b/src/pytaku/templates/chapter.html
+index 5ad18fa..1b6e0eb 100644
+--- a/src/pytaku/templates/chapter.html
++++ b/src/pytaku/templates/chapter.html
+@@ -6,6 +6,9 @@
+ {% endblock %}
+ 
+ {% block head %}
++&lt;meta property=&quot;og:title&quot; content=&quot;{{ title[&#39;name&#39;] }} {{ self.title() }} - Pytaku&quot; /&gt;
++&lt;meta property=&quot;og:image&quot; content=&quot;{{ title[&#39;cover&#39;] }}&quot; /&gt;
++&lt;meta property=&quot;og:description&quot; content=&quot;{{ title[&#39;descriptions&#39;] | join(&#39;\n&#39;) }}&quot; /&gt;
+ 
+ {% if next_chapter %}
+ &lt;link rel=&quot;prefetch&quot; href=&quot;{{ url_for(&#39;chapter_view&#39;, site=site, title_id=title_id, chapter_id=next_chapter[&#39;id&#39;])}}&quot;&gt;
+</pre></body></html>

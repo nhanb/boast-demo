@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[92944dcb92] Fix inline code style in lists; add ideas page | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 92944dcb92</strong><hr><pre>commit 92944dcb92a3fc6b6ec87258ad5c6e3d3da74a01
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Sep 14 20:00:53 2021 +0700
+
+    Fix inline code style in lists; add ideas page
+
+diff --git a/content/pages/ideas.md b/content/pages/ideas.md
+new file mode 100644
+index 0000000..1e741bc
+--- /dev/null
++++ b/content/pages/ideas.md
+@@ -0,0 +1,28 @@
++Title: Potential project ideas
++Slug: ideas
++Hidden: True
++
++## Self hosted RSS reader in D
++
++- Single executable, web based
++- SQLite3
++- Either use adamdruppe&#39;s rss.d or wrap libmrss
++- Bonus: e-ink friendly display
++- Bonus: netsurf friendly
++
++## Desktop GUI blogging CMS using tkinter
++
++- Native win/mac look-and-feel, acceptable on linux (`clam` looks alright)
++- Split screen: one with markdown/bbcode source and one with rendered preview
++- Sane embedded image/video/etc. file management via GUI
++  + Bonus: 1-click preprocessing: strip EXIF, losslessly optimize image
++- **No embedded browser**
++- Is static site generator, but supports 1-click deployment to neocities,
++  github/gitlab/sourcehut pages etc.
++- Human-friend distribution e.g. nuitka, pyoxidizer (pyinstaller is pretty meh)
++- Bonus: pluggable templates
++
++## Manhoa
++
++Still fuzzy. May want to ditch the familiar Django stack and try using vibe.d.
++Who knows?
+diff --git a/nhanb-theme/static/css/main.css b/nhanb-theme/static/css/main.css
+index 2a54013..9208ea4 100644
+--- a/nhanb-theme/static/css/main.css
++++ b/nhanb-theme/static/css/main.css
+@@ -104,7 +104,8 @@ code {
+   font-family: monospace;
+ }
+ 
+-p code {
++p code,
++li code {
+   padding: 0.2rem 0.2rem 0.1rem 0.2rem;
+   border-radius: 0.2rem;
+   border: 1px solid lightgray;
+</pre></body></html>

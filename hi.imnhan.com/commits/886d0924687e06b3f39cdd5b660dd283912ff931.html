@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[886d092468] change article headings to h2, add periods to summaries | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 886d092468</strong><hr><pre>commit 886d0924687e06b3f39cdd5b660dd283912ff931
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Fri Jun 7 13:54:34 2013 +0700
+
+    change article headings to h2, add periods to summaries
+
+diff --git a/content/modern-vim-plugin-management-pathogen-vs-vundle.md b/content/modern-vim-plugin-management-pathogen-vs-vundle.md
+index 605623a..bc1cd48 100644
+--- a/content/modern-vim-plugin-management-pathogen-vs-vundle.md
++++ b/content/modern-vim-plugin-management-pathogen-vs-vundle.md
+@@ -4,7 +4,7 @@
+ lang: en
+ category: tutorials
+ tags: vim
+-summary: Pimp your vim with little effort
++summary: Pimp your vim with little effort.
+ 
+ 
+ For the impatient ones: Vundle is better than pathogen, use it.
+@@ -13,7 +13,7 @@
+ third-party tools: Pathogen or Vundle. I assume you are using a Linux distro and have git
+ already installed. If not, consult Dr. Google for more details.
+ 
+-# Vim plugins anatomy
++## Vim plugins anatomy
+ 
+ A vim plugin is simply a set of files that alter vim&#39;s behavior or add new functionalities to it.
+ To make this possible, by default vim looks for files in your home folder (which is 
+@@ -103,7 +103,7 @@ ## ~/.vim (directory)
+ Now imagine you have 20-30 plugins installed (which is normal, by the way). It&#39;s not a
+ pretty sight now, is it?
+ 
+-# Pathogen to the rescue!
++## Pathogen to the rescue!
+ 
+ The legendary Tim Pope came up with a genius solution:
+ [pathogen](https://github.com/tpope/vim-pathogen).
+@@ -155,7 +155,7 @@ # Pathogen to the rescue!
+ appropriate configuration files. The plugins are now isolated so removing or updating them
+ becomes trivial: just remove or update its own directory.
+ 
+-# Pathogen + Git
++## Pathogen + Git
+ 
+ Everything goes to the cloud these days, and certainly your vim setup should as well. If you
+ haven&#39;t created a [Github](https://github.com) account, do it now. Create an empty repository
+@@ -223,7 +223,7 @@ # Pathogen + Git
+ [this Stackoverflow question](http://stackoverflow.com/questions/1260748/how-do-i-remove-a-git-submodule)
+ for detailed instructions.
+ 
+-# Vundle, the new cool kid
++## Vundle, the new cool kid
+ 
+ This time let&#39;s start fresh: remove all submodules and pathogen. Your bundle folder should be
+ now empty. Clone [Vundle](https://github.com/gmarik/vundle):
+diff --git a/content/modern-vim-plugin-management-pathogen-vs-vundle_vi.md b/content/modern-vim-plugin-management-pathogen-vs-vundle_vi.md
+index d493e0b..66457f0 100644
+--- a/content/modern-vim-plugin-management-pathogen-vs-vundle_vi.md
++++ b/content/modern-vim-plugin-management-pathogen-vs-vundle_vi.md
+@@ -4,7 +4,7 @@
+ lang: vi
+ category: Tutorials
+ tags: vim
+-summary: Pimp your vim with little effort
++summary: Pimp your vim with little effort.
+ 
+ Dành cho những ai lười đọc: Vundle tốt hơn Pathogen.
+ 
+diff --git a/content/why-i-use-linux-automation.md b/content/why-i-use-linux-automation.md
+index 091e35e..a524ecc 100644
+--- a/content/why-i-use-linux-automation.md
++++ b/content/why-i-use-linux-automation.md
+@@ -3,14 +3,14 @@
+ Category: tutorials
+ Tags: python, linux
+ Slug: why-i-use-linux-automation
+-Summary: Repeating is boring
++Summary: Repeating is for losers.
+ 
+ (In this post, when I say Linux, I mean any popular GNU/Linux distribution. Hope this clarification
+ will keep the nitpickers away.)
+ 
+ First let&#39;s discuss *why* automation rocks.
+ 
+-# Repetition is evil (and boring)
++## Repetition is evil (and boring)
+ 
+ As a (would-be) software engineer, the *repetition is evil* notion has been planted in my head for
+ far more times than anything else, and for good reasons.
+@@ -26,7 +26,7 @@ # Repetition is evil (and boring)
+ or trying to figure out what that &quot;Han shot first&quot; meme means (sorry, I&#39;m from the later
+ generation).
+ 
+-# Automation needs command line tools
++## Automation needs command line tools
+ 
+ Because, of course, GUI programs are (nearly) impossible to interact with in our scripts. Sure
+ you can try mouse click emulation tools and stuff like that, but is it really worth the effort?
+@@ -38,7 +38,7 @@ # Automation needs command line tools
+ It&#39;s a whole different matter in Linux: from the good old awk, sed, grep, wget to the new shiny
+ aria2... Almost anything you can think of is available as a command line tool.
+ 
+-# Putting them all together
++## Putting them all together
+ 
+ Just like any UNIX-like system, Linux tools utilize the One True Phylosophy: Do only 1 thing, and
+ do it well. (okay, I&#39;m paraphrasing a bit, but you get the idea)
+</pre></body></html>

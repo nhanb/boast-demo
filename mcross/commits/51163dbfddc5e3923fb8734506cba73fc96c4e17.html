@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[51163dbfdd] customizable fallback font for pick_font() | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 51163dbfdd</strong><hr><pre>commit 51163dbfddc5e3923fb8734506cba73fc96c4e17
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu May 14 23:44:16 2020 +0700
+
+    customizable fallback font for pick_font()
+
+diff --git a/src/mcross/gui/view.py b/src/mcross/gui/view.py
+index 6565cba..602187a 100644
+--- a/src/mcross/gui/view.py
++++ b/src/mcross/gui/view.py
+@@ -15,7 +15,7 @@ def pick_font(names):
+             break
+ 
+     if not picked:
+-        picked = &quot;TkTextFont&quot;
++        picked = names[-1]
+ 
+     print(&quot;Picked font:&quot;, picked)
+     return picked
+@@ -77,9 +77,10 @@ def __init__(self, root: Tk, model: Model):
+                 &quot;DejaVu Serif&quot;,
+                 &quot;Times New Roman&quot;,
+                 &quot;Times&quot;,
++                &quot;TkTextFont&quot;,
+             ]
+         )
+-        mono_font = pick_font([&quot;Ubuntu Mono&quot;, &quot;Consolas&quot;, &quot;Courier&quot;])
++        mono_font = pick_font([&quot;Ubuntu Mono&quot;, &quot;Consolas&quot;, &quot;Courier&quot;, &quot;TkFixedFont&quot;])
+         text.config(
+             font=(text_font, 13), bg=&quot;#fff8dc&quot;, fg=&quot;black&quot;, padx=5, pady=5,
+         )
+</pre></body></html>

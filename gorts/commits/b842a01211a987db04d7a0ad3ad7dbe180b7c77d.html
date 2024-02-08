@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b842a01211] shift things around | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / b842a01211</strong><hr><pre>commit b842a01211a987db04d7a0ad3ad7dbe180b7c77d
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jun 20 16:20:37 2023 +0700
+
+    shift things around
+
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index 8fbc506..db4be7c 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -138,14 +138,13 @@ grid columnconfigure .c.buttons 3 -pad 15
+ proc initialize {b64icon webport countrycodes} {
+     seticon $b64icon
+     set ::mainstatus &quot;Point your OBS browser source to http://localhost:${webport}&quot;
+-    readscoreboard
+-    setupdiffcheck
+-
+     .c.players.p1country configure -values $countrycodes
+     .c.players.p2country configure -values $countrycodes
+ 
++    readscoreboard
++    setupdiffcheck
+     readplayernames
+-    setup_player_name_suggestion
++    setupplayersuggestion
+ }
+ 
+ proc seticon {b64data} {
+@@ -197,7 +196,7 @@ proc readplayernames {} {
+     .c.players.p2name configure -values $playernames
+ }
+ 
+-proc setup_player_name_suggestion {} {
++proc setupplayersuggestion {} {
+     proc update_suggestions {_ key _} {
+         if {!($key == &quot;p1name&quot; || $key == &quot;p2name&quot;)} {
+             return
+</pre></body></html>

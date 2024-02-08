@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[3750862e6f] show source site error to user | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 3750862e6f</strong><hr><pre>commit 3750862e6f50e8f8a112326063e1db3b337410c6
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 27 21:39:21 2020 +0700
+
+    show source site error to user
+    
+    New `@handle_source_site_errors` decorator that supports either html or
+    json responses.
+    
+    - If html: just render a plain page
+    - If json: count on frontend code to report error appropriately.
+      Currently it just `alert()`s the thing.
+      Need to figure out a better UX.
+
+diff --git a/pyproject.toml b/pyproject.toml
+index e6764bf..c95133f 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.11&quot;
++version = &quot;0.3.12&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/mangoapi/base_site.py b/src/mangoapi/base_site.py
+index 6f1884d..9bb4dde 100644
+--- a/src/mangoapi/base_site.py
++++ b/src/mangoapi/base_site.py
+@@ -3,7 +3,11 @@
+ 
+ import requests
+ 
+-from .exceptions import SourceSite5xxError, SourceSiteUnexpectedError
++from .exceptions import (
++    SourceSite5xxError,
++    SourceSiteTimeoutError,
++    SourceSiteUnexpectedError,
++)
+ 
+ 
+ class Site(ABC):
+@@ -46,18 +50,21 @@ def title_source_url(self, title_id):
+     def login(self, username, password):
+         raise NotImplementedError()
+ 
+-    def _http_request(self, method, *args, **kwargs):
++    def _http_request(self, method, url, *args, **kwargs):
+         request_func = getattr(self._session, method)
+ 
+         if &quot;timeout&quot; not in kwargs:
+             kwargs[&quot;timeout&quot;] = 5
+ 
+-        resp = request_func(*args, **kwargs)
++        try:
++            resp = request_func(url, *args, **kwargs)
++        except requests.exceptions.Timeout:
++            raise SourceSiteTimeoutError(url)
+ 
+         if 500 &lt;= resp.status_code &lt;= 599:
+-            raise SourceSite5xxError(resp.text)
++            raise SourceSite5xxError(url, resp.status_code, resp.text)
+         elif resp.status_code != 200:
+-            raise SourceSiteUnexpectedError(resp.status_code, resp.text)
++            raise SourceSiteUnexpectedError(url, resp.status_code, resp.text)
+ 
+         return resp
+ 
+diff --git a/src/mangoapi/exceptions.py b/src/mangoapi/exceptions.py
+index a48d331..728d4ab 100644
+--- a/src/mangoapi/exceptions.py
++++ b/src/mangoapi/exceptions.py
+@@ -1,8 +1,17 @@
+-class SourceSite5xxError(Exception):
++class SourceSiteResponseError(Exception):
++    def __init__(self, url, status_code=None, response_text=None):
++        self.url = url
++        self.status_code = status_code
++        self.response_text = response_text
++
++
++class SourceSiteTimeoutError(SourceSiteResponseError):
+     pass
+ 
+ 
+-class SourceSiteUnexpectedError(Exception):
+-    def __init__(self, status_code, resp_text):
+-        self.status_code = status_code
+-        self.resp_text = resp_text
++class SourceSite5xxError(SourceSiteResponseError):
++    pass
++
++
++class SourceSiteUnexpectedError(SourceSiteResponseError):
++    pass
+diff --git a/src/pytaku/decorators.py b/src/pytaku/decorators.py
+index 01d1a8d..c7a86c7 100644
+--- a/src/pytaku/decorators.py
++++ b/src/pytaku/decorators.py
+@@ -1,6 +1,13 @@
+ from functools import wraps
+ 
+-from flask import jsonify, request
++from flask import jsonify, render_template, request
++
++from mangoapi.exceptions import (
++    SourceSite5xxError,
++    SourceSiteResponseError,
++    SourceSiteTimeoutError,
++    SourceSiteUnexpectedError,
++)
+ 
+ from .persistence import verify_token
+ 
+@@ -33,3 +40,40 @@ def decorated_function(*args, **kwargs):
+         return decorated_function
+ 
+     return decorator
++
++
++SOURCE_SITE_ERRORS = {
++    SourceSiteTimeoutError: {
++        &quot;code&quot;: &quot;source_site_timeout&quot;,
++        &quot;message&quot;: &quot;Source site took too long to respond. Try again later.&quot;,
++    },
++    SourceSite5xxError: {
++        &quot;code&quot;: &quot;source_site_5xx&quot;,
++        &quot;message&quot;: &quot;Source site crapped the bed. Try again later.&quot;,
++    },
++    SourceSiteUnexpectedError: {
++        &quot;code&quot;: &quot;source_site_unexpected&quot;,
++        &quot;message&quot;: &quot;Unexpected error when requesting source site.&quot;,
++    },
++}
++
++
++def handle_source_site_errors(format=&quot;json&quot;):
++    assert format in (&quot;json&quot;, &quot;html&quot;), f&quot;{format} ain&#39;t no format I ever heard of!&quot;
++
++    def outer_func(f):
++        @wraps(f)
++        def decorated_function(*args, **kwargs):
++            try:
++                return f(*args, **kwargs)
++            except SourceSiteResponseError as err:
++                resp = SOURCE_SITE_ERRORS[err.__class__]
++                resp[&quot;detail&quot;] = err.__dict__
++                if format == &quot;json&quot;:
++                    return jsonify(resp), 500
++                elif format == &quot;html&quot;:
++                    return render_template(&quot;error.html&quot;, **resp), 500
++
++        return decorated_function
++
++    return outer_func
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 9626226..ec0749e 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -10,7 +10,7 @@
+ from flask import Flask, jsonify, make_response, render_template, request, url_for
+ 
+ from .conf import config
+-from .decorators import process_token
++from .decorators import handle_source_site_errors, process_token
+ from .persistence import (
+     create_token,
+     delete_token,
+@@ -209,6 +209,7 @@ def _title(site, title_id, user_id=None):
+ 
+ 
+ @app.route(&quot;/m/&lt;site&gt;/&lt;title_id&gt;&quot;)
++@handle_source_site_errors(&quot;html&quot;)
+ def spa_title_view(site, title_id):
+     title = _title(site, title_id)
+     return render_template(
+@@ -222,6 +223,7 @@ def spa_title_view(site, title_id):
+ 
+ 
+ @app.route(&quot;/m/&lt;site&gt;/&lt;title_id&gt;/&lt;chapter_id&gt;&quot;)
++@handle_source_site_errors(&quot;html&quot;)
+ def spa_chapter_view(site, title_id, chapter_id):
+     chapter = load_chapter(site, title_id, chapter_id)
+     if not chapter:
+@@ -252,6 +254,7 @@ def spa_chapter_view(site, title_id, chapter_id):
+ 
+ @app.route(&quot;/api/title/&lt;site&gt;/&lt;title_id&gt;&quot;, methods=[&quot;GET&quot;])
+ @process_token(required=False)
++@handle_source_site_errors(&quot;json&quot;)
+ def api_title(site, title_id):
+     title = _title(site, title_id, user_id=request.user_id)
+     return title
+@@ -259,6 +262,7 @@ def api_title(site, title_id):
+ 
+ @app.route(&quot;/api/chapter/&lt;site&gt;/&lt;title_id&gt;/&lt;chapter_id&gt;&quot;, methods=[&quot;GET&quot;])
+ @process_token(required=False)
++@handle_source_site_errors(&quot;json&quot;)
+ def api_chapter(site, title_id, chapter_id):
+     chapter = load_chapter(site, title_id, chapter_id)
+     if not chapter:
+@@ -382,6 +386,7 @@ def api_search(query):
+ 
+ @app.route(&quot;/api/follow&quot;, methods=[&quot;POST&quot;])
+ @process_token(required=True)
++@handle_source_site_errors(&quot;json&quot;)
+ def api_follow():
+     should_follow = request.json[&quot;follow&quot;]
+     site = request.json[&quot;site&quot;]
+@@ -405,12 +410,18 @@ def api_read():
+     if reads:
+         for r in reads:
+             read(
+-                request.user_id, r[&quot;site&quot;], r[&quot;title_id&quot;], r[&quot;chapter_id&quot;],
++                request.user_id,
++                r[&quot;site&quot;],
++                r[&quot;title_id&quot;],
++                r[&quot;chapter_id&quot;],
+             )
+     if unreads:
+         for u in unreads:
+             unread(
+-                request.user_id, u[&quot;site&quot;], u[&quot;title_id&quot;], u[&quot;chapter_id&quot;],
++                request.user_id,
++                u[&quot;site&quot;],
++                u[&quot;title_id&quot;],
++                u[&quot;chapter_id&quot;],
+             )
+     # TODO: rewrite read/unread to do bulk updates instead of n+1 queries like these.
+     # ... Or maybe not. SQLite doesn&#39;t mind.
+@@ -422,6 +433,7 @@ def api_read():
+ 
+ @app.route(&quot;/api/import&quot;, methods=[&quot;POST&quot;])
+ @process_token(required=True)
++@handle_source_site_errors(&quot;json&quot;)
+ def api_import():
+     # check if the post request has the file part
+     if &quot;tachiyomi&quot; not in request.files:
+diff --git a/src/pytaku/static/js/models.js b/src/pytaku/static/js/models.js
+index e683512..e28f991 100644
+--- a/src/pytaku/static/js/models.js
++++ b/src/pytaku/static/js/models.js
+@@ -81,6 +81,8 @@ const Auth = {
+     return m.request(options).catch((err) =&gt; {
+       if (err.code == 401) {
+         Auth.clearCredentials();
++      } else if (err.code == 500) {
++        alert(err.response.message);
+       }
+       throw err;
+     });
+diff --git a/src/pytaku/templates/error.html b/src/pytaku/templates/error.html
+new file mode 100644
+index 0000000..69da5d8
+--- /dev/null
++++ b/src/pytaku/templates/error.html
+@@ -0,0 +1,17 @@
++{# vim: ft=htmldjango
++#}
++{% extends &quot;spa.html&quot; %}
++{% block title %}{{ message }}{% endblock %}
++{% block body %}
++&lt;div class=&quot;content&quot;&gt;
++  &lt;h1&gt;{{ message }}&lt;/h1&gt;
++  &lt;p&gt;Error code: {{ code }}&lt;/p&gt;
++  &lt;h2&gt;Details:&lt;/h2&gt;
++  &lt;ul&gt;
++    {% for key, val in detail.items() %}
++    &lt;li&gt;{{ key }}: {{ val }}&lt;/li&gt;
++    {% endfor %}
++  &lt;/ul&gt;
++
++&lt;/div&gt;
++{% endblock %}
+diff --git a/src/pytaku/templates/spa.html b/src/pytaku/templates/spa.html
+index dabbf90..cc61dc2 100644
+--- a/src/pytaku/templates/spa.html
++++ b/src/pytaku/templates/spa.html
+@@ -24,6 +24,8 @@
+   &lt;/head&gt;
+ 
+   &lt;body&gt;
++    {% block body %}
++
+     &lt;div id=&quot;spa-root&quot;&gt;
+       &lt;noscript&gt;
+         &lt;p&gt;Please enable JavaScript to use Pytaku.&lt;/p&gt;
+@@ -45,5 +47,7 @@
+     &lt;script&gt;const initialState = &quot;{{ initial_state }}&quot;;&lt;/script&gt;
+     &lt;script src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;vendored/mithril.min.js&#39;) }}&quot;&gt;&lt;/script&gt;
+     &lt;script src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;js/main.js&#39;) }}&quot; type=&quot;module&quot;&gt;&lt;/script&gt;
++
++    {% endblock %}
+   &lt;/body&gt;
+ &lt;/html&gt;
+</pre></body></html>

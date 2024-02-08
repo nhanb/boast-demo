@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[974ef16fa6] ci that auto-publishes | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 974ef16fa6</strong><hr><pre>commit 974ef16fa6afcf7f5f4abe0d51350f3080e9bf38
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 8 18:10:56 2020 +0700
+
+    ci that auto-publishes
+
+diff --git a/.builds/ubuntu.yml b/.builds/ubuntu.yml
+index c7b8c33..c7b3b8e 100644
+--- a/.builds/ubuntu.yml
++++ b/.builds/ubuntu.yml
+@@ -3,6 +3,8 @@ image: ubuntu/bionic
+ secrets:
+   # Github deploy key: solely for mirroring to github
+   - 89816c8b-4416-4a78-84ee-3ad77b485912
++  # PyPI token for pytaku:
++  - 8c42b8a6-d1b7-4af7-82f2-b8f1b6e085e2
+ 
+ environment:
+   # Ugly hack to prepend to PATH:
+@@ -13,6 +15,8 @@ environment:
+ packages:
+   - curl
+   - python3.7-dev
++  - python3.7-venv
++  - python3-pip
+ 
+ tasks:
+   - mirror-to-github: |
+@@ -24,11 +28,32 @@ tasks:
+       git push -f github &#39;*:*&#39; --follow-tags
+ 
+   - setup: |
++      python3.7 -m venv ~/venv
++      source ~/venv/bin/activate
+       curl https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py
+-      python3.7 get-poetry.py -y
++      python get-poetry.py -y
+       cd pytaku
+       poetry install
+ 
+   - build: |
+       cd pytaku
++      source ~/venv/bin/activate
+       poetry build
++
++  # Builds.sr.ht doesn&#39;t support tag or even branch detection yet:
++  # &gt; https://todo.sr.ht/~sircmpwn/builds.sr.ht/170
++  # Also the yaml gets mangled badly whenever I try to use a pipe
++  # operator, so I&#39;m moving the whole tag detection thing into a
++  # bash script.
++  - check-publish: |
++      if [[ &quot;$GITHUB_EVENT&quot; == &quot;push&quot; ]] &amp;&amp; [[ &quot;$GITHUB_REF&quot; =~ ^refs/tags/ ]]
++      then
++          echo &quot;This is a tag push. Proceeding to publish...&quot;
++      else
++          echo &quot;Not deploying.&quot;
++          complete-build  # stop build with a &quot;success&quot; status
++      fi
++
++  - publish: |
++      cd pytaku
++      poetry publish
+diff --git a/README.md b/README.md
+index 1ef4098..b6e9623 100644
+--- a/README.md
++++ b/README.md
+@@ -2,6 +2,10 @@
+ 
+ Production instance coming When It&#39;s Ready (tm).
+ 
++# Pytaku
++
++[![builds.sr.ht status](https://builds.sr.ht/~nhanb/pytaku/commits/ubuntu.yml.svg)](https://builds.sr.ht/~nhanb/pytaku/commits/ubuntu.yml?)
++
+ Pytaku is a WIP web-based manga reader that keeps track of your reading
+ progress and new chapter updates. Its design goals are:
+ 
+diff --git a/pyproject.toml b/pyproject.toml
+index 530d902..6716b1d 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.2.5&quot;
++version = &quot;0.2.6&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+</pre></body></html>

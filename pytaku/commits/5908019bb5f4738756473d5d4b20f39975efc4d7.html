@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[5908019bb5] third time&#39;s the charm | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 5908019bb5</strong><hr><pre>commit 5908019bb5f4738756473d5d4b20f39975efc4d7
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 8 21:45:38 2020 +0700
+
+    third time&#39;s the charm
+
+diff --git a/.builds/ubuntu.yml b/.builds/ubuntu.yml
+index fbfd28c..624448d 100644
+--- a/.builds/ubuntu.yml
++++ b/.builds/ubuntu.yml
+@@ -42,10 +42,13 @@ tasks:
+ 
+   # Builds.sr.ht doesn&#39;t support tag or even branch detection yet:
+   # &gt; https://todo.sr.ht/~sircmpwn/builds.sr.ht/170
+-  # So here I manually check if current commit has an annotated tag.
++  # So here I manually check if:
++  # - current commit has an annotated tag: using git describe
++  # - currently in detached HEAD, not master: to rule out the sourcehut build
++  # that&#39;s triggered by the master branch push and not the `--tags` push.
+   - check-publish: |
+       cd pytaku
+-      git describe --exact-match HEAD || complete-build
++      git describe --exact-match HEAD &amp;&amp; git rev-parse --abbrev-ref --symbolic-full-name HEAD | grep master || complete-build
+ 
+   - publish: |
+       cd pytaku
+diff --git a/pyproject.toml b/pyproject.toml
+index b0cb2c4..fc421da 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.2.8&quot;
++version = &quot;0.2.9&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+</pre></body></html>

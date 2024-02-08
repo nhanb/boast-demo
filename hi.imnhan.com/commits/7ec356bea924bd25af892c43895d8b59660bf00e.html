@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[7ec356bea9] use www instead of blog subdomain | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 7ec356bea9</strong><hr><pre>commit 7ec356bea924bd25af892c43895d8b59660bf00e
+Author: nhanb &lt;nhan@nerdyweekly.com&gt;
+Date:   Wed Oct 1 11:03:59 2014 +0700
+
+    use www instead of blog subdomain
+    
+    ignore pyc files too
+
+diff --git a/.gitignore b/.gitignore
+index 09ef355..a764eca 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -2,3 +2,4 @@ output/
+ *.pid
+ __pycache__/
+ cache/
++*.pyc
+diff --git a/content/extra/CNAME b/content/extra/CNAME
+index 4ecd023..e3bde0e 100644
+--- a/content/extra/CNAME
++++ b/content/extra/CNAME
+@@ -1 +1 @@
+-blog.nerdyweekly.com
++www.nerdyweekly.com
+diff --git a/publishconf.py b/publishconf.py
+index 9e7dc2f..43c3f00 100644
+--- a/publishconf.py
++++ b/publishconf.py
+@@ -10,7 +10,7 @@
+ sys.path.append(os.curdir)
+ from pelicanconf import *
+ 
+-SITEURL = &#39;http://blog.nerdyweekly.com&#39;
++SITEURL = &#39;http://www.nerdyweekly.com&#39;
+ RELATIVE_URLS = False
+ 
+ DELETE_OUTPUT_DIRECTORY = True
+</pre></body></html>

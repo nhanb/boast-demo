@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[e6dfe75582] tweak search so mangasee results come first | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / e6dfe75582</strong><hr><pre>commit e6dfe755823f9a8eb7db60a7ab2e697e3b3e128a
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Sep 4 00:51:31 2021 +0700
+
+    tweak search so mangasee results come first
+
+diff --git a/src/pytaku/js-src/models.js b/src/pytaku/js-src/models.js
+index 221681f..b3d225c 100644
+--- a/src/pytaku/js-src/models.js
++++ b/src/pytaku/js-src/models.js
+@@ -107,8 +107,8 @@ const SearchModel = {
+         params: { query },
+       })
+         .then((resp) =&gt; {
+-          SearchModel.cache[query] = resp;
+-          SearchModel.result = resp;
++          SearchModel.cache[query] = resp.results;
++          SearchModel.result = resp.results;
+         })
+         .catch((err) =&gt; {
+           console.log(&quot;TODO&quot;, err);
+diff --git a/src/pytaku/js-src/routes/search.js b/src/pytaku/js-src/routes/search.js
+index 6551504..78a8971 100644
+--- a/src/pytaku/js-src/routes/search.js
++++ b/src/pytaku/js-src/routes/search.js
+@@ -11,7 +11,7 @@ const Search = {
+       &quot;div.content&quot;,
+       SearchModel.isLoading
+         ? m(LoadingMessage)
+-        : Object.entries(SearchModel.result).map(([site, titles]) =&gt;
++        : SearchModel.result.map(({ site, titles }) =&gt;
+             m(&quot;div&quot;, [
+               m(&quot;h1.search--site-heading&quot;, site),
+               titles
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 7246224..74661d3 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -382,10 +382,12 @@ def api_follows():
+ def api_search(query):
+     results = search_title_all_sites(query)
+ 
+-    if &quot;mangadex&quot; in results:
+-        for title in results[&quot;mangadex&quot;]:
+-            title[&quot;thumbnail&quot;] = proxied(title[&quot;thumbnail&quot;])
+-    return results
++    for result in results:
++        if result[&quot;site&quot;] == &quot;mangadex&quot;:
++            for title in result[&quot;titles&quot;]:
++                title[&quot;thumbnail&quot;] = proxied(title[&quot;thumbnail&quot;])
++            break
++    return {&quot;results&quot;: results}
+ 
+ 
+ @app.route(&quot;/api/follow&quot;, methods=[&quot;POST&quot;])
+diff --git a/src/pytaku/source_sites.py b/src/pytaku/source_sites.py
+index edc1821..44ddd38 100644
+--- a/src/pytaku/source_sites.py
++++ b/src/pytaku/source_sites.py
+@@ -59,7 +59,7 @@ def search_title_all_sites(query):
+     I should really look into proper type annotations huh.
+     &quot;&quot;&quot;
+     site_names = (&quot;mangasee&quot;, &quot;mangadex&quot;)
+-    results = {}
++    results = []
+ 
+     def safe_search(site_name, query):
+         try:
+@@ -79,6 +79,6 @@ def safe_search(site_name, query):
+         for future in as_completed(future_to_site_name):
+             site_results = future.result()
+             site_name = future_to_site_name[future]
+-            results[site_name] = site_results
++            results.append({&quot;site&quot;: site_name, &quot;titles&quot;: site_results})
+ 
+     return results
+</pre></body></html>

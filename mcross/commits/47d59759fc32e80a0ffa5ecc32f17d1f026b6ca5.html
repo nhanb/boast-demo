@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[47d59759fc] mvp gui | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 47d59759fc</strong><hr><pre>commit 47d59759fc32e80a0ffa5ecc32f17d1f026b6ca5
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu May 14 00:53:15 2020 +0700
+
+    mvp gui
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..a295864
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,2 @@
++*.pyc
++__pycache__
+diff --git a/README.md b/README.md
+index 22118dc..0d2a282 100644
+--- a/README.md
++++ b/README.md
+@@ -1,6 +1,10 @@
++# WIP
++
+ Developed against gemini://gemini.circumlunar.space/ because apparently
+ it&#39;s the only one if a valid TLS cert.
+ 
++It currently looks like this: https://junk.imnhan.com/beans.mp4
++
+ # Server bugs/surprises
+ 
+ ## Forces gemini:// in request
+diff --git a/client.py b/client.py
+index ebdef02..8b252d6 100644
+--- a/client.py
++++ b/client.py
+@@ -53,5 +53,4 @@ def parse_absolute_url(absolute_url):
+     # TODO: this is not exactly safe. Do proper parsing later.
+     assert absolute_url.startswith(&quot;gemini://&quot;), f&quot;Malformed url: {absolute_url}&quot;
+     parsed = urlparse(absolute_url)
+-    print(&quot;Parsed url:&quot;, parsed)
+     return parsed
+diff --git a/gui.py b/gui.py
+new file mode 100644
+index 0000000..c357d57
+--- /dev/null
++++ b/gui.py
+@@ -0,0 +1,113 @@
++import sys
++from tkinter import Text, Tk, ttk
++
++import client
++
++
++class Model:
++    plaintext = &quot;Nothing to see here... yet.&quot;
++
++
++class View:
++    model: Model
++    address_bar: ttk.Entry
++    go_button: ttk.Button
++    viewport: ttk.Frame
++    text: Text
++
++    go_callback = None
++
++    def __init__(self, root: Tk, model: Model):
++        self.model = model
++
++        # first row - address bar + button
++        row1 = ttk.Frame(root)
++        row1.pack(fill=&quot;x&quot;)
++
++        # second row - web viewport
++        row2 = ttk.Frame(root)
++        row2.pack(fill=&quot;both&quot;, expand=True)
++
++        # Address bar prefix
++        address_prefix = ttk.Label(row1, text=&quot;gemini://&quot;)
++        address_prefix.pack(side=&quot;left&quot;)
++
++        # Address bar
++        address_bar = ttk.Entry(row1)
++        address_bar.insert(0, &quot;gemini.circumlunar.space/&quot;)
++        self.address_bar = address_bar
++        address_bar.pack(side=&quot;left&quot;, fill=&quot;both&quot;, expand=True, padx=3, pady=3)
++        address_bar.bind(&quot;&lt;Return&gt;&quot;, self._on_go)
++        address_bar.focus_set()
++
++        # Go button
++        go_button = ttk.Button(row1, text=&quot;go&quot;, command=self._on_go)
++        self.go_button = go_button
++        go_button.pack(side=&quot;left&quot;, pady=3)
++
++        # Web viewport
++        viewport = ttk.Frame(row2)
++        self.viewport = viewport
++        viewport.pack(fill=&quot;both&quot;, expand=True)
++
++        # Viewport content: just do text for now
++        text = Text(viewport)
++        self.text = text
++        self.render_page()
++        text.pack(fill=&quot;both&quot;, expand=True)
++
++        style = ttk.Style()
++        if sys.platform == &quot;win32&quot;:
++            style.theme_use(&quot;vista&quot;)
++        elif sys.platform == &quot;darwin&quot;:
++            style.theme_use(&quot;aqua&quot;)
++        else:
++            style.theme_use(&quot;clam&quot;)
++
++    def _on_go(self, ev=None):
++        if self.go_callback is not None:
++            self.go_callback(&quot;gemini://&quot; + self.address_bar.get())
++
++    def render_page(self):
++        self.text.config(state=&quot;normal&quot;)
++        self.text.delete(&quot;1.0&quot;, &quot;end&quot;)
++        self.text.insert(&quot;end&quot;, self.model.plaintext)
++        self.text.config(state=&quot;disabled&quot;)
++
++
++class Controller:
++    def __init__(self):
++        self.root = Tk()
++        self.model = Model()
++        self.view = View(self.root, self.model)
++        self.view.go_callback = self.go_callback
++
++    def run(self):
++        self.root.title(&quot;Beans Browser&quot;)
++        self.root.geometry(&quot;800x600&quot;)
++        self.root.mainloop()
++
++    def go_callback(self, url: str):
++        # TODO more visual indications
++        # TODO url validation
++
++        print(&quot;Requesting&quot;, url)
++
++        resp = client.get(url)
++        if resp.status.startswith(&quot;2&quot;):
++            self.model.plaintext = resp.body.decode()
++        else:
++            self.model.plaintext = &quot;\n&quot;.join(
++                [
++                    &quot;Error:&quot;,
++                    f&quot;{resp.status} {resp.meta}&quot;,
++                    resp.body.decode() if resp.body else &quot;&quot;,
++                ]
++            )
++
++        print(&quot;Received&quot;, resp)
++        self.view.render_page()
++
++
++c = Controller()
++c.run()
+</pre></body></html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[0907d0bf67] schduler: ignore 404 errors | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 0907d0bf67</strong><hr><pre>commit 0907d0bf67a6eb5ca5946bc0dbf7f80b5644a74f
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 3 01:27:22 2023 +0700
+
+    schduler: ignore 404 errors
+    
+    May consider automatically clean up 404 titles as well.
+
+diff --git a/src/mangoapi/base_site.py b/src/mangoapi/base_site.py
+index 7abb36f..30b00e9 100644
+--- a/src/mangoapi/base_site.py
++++ b/src/mangoapi/base_site.py
+@@ -7,6 +7,7 @@
+ 
+ from .exceptions import (
+     SourceSite5xxError,
++    SourceSite404Error,
+     SourceSiteTimeoutError,
+     SourceSiteUnexpectedError,
+ )
+@@ -79,6 +80,8 @@ def _http_request(self, method, url, *args, **kwargs):
+ 
+         if 500 &lt;= resp.status_code &lt;= 599:
+             raise SourceSite5xxError(url, resp.status_code, resp.text)
++        elif resp.status_code == 404:
++            raise SourceSite404Error(url, resp.text)
+         elif resp.status_code != 200:
+             raise SourceSiteUnexpectedError(url, resp.status_code, resp.text)
+ 
+diff --git a/src/mangoapi/exceptions.py b/src/mangoapi/exceptions.py
+index 728d4ab..613c904 100644
+--- a/src/mangoapi/exceptions.py
++++ b/src/mangoapi/exceptions.py
+@@ -13,5 +13,10 @@ class SourceSite5xxError(SourceSiteResponseError):
+     pass
+ 
+ 
++class SourceSite404Error(SourceSiteResponseError):
++    def __init__(self, url, response_text):
++        super().__init__(url, 404, response_text)
++
++
+ class SourceSiteUnexpectedError(SourceSiteResponseError):
+     pass
+diff --git a/src/pytaku/scheduler.py b/src/pytaku/scheduler.py
+index c25bcc4..20fe4f7 100644
+--- a/src/pytaku/scheduler.py
++++ b/src/pytaku/scheduler.py
+@@ -7,7 +7,7 @@
+ 
+ from requests.exceptions import ReadTimeout
+ 
+-from mangoapi.exceptions import SourceSite5xxError
++from mangoapi.exceptions import SourceSite5xxError, SourceSite404Error
+ 
+ from .conf import config
+ from .persistence import delete_expired_tokens, find_outdated_titles, save_title
+@@ -77,7 +77,13 @@ def run(self):
+                 print(&quot; done&quot;)
+                 if title[&quot;site&quot;] == &quot;mangasee&quot;:
+                     time.sleep(2)
+-            except (SourceSite5xxError, ReadTimeout, JSONDecodeError) as e:
++            except (
++                # TODO: on 404, maybe delete title that&#39;s no longer on source site?
++                SourceSite404Error,
++                SourceSite5xxError,
++                ReadTimeout,
++                JSONDecodeError,
++            ) as e:
+                 print(&quot; skipped because of server error:&quot;, e.__class__.__name__, str(e))
+ 
+ 
+</pre></body></html>

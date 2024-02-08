@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ed908f845c] heading autolink | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / ed908f845c</strong><hr><pre>commit ed908f845cc5ae48c9229cfc9c2e0f92f40c487f
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 31 19:31:25 2023 +0700
+
+    heading autolink
+
+diff --git a/_s4g/theme/base.css b/_s4g/theme/base.css
+index 1d5a594..52f77f8 100644
+--- a/_s4g/theme/base.css
++++ b/_s4g/theme/base.css
+@@ -38,6 +38,24 @@ a[target=&quot;_blank&quot;]::after {
+   content: &quot;↗&quot;;
+ }
+ 
++a.heading-link {
++  text-decoration: none;
++  margin-left: 0.3em;
++  visibility: hidden;
++}
++:hover &gt; a.heading-link {
++  visibility: visible;
++}
++section:target &gt; h2,
++section:target &gt; h3,
++section:target &gt; h4,
++section:target &gt; h5,
++section:target &gt; h6 {
++  background-color: #beefff;
++  margin-left: -1rem;
++  padding-left: 1rem;
++}
++
+ main img,
+ main video {
+   max-width: 100%;
+diff --git a/chromebook/index.html b/chromebook/index.html
+index 95bca27..9816021 100644
+--- a/chromebook/index.html
++++ b/chromebook/index.html
+@@ -51,7 +51,7 @@ &lt;h1&gt;Acer Chromebook Spin 713 &amp;#34;Voxel&amp;#34;: an adequate Crostini device, a bug
+ price at &lt;a href=&quot;https://www.acer.com/us-en/chromebooks/acer-chromebook-enterprise-spin-713-cp713-3w/pdp/NX.AHAAA.006&quot;&gt;$1,099.99&lt;/a&gt; (lol). Maybe consider buying if you can find it at a
+ heavy discount and the speakers issue has been fixed somehow.&lt;/p&gt;
+ &lt;section id=&quot;Context&quot;&gt;
+-&lt;h2&gt;Context&lt;/h2&gt;
++&lt;h2&gt;Context&lt;a href=&quot;#Context&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Around 2022 I was looking for a replacement for my T530—something lighter
+ with a better screen—and saw a listing for a used Acer Chromebook Spin 713-3W
+ at only 10mil VND ($425, give or take). A recently released HiDPI laptop with
+@@ -61,7 +61,7 @@ &lt;h2&gt;Context&lt;/h2&gt;
+ based development &lt;a href=&quot;https://git.sr.ht/~nhanb/neodots&quot;&gt;environment&lt;/a&gt; on Crostini.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;The-hardware&quot;&gt;
+-&lt;h2&gt;The hardware&lt;/h2&gt;
++&lt;h2&gt;The hardware&lt;a href=&quot;#The-hardware&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;ul&gt;
+ &lt;li&gt;
+ Specs: i5-1135G7 (Tiger Lake), Xe graphics, 8GB RAM, 256GB SSD
+@@ -82,7 +82,7 @@ &lt;h2&gt;The hardware&lt;/h2&gt;
+ &lt;p&gt;&lt;img alt=&quot;thickness&quot; src=&quot;voxel_thickness.jpg&quot;&gt;&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;ChromeOS-Crostini&quot;&gt;
+-&lt;h2&gt;ChromeOS/Crostini&lt;/h2&gt;
++&lt;h2&gt;ChromeOS/Crostini&lt;a href=&quot;#ChromeOS-Crostini&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;blockquote&gt;
+ &lt;p&gt;I’d just like to interject for a moment. What you’re referring to as Linux,
+ is in fact, CHROME/Linux, or as I’ve recently taken to calling it, CHROME
+@@ -126,7 +126,7 @@ &lt;h2&gt;ChromeOS/Crostini&lt;/h2&gt;
+ &lt;p&gt;So I jumped ship.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Real-Arch-Linux-on-MrChromebox-UEFI&quot;&gt;
+-&lt;h2&gt;Real Arch Linux on MrChromebox UEFI&lt;/h2&gt;
++&lt;h2&gt;Real Arch Linux on MrChromebox UEFI&lt;a href=&quot;#Real-Arch-Linux-on-MrChromebox-UEFI&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Installing &lt;em&gt;real&lt;/em&gt; Linux on this device requires installing the MrChromebox
+ custom UEFI firmware, which in turn requires disabling the firmware write
+ protection. Fortunately, for this device all I needed to do was opening up the
+@@ -168,7 +168,7 @@ &lt;h2&gt;Real Arch Linux on MrChromebox UEFI&lt;/h2&gt;
+ &lt;p&gt;But hey, I would have never known any of this if I hadn’t tried, right?&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Aside-Chromebook-keyboard-quirks-on-KDE&quot;&gt;
+-&lt;h2&gt;Aside: Chromebook keyboard quirks on KDE&lt;/h2&gt;
++&lt;h2&gt;Aside: Chromebook keyboard quirks on KDE&lt;a href=&quot;#Aside-Chromebook-keyboard-quirks-on-KDE&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;The most glaring issue is the absence of the &lt;code&gt;windows&lt;/code&gt; key (aka &lt;code&gt;super&lt;/code&gt;,
+ &lt;code&gt;hyper&lt;/code&gt;, or &lt;code&gt;meta&lt;/code&gt;). It’s not a huge problem for me: I always make &lt;code&gt;capslock&lt;/code&gt;
+ act as a &lt;code&gt;ctrl&lt;/code&gt; key, so I can turn the original &lt;code&gt;ctrl&lt;/code&gt; into &lt;code&gt;windows&lt;/code&gt; instead:&lt;/p&gt;
+diff --git a/cool/index.html b/cool/index.html
+index fbc6d11..957f01e 100644
+--- a/cool/index.html
++++ b/cool/index.html
+@@ -60,23 +60,23 @@ &lt;h1&gt;&amp;#34;Have you built anything cool?&amp;#34;&lt;/h1&gt;
+ &lt;p&gt;If you—Nicholas—are reading this and don’t want all the nerdy stuff, here are my condensed
+ answers:&lt;/p&gt;
+ &lt;section id=&quot;Have-you-built-anything&quot;&gt;
+-&lt;h3&gt;Have you built anything?&lt;/h3&gt;
++&lt;h3&gt;Have you built anything?&lt;a href=&quot;#Have-you-built-anything&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;Yes, I have made desktop and Android games, a movie ticket sales program, a desktop manga
+ grabber, a web version of it that talks to dropbox, and several small shell scripts / web
+ utilities.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;So-nothing-cool&quot;&gt;
+-&lt;h3&gt;So, nothing cool?&lt;/h3&gt;
++&lt;h3&gt;So, nothing cool?&lt;a href=&quot;#So-nothing-cool&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;If you’re neither a tech geek nor an otaku (which I assume you’re not) then no, there’s probably
+ nothing I’ve done that you would find interesting.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Nerd-alert&quot;&gt;
+-&lt;h2&gt;Nerd alert!&lt;/h2&gt;
++&lt;h2&gt;Nerd alert!&lt;a href=&quot;#Nerd-alert&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;The rest of this post is aimed at the &lt;del&gt;nerdier&lt;/del&gt; more tech-savvy audience. You have been
+ warned ;)&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;First-year-Welcome-to-the-web-and-the-GUI-programming-disillusionment&quot;&gt;
+-&lt;h2&gt;First year: Welcome to the web, and the GUI programming disillusionment&lt;/h2&gt;
++&lt;h2&gt;First year: Welcome to the web, and the GUI programming disillusionment&lt;a href=&quot;#First-year-Welcome-to-the-web-and-the-GUI-programming-disillusionment&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;I had touched &lt;em&gt;web stuff&lt;/em&gt; before in high school: a vBulletin forum that I created (unofficially)
+ for students in my middle school. However, I only properly learned PHP and JS when I started the
+ Web Programming course here. With (moderately) great power came great desires, so I set out to
+@@ -113,13 +113,13 @@ &lt;h2&gt;First year: Welcome to the web, and the GUI programming disillusionment&lt;/h2&gt;
+ desktop Linux user for that matter).&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Second-year-enough-of-this-bull-school-crap-I-m-making-stuff-for-myself&quot;&gt;
+-&lt;h2&gt;Second year: enough of this &lt;del&gt;bull&lt;/del&gt; school crap. I’m making stuff for myself!&lt;/h2&gt;
++&lt;h2&gt;Second year: enough of this &lt;del&gt;bull&lt;/del&gt; school crap. I’m making stuff for myself!&lt;a href=&quot;#Second-year-enough-of-this-bull-school-crap-I-m-making-stuff-for-myself&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;To be fair, the following year has offered a number of new stuff: C/C++ programming, a taste of the
+ M$ .NET C# stack (still impressed by Visual Studio’s vi mode plugin), more Java,
+ &lt;a href=&quot;http://truongtx.me/2013/05/02/agent-069-game/&quot;&gt;Android app programming&lt;/a&gt;, and some neat security
+ tricks. However, none of those intrigued me much, so I decided to start making things for my own:&lt;/p&gt;
+ &lt;section id=&quot;Shell-scripts&quot;&gt;
+-&lt;h3&gt;Shell scripts&lt;/h3&gt;
++&lt;h3&gt;Shell scripts&lt;a href=&quot;#Shell-scripts&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;If you have taken a look at my &lt;a href=&quot;https://github.com/nhanb/dotfiles&quot;&gt;dotfiles&lt;/a&gt;, you’ll notice that I
+ do write a bunch of shell scripts to automate stuff I do often. The one I’m currently proudest of
+ is &lt;a href=&quot;https://github.com/nhanb/dotfiles/blob/master/scripts/rmitproxy_silent&quot;&gt;rmiproxy_silent&lt;/a&gt;, a
+@@ -132,7 +132,7 @@ &lt;h3&gt;Shell scripts&lt;/h3&gt;
+ since sliced bread! Those guys are awesome!&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;AJMG-then-Pytaku-then-who-knows&quot;&gt;
+-&lt;h3&gt;AJMG, then Pytaku, then… who knows?&lt;/h3&gt;
++&lt;h3&gt;AJMG, then Pytaku, then… who knows?&lt;a href=&quot;#AJMG-then-Pytaku-then-who-knows&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;The original idea was actually creating a Java Swing program that helps download manga. It was born
+ out of frustration of &lt;a href=&quot;http://blog.domdomsoft.com/&quot;&gt;DomDomSoft&lt;/a&gt;, a manga downloader that requires
+ “donation” to unlock full functionalities. “I could do that, and I’ll open source the crap out of
+@@ -163,7 +163,7 @@ &lt;h3&gt;AJMG, then Pytaku, then… who knows?&lt;/h3&gt;
+ &lt;/section&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;To-sum-it-up&quot;&gt;
+-&lt;h2&gt;To sum it up…&lt;/h2&gt;
++&lt;h2&gt;To sum it up…&lt;a href=&quot;#To-sum-it-up&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;I don’t believe in developing products I myself don’t want to use. I want to make things that make
+ my life easier, and if that helps others too then it’s a huge bonus. This is why Github is my
+ favorite company right now, and
+diff --git a/custom-theme/index.html b/custom-theme/index.html
+index 6673a38..e7f4de4 100644
+--- a/custom-theme/index.html
++++ b/custom-theme/index.html
+@@ -68,7 +68,7 @@ &lt;h1&gt;Look ma, no stock theme!&lt;/h1&gt;
+ &lt;p&gt;I’m not a professional designer, but everything turned out quite well if I could say so. In this
+ post I’ll explain my design goals and how I (hopefully) achieved them.&lt;/p&gt;
+ &lt;section id=&quot;Clean-and-lightweight&quot;&gt;
+-&lt;h2&gt;Clean and lightweight&lt;/h2&gt;
++&lt;h2&gt;Clean and lightweight&lt;a href=&quot;#Clean-and-lightweight&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;The web is messy. I’m not talking blinking-marquee-fire-animated-header messy (thank god we’re done
+ with that… &lt;a href=&quot;https://developers.google.com/fonts/docs/getting_started#Effects&quot;&gt;or are we?&lt;/a&gt;). I’m talking megabytes-of-useless-javascript-and-css messy. For
+ whatever reason, some people now think it’s cool to include Bootstrap/Foundation to every project,
+@@ -84,12 +84,12 @@ &lt;h2&gt;Clean and lightweight&lt;/h2&gt;
+ Vietnamese posts are rendered in a font that supports it. Oh well, at least it looks awesome.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Content-is-king&quot;&gt;
+-&lt;h2&gt;Content is king&lt;/h2&gt;
++&lt;h2&gt;Content is king&lt;a href=&quot;#Content-is-king&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;No more distracting sidebar with “latest news”, “related posts”, etc. with thumbnails popping up
+ all over the place, just a good old article body from start to finish.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Easy-on-the-eye&quot;&gt;
+-&lt;h2&gt;Easy on the eye&lt;/h2&gt;
++&lt;h2&gt;Easy on the eye&lt;a href=&quot;#Easy-on-the-eye&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;While &lt;a href=&quot;http://bettermotherfuckingwebsite.com/&quot;&gt;bettermotherfuckingwebsite&lt;/a&gt; does a good job at demonstrating how far you can go with a
+ few simple CSS rules (hint: very far), I found Tommi Kaikkonen’s &lt;a href=&quot;http://www.kaikkonendesign.fi/typography/&quot;&gt;Interactive Guide to Blog
+ Typography&lt;/a&gt; much more comprehensive and informative. I implemented many of the ideas found
+@@ -111,7 +111,7 @@ &lt;h2&gt;Easy on the eye&lt;/h2&gt;
+ &lt;/ul&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;That-s-it&quot;&gt;
+-&lt;h2&gt;That’s it!&lt;/h2&gt;
++&lt;h2&gt;That’s it!&lt;a href=&quot;#That-s-it&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;You can find the source code to my theme &lt;a href=&quot;https://github.com/nhanb/motherfucking-pelican-theme&quot;&gt;on GitHub&lt;/a&gt;. I don’t recommend using it as-is though,
+ since I haven’t implemented many required templates (authors, tags, categories, etc.) because I
+ don’t use them. There’s also the hardcoded content in footer and probably a few more places. Maybe
+diff --git a/fcitx/index.html b/fcitx/index.html
+index c17beda..00ed61f 100644
+--- a/fcitx/index.html
++++ b/fcitx/index.html
+@@ -61,7 +61,7 @@ &lt;h1&gt;Dẹp ibus-unikey đi, dùng fcitx-unikey nhé!&lt;/h1&gt;
+ Trung Ngô—một trong những người phát triển chính của &lt;a href=&quot;http://ibus-bogo.readthedocs.org/&quot;&gt;ibus-bogo&lt;/a&gt;—đã viết một bài blog rất hay về tình
+ trạng gõ tiếng Việt hiện nay trên linux nói chung, ai quan tâm có thể tham khảo thêm &lt;a href=&quot;https://lewtds.notion.site/c-m-b-g-ki-u-Unikey-tr-n-Linux-9b12cc2fcdbe43149b10eefc7db6b161&quot;&gt;ở đây&lt;/a&gt;.&lt;/p&gt;
+ &lt;section id=&quot;fcitx-unikey&quot;&gt;
+-&lt;h2&gt;fcitx-unikey&lt;/h2&gt;
++&lt;h2&gt;fcitx-unikey&lt;a href=&quot;#fcitx-unikey&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Lọ mọ trên trang github của bogo, mình vô tình phát hiện ra &lt;a href=&quot;https://github.com/BoGoEngine/fcitx-bogo&quot;&gt;fcitx-bogo&lt;/a&gt;: dự án này thực chất
+ cũng dùng bogo-engine nhưng chạy với &lt;a href=&quot;https://github.com/fcitx/fcitx&quot;&gt;fcitx&lt;/a&gt; chứ không phải ibus như bình thường. Rất tiếc là
+ khi mình cài đặt và chạy thử fcitx-bogo thì nó luôn crash fcitx trước khi xử lý ra được chữ tiếng
+@@ -88,7 +88,7 @@ &lt;h2&gt;fcitx-unikey&lt;/h2&gt;
+ &lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fcitx-skype.png&quot;&gt;&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;vim-fcitx&quot;&gt;
+-&lt;h2&gt;vim-fcitx&lt;/h2&gt;
++&lt;h2&gt;vim-fcitx&lt;a href=&quot;#vim-fcitx&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Những ai đã thử gõ tiếng Việt trên vim chắc chắn đều biết: không tài nào dùng normal mode khi
+ preedit đang bật được. Ngày xưa khi dùng ibus mình có thử viết &lt;a href=&quot;https://github.com/nhanb/vim-bogo&quot;&gt;một plugin&lt;/a&gt; để bật tiếng Việt
+ khi vào insert mode và trở lại tiếng Anh khi ra normal mode, nhưng cuối cùng không dùng vì preedit
+diff --git a/fightstick-1/index.html b/fightstick-1/index.html
+index fa7e48c..bd8f549 100644
+--- a/fightstick-1/index.html
++++ b/fightstick-1/index.html
+@@ -48,7 +48,7 @@ &lt;h1&gt;My first DIY fightstick: Part 1&lt;/h1&gt;
+ design&lt;/a&gt; on Slagcoin:&lt;/p&gt;
+ &lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;http://www.slagcoin.com/joystick/example2/simple1.jpg&quot;&gt;&lt;/p&gt;
+ &lt;section id=&quot;Materials-and-tools&quot;&gt;
+-&lt;h2&gt;Materials and tools&lt;/h2&gt;
++&lt;h2&gt;Materials and tools&lt;a href=&quot;#Materials-and-tools&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;If you live in Hồ Chí Minh City like me, you can probably get everything you need from shops on
+ Bạch Đằng Street. The only hard part for me was convincing a small wood shop to sell MDF panels cut
+ to my specifications in small quantity:&lt;/p&gt;
+@@ -102,7 +102,7 @@ &lt;h2&gt;Materials and tools&lt;/h2&gt;
+ build this way.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Actually-making-it&quot;&gt;
+-&lt;h2&gt;Actually making it&lt;/h2&gt;
++&lt;h2&gt;Actually making it&lt;a href=&quot;#Actually-making-it&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;I drilled holes in the front side: first using the 30mm bit to drill halfway, then went all the way
+ with the 24mm bit. This allows a small button to be placed deep into the case, avoiding
+ accidentally button presses.&lt;/p&gt;
+@@ -201,7 +201,7 @@ &lt;h2&gt;Actually making it&lt;/h2&gt;
+ &lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick_24_gap.jpg&quot;&gt;&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Um-that-s-it-for-now&quot;&gt;
+-&lt;h2&gt;Um… that’s it (for now).&lt;/h2&gt;
++&lt;h2&gt;Um… that’s it (for now).&lt;a href=&quot;#Um-that-s-it-for-now&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;That’s all of my progress so far. I’m visiting my &lt;a href=&quot;http://fablabsaigon.org/&quot;&gt;local Fablab&lt;/a&gt;, which is advertised to
+ have CNC machines and laser cutters so I’ll probably have a chance to produce more accurate panels.
+ Hell, I may even redo the whole thing using machine-cut pieces for absolute accuracy and save
+diff --git a/fightstick-2/index.html b/fightstick-2/index.html
+index 47b2cf0..9f94659 100644
+--- a/fightstick-2/index.html
++++ b/fightstick-2/index.html
+@@ -44,7 +44,7 @@ &lt;h1&gt;My first DIY fightstick: Part 2&lt;/h1&gt;
+ the whole thing for a while, but yesterday I needed a distraction so… everything came together
+ much more nicely than I thought!&lt;/p&gt;
+ &lt;section id=&quot;I-did-it&quot;&gt;
+-&lt;h2&gt;I did it!&lt;/h2&gt;
++&lt;h2&gt;I did it!&lt;a href=&quot;#I-did-it&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;I was almost done in Part 1, except for the fact that button holes on the top panels didn’t align,
+ and the topmost panel flexed a bit because of imprecise screw holes:&lt;/p&gt;
+ &lt;p&gt;&lt;img alt=&quot;Ewww&quot; src=&quot;../fightstick-1/fightstick_24_gap.jpg&quot;&gt;&lt;/p&gt;
+@@ -78,7 +78,7 @@ &lt;h2&gt;I did it!&lt;/h2&gt;
+ &lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;fightstick2_03_front.jpg&quot;&gt;&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Thoughts&quot;&gt;
+-&lt;h2&gt;Thoughts&lt;/h2&gt;
++&lt;h2&gt;Thoughts&lt;a href=&quot;#Thoughts&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;All in all, this turned out much better than I expected. The whole thing feels solid to play with,
+ and the plexiglass top panel makes a nice feeling palm rest. However, since I went a bit liberal on
+ panel layers, it’s a tad heavier than my previous stick (which is already heavier than your average
+diff --git a/go-stack/index.html b/go-stack/index.html
+index b7ea63a..35749b3 100644
+--- a/go-stack/index.html
++++ b/go-stack/index.html
+@@ -47,7 +47,7 @@ &lt;h1&gt;Go, Postgres, Caddy, systemd: a simple, highly portable, Docker-free web sta
+ backed by a Postgres database, fronted by Caddy which does TLS termination &amp;amp;
+ automatic Let’s Encrypt cert renewal, supervised &amp;amp; isolated by systemd.&lt;/p&gt;
+ &lt;section id=&quot;Go&quot;&gt;
+-&lt;h2&gt;Go&lt;/h2&gt;
++&lt;h2&gt;Go&lt;a href=&quot;#Go&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;If you’re new to Go like me, you may find it helpful to skim the book &lt;a href=&quot;https://lets-go.alexedwards.net/&quot;&gt;Let’s
+ Go&lt;/a&gt; by Alex Edwards. It demonstrates helpful patterns so you can quickly put
+ together a web service with little more than the Go standard library. However,
+@@ -105,7 +105,7 @@ &lt;h2&gt;Go&lt;/h2&gt;
+ &lt;/ul&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Postgres&quot;&gt;
+-&lt;h2&gt;Postgres&lt;/h2&gt;
++&lt;h2&gt;Postgres&lt;a href=&quot;#Postgres&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;While SQLite is a fine choice for small-to-medium sites, it does have its own
+ quirks: so-called &lt;a href=&quot;https://www.sqlite.org/flextypegood.html&quot;&gt;flexible type checking&lt;/a&gt; and &lt;a href=&quot;https://www.sqlite.org/lang_altertable.html#making_other_kinds_of_table_schema_changes&quot;&gt;limited ALTER TABLE
+ capabilities&lt;/a&gt; are my two pet peeves.&lt;/p&gt;
+@@ -171,7 +171,7 @@ &lt;h2&gt;Postgres&lt;/h2&gt;
+ anyway. This brings us to…&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;systemd&quot;&gt;
+-&lt;h2&gt;systemd&lt;/h2&gt;
++&lt;h2&gt;systemd&lt;a href=&quot;#systemd&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Inevitably you’ll need something to manage your service process: autostart on
+ boot, report/restart when it goes down, piping logs to the right place, that
+ sort of thing. People used to install things like &lt;a href=&quot;http://supervisord.org/&quot;&gt;supervisord&lt;/a&gt; for that.
+@@ -213,7 +213,7 @@ &lt;h2&gt;systemd&lt;/h2&gt;
+ &lt;/code&gt;&lt;/pre&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Caddy&quot;&gt;
+-&lt;h2&gt;Caddy&lt;/h2&gt;
++&lt;h2&gt;Caddy&lt;a href=&quot;#Caddy&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Nowadays I prefer &lt;a href=&quot;https://caddyserver.com/&quot;&gt;Caddy&lt;/a&gt; as the TLS-terminating reverse proxy instead of
+ nginx, since it transparently performs Let’s Encrypt’s ACME challenge behind
+ the scene. With my web service listening at localhost:8000, it literally takes
+@@ -238,7 +238,7 @@ &lt;h2&gt;Caddy&lt;/h2&gt;
+ fiddling with certbot cron jobs.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Closing-remarks&quot;&gt;
+-&lt;h2&gt;Closing remarks&lt;/h2&gt;
++&lt;h2&gt;Closing remarks&lt;a href=&quot;#Closing-remarks&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;For a proper production-grade service, there’s more to be done:
+ personally I’m using &lt;code&gt;ufw&lt;/code&gt; to lock down everything except for the HTTP(S) ports
+ and wireguard (I’m doing ssh over wireguard only too). Enabling unattended
+diff --git a/hdviet/index.html b/hdviet/index.html
+index ea44de9..3da7fa4 100644
+--- a/hdviet/index.html
++++ b/hdviet/index.html
+@@ -49,7 +49,7 @@ &lt;h1&gt;How I bypassed my university&amp;#39;s domain blocker to watch movies on hdviet.
+ do the trick way better and without any hassle. If you’re using Linux or you simply want to learn
+ more about this stuff, read on!&lt;/p&gt;
+ &lt;section id=&quot;The-problem&quot;&gt;
+-&lt;h2&gt;The problem&lt;/h2&gt;
++&lt;h2&gt;The problem&lt;a href=&quot;#The-problem&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;This semester the RMIT-WPA wifi network no longer requires manual proxy configuration (probably
+ because it makes Web Programming students miserable - they have to use Google App Engine), which is
+ good news. Nevertheless, that annoying domain filter is still up and running, meaning we still
+@@ -62,7 +62,7 @@ &lt;h2&gt;The problem&lt;/h2&gt;
+ &lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;hdviet_02_forbidden_direct.png&quot;&gt;&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Going-for-the-IP&quot;&gt;
+-&lt;h2&gt;Going for the IP&lt;/h2&gt;
++&lt;h2&gt;Going for the IP&lt;a href=&quot;#Going-for-the-IP&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Naturally, I wanted to check if I could access the resource directly via the IP. An easy way to look
+ up a domain’s IP is using &lt;a href=&quot;http://ping.eu/ping/&quot;&gt;ping.eu&lt;/a&gt;. Once you’ve got the IP, try replacing the domain with it in
+ the failed request:&lt;/p&gt;
+@@ -73,7 +73,7 @@ &lt;h2&gt;Going for the IP&lt;/h2&gt;
+ automatically replace &lt;code&gt;v-01.vn-hd.com&lt;/code&gt; with the IP in all of the requests.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Twisted-proxy&quot;&gt;
+-&lt;h2&gt;Twisted proxy&lt;/h2&gt;
++&lt;h2&gt;Twisted proxy&lt;a href=&quot;#Twisted-proxy&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Since changing the request destination directly in the browser is probably difficult (I don’t think
+ Google Chrome even allows that), we’ll use an HTTP(S) proxy. This is when Twisted comes in handy.&lt;/p&gt;
+ &lt;p&gt;&lt;a href=&quot;https://twistedmatrix.com/&quot;&gt;Twisted&lt;/a&gt; is a battery-included framework to build robust network applications. By
+@@ -98,7 +98,7 @@ &lt;h2&gt;Twisted proxy&lt;/h2&gt;
+ that.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Domain-to-IP&quot;&gt;
+-&lt;h2&gt;Domain to IP&lt;/h2&gt;
++&lt;h2&gt;Domain to IP&lt;a href=&quot;#Domain-to-IP&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Open &lt;code&gt;server.py&lt;/code&gt;, look for this part:&lt;/p&gt;
+ &lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;class ConnectProxyRequest(ProxyRequest):
+     &quot;&quot;&quot;HTTP ProxyRequest handler (factory) that supports CONNECT&quot;&quot;&quot;
+@@ -173,7 +173,7 @@ &lt;h2&gt;Domain to IP&lt;/h2&gt;
+ This leads to our final trick:&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Google-App-Engine-to-the-rescue&quot;&gt;
+-&lt;h2&gt;Google App Engine to the rescue!&lt;/h2&gt;
++&lt;h2&gt;Google App Engine to the rescue!&lt;a href=&quot;#Google-App-Engine-to-the-rescue&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Because a subtitle file is just plain text, its size is negligible. We can set up an external
+ website that receives our original request, fetches the requested file on hdviet’s server and
+ returns the requested file’s content back to us. I have already set up a proof-of-concept Google
+diff --git a/ideas.html b/ideas.html
+index bc9bb72..5cbd6c3 100644
+--- a/ideas.html
++++ b/ideas.html
+@@ -35,7 +35,7 @@
+ &lt;h1&gt;Potential project ideas&lt;/h1&gt;
+ 
+ &lt;section id=&quot;Self-hosted-RSS-reader-in-D&quot;&gt;
+-&lt;h2&gt;Self hosted RSS reader in D&lt;/h2&gt;
++&lt;h2&gt;Self hosted RSS reader in D&lt;a href=&quot;#Self-hosted-RSS-reader-in-D&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;ul&gt;
+ &lt;li&gt;
+ Single executable, web based
+@@ -55,7 +55,7 @@ &lt;h2&gt;Self hosted RSS reader in D&lt;/h2&gt;
+ &lt;/ul&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Desktop-GUI-blogging-CMS-using-tkinter&quot;&gt;
+-&lt;h2&gt;Desktop GUI blogging CMS using tkinter&lt;/h2&gt;
++&lt;h2&gt;Desktop GUI blogging CMS using tkinter&lt;a href=&quot;#Desktop-GUI-blogging-CMS-using-tkinter&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;ul&gt;
+ &lt;li&gt;
+ Native win/mac look-and-feel, acceptable on linux (&lt;code&gt;clam&lt;/code&gt; looks alright)
+@@ -83,7 +83,7 @@ &lt;h2&gt;Desktop GUI blogging CMS using tkinter&lt;/h2&gt;
+ &lt;/ul&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Discord-bot-that-launches-CSGO-etc-server-on-demand&quot;&gt;
+-&lt;h2&gt;Discord bot that launches CSGO/etc. server on demand&lt;/h2&gt;
++&lt;h2&gt;Discord bot that launches CSGO/etc. server on demand&lt;a href=&quot;#Discord-bot-that-launches-CSGO-etc-server-on-demand&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Eyeing Linode’s 4GB RAM tier at $0.03/hr. But in general it should work on any
+ cloud VPS that supports (almost) instant VM launch via API, and snapshots.&lt;/p&gt;
+ &lt;ul&gt;
+diff --git a/linux-automation/index.html b/linux-automation/index.html
+index ae45b5d..d289674 100644
+--- a/linux-automation/index.html
++++ b/linux-automation/index.html
+@@ -44,7 +44,7 @@ &lt;h1&gt;Why I use Linux: Automation&lt;/h1&gt;
+ will keep the nitpickers away.)&lt;/p&gt;
+ &lt;p&gt;First let’s discuss &lt;em&gt;why&lt;/em&gt; automation rocks.&lt;/p&gt;
+ &lt;section id=&quot;Repetition-is-evil-and-boring&quot;&gt;
+-&lt;h2&gt;Repetition is evil (and boring)&lt;/h2&gt;
++&lt;h2&gt;Repetition is evil (and boring)&lt;a href=&quot;#Repetition-is-evil-and-boring&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;As a (would-be) software engineer, the &lt;em&gt;repetition is evil&lt;/em&gt; notion has been planted in my head for
+ far more times than anything else, and for good reasons.&lt;/p&gt;
+ &lt;p&gt;People are far more prone to error than computers, and doing repetitive tasks creates just too
+@@ -58,7 +58,7 @@ &lt;h2&gt;Repetition is evil (and boring)&lt;/h2&gt;
+ generation).&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Automation-needs-command-line-tools&quot;&gt;
+-&lt;h2&gt;Automation needs command line tools&lt;/h2&gt;
++&lt;h2&gt;Automation needs command line tools&lt;a href=&quot;#Automation-needs-command-line-tools&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Because, of course, GUI programs are (nearly) impossible to interact with in our scripts. Sure
+ you can try mouse click emulation tools and stuff like that, but is it really worth the effort?
+ And I’d bet anything that those tools are far from reliable (GUI latency, anyone?).&lt;/p&gt;
+@@ -68,7 +68,7 @@ &lt;h2&gt;Automation needs command line tools&lt;/h2&gt;
+ aria2… Almost anything you can think of is available as a command line tool.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Putting-them-all-together&quot;&gt;
+-&lt;h2&gt;Putting them all together&lt;/h2&gt;
++&lt;h2&gt;Putting them all together&lt;a href=&quot;#Putting-them-all-together&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Just like any UNIX-like system, Linux tools utilize the One True Phylosophy: Do only 1 thing, and
+ do it well. (okay, I’m paraphrasing a bit, but you get the idea)&lt;/p&gt;
+ &lt;p&gt;The true power of command line tools is when they are used together. Let’s take a look at a
+diff --git a/manjaro-xfce/index.html b/manjaro-xfce/index.html
+index 4111468..979ee5a 100644
+--- a/manjaro-xfce/index.html
++++ b/manjaro-xfce/index.html
+@@ -50,7 +50,7 @@ &lt;h1&gt;What I did after installing Manjaro xfce&lt;/h1&gt;
+ &lt;p&gt;Although Manjaro comes packed with most of the apps that I would install on any other distro
+ anyway: GIMP, LibreOffice, Steam, etc., here are some additional steps I took to make it rock.&lt;/p&gt;
+ &lt;section id=&quot;If-you-get-a-default-xfce-environment-after-setup&quot;&gt;
+-&lt;h2&gt;If you get a default xfce environment after setup…&lt;/h2&gt;
++&lt;h2&gt;If you get a default xfce environment after setup…&lt;a href=&quot;#If-you-get-a-default-xfce-environment-after-setup&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;It happened to me when I tried to mount my existing &lt;code&gt;/home&lt;/code&gt; partition. Instead of the beautiful
+ screenshot featured on Manjaro’s home page, I got something like this (image courtesy of Xfce
+ project website):&lt;/p&gt;
+@@ -64,7 +64,7 @@ &lt;h2&gt;If you get a default xfce environment after setup…&lt;/h2&gt;
+ &lt;p&gt;Then restart your computer and see if it worked (it should).&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Get-Mirosoft-fonts&quot;&gt;
+-&lt;h2&gt;Get Mirosoft fonts&lt;/h2&gt;
++&lt;h2&gt;Get Mirosoft fonts&lt;a href=&quot;#Get-Mirosoft-fonts&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Getting Micro$oft fonts is like the first thing to do after any Linux distro installation. The Arch
+ community has a whole &lt;a href=&quot;https://wiki.archlinux.org/index.php/MS_Fonts&quot;&gt;wiki page&lt;/a&gt; dedicated to it. It’s worth mentioning that you can’t
+ &lt;em&gt;legally&lt;/em&gt; install those packages without the actual fonts already on your computer. Assuming you
+@@ -77,12 +77,12 @@ &lt;h2&gt;Get Mirosoft fonts&lt;/h2&gt;
+ &lt;/code&gt;&lt;/pre&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Proper-font-smoothing&quot;&gt;
+-&lt;h2&gt;Proper font smoothing&lt;/h2&gt;
++&lt;h2&gt;Proper font smoothing&lt;a href=&quot;#Proper-font-smoothing&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;I won’t try to reinvent the wheels here. Head to Manjaro’s &lt;a href=&quot;http://wiki.manjaro.org/index.php?title=Improve_Font_Rendering&quot;&gt;wiki page on font smoothing&lt;/a&gt;.
+ They’ve got everything you need.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Install-international-fonts&quot;&gt;
+-&lt;h2&gt;Install international fonts&lt;/h2&gt;
++&lt;h2&gt;Install international fonts&lt;a href=&quot;#Install-international-fonts&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Even if you’re not Japanese or Korean, you’ll occasionally come across content that contains
+ characters from these languages. With the default installation, all those characters will be shown
+ as rectangles, which bugs me a lot.&lt;/p&gt;
+diff --git a/mcross/index.html b/mcross/index.html
+index 81750db..1f49b58 100644
+--- a/mcross/index.html
++++ b/mcross/index.html
+@@ -69,7 +69,7 @@ &lt;h1&gt;Introducing McRoss—a minimal gemini browser&lt;/h1&gt;
+ desktop GUI application. For the rest of this blog post I try to elaborate on
+ my idea of a &lt;em&gt;user-friendly desktop GUI application&lt;/em&gt;.&lt;/p&gt;
+ &lt;section id=&quot;Visual-feedback&quot;&gt;
+-&lt;h3&gt;Visual feedback:&lt;/h3&gt;
++&lt;h3&gt;Visual feedback:&lt;a href=&quot;#Visual-feedback&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;When I click a button, visit a link, or press Enter on the address bar, I
+ expect some kind of visual feedback that tells me my input registered
+ correctly, and the browser is working on my request, not hanging. This sounds
+@@ -82,7 +82,7 @@ &lt;h3&gt;Visual feedback:&lt;/h3&gt;
+ should the program hang or crash without displaying a proper message.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Aesthetics&quot;&gt;
+-&lt;h3&gt;Aesthetics:&lt;/h3&gt;
++&lt;h3&gt;Aesthetics:&lt;a href=&quot;#Aesthetics&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;Call me picky but I don’t like how in Castor links are presented as buttons and
+ they don’t even have breathing room between them:&lt;/p&gt;
+ &lt;p&gt;&lt;img alt=&quot;Castor links&quot; src=&quot;mcross_02_castor.png&quot;&gt;&lt;/p&gt;
+@@ -105,7 +105,7 @@ &lt;h3&gt;Aesthetics:&lt;/h3&gt;
+ write one. I lifted this idea off of &lt;a href=&quot;https://4chan.org/&quot;&gt;imageboards&lt;/a&gt; and &lt;a href=&quot;https://textboard.org/&quot;&gt;textboards&lt;/a&gt;.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Installation&quot;&gt;
+-&lt;h3&gt;Installation:&lt;/h3&gt;
++&lt;h3&gt;Installation:&lt;a href=&quot;#Installation&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;Castor is written in Rust. One of Rust’s strong points is the ability to
+ compile to a single statically linked executable that users can just download
+ and run. Unfortunately, Castor doesn’t currently provide those compiled
+@@ -119,7 +119,7 @@ &lt;h3&gt;Installation:&lt;/h3&gt;
+ improve the situation with “frozen” executables some time down the line.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Closing-thoughts&quot;&gt;
+-&lt;h1&gt;Closing thoughts&lt;/h1&gt;
++&lt;h1&gt;Closing thoughts&lt;a href=&quot;#Closing-thoughts&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h1&gt;
+ &lt;p&gt;To me the whole gemini ecosystem represents the long-lost naive optimism of an
+ earlier web ecosystem. It was not even as far as the “good old
+ gopher/bbs days” those boomers keep ranting about - it was the days of early
+diff --git a/movie-streaming/gflick-fixed/index.html b/movie-streaming/gflick-fixed/index.html
+index 76cd4ab..f5e4243 100644
+--- a/movie-streaming/gflick-fixed/index.html
++++ b/movie-streaming/gflick-fixed/index.html
+@@ -90,7 +90,7 @@ &lt;h1&gt;Streaming videos from Google Drive: a second attempt&lt;/h1&gt;
+ &lt;/div&gt;
+ &lt;p&gt;Now that TLS is settled, I also made some changes to the usage flow:&lt;/p&gt;
+ &lt;section id=&quot;Authentication&quot;&gt;
+-&lt;h3&gt;Authentication&lt;/h3&gt;
++&lt;h3&gt;Authentication&lt;a href=&quot;#Authentication&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;The authentication responsibility has been moved from nginx/caddy to the python
+ application itself to enable more fine-grained control:&lt;/p&gt;
+ &lt;p&gt;Every route, except for the video-serving &lt;code&gt;/v/*&lt;/code&gt;, requires a &lt;code&gt;user_token&lt;/code&gt; cookie.
+@@ -108,7 +108,7 @@ &lt;h3&gt;Authentication&lt;/h3&gt;
+ be done for expiration mechanisms but the foundations are there.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Aesthetics&quot;&gt;
+-&lt;h3&gt;Aesthetics&lt;/h3&gt;
++&lt;h3&gt;Aesthetics&lt;a href=&quot;#Aesthetics&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;The web interface has been revamped to make it easier for &lt;del&gt;fat-fingered
+ people on $current_year’s trendy stupidly thin&lt;/del&gt; phones. Also present
+ are folder icons and thumbnails, so it finally gives me everything I want from
+@@ -117,7 +117,7 @@ &lt;h3&gt;Aesthetics&lt;/h3&gt;
+ &lt;p&gt;&lt;img alt=&quot;gflick screenshot&quot; src=&quot;gflick_01_mobile.png&quot;&gt;&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;What-s-the-catch&quot;&gt;
+-&lt;h2&gt;What’s the catch?&lt;/h2&gt;
++&lt;h2&gt;What’s the catch?&lt;a href=&quot;#What-s-the-catch&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;&lt;strong&gt;Client device is solely responsible for decoding the raw file.&lt;/strong&gt; This is both
+ a blessing and a curse: We are guaranteed original quality but if the file was
+ encoded with newer codecs (h265, av1, etc.) we’re stuck with inefficient
+@@ -132,7 +132,7 @@ &lt;h2&gt;What’s the catch?&lt;/h2&gt;
+ dirty codebase is working fine for me so I’m in no hurry though…&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;In-conclusion&quot;&gt;
+-&lt;h2&gt;In conclusion&lt;/h2&gt;
++&lt;h2&gt;In conclusion&lt;a href=&quot;#In-conclusion&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;I’m happy with how things turned out: I have &lt;a href=&quot;https://drive.google.com/&quot;&gt;zero-maintenance unlimited cloud
+ storage&lt;/a&gt; for movies and an effortless streaming experience that requires
+ virtually no client-side setup - just install a browser and streaming-capable
+diff --git a/movie-streaming/gflick/index.html b/movie-streaming/gflick/index.html
+index 30afa25..61599d1 100644
+--- a/movie-streaming/gflick/index.html
++++ b/movie-streaming/gflick/index.html
+@@ -101,7 +101,7 @@ &lt;h1&gt;Towards an acceptable video playing experience&lt;/h1&gt;
+ &lt;/li&gt;
+ &lt;/ul&gt;
+ &lt;section id=&quot;Remote-seedbox-Google-Drive&quot;&gt;
+-&lt;h2&gt;Remote seedbox + Google Drive&lt;/h2&gt;
++&lt;h2&gt;Remote seedbox + Google Drive&lt;a href=&quot;#Remote-seedbox-Google-Drive&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;I settled on Netflix and torrented stuff that’s not available there.
+ For the seedbox, I installed Transmission-web on a Ramnode VPS that has 320GB
+ of HDD at $50/year. The network bandwidth is meh but it gets the job done.&lt;/p&gt;
+@@ -124,7 +124,7 @@ &lt;h2&gt;Remote seedbox + Google Drive&lt;/h2&gt;
+ &lt;p&gt;The latter is not ideal.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Enter-gflick&quot;&gt;
+-&lt;h2&gt;Enter gflick&lt;/h2&gt;
++&lt;h2&gt;Enter gflick&lt;a href=&quot;#Enter-gflick&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Turns out advanced video players like &lt;code&gt;mpv&lt;/code&gt; and &lt;code&gt;vlc&lt;/code&gt; can directly stream HTTP
+ videos with full support for seeking and audio / text(a.k.a subtitles) tracks.
+ See, well-formed video container formats will have metadata at the beginning of
+@@ -159,7 +159,7 @@ &lt;h2&gt;Enter gflick&lt;/h2&gt;
+ those Chinese Surface knock-offs or what.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Other-failed-attempts&quot;&gt;
+-&lt;h2&gt;Other failed attempts&lt;/h2&gt;
++&lt;h2&gt;Other failed attempts&lt;a href=&quot;#Other-failed-attempts&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;ul&gt;
+ &lt;li&gt;
+ &lt;a href=&quot;https://github.com/nhanb/mpv-gdrive&quot;&gt;mpv-gdrive&lt;/a&gt;: Using mpv’s lua scripting API to automatically set the
+diff --git a/node-webkit/index.html b/node-webkit/index.html
+index 3046d3a..7fc1561 100644
+--- a/node-webkit/index.html
++++ b/node-webkit/index.html
+@@ -64,7 +64,7 @@ &lt;h1&gt;Setting up your development environment for a node-webkit project&lt;/h1&gt;
+ &lt;/li&gt;
+ &lt;/ul&gt;
+ &lt;section id=&quot;Install-node-webkit-on-your-machine&quot;&gt;
+-&lt;h2&gt;Install node-webkit on your machine&lt;/h2&gt;
++&lt;h2&gt;Install node-webkit on your machine&lt;a href=&quot;#Install-node-webkit-on-your-machine&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Follow the README on &lt;a href=&quot;https://github.com/rogerwang/node-webkit&quot;&gt;node-webkit’s GitHub page&lt;/a&gt; to download a precompiled &lt;code&gt;nw&lt;/code&gt; binary for your
+ platform. If you’re using Arch Linux, you’re in luck since there’s already an AUR package:&lt;/p&gt;
+ &lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;$ yaourt -S node-webkit
+@@ -74,7 +74,7 @@ &lt;h2&gt;Install node-webkit on your machine&lt;/h2&gt;
+ &lt;p&gt;The rest of this tutorial will assume that you have &lt;code&gt;nw&lt;/code&gt; accessible as an executable in your $PATH.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Running-an-app&quot;&gt;
+-&lt;h2&gt;Running an app&lt;/h2&gt;
++&lt;h2&gt;Running an app&lt;a href=&quot;#Running-an-app&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;First, take a look at nw’s &lt;a href=&quot;https://github.com/rogerwang/node-webkit#quick-start&quot;&gt;quickstart guide&lt;/a&gt;. We’ll make a somewhat different structure,
+ allowing the &lt;strong&gt;dist&lt;/strong&gt; directory to store our binary releases:&lt;/p&gt;
+ &lt;pre&gt;&lt;code&gt;├── app/
+@@ -127,7 +127,7 @@ &lt;h2&gt;Running an app&lt;/h2&gt;
+ &lt;p&gt;But let’s not get ahead of ourselves. Let’s solve the most obvious dev issue first:&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Automatic-reload&quot;&gt;
+-&lt;h2&gt;Automatic reload&lt;/h2&gt;
++&lt;h2&gt;Automatic reload&lt;a href=&quot;#Automatic-reload&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Sure enough, at first glance your app is just another html page. You may be tempted to run some
+ simple http server and open localhost in Google Chrome (&lt;code&gt;python2 -m SimpleHTTPServer 8080&lt;/code&gt;
+ anyone?). There are tons of ways to make Google Chrome automatically reload a page, right?&lt;/p&gt;
+@@ -177,7 +177,7 @@ &lt;h2&gt;Automatic reload&lt;/h2&gt;
+ &lt;/code&gt;&lt;/pre&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Simple-cross-platform-build-command&quot;&gt;
+-&lt;h2&gt;Simple cross-platform build command&lt;/h2&gt;
++&lt;h2&gt;Simple cross-platform build command&lt;a href=&quot;#Simple-cross-platform-build-command&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;To be honest, you can manually write shell scripts to build for each platform. Check out &lt;a href=&quot;https://github.com/rogerwang/node-webkit/wiki/How-to-package-and-distribute-your-apps&quot;&gt;this wiki
+ article&lt;/a&gt; if you prefer the do-it-yourself way.&lt;/p&gt;
+ &lt;p&gt;But if you’re lazy (like me) and don’t have a problem using nodejs/grunt, just use the excellent
+diff --git a/notes.html b/notes.html
+index 6b6a775..9558e2e 100644
+--- a/notes.html
++++ b/notes.html
+@@ -36,7 +36,7 @@ &lt;h1&gt;Random notes&lt;/h1&gt;
+ 
+ &lt;p&gt;In which I jot down scattered tidbits on various topics.&lt;/p&gt;
+ &lt;section id=&quot;SRE&quot;&gt;
+-&lt;h2&gt;SRE&lt;/h2&gt;
++&lt;h2&gt;SRE&lt;a href=&quot;#SRE&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;There’s a good &lt;a href=&quot;http://rachelbythebay.com/w/2019/07/21/reliability/&quot;&gt;checklist&lt;/a&gt;
+ on Rachel By The Bay, the gist is:&lt;/p&gt;
+ &lt;ul&gt;
+diff --git a/pathogen-vs-vundle/index.html b/pathogen-vs-vundle/index.html
+index aa0daea..ce0eb10 100644
+--- a/pathogen-vs-vundle/index.html
++++ b/pathogen-vs-vundle/index.html
+@@ -45,13 +45,13 @@ &lt;h1&gt;Modern vim plugin management: Pathogen vs Vundle&lt;/h1&gt;
+ third-party tools: Pathogen or Vundle. I assume you are using a Linux distro and have git
+ already installed. If not, consult Dr. Google for more details.&lt;/p&gt;
+ &lt;section id=&quot;Vim-plugins-anatomy&quot;&gt;
+-&lt;h2&gt;Vim plugins anatomy&lt;/h2&gt;
++&lt;h2&gt;Vim plugins anatomy&lt;a href=&quot;#Vim-plugins-anatomy&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;A vim plugin is simply a set of files that alter vim’s behavior or add new functionalities to it.
+ To make this possible, by default vim looks for files in your home folder (which is 
+ &lt;code&gt;/home/username&lt;/code&gt; or &lt;code&gt;~&lt;/code&gt;):&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;vimrc-file&quot;&gt;
+-&lt;h2&gt;~/.vimrc (file)&lt;/h2&gt;
++&lt;h2&gt;~/.vimrc (file)&lt;a href=&quot;#vimrc-file&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;This is where you put your personalizations to vim: indentations, keybindings, etc. This post
+ will not discuss in detail how you do your customizations. For now just know that it’s there.&lt;/p&gt;
+ &lt;p&gt;You will probably want to move this file into your ~/.vim folder to be able to manage everything
+@@ -61,7 +61,7 @@ &lt;h2&gt;~/.vimrc (file)&lt;/h2&gt;
+ &lt;/code&gt;&lt;/pre&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;vim-directory&quot;&gt;
+-&lt;h2&gt;~/.vim (directory)&lt;/h2&gt;
++&lt;h2&gt;~/.vim (directory)&lt;a href=&quot;#vim-directory&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;This should contain a bunch of subdirectories. Some examples:&lt;/p&gt;
+ &lt;ul&gt;
+ &lt;li&gt;
+@@ -137,7 +137,7 @@ &lt;h2&gt;~/.vim (directory)&lt;/h2&gt;
+ pretty sight now, is it?&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Pathogen-to-the-rescue&quot;&gt;
+-&lt;h2&gt;Pathogen to the rescue!&lt;/h2&gt;
++&lt;h2&gt;Pathogen to the rescue!&lt;a href=&quot;#Pathogen-to-the-rescue&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;The legendary Tim Pope came up with a genius solution:
+ &lt;a href=&quot;https://github.com/tpope/vim-pathogen&quot;&gt;pathogen&lt;/a&gt;.
+ Now let’s install it like any regular plugin (I’ve omitted the README):&lt;/p&gt;
+@@ -183,7 +183,7 @@ &lt;h2&gt;Pathogen to the rescue!&lt;/h2&gt;
+ becomes trivial: just remove or update its own directory.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Pathogen-Git&quot;&gt;
+-&lt;h2&gt;Pathogen + Git&lt;/h2&gt;
++&lt;h2&gt;Pathogen + Git&lt;a href=&quot;#Pathogen-Git&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Everything goes to the cloud these days, and certainly your vim setup should as well. If you
+ haven’t created a &lt;a href=&quot;https://github.com&quot;&gt;Github&lt;/a&gt; account, do it now. Create an empty repository
+ with any name you want (mine is &lt;code&gt;.vim&lt;/code&gt;). Don’t commit yet. Create a file: &lt;code&gt;~/.vim/.gitignore&lt;/code&gt;,
+@@ -238,7 +238,7 @@ &lt;h2&gt;Pathogen + Git&lt;/h2&gt;
+ for detailed instructions.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Vundle-the-new-cool-kid&quot;&gt;
+-&lt;h2&gt;Vundle, the new cool kid&lt;/h2&gt;
++&lt;h2&gt;Vundle, the new cool kid&lt;a href=&quot;#Vundle-the-new-cool-kid&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;This time let’s start fresh: remove all submodules and pathogen. Your bundle folder should be
+ now empty. Clone &lt;a href=&quot;https://github.com/gmarik/vundle&quot;&gt;Vundle&lt;/a&gt;:&lt;/p&gt;
+ &lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
+diff --git a/petition-fraud/index.html b/petition-fraud/index.html
+index b967151..497c553 100644
+--- a/petition-fraud/index.html
++++ b/petition-fraud/index.html
+@@ -44,7 +44,7 @@ &lt;h1&gt;I did NOT sign that online petition!&lt;/h1&gt;
+ &lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;rmitsc_01_wtf.png&quot;&gt;&lt;/p&gt;
+ &lt;p&gt;Um… I don’t remember signing any petition recently (or ever, for that matter)?&lt;/p&gt;
+ &lt;section id=&quot;What-happened&quot;&gt;
+-&lt;h2&gt;What happened?&lt;/h2&gt;
++&lt;h2&gt;What happened?&lt;a href=&quot;#What-happened&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Apparently someone used my RMIT student email address to sign some petition for disbanding the
+ university’s Student Council. Said petition was apparently started by some Ms. Trần Ngọc Tuệ Mẫn -
+ Student Council’s vice president. Well… yay for free speech, I guess? Anyway, my name was really
+@@ -60,7 +60,7 @@ &lt;h2&gt;What happened?&lt;/h2&gt;
+ us even having to know what it’s all about. Gee, thanks!&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Why-do-I-even-care&quot;&gt;
+-&lt;h2&gt;Why do I even care?&lt;/h2&gt;
++&lt;h2&gt;Why do I even care?&lt;a href=&quot;#Why-do-I-even-care&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;I just don’t like people using my name without my consent. More importantly, I have my reasons to
+ disagree with the sentiments expressed in her petition description. Also I thought this could be a
+ somewhat useful public service announcement, or a mildly entertaining daily wtf story. I don’t
+diff --git a/pippable-webapp/index.html b/pippable-webapp/index.html
+index fe1caa2..6d8bfea 100644
+--- a/pippable-webapp/index.html
++++ b/pippable-webapp/index.html
+@@ -54,7 +54,7 @@ &lt;h1&gt;I made my python webapp installable via pip&lt;/h1&gt;
+ &lt;/code&gt;&lt;/pre&gt;
+ &lt;p&gt;So how does that work? Let’s break it down.&lt;/p&gt;
+ &lt;section id=&quot;The-pytaku-executables&quot;&gt;
+-&lt;h2&gt;The pytaku-* executables&lt;/h2&gt;
++&lt;h2&gt;The pytaku-* executables&lt;a href=&quot;#The-pytaku-executables&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;&lt;a href=&quot;https://python-poetry.org/&quot;&gt;Poetry&lt;/a&gt; is awesome. Not only does it offer sane dependency management that
+ plays well with the pyenv + virtualenv combo, but it also vastly simplifies
+ building and publishing python libraries. Telling pip to install executables
+@@ -99,7 +99,7 @@ &lt;h2&gt;The pytaku-* executables&lt;/h2&gt;
+ &lt;/ul&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;But-why-bother&quot;&gt;
+-&lt;h2&gt;But why bother?&lt;/h2&gt;
++&lt;h2&gt;But why bother?&lt;a href=&quot;#But-why-bother&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Lincoln Loop’s series of Django-related blog posts were my main inspiration.
+ Central to this idea is &lt;a href=&quot;https://lincolnloop.com/blog/using-setuppy-your-django-project/&quot;&gt;Using setup.py in Your (Django) Project&lt;/a&gt;, which
+ explains both how and why you would want to make your python project
+diff --git a/projects/index.html b/projects/index.html
+index e34287c..41e527a 100644
+--- a/projects/index.html
++++ b/projects/index.html
+@@ -37,20 +37,20 @@ &lt;h1&gt;Projects&lt;/h1&gt;
+ &lt;p&gt;I’ve written some open source software in my free time.
+ In some cases I even maintain them! Shocking, I know.&lt;/p&gt;
+ &lt;section id=&quot;s4g&quot;&gt;
+-&lt;h2&gt;s4g&lt;/h2&gt;
++&lt;h2&gt;s4g&lt;a href=&quot;#s4g&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;&lt;a href=&quot;../s4g/&quot;&gt;s4g&lt;/a&gt; is the static site generator that powers this blog.
+ It’s written in Go and uses djot as a saner markdown. Reasonably complete, but
+ definitely has room for improvement—internal link rot detection is one strong
+ candidate. Syntax highlighting would be nice too.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Shark&quot;&gt;
+-&lt;h2&gt;Shark&lt;/h2&gt;
++&lt;h2&gt;Shark&lt;a href=&quot;#Shark&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;&lt;a href=&quot;https://github.com/nhanb/shark/&quot;&gt;Shark&lt;/a&gt; is a simple “desktop pet”. It’s my first foray into cross-platform
+ desktop application development, also my first Go project that actually did
+ anything fun.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Pytaku&quot;&gt;
+-&lt;h2&gt;Pytaku&lt;/h2&gt;
++&lt;h2&gt;Pytaku&lt;a href=&quot;#Pytaku&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;&lt;a href=&quot;https://git.sr.ht/~nhanb/pytaku&quot;&gt;Pytaku&lt;/a&gt; is a web-based manga reader that’s designed to be as
+ self-host-friendly as possible. It’s an experiment to see how far I can get
+ with a simpler toolset: basically just flask, sqlite and mithril.js for the
+@@ -58,7 +58,7 @@ &lt;h2&gt;Pytaku&lt;/h2&gt;
+ so it’s currently in maintenance mode.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;ORTS&quot;&gt;
+-&lt;h2&gt;ORTS&lt;/h2&gt;
++&lt;h2&gt;ORTS&lt;a href=&quot;#ORTS&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;&lt;a href=&quot;https://github.com/nhanb/orts/&quot;&gt;ORTS&lt;/a&gt; is a GUI for operating scoreboards on
+ fighting game streams. It’s served its purpose beaufifully during
+ &lt;a href=&quot;https://www.facebook.com/SaigonFGC/&quot;&gt;our&lt;/a&gt; local tournaments and several
+@@ -66,20 +66,20 @@ &lt;h2&gt;ORTS&lt;/h2&gt;
+ happened.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;GORTS&quot;&gt;
+-&lt;h2&gt;GORTS&lt;/h2&gt;
++&lt;h2&gt;GORTS&lt;a href=&quot;#GORTS&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;&lt;a href=&quot;https://github.com/nhanb/gorts/&quot;&gt;GORTS&lt;/a&gt; is ORTS rewritten in Go and Tcl/Tk.
+ It has been a fun experiment in cross-language IPC, and a much less masochistic
+ exercise in software packaging compared to Python.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;An-animated-wallpaper-for-KDE-Plasma&quot;&gt;
+-&lt;h2&gt;An animated wallpaper for KDE Plasma&lt;/h2&gt;
++&lt;h2&gt;An animated wallpaper for KDE Plasma&lt;a href=&quot;#An-animated-wallpaper-for-KDE-Plasma&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;I was frustrated that KDE 5 didn’t allow animated gifs as wallpaper so I &lt;a href=&quot;https://github.com/nhanb/com.nerdyweekly.animated&quot;&gt;wrote
+ one&lt;/a&gt;. Every now and then someone would &lt;a href=&quot;https://www.reddit.com/r/unixporn/comments/9sd5uy/kde_plasma_blur_gif_pixel_art_wallpaper_look/&quot;&gt;use it on /r/unixporn&lt;/a&gt; and cause
+ a surge in github stars. It is currently my most starred repo, which gives me
+ mixed feelings.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;McRoss&quot;&gt;
+-&lt;h2&gt;McRoss&lt;/h2&gt;
++&lt;h2&gt;McRoss&lt;a href=&quot;#McRoss&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;&lt;a href=&quot;https://sr.ht/~nhanb/mcross&quot;&gt;McRoss&lt;/a&gt; is a minimal and usable
+ &lt;a href=&quot;https://gemini.circumlunar.space/&quot;&gt;gemini://&lt;/a&gt; browser written in python and
+ tkinter, meaning it Just Works (tm) on any self-respecting desktop OS.
+@@ -89,7 +89,7 @@ &lt;h2&gt;McRoss&lt;/h2&gt;
+ much shelved.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Caophim&quot;&gt;
+-&lt;h2&gt;Caophim&lt;/h2&gt;
++&lt;h2&gt;Caophim&lt;a href=&quot;#Caophim&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;&lt;a href=&quot;https://github.com/nhanb/caophim&quot;&gt;Caophim&lt;/a&gt; is my take on imageboard software and also my excuse to try
+ &lt;a href=&quot;https://nim-lang.org/&quot;&gt;Nim&lt;/a&gt;. There’s a usable live instance at &lt;a href=&quot;https://caophim.imnhan.com/&quot;&gt;caophim.imnhan.com&lt;/a&gt;. It’s
+ nowhere near my goals but to be honest I got tired of &lt;a href=&quot;https://github.com/nim-lang/Nim/issues/13531&quot;&gt;running&lt;/a&gt; &lt;a href=&quot;https://github.com/nim-lang/Nim/issues/13986&quot;&gt;into&lt;/a&gt;
+diff --git a/pytaku-old/index.html b/pytaku-old/index.html
+index 7945f77..2005538 100644
+--- a/pytaku-old/index.html
++++ b/pytaku-old/index.html
+@@ -49,7 +49,7 @@ &lt;h1&gt;Introducing Pytaku—the only online manga reader you&amp;#39;ll ever need&lt;/h1&gt;
+ manga sites, giving you one single place to keep track of your reading progress and watch for new
+ chapters with ease. Here are some of the features implemented so far:&lt;/p&gt;
+ &lt;section id=&quot;Lightning-fast-ad-free-reading-experience&quot;&gt;
+-&lt;h2&gt;Lightning fast, ad-free reading experience&lt;/h2&gt;
++&lt;h2&gt;Lightning fast, ad-free reading experience&lt;a href=&quot;#Lightning-fast-ad-free-reading-experience&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;All pages in a chapter are loaded at once, unlike most other sites that only let you view one page
+ at a time, forcing you to reload their distracting advertisements and disrupt you flow (especially
+ for people with not-so-fast internet connection).&lt;/p&gt;
+@@ -58,40 +58,40 @@ &lt;h2&gt;Lightning fast, ad-free reading experience&lt;/h2&gt;
+ instantly.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Keep-track-of-your-reading-progress-Automatically&quot;&gt;
+-&lt;h2&gt;Keep track of your reading progress. Automatically.&lt;/h2&gt;
++&lt;h2&gt;Keep track of your reading progress. Automatically.&lt;a href=&quot;#Keep-track-of-your-reading-progress-Automatically&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Each logged in user will have a nice badge on each chapter showing their progress: (keeping a
+ chapter page open for a few seconds registers it as “reading”, and scrolling to the bottom marks it
+ as “finished”)&lt;/p&gt;
+ &lt;p&gt;&lt;img alt=&quot;Chapter progress badge&quot; src=&quot;pytaku_01_chapter_progress.png&quot;&gt;&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Bookmark-series-to-watch-for-updates&quot;&gt;
+-&lt;h2&gt;Bookmark series to watch for updates&lt;/h2&gt;
++&lt;h2&gt;Bookmark series to watch for updates&lt;a href=&quot;#Bookmark-series-to-watch-for-updates&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Maintain a list of series so you can have one single place to find out whether there are new
+ chapters for the series you love.&lt;/p&gt;
+ &lt;p&gt;&lt;img alt=&quot;Bookmarked series&quot; src=&quot;pytaku_02_bookmarked_series.png&quot;&gt;&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;English-Vietnamese-and-support-for-other-languages&quot;&gt;
+-&lt;h2&gt;English, Vietnamese and support for other languages&lt;/h2&gt;
++&lt;h2&gt;English, Vietnamese and support for other languages&lt;a href=&quot;#English-Vietnamese-and-support-for-other-languages&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Pytaku comes in English by default and configurable to be in Vietnamese. If you want to translate
+ it to your own language, feel free to follow the example from the &lt;a href=&quot;https://github.com/nhanb/pytaku-old-gae/blob/master/frontend/languages/en.yaml&quot;&gt;English language file&lt;/a&gt; and
+ send me a pull request.&lt;/p&gt;
+ &lt;p&gt;&lt;img alt=&quot;Vietnamese interface&quot; src=&quot;pytaku_03_vietnamese.png&quot;&gt;&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Open-source-and-free-to-run-your-own-site&quot;&gt;
+-&lt;h2&gt;Open source and free to run your own site&lt;/h2&gt;
++&lt;h2&gt;Open source and free to run your own site&lt;a href=&quot;#Open-source-and-free-to-run-your-own-site&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Pytaku’s source code is released under the free-as-in-freedom &lt;a href=&quot;https://www.gnu.org/licenses/quick-guide-gplv3.html&quot;&gt;GPLv3&lt;/a&gt; and &lt;a href=&quot;https://github.com/nhanb/pytaku-old-gae/&quot;&gt;put on GitHub&lt;/a&gt;.
+ Since it’s written to be run on Google App Engine which is free for small sites, tech-savvy people
+ can set up their own private pytaku clone in a few minutes. Check out the &lt;a href=&quot;https://github.com/nhanb/pytaku-old-gae/blob/master/README.markdown&quot;&gt;README file&lt;/a&gt; for
+ instructions.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Open-to-suggestions-and-hopefully-contructive-criticism&quot;&gt;
+-&lt;h2&gt;Open to suggestions and (hopefully contructive) criticism&lt;/h2&gt;
++&lt;h2&gt;Open to suggestions and (hopefully contructive) criticism&lt;a href=&quot;#Open-to-suggestions-and-hopefully-contructive-criticism&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Want another manga site to be included as source? Need a feature that you think many others can
+ benefit from? Feel free to open an issue on GitHub, or give me a shout on the official &lt;a href=&quot;https://gitter.im/nhanb/pytaku&quot;&gt;support
+ chat room&lt;/a&gt;.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Give-it-a-spin&quot;&gt;
+-&lt;h2&gt;Give it a spin&lt;/h2&gt;
++&lt;h2&gt;Give it a spin&lt;a href=&quot;#Give-it-a-spin&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;&lt;del&gt;Click here to go to the app. Have fun! :)&lt;/del&gt; Update: this version of pytaku is
+ no longer online.&lt;/p&gt;
+ &lt;/section&gt;
+diff --git a/rmit-wifi/index.html b/rmit-wifi/index.html
+index 84ef817..5d85c19 100644
+--- a/rmit-wifi/index.html
++++ b/rmit-wifi/index.html
+@@ -41,7 +41,7 @@
+ &lt;h1&gt;Fix RMIT wi-fi issue in Ubuntu 13.04 and variants&lt;/h1&gt;
+ 
+ &lt;section id=&quot;The-issue&quot;&gt;
+-&lt;h2&gt;The issue&lt;/h2&gt;
++&lt;h2&gt;The issue&lt;a href=&quot;#The-issue&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;When I upgraded to Xubuntu 13.04, although I could connect to any other wi-fi network painlessly,
+ the RMIT-WPA network just never allowed me to establish a connection. The most annoying part was
+ that it had been working fine in previous versions (12.04, 12.10).&lt;/p&gt;
+@@ -51,7 +51,7 @@ &lt;h2&gt;The issue&lt;/h2&gt;
+ &lt;p&gt;&lt;img alt=&quot;RMIT wi-fi settings&quot; src=&quot;rmit_wifi.png&quot;&gt;&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;The-solution&quot;&gt;
+-&lt;h2&gt;The solution&lt;/h2&gt;
++&lt;h2&gt;The solution&lt;a href=&quot;#The-solution&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Just manually edit &lt;code&gt;/etc/NetworkManager/system-connections/RMIT-WPA&lt;/code&gt;, make sure that you have
+ &lt;code&gt;system-ca-certs=false&lt;/code&gt;, then restart the wifi connection. To edit this file you will need root
+ permission. If you’re not sure how to do this, open a terminal and enter this command to open
+@@ -63,7 +63,7 @@ &lt;h2&gt;The solution&lt;/h2&gt;
+ many have complained about it. There seems to be no developer assigned to fix it though. I’ll keep
+ you updated on the issue.&lt;/p&gt;
+ &lt;section id=&quot;Update-Dec-16-2013&quot;&gt;
+-&lt;h3&gt;Update (Dec 16, 2013)&lt;/h3&gt;
++&lt;h3&gt;Update (Dec 16, 2013)&lt;a href=&quot;#Update-Dec-16-2013&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;A fix has been released in GNOME upstream but not incorporated into official Ubuntu repositories
+ yet. An impatient contributor has created his own PPA to provide the fixed package. To install it,
+ enter the following commands:&lt;/p&gt;
+diff --git a/s4g/index.html b/s4g/index.html
+index 1c2648d..13b08e4 100644
+--- a/s4g/index.html
++++ b/s4g/index.html
+@@ -43,7 +43,7 @@ &lt;h1&gt;s4g is a Stupidly Simple Static Site Generator&lt;/h1&gt;
+ 
+ &lt;p&gt;This blog is now built with &lt;a href=&quot;https://github.com/nhanb/s4g&quot;&gt;s4g&lt;/a&gt;—an experimental static site generator.&lt;/p&gt;
+ &lt;section id=&quot;Why&quot;&gt;
+-&lt;h2&gt;Why?&lt;/h2&gt;
++&lt;h2&gt;Why?&lt;a href=&quot;#Why&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Unlike typical static site generators, s4g doesn’t separate source code and
+ output. For a concrete example, &lt;a href=&quot;https://getpelican.com/&quot;&gt;Pelican&lt;/a&gt; would read source from the
+ /content/ dir and write a complete website to /output/, like this:&lt;/p&gt;
+@@ -90,7 +90,7 @@ &lt;h2&gt;Why?&lt;/h2&gt;
+ shebang? One thing led to another, and s4g was born.&lt;/p&gt;
+ &lt;p&gt;This dumb approach to paths simplifies a few things:&lt;/p&gt;
+ &lt;section id=&quot;1-Folder-layout-is-website-layout&quot;&gt;
+-&lt;h3&gt;1. Folder layout &lt;em&gt;is&lt;/em&gt; website layout&lt;/h3&gt;
++&lt;h3&gt;1. Folder layout &lt;em&gt;is&lt;/em&gt; website layout&lt;a href=&quot;#1-Folder-layout-is-website-layout&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;With Pelican we typically need to supply a few url patterns to let
+ the generator know where to put the generated html:&lt;/p&gt;
+ &lt;pre&gt;&lt;code&gt;ARTICLE_PATHS = [&quot;posts&quot;]
+@@ -102,7 +102,7 @@ &lt;h3&gt;1. Folder layout &lt;em&gt;is&lt;/em&gt; website layout&lt;/h3&gt;
+ &lt;p&gt;While with s4g we just put the .dj file where we want the .html to end up.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;2-Obvious-static-asset-placement&quot;&gt;
+-&lt;h3&gt;2. Obvious static asset placement&lt;/h3&gt;
++&lt;h3&gt;2. Obvious static asset placement&lt;a href=&quot;#2-Obvious-static-asset-placement&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;A post typically links to static assets such as images or videos.
+ Ideally we want to put these assets in the same place as their content file.
+ This is surprisingly tricky with Pelican: we have to either throw every
+@@ -136,7 +136,7 @@ &lt;h3&gt;2. Obvious static asset placement&lt;/h3&gt;
+ support in the first place).&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;3-Easy-post-grouping&quot;&gt;
+-&lt;h3&gt;3. Easy post grouping&lt;/h3&gt;
++&lt;h3&gt;3. Easy post grouping&lt;a href=&quot;#3-Easy-post-grouping&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;Sometimes I write a series of related posts, and want to make it obvious when
+ a visitor lands on any such post. The s4g solution: put them all in a folder.
+ Here’s a &lt;a href=&quot;https://hi.imnhan.com/movie-streaming/&quot;&gt;live example&lt;/a&gt; from my blog:&lt;/p&gt;
+@@ -174,7 +174,7 @@ &lt;h3&gt;3. Easy post grouping&lt;/h3&gt;
+ &lt;p&gt;&lt;img alt=&quot;&quot; src=&quot;series-footer.png&quot;&gt;&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Miscellaneous-blog-things&quot;&gt;
+-&lt;h3&gt;Miscellaneous blog things&lt;/h3&gt;
++&lt;h3&gt;Miscellaneous blog things&lt;a href=&quot;#Miscellaneous-blog-things&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;An RSS feed is table stakes, so that’s what we get out of the box.
+ Technically it’s an Atom feed, but hey, tomaytoes-tomahtoes.&lt;/p&gt;
+ &lt;p&gt;There’s also automatic OpenGraph / Twitter Cards meta tags, so we get those
+@@ -191,7 +191,7 @@ &lt;h3&gt;Miscellaneous blog things&lt;/h3&gt;
+ short, typeable paths such as “mcross”.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Quality-of-life-stuff&quot;&gt;
+-&lt;h3&gt;Quality-of-life stuff&lt;/h3&gt;
++&lt;h3&gt;Quality-of-life stuff&lt;a href=&quot;#Quality-of-life-stuff&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;I originally wanted to use s4g as a teaching tool for a sort of “Learning
+ HTML/CSS by creating a blog” tutorial series, but lost interest halfway. It
+ still resulted in a few user-friendly goodies: out-of-the box livereload,
+@@ -203,7 +203,7 @@ &lt;h3&gt;Quality-of-life stuff&lt;/h3&gt;
+ &lt;/section&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Quickstart&quot;&gt;
+-&lt;h2&gt;Quickstart&lt;/h2&gt;
++&lt;h2&gt;Quickstart&lt;a href=&quot;#Quickstart&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;# Install
+ sudo pacman -Syu nodejs go
+ go install go.imnhan.com/s4g@latest
+@@ -227,9 +227,9 @@ &lt;h2&gt;Quickstart&lt;/h2&gt;
+ fallback thumbnails, per-post custom templates, series, among other things.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Questionables&quot;&gt;
+-&lt;h2&gt;Questionables&lt;/h2&gt;
++&lt;h2&gt;Questionables&lt;a href=&quot;#Questionables&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;section id=&quot;Djot&quot;&gt;
+-&lt;h3&gt;Djot?&lt;/h3&gt;
++&lt;h3&gt;Djot?&lt;a href=&quot;#Djot&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;Imagine markdown but not full of corner cases and highly extensible.
+ No disrespect to John Gruber here—his thing worked for his purposes—but
+ I think it’s a tragedy that we as an industry failed to converge on a more
+@@ -237,13 +237,13 @@ &lt;h3&gt;Djot?&lt;/h3&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Since-source-and-output-live-in-the-same-folder-will-some-bug-in-s4g-eat-my-source&quot;&gt;
+ &lt;h3&gt;Since source and output live in the same folder, will some bug in s4g eat
+-my source?&lt;/h3&gt;
++my source?&lt;a href=&quot;#Since-source-and-output-live-in-the-same-folder-will-some-bug-in-s4g-eat-my-source&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;I obviously try to avoid that, but the current code is proof-of-concept
+ quality. Therefore, I only run s4g on version-controlled websites, and
+ recommend users do the same for now.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Adding-compiled-assets-to-version-control-sounds-bad&quot;&gt;
+-&lt;h3&gt;Adding compiled assets to version control sounds… bad?&lt;/h3&gt;
++&lt;h3&gt;Adding compiled assets to version control sounds… bad?&lt;a href=&quot;#Adding-compiled-assets-to-version-control-sounds-bad&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;For programs, probably.
+ For websites though, I prefer to keep snapshots of the whole website as it’s
+ deployed, and be able to roll it back together with the source code. Admittedly
+@@ -252,7 +252,7 @@ &lt;h3&gt;Adding compiled assets to version control sounds… bad?&lt;/h3&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;I-just-looked-at-the-code-and-holy-crap-what-s-with-all-those-non-data-structures-and-nested-loops&quot;&gt;
+ &lt;h3&gt;I just looked at the code and holy crap what’s with all those (non) data
+-structures and nested loops!&lt;/h3&gt;
++structures and nested loops!&lt;a href=&quot;#I-just-looked-at-the-code-and-holy-crap-what-s-with-all-those-non-data-structures-and-nested-loops&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;Yeah but the whole thing takes about 100ms on my thirty-something-articles
+ blog, which is by no means impressive, but not a real hindrance for daily use
+ either. If an actual user shows up with a site big enough to have a problem,
+diff --git a/sqlite-python/index.html b/sqlite-python/index.html
+index 56dc933..b68b082 100644
+--- a/sqlite-python/index.html
++++ b/sqlite-python/index.html
+@@ -56,11 +56,11 @@ &lt;h1&gt;Working with SQLite in Python without an ORM or migration framework&lt;/h1&gt;
+ can trivially implement. Obviously, I had to try it out on my latest &lt;a href=&quot;https://sr.ht/~nhanb/pytaku/&quot;&gt;pet
+ project&lt;/a&gt;. Here I’ll outline some of my findings.&lt;/p&gt;
+ &lt;section id=&quot;APSW-as-the-driver&quot;&gt;
+-&lt;h2&gt;APSW as the driver&lt;/h2&gt;
++&lt;h2&gt;APSW as the driver&lt;a href=&quot;#APSW-as-the-driver&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Using &lt;a href=&quot;https://rogerbinns.github.io/apsw/&quot;&gt;apsw&lt;/a&gt; instead of the standard library’s sqlite3 package has a couple
+ of advantages:&lt;/p&gt;
+ &lt;section id=&quot;It-s-easy-to-link-against-the-latest-sqlite3-version&quot;&gt;
+-&lt;h3&gt;It’s easy to link against the latest sqlite3 version&lt;/h3&gt;
++&lt;h3&gt;It’s easy to link against the latest sqlite3 version&lt;a href=&quot;#It-s-easy-to-link-against-the-latest-sqlite3-version&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;I originally ran pytaku on a cheap Vietnamese VPS provider, which only offered
+ Ubuntu 12.04. This came with a relatively old sqlite3 version that lacked
+ UPSERT support (probably among other things that I forgot). I guess it’s
+@@ -71,7 +71,7 @@ &lt;h3&gt;It’s easy to link against the latest sqlite3 version&lt;/h3&gt;
+ python)&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;It-has-the-same-defaults-as-upstream-sqlite&quot;&gt;
+-&lt;h3&gt;It has the same defaults as upstream sqlite&lt;/h3&gt;
++&lt;h3&gt;It has the same defaults as upstream sqlite&lt;a href=&quot;#It-has-the-same-defaults-as-upstream-sqlite&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+ &lt;p&gt;Python stdlib’s &lt;code&gt;sqlite3&lt;/code&gt; has a few default configurations that deviate from
+ sqlite’s. A couple of things that actually bit me are:&lt;/p&gt;
+ &lt;ul&gt;
+@@ -94,7 +94,7 @@ &lt;h3&gt;It has the same defaults as upstream sqlite&lt;/h3&gt;
+ &lt;/section&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;A-minimum-viable-DB-migration-scheme&quot;&gt;
+-&lt;h2&gt;A minimum viable DB migration scheme&lt;/h2&gt;
++&lt;h2&gt;A minimum viable DB migration scheme&lt;a href=&quot;#A-minimum-viable-DB-migration-scheme&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;With &lt;a href=&quot;https://github.com/nhanb/pytaku/blob/65a6c08128ebbc2b7d33a6b043798c69ac7dfebe/src/pytaku/database/migrator.py&quot;&gt;&amp;lt;100 lines&lt;/a&gt; of python, I ended up with a migrator that:&lt;/p&gt;
+ &lt;ul&gt;
+ &lt;li&gt;
+@@ -177,7 +177,7 @@ &lt;h2&gt;A minimum viable DB migration scheme&lt;/h2&gt;
+ projects that have good documentation, who would have thought?&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Recommended-sane-defaults&quot;&gt;
+-&lt;h2&gt;Recommended sane defaults&lt;/h2&gt;
++&lt;h2&gt;Recommended sane defaults&lt;a href=&quot;#Recommended-sane-defaults&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;SQLite comes with some default settings that may be surprising for people
+ coming from e.g. Postgres. Here are some tweaks that worked better for me.&lt;/p&gt;
+ &lt;p&gt;&lt;a href=&quot;https://sqlite.org/wal.html&quot;&gt;Enable WAL mode&lt;/a&gt;. This allows for concurrent readers, which is usually
+@@ -192,7 +192,7 @@ &lt;h2&gt;Recommended sane defaults&lt;/h2&gt;
+ matter how short the wait is.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;A-quick-note-on-SQL-injection&quot;&gt;
+-&lt;h2&gt;A quick note on SQL injection&lt;/h2&gt;
++&lt;h2&gt;A quick note on SQL injection&lt;a href=&quot;#A-quick-note-on-SQL-injection&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;&lt;em&gt;(or how to move on from the late 90s)&lt;/em&gt;&lt;/p&gt;
+ &lt;p&gt;You don’t need a full blown ORM to protect yourself against SQL injections. In
+ fact, SQLite (and any sane RDBMS really) has built-in support for it called
+diff --git a/tmux-italics/index.html b/tmux-italics/index.html
+index 4bc33b5..47d9591 100644
+--- a/tmux-italics/index.html
++++ b/tmux-italics/index.html
+@@ -60,7 +60,7 @@ &lt;h1&gt;Enable italic text inside vim inside tmux inside gnome-terminal&lt;/h1&gt;
+ Let’s change that. My current setup is terminal vim running inside a tmux session on
+ gnome-terminal. Let’s go through these things.&lt;/p&gt;
+ &lt;section id=&quot;gnome-terminal&quot;&gt;
+-&lt;h2&gt;gnome-terminal&lt;/h2&gt;
++&lt;h2&gt;gnome-terminal&lt;a href=&quot;#gnome-terminal&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Note that older versions of &lt;code&gt;gnome-terminal&lt;/code&gt; do not support italic text. To check if your terminal
+ does support it, run this command:&lt;/p&gt;
+ &lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;$ echo -e &quot;\e[3m foo \e[23m&quot;
+@@ -68,7 +68,7 @@ &lt;h2&gt;gnome-terminal&lt;/h2&gt;
+ &lt;p&gt;If your version of gnome-terminal supports it, an italic &lt;em&gt;foo&lt;/em&gt; will appear. If not, upgrade it! :)&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;vim&quot;&gt;
+-&lt;h2&gt;vim&lt;/h2&gt;
++&lt;h2&gt;vim&lt;a href=&quot;#vim&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;You may have noticed: &lt;code&gt;[3m&lt;/code&gt; and &lt;code&gt;[23m&lt;/code&gt; are the special sequences to start and stop printing
+ italic text. Unfortunately, vim doesn’t care about those. It expects &lt;code&gt;sitm&lt;/code&gt; and &lt;code&gt;ritm&lt;/code&gt; instead.
+ We’ll need to map them manually. Simply use these commands:&lt;/p&gt;
+@@ -84,7 +84,7 @@ &lt;h2&gt;vim&lt;/h2&gt;
+ not, I can’t help you any further :P&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;tmux&quot;&gt;
+-&lt;h2&gt;tmux&lt;/h2&gt;
++&lt;h2&gt;tmux&lt;a href=&quot;#tmux&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;The only reason I use terminal vim instead of gvim is tmux integration, therefore I almost always
+ run vim inside a tmux session. Unfortunately tmux does some weird things to your terminal, one of
+ them is altering the &lt;code&gt;$TERM&lt;/code&gt; environment variable. When we open a tmux session, it will typically
+@@ -96,14 +96,14 @@ &lt;h2&gt;tmux&lt;/h2&gt;
+ &lt;/code&gt;&lt;/pre&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;More-on-vim&quot;&gt;
+-&lt;h2&gt;More on vim&lt;/h2&gt;
++&lt;h2&gt;More on vim&lt;a href=&quot;#More-on-vim&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;If you still can’t see any italic text in a markdown file, it might be because your colorscheme
+ deliberately disables it. Try using another colorscheme (I highly recommend &lt;a href=&quot;http://ethanschoonover.com/solarized&quot;&gt;solarized&lt;/a&gt;). You
+ can also check if your markdown syntax plugin does use italics; I’m currently using &lt;a href=&quot;https://github.com/tpope/vim-markdown&quot;&gt;Tim Pope’s
+ markdown plugin&lt;/a&gt; and it works great!&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;References&quot;&gt;
+-&lt;h2&gt;References:&lt;/h2&gt;
++&lt;h2&gt;References:&lt;a href=&quot;#References&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;ol&gt;
+ &lt;li&gt;
+ &lt;a href=&quot;http://superuser.com/questions/204743/terminal-that-supports-ansi-italic-escape-code&quot;&gt;Terminal that supports ANSI italic escape code?&lt;/a&gt;
+diff --git a/ubuntu-programs/index.html b/ubuntu-programs/index.html
+index e156574..b389cbb 100644
+--- a/ubuntu-programs/index.html
++++ b/ubuntu-programs/index.html
+@@ -44,7 +44,7 @@ &lt;h1&gt;Installing programs in Ubuntu&lt;/h1&gt;
+ a better understanding about Linux’s structure for storing and executing programs, ultimately
+ appreciate the usefulness of package managers in general.&lt;/p&gt;
+ &lt;section id=&quot;Executables&quot;&gt;
+-&lt;h2&gt;Executables&lt;/h2&gt;
++&lt;h2&gt;Executables&lt;a href=&quot;#Executables&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Let’s start with something simple. Fire up your favorite text editor and create a file called
+ &lt;code&gt;itc.sh&lt;/code&gt; with the following content:&lt;/p&gt;
+ &lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;#!/bin/bash
+@@ -74,7 +74,7 @@ &lt;h2&gt;Executables&lt;/h2&gt;
+ &lt;/blockquote&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Path&quot;&gt;
+-&lt;h2&gt;Path&lt;/h2&gt;
++&lt;h2&gt;Path&lt;a href=&quot;#Path&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;So we’ve created a program that shows a useless message, good job! However, every time we call
+ it, we need to specify the whole address to the file: &lt;code&gt;~/Desktop/itc&lt;/code&gt; is probably not a very cool
+ looking command. In order to make it possible to simply run &lt;code&gt;itc&lt;/code&gt;, you need to move it to the
+@@ -90,7 +90,7 @@ &lt;h2&gt;Path&lt;/h2&gt;
+ &lt;/blockquote&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Packages&quot;&gt;
+-&lt;h2&gt;Packages&lt;/h2&gt;
++&lt;h2&gt;Packages&lt;a href=&quot;#Packages&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Unfortunately, most programs have a lot of files instead of one, and they are scattered to many
+ different folders. Let’s have a look at the files of &lt;code&gt;wget&lt;/code&gt; - the downloader that’s included in
+ every major Linux distribution:&lt;/p&gt;
+@@ -158,7 +158,7 @@ &lt;h2&gt;Packages&lt;/h2&gt;
+ you’ve obtained the file, simply open it with Ubuntu Software Center to start installing.&lt;/p&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Synaptic-Ubuntu-Software-Center&quot;&gt;
+-&lt;h2&gt;Synaptic, Ubuntu Software Center&lt;/h2&gt;
++&lt;h2&gt;Synaptic, Ubuntu Software Center&lt;a href=&quot;#Synaptic-Ubuntu-Software-Center&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Aptitude is only a command-line program, which is not very user-friendly. Synaptic is a GUI program
+ that provides a nice user interface that’s easy to use, while internally it uses &lt;code&gt;apt&lt;/code&gt; to do all
+ the actual work.&lt;/p&gt;
+diff --git a/vim-open-link/index.html b/vim-open-link/index.html
+index 3b8e4c5..116231b 100644
+--- a/vim-open-link/index.html
++++ b/vim-open-link/index.html
+@@ -91,7 +91,7 @@ &lt;h1&gt;Opening http link under the cursor in vim&lt;/h1&gt;
+ a shell command composed from arbitrary, potentially unsafe input (i.e. text
+ file content), don’t worry: that’s what &lt;a href=&quot;https://learnvimscriptthehardway.stevelosh.com/chapters/32.html#escaping-shell-command-arguments&quot;&gt;&lt;code&gt;shellescape()&lt;/code&gt;&lt;/a&gt; is for.&lt;/p&gt;
+ &lt;section id=&quot;But-why-stop-there&quot;&gt;
+-&lt;h2&gt;But why stop there?&lt;/h2&gt;
++&lt;h2&gt;But why stop there?&lt;a href=&quot;#But-why-stop-there&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;We’re using Jira at work (I know, don’t ask), and we have a convention to
+ include the Jira ticket in all top-level git commit messages like this (French
+ optional):&lt;/p&gt;
+diff --git a/yaks.html b/yaks.html
+index 2f3c03a..9ee6e29 100644
+--- a/yaks.html
++++ b/yaks.html
+@@ -36,7 +36,7 @@ &lt;h1&gt;Yak shaving&lt;/h1&gt;
+ 
+ &lt;p&gt;Basically my TODOs, in pursuit of the ever-pervasive &lt;em&gt;pleasant workflow&lt;/em&gt;.&lt;/p&gt;
+ &lt;section id=&quot;Replacing-tmux-with-kitty&quot;&gt;
+-&lt;h2&gt;Replacing tmux with kitty&lt;/h2&gt;
++&lt;h2&gt;Replacing tmux with kitty&lt;a href=&quot;#Replacing-tmux-with-kitty&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;All blockers seem to have been addressed now?&lt;/p&gt;
+ &lt;ul&gt;
+ &lt;li&gt;
+@@ -48,7 +48,7 @@ &lt;h2&gt;Replacing tmux with kitty&lt;/h2&gt;
+ &lt;/ul&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Interesting-tools&quot;&gt;
+-&lt;h2&gt;Interesting tools&lt;/h2&gt;
++&lt;h2&gt;Interesting tools&lt;a href=&quot;#Interesting-tools&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;ul&gt;
+ &lt;li&gt;
+ &lt;a href=&quot;https://pointlessramblings.com/posts/why-you-should-try-pyinfra/&quot;&gt;pyinfra&lt;/a&gt;:
+@@ -70,7 +70,7 @@ &lt;h2&gt;Interesting tools&lt;/h2&gt;
+ &lt;/ul&gt;
+ &lt;/section&gt;
+ &lt;section id=&quot;Home-server&quot;&gt;
+-&lt;h2&gt;Home server&lt;/h2&gt;
++&lt;h2&gt;Home server&lt;a href=&quot;#Home-server&quot; class=&quot;heading-link&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+ &lt;p&gt;Specs:&lt;/p&gt;
+ &lt;ul&gt;
+ &lt;li&gt;
+</pre></body></html>

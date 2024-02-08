@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[dc3c46ba9d] fix chapter list link | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / dc3c46ba9d</strong><hr><pre>commit dc3c46ba9db8b2e05cbfec0da44464a1f70c51e3
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 6 00:23:35 2020 +0700
+
+    fix chapter list link
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 8df5c14..fa366d1 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.1.5&quot;
++version = &quot;0.1.6&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/templates/chapter.html b/src/pytaku/templates/chapter.html
+index d506c62..b36ffd0 100644
+--- a/src/pytaku/templates/chapter.html
++++ b/src/pytaku/templates/chapter.html
+@@ -66,7 +66,7 @@ &lt;h1&gt;{{ self.title() }}&lt;/h1&gt;
+   {{ ibutton(left_icon=&#39;chevrons-left&#39;, text=&#39;Prev&#39;, disabled=True) }}
+   {% endif %}
+ 
+-  {{ ibutton(href=url_for(&#39;title_view&#39;, title_id=title_id, site=title_site), left_icon=&#39;list&#39;, text=&#39;Chapter list&#39;, color=&#39;blue&#39;) }}
++  {{ ibutton(href=url_for(&#39;title_view&#39;, title_id=title_id, site=site), left_icon=&#39;list&#39;, text=&#39;Chapter list&#39;, color=&#39;blue&#39;) }}
+ 
+   {% if next_chapter %}
+   {{ ibutton(href=url_for(&#39;chapter_view&#39;, site=site, chapter_id=next_chapter[&#39;id&#39;]), right_icon=&#39;chevrons-right&#39;, text=&#39;Next&#39;) }}
+</pre></body></html>

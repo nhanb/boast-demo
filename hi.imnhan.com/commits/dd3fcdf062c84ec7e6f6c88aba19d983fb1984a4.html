@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[dd3fcdf062] update url form | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / dd3fcdf062</strong><hr><pre>commit dd3fcdf062c84ec7e6f6c88aba19d983fb1984a4
+Author: nhanb &lt;thanhnhan483@gmail.com&gt;
+Date:   Tue May 14 17:13:58 2013 +0700
+
+    update url form
+
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 2c192f6..34ebe48 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -15,16 +15,26 @@
+ CATEGORY_FEED_ATOM = None
+ TRANSLATION_FEED_ATOM = None
+ 
+-# Blogroll
+-LINKS = ((&#39;Pelican&#39;, &#39;http://getpelican.com/&#39;),
+-         (&#39;Python.org&#39;, &#39;http://python.org/&#39;),
+-         (&#39;Jinja2&#39;, &#39;http://jinja.pocoo.org/&#39;)
+-         )
+-
+-# Social widget
+-#SOCIAL = ((&#39;You can add links in your config file&#39;, &#39;#&#39;),
+-          #(&#39;Another social link&#39;, &#39;#&#39;),)
++## Blogroll
++#LINKS = ((&#39;Pelican&#39;, &#39;http://getpelican.com/&#39;),
++         #(&#39;Python.org&#39;, &#39;http://python.org/&#39;),
++         #(&#39;Jinja2&#39;, &#39;http://jinja.pocoo.org/&#39;)
++         #)
++
++# Copy static files to output
++FILES_TO_COPY = ((&#39;extra/CNAME&#39;, &#39;CNAME&#39;),
++                 (&#39;extra/README.markdown&#39;, &#39;README.markdown&#39;),
++                 (&#39;extra/favicon.ico&#39;, &#39;favicon.ico&#39;))
++
++ARTICLE_URL = &#39;{date:%Y}/{date:%m}/{slug}/&#39;
++ARTICLE_SAVE_AS = &#39;{date:%Y}/{date:%m}/{slug}/index.html&#39;
++ARTICLE_LANG_URL = &#39;{date:%Y}/{date:%m}/{slug}-{lang}/&#39;
++ARTICLE_LANG_SAVE_AS = &#39;{date:%Y}/{date:%m}/{slug}-{lang}/index.html&#39;
+ 
+ DEFAULT_PAGINATION = 10
+ 
+ STATIC_PATHS = [&#39;images&#39;]
++
++# Social widget
++#SOCIAL = ((&#39;You can add links in your config file&#39;, &#39;#&#39;),
++          #(&#39;Another social link&#39;, &#39;#&#39;),)
+</pre></body></html>

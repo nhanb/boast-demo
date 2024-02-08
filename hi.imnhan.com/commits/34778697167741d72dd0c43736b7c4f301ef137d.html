@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[3477869716] add resume to sidebar + about | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 3477869716</strong><hr><pre>commit 34778697167741d72dd0c43736b7c4f301ef137d
+Author: nhanb &lt;nhan@nerdyweekly.com&gt;
+Date:   Sat Apr 11 12:13:58 2015 +0700
+
+    add resume to sidebar + about
+
+diff --git a/content/pages/about.md b/content/pages/about.md
+index 357b023..b324950 100644
+--- a/content/pages/about.md
++++ b/content/pages/about.md
+@@ -5,7 +5,7 @@ ## About me
+ ![My face](/images/nhan.jpg)
+ 
+ My name is **Bùi Thành Nhân**. I&#39;m a software engineer with a strong focus on web backend
+-development and operations.
++development and operations. Here&#39;s [my résumé][4] if anyone&#39;s interested.
+ 
+ I usually go with the handle **nhanb** on most social networks; you can find links to my profiles
+ on the sidebar.
+@@ -17,10 +17,14 @@ ## About this blog
+ myself by writing technical tutorials. On occasional bad days I might throw all my ramblings here
+ too, but hopefully those will be rare.
+ 
+-This blog uses [Pelican](http://getpelican.com) - a static site generator written in Python. The
+-static files are hosted on Github Pages. The theme used here is a (very slightly) modified fork
+-from [pelican-octopress-theme](https://github.com/duilio/pelican-octopress-theme). All the
+-markdown content files can also be found on my [github repo](https://github.com/nhanb/blog).
++This blog uses [Pelican][1] - a static site generator written in Python. The static files are
++hosted on Github Pages. The theme used here is a (very slightly) modified fork from
++[pelican-octopress-theme][2]. All the markdown files can also be found on my [github repo][3].
+ 
+-I always appreciate feedback or further discussions on my posts, so feel free to point out if you
++I always appreciate feedback or further discussion on my posts, so feel free to point out if you
+ think I said something stupid. That&#39;s it. Enjoy reading!
++
++[1]: http://getpelican.com
++[2]: https://github.com/duilio/pelican-octopress-theme
++[3]: https://github.com/nhanb/blog
++[4]: http://resume.nerdyweekly.com
+diff --git a/pelicanconf.py b/pelicanconf.py
+index 2c45329..9c8d90f 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -58,6 +58,7 @@
+ 
+ # Social widget
+ SOCIAL = (
++    (&#39;Résumé&#39;, &#39;http://resume.nerdyweekly.com&#39;),
+     (&#39;Github&#39;, &#39;https://github.com/nhanb&#39;),
+     (&#39;Facebook&#39;, &#39;https://www.facebook.com/thanhnhanb&#39;),
+     (&#39;Google+&#39;,
+</pre></body></html>

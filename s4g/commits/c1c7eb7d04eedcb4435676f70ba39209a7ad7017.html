@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[c1c7eb7d04] rename www to docs | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / c1c7eb7d04</strong><hr><pre>commit c1c7eb7d04eedcb4435676f70ba39209a7ad7017
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Jul 12 17:16:31 2023 +0700
+
+    rename www to docs
+    
+    For some reason GitHub Pages only allows pointing to a `docs/` dir,
+    not any arbitrary dir. Let&#39;s play ball for now.
+    
+    Eventually I&#39;ll have to start writing an actual docs website...
+
+diff --git a/Makefile b/Makefile
+index 91781ac..1171c44 100644
+--- a/Makefile
++++ b/Makefile
+@@ -6,7 +6,7 @@ watch:
+ 	| entr -rc go run .
+ 
+ watch-theme:
+-	find theme/* | entr -c rsync -av theme/ www/_theme/
++	find theme/* | entr -c rsync -av theme/ docs/_theme/
+ 
+ # Cheating a little because the djot.js repo on github does not provide builds
+ update-djot:
+diff --git a/www/_theme/base.css b/docs/_theme/base.css
+similarity index 100%
+rename from www/_theme/base.css
+rename to docs/_theme/base.css
+diff --git a/www/_theme/base.tmpl b/docs/_theme/base.tmpl
+similarity index 100%
+rename from www/_theme/base.tmpl
+rename to docs/_theme/base.tmpl
+diff --git a/www/_theme/feed.svg b/docs/_theme/feed.svg
+similarity index 100%
+rename from www/_theme/feed.svg
+rename to docs/_theme/feed.svg
+diff --git a/www/_theme/home.tmpl b/docs/_theme/home.tmpl
+similarity index 100%
+rename from www/_theme/home.tmpl
+rename to docs/_theme/home.tmpl
+diff --git a/www/_theme/includes.tmpl b/docs/_theme/includes.tmpl
+similarity index 100%
+rename from www/_theme/includes.tmpl
+rename to docs/_theme/includes.tmpl
+diff --git a/www/_theme/navbar.css b/docs/_theme/navbar.css
+similarity index 100%
+rename from www/_theme/navbar.css
+rename to docs/_theme/navbar.css
+diff --git a/www/_theme/post.tmpl b/docs/_theme/post.tmpl
+similarity index 100%
+rename from www/_theme/post.tmpl
+rename to docs/_theme/post.tmpl
+diff --git a/www/about/index.dj b/docs/about/index.dj
+similarity index 100%
+rename from www/about/index.dj
+rename to docs/about/index.dj
+diff --git a/www/about/index.html b/docs/about/index.html
+similarity index 100%
+rename from www/about/index.html
+rename to docs/about/index.html
+diff --git a/www/feed.xml b/docs/feed.xml
+similarity index 100%
+rename from www/feed.xml
+rename to docs/feed.xml
+diff --git a/www/index.html b/docs/index.html
+similarity index 100%
+rename from www/index.html
+rename to docs/index.html
+diff --git a/www/manifest.txt b/docs/manifest.txt
+similarity index 100%
+rename from www/manifest.txt
+rename to docs/manifest.txt
+diff --git a/www/mfws.dj b/docs/mfws.dj
+similarity index 100%
+rename from www/mfws.dj
+rename to docs/mfws.dj
+diff --git a/www/mfws.html b/docs/mfws.html
+similarity index 100%
+rename from www/mfws.html
+rename to docs/mfws.html
+diff --git a/www/scale/bill.jpg b/docs/scale/bill.jpg
+similarity index 100%
+rename from www/scale/bill.jpg
+rename to docs/scale/bill.jpg
+diff --git a/www/scale/index.dj b/docs/scale/index.dj
+similarity index 100%
+rename from www/scale/index.dj
+rename to docs/scale/index.dj
+diff --git a/www/scale/index.html b/docs/scale/index.html
+similarity index 100%
+rename from www/scale/index.html
+rename to docs/scale/index.html
+diff --git a/www/scale/scale.tmpl b/docs/scale/scale.tmpl
+similarity index 100%
+rename from www/scale/scale.tmpl
+rename to docs/scale/scale.tmpl
+diff --git a/www/website.wbmkr2k b/docs/website.wbmkr2k
+similarity index 100%
+rename from www/website.wbmkr2k
+rename to docs/website.wbmkr2k
+diff --git a/main.go b/main.go
+index 6d5f2e7..3e36f1e 100644
+--- a/main.go
++++ b/main.go
+@@ -48,7 +48,7 @@ func main() {
+ 
+ 	var serveFolder, servePort string
+ 	serveCmd := flag.NewFlagSet(&quot;serve&quot;, flag.ExitOnError)
+-	serveCmd.StringVar(&amp;serveFolder, &quot;f&quot;, &quot;www&quot;, &quot;Folder for existing website&quot;)
++	serveCmd.StringVar(&amp;serveFolder, &quot;f&quot;, &quot;docs&quot;, &quot;Folder for existing website&quot;)
+ 	serveCmd.StringVar(&amp;servePort, &quot;p&quot;, &quot;3338&quot;, &quot;Port for local preview server&quot;)
+ 
+ 	switch cmd {
+</pre></body></html>

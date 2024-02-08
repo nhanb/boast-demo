@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[91090272f9] implement chapter page, refactor ibutton | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 91090272f9</strong><hr><pre>commit 91090272f9f17f12644b7a6b4935fc7415bedd20
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 1 15:32:47 2020 +0700
+
+    implement chapter page, refactor ibutton
+
+diff --git a/src/mangoapi/__init__.py b/src/mangoapi/__init__.py
+index a9870a4..0851216 100644
+--- a/src/mangoapi/__init__.py
++++ b/src/mangoapi/__init__.py
+@@ -42,4 +42,22 @@ def get_title(title_id):
+ 
+ 
+ def get_chapter(chapter_id):
+-    return {&quot;id&quot;: chapter_id}
++    md_resp = requests.get(f&quot;https://mangadex.org/api/?id={chapter_id}&amp;type=chapter&quot;)
++    assert md_resp.status_code == 200
++    md_json = md_resp.json()
++    assert md_json[&quot;status&quot;] == &quot;OK&quot;
++
++    img_path = f&quot;{md_json[&#39;server&#39;]}{md_json[&#39;hash&#39;]}&quot;
++
++    chapter = {
++        &#39;id&#39;: chapter_id,
++        &#39;title_id&#39;: md_json[&#39;manga_id&#39;],
++        &#39;name&#39;: md_json[&#39;title&#39;],
++        &#39;pages&#39;: [
++            f&#39;{img_path}/{page}&#39;
++            for page in md_json[&#39;page_array&#39;]
++        ],
++        &#39;group&#39;: md_json[&#39;group_name&#39;],
++        **_parse_chapter_number(md_json[&#39;chapter&#39;]),
++    }
++    return chapter
+diff --git a/src/pytaku/static/base.css b/src/pytaku/static/base.css
+index 5c3a823..bc1863a 100644
+--- a/src/pytaku/static/base.css
++++ b/src/pytaku/static/base.css
+@@ -49,6 +49,7 @@ .button {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
++  vertical-align: bottom;
+   gap: 0.3rem;
+ 
+   cursor: pointer;
+diff --git a/src/pytaku/templates/base.html b/src/pytaku/templates/base.html
+index 77dbb0c..05b0b50 100644
+--- a/src/pytaku/templates/base.html
++++ b/src/pytaku/templates/base.html
+@@ -1,10 +1,21 @@
+ {# vim: ft=htmldjango
+ #}
+-{% macro ibutton(icon, text, color=&#39;red&#39;) -%}
+-&lt;button class=&quot;{{ color }} button&quot;&gt;
+-  &lt;img src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;icons/&#39; + icon + &#39;.svg&#39;)}}&quot; alt=&quot;{{ text }} icon&quot; /&gt;
++
++{% macro ibutton(href=&#39;&#39;, left_icon=&#39;&#39;, right_icon=&#39;&#39;, text=&#39;&#39;, color=&#39;red&#39;) -%}
++{% set element = &#39;a&#39; if href else &#39;button&#39; %}
++&lt;{{ element }} class=&quot;{{ color }} button&quot; {% if href %}href=&quot;{{ href }}&quot;{% endif %}&gt;
++  {% if left_icon %}
++  &lt;img src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;icons/&#39; + left_icon + &#39;.svg&#39;)}}&quot; alt=&quot;{{ text }} icon&quot; /&gt;
++  {% endif %}
++
++  {% if text %}
+   &lt;span&gt;{{ text }}&lt;/span&gt;
+-&lt;/button&gt;
++  {% endif %}
++
++  {% if right_icon %}
++  &lt;img src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;icons/&#39; + right_icon + &#39;.svg&#39;)}}&quot; alt=&quot;{{ text }} icon&quot; /&gt;
++  {% endif %}
++&lt;/{{ element }}&gt;
+ {%- endmacro %}
+ 
+ &lt;!DOCTYPE html&gt;
+diff --git a/src/pytaku/templates/chapter.html b/src/pytaku/templates/chapter.html
+index 14e7466..97665a7 100644
+--- a/src/pytaku/templates/chapter.html
++++ b/src/pytaku/templates/chapter.html
+@@ -1,9 +1,61 @@
+ {% extends &#39;base.html&#39; %}
+ 
+ {% block title %}
+-Chapter {{ id }}
++Ch.{{ number }} - {{ name }}
++{% endblock %}
++
++{% block head %}
++&lt;style&gt;
++  html {
++    background-color: #444;
++    color: white;
++  }
++
++  .content {
++    max-width: 100%;
++    padding: var(--body-padding) 0;
++    text-align: center;
++  }
++
++  .cover {
++    width: 400px;
++    border: 1px solid black;
++  }
++
++  .pages img {
++    display: block;
++    margin: 0 auto 1rem auto;
++  }
++
++  .buttons {
++    display: flex;
++    flex-direction: row;
++    gap: .5rem;
++    justify-content: center;
++    flex-wrap: wrap;
++  }
++&lt;/style&gt;
+ {% endblock %}
+ 
+ {% block content %}
+-Hello {{ id }}
++
++&lt;h1&gt;Ch.{{ number }}: {{ name }}&lt;/h1&gt;
++
++{# Put buttons in block to reuse later in this same template #}
++{% block buttons %}
++&lt;div class=&quot;buttons&quot;&gt;
++{{ ibutton(href=&#39;#TODO&#39;, left_icon=&#39;chevrons-left&#39;, text=&#39;Previous&#39;) }}
++{{ ibutton(left_icon=&#39;eye&#39;, text=&#39;Reading&#39;, color=&#39;green&#39;) }}
++{{ ibutton(href=&#39;#TODO&#39;, right_icon=&#39;chevrons-right&#39;, text=&#39;Next&#39;) }}
++&lt;/div&gt;
++{% endblock %}
++
++&lt;div class=&quot;pages&quot;&gt;
++  {% for page in pages %}
++  &lt;img src=&quot;{{ page }}&quot; /&gt;
++  {% endfor %}
++&lt;/div&gt;
++
++{{ self.buttons() }}
++
+ {% endblock %}
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index a6ba007..73c813e 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -17,7 +17,7 @@
+ 
+ &lt;h1&gt;{{ name }}&lt;/h1&gt;
+ 
+-{{ ibutton(&#39;bookmark&#39;, &#39;Bookmark&#39;, &#39;blue&#39;) }}
++{{ ibutton(left_icon=&#39;bookmark&#39;, text=&#39;Bookmark&#39;, color=&#39;blue&#39;) }}
+ 
+ &lt;img class=&quot;cover&quot; src=&quot;{{ cover }}&quot; alt=&quot;cover&quot; /&gt;
+ 
+</pre></body></html>

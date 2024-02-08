@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[595d990c64] remove ensure_session_version thing | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 595d990c64</strong><hr><pre>commit 595d990c64d4a355019245784e480c0961154a9b
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Aug 11 20:25:09 2020 +0700
+
+    remove ensure_session_version thing
+    
+    I would blow up any client that didn&#39;t support cookies, like some
+    privacy-concious people and, sigh, facebook opengraph scraper.
+
+diff --git a/pyproject.toml b/pyproject.toml
+index ce9d770..dca39b9 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.2.16&quot;
++version = &quot;0.2.17&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/pytaku/decorators.py b/src/pytaku/decorators.py
+index 7bd09a9..388731f 100644
+--- a/src/pytaku/decorators.py
++++ b/src/pytaku/decorators.py
+@@ -5,27 +5,6 @@
+ from .persistence import read, unread
+ 
+ 
+-def ensure_session_version(f, CURRENT_VERSION=1):
+-    &quot;&quot;&quot;
+-    Increment CURRENT_VERSION to nuke all current sessions.
+-    Useful for when I try to change session structure or something. Maybe.
+-    &quot;&quot;&quot;
+-
+-    @wraps(f)
+-    def decorated_function(*args, **kwargs):
+-        if (
+-            not session.get(&quot;version&quot;)
+-            or not isinstance(session[&quot;version&quot;], int)
+-            or session[&quot;version&quot;] &lt; CURRENT_VERSION
+-        ):
+-            session.clear()
+-            session[&quot;version&quot;] = CURRENT_VERSION
+-            return redirect(&quot;/&quot;)
+-        return f(*args, **kwargs)
+-
+-    return decorated_function
+-
+-
+ def require_login(f):
+     @wraps(f)
+     def decorated_function(*args, **kwargs):
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index cfa7e78..d55cba4 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -14,7 +14,7 @@
+ )
+ 
+ from .conf import config
+-from .decorators import ensure_session_version, require_login, toggle_has_read
++from .decorators import require_login, toggle_has_read
+ from .persistence import (
+     follow,
+     get_followed_titles,
+@@ -45,7 +45,6 @@
+ 
+ 
+ @app.route(&quot;/&quot;)
+-@ensure_session_version
+ def home_view():
+     if session.get(&quot;user&quot;):
+         return redirect(url_for(&quot;follows_view&quot;))
+@@ -53,7 +52,6 @@ def home_view():
+ 
+ 
+ @app.route(&quot;/following&quot;, methods=[&quot;GET&quot;])
+-@ensure_session_version
+ @require_login
+ def follows_view():
+     titles = get_followed_titles(session[&quot;user&quot;][&quot;id&quot;])
+@@ -66,7 +64,6 @@ def follows_view():
+ 
+ 
+ @app.route(&quot;/follow/&lt;site&gt;/&lt;title_id&gt;&quot;, methods=[&quot;POST&quot;])
+-@ensure_session_version
+ @require_login
+ def follow_view(site, title_id):
+     follow(session[&quot;user&quot;][&quot;id&quot;], site, title_id)
+@@ -74,7 +71,6 @@ def follow_view(site, title_id):
+ 
+ 
+ @app.route(&quot;/unfollow/&lt;site&gt;/&lt;title_id&gt;&quot;, methods=[&quot;POST&quot;])
+-@ensure_session_version
+ @require_login
+ def unfollow_view(site, title_id):
+     unfollow(session[&quot;user&quot;][&quot;id&quot;], site, title_id)
+@@ -82,14 +78,12 @@ def unfollow_view(site, title_id):
+ 
+ 
+ @app.route(&quot;/logout&quot;, methods=[&quot;POST&quot;])
+-@ensure_session_version
+ def logout_view():
+     session.pop(&quot;user&quot;)
+     return redirect(&quot;/&quot;)
+ 
+ 
+ @app.route(&quot;/auth&quot;, methods=[&quot;GET&quot;, &quot;POST&quot;])
+-@ensure_session_version
+ def auth_view():
+     if session.get(&quot;user&quot;):
+         return redirect(url_for(&quot;home_view&quot;))
+@@ -173,7 +167,6 @@ def auth_view():
+ 
+ 
+ @app.route(&quot;/m/&lt;site&gt;/&lt;title_id&gt;&quot;)
+-@ensure_session_version
+ @toggle_has_read
+ def title_view(site, title_id):
+     user = session.get(&quot;user&quot;, None)
+@@ -196,7 +189,6 @@ def title_view(site, title_id):
+ 
+ 
+ @app.route(&quot;/m/&lt;site&gt;/&lt;title_id&gt;/&lt;chapter_id&gt;&quot;)
+-@ensure_session_version
+ @toggle_has_read
+ def chapter_view(site, title_id, chapter_id):
+     chapter = load_chapter(site, title_id, chapter_id)
+@@ -225,7 +217,6 @@ def chapter_view(site, title_id, chapter_id):
+ 
+ 
+ @app.route(&quot;/search&quot;)
+-@ensure_session_version
+ def search_view():
+     query = request.args.get(&quot;q&quot;, &quot;&quot;).strip()
+     results = {}
+</pre></body></html>

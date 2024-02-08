@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[cc7cb80bfe] use mangadex api v2 | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / cc7cb80bfe</strong><hr><pre>commit cc7cb80bfe27b35d467b32cf6532442e9da70f75
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Jan 22 13:18:03 2021 +0700
+
+    use mangadex api v2
+    
+    This API removed chapter&#39;s `long_strip` field for whatever reason.
+    Nagging for it on Discord.
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 70e0a4f..23e9315 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.31&quot;
++version = &quot;0.3.32&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index da2f705..336bdfd 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -4,39 +4,46 @@
+ 
+ from mangoapi.base_site import Site, requires_login
+ 
++MANGAPLUS_GROUP_ID = 9097
++
+ 
+ class Mangadex(Site):
+     def get_title(self, title_id):
+-        url = f&quot;https://mangadex.org/api/?id={title_id}&amp;type=manga&quot;
++        url = f&quot;https://mangadex.org/api/v2/manga/{title_id}?include=chapters&quot;
+         md_resp = self.http_get(url)
+         md_json = md_resp.json()
+         assert md_json[&quot;status&quot;] == &quot;OK&quot;
++        manga = md_json[&quot;data&quot;][&quot;manga&quot;]
++        chapters = md_json[&quot;data&quot;][&quot;chapters&quot;]
++        groups = md_json[&quot;data&quot;][&quot;groups&quot;]
++        groups_dict = {group[&quot;id&quot;]: group[&quot;name&quot;] for group in groups}
+ 
+-        cover = md_json[&quot;manga&quot;][&quot;cover_url&quot;].split(&quot;/&quot;)[-1]
++        cover = manga[&quot;mainCover&quot;].split(&quot;/&quot;)[-1]
+         cover_ext = cover[cover.find(&quot;.&quot;) + 1 : cover.rfind(&quot;?&quot;)]
+ 
+         current_timestamp = time.time()
+ 
+         title = {
+             &quot;id&quot;: title_id,
+-            &quot;name&quot;: md_json[&quot;manga&quot;][&quot;title&quot;],
++            &quot;name&quot;: manga[&quot;title&quot;],
+             &quot;site&quot;: &quot;mangadex&quot;,
+             &quot;cover_ext&quot;: cover_ext,
+-            &quot;alt_names&quot;: md_json[&quot;manga&quot;][&quot;alt_names&quot;],
+-            &quot;descriptions&quot;: html.unescape(md_json[&quot;manga&quot;][&quot;description&quot;]).split(
+-                &quot;\r\n\r\n&quot;
+-            ),
++            &quot;alt_names&quot;: manga[&quot;altTitles&quot;],
++            &quot;descriptions&quot;: html.unescape(manga[&quot;description&quot;]).split(&quot;\r\n\r\n&quot;),
+             &quot;chapters&quot;: [
+                 {
+-                    &quot;id&quot;: str(chap_id),
++                    &quot;id&quot;: str(chap[&quot;id&quot;]),
+                     &quot;name&quot;: chap[&quot;title&quot;],
+                     &quot;volume&quot;: int(chap[&quot;volume&quot;]) if chap[&quot;volume&quot;] else None,
+-                    &quot;groups&quot;: _extract_groups(chap),
++                    &quot;groups&quot;: [
++                        html.unescape(groups_dict[group_id])
++                        for group_id in chap[&quot;groups&quot;]
++                    ],
+                     **_parse_chapter_number(chap[&quot;chapter&quot;]),
+                 }
+-                for chap_id, chap in md_json.get(&quot;chapter&quot;, {}).items()
+-                if chap[&quot;lang_code&quot;] == &quot;gb&quot;
+-                and chap[&quot;group_name&quot;] != &quot;MangaPlus&quot;
++                for chap in chapters
++                if chap[&quot;language&quot;] == &quot;gb&quot;
++                and MANGAPLUS_GROUP_ID not in chap[&quot;groups&quot;]
+                 and chap[&quot;timestamp&quot;] &lt;= current_timestamp
+                 # ^ Chapter may be listed but with access delayed for a certain amount
+                 # of time set by uploader, in which case we just filter it out. God I
+@@ -47,45 +54,44 @@ def get_title(self, title_id):
+ 
+     def get_chapter(self, title_id, chapter_id):
+         md_resp = self.http_get(
+-            f&quot;https://mangadex.org/api/?id={chapter_id}&amp;type=chapter&amp;saver=0&quot;
++            f&quot;https://mangadex.org/api/v2/chapter/{chapter_id}?saver=0&quot;
+         )
+         md_json = md_resp.json()
+         assert md_json[&quot;status&quot;] == &quot;OK&quot;
++        data = md_json[&quot;data&quot;]
+ 
+         # 2 cases:
+-        # - If &#39;server_fallback&#39; is absent, it means &#39;server&#39; points to MD&#39;s own server
++        # - If &#39;serverFallback&#39; is absent, it means &#39;server&#39; points to MD&#39;s own server
+         #   e.g. s5.mangadex.org...
+         # - Otherwise, &#39;server&#39; points to a likely ephemeral MD@H node, while
+-        # &#39;server_fallback&#39; now points to MD&#39;s own server.
++        # &#39;serverFallback&#39; now points to MD&#39;s own server.
+         #
+         # MD&#39;s own links apparently go dead sometimes, but MD@H links seem to expire
+         # quickly all the time, so it&#39;s probably a good idea to store both anyway.
+ 
+-        server_fallback = md_json.get(&quot;server_fallback&quot;)
++        server_fallback = data.get(&quot;serverFallback&quot;)
+         if server_fallback:
+             md_server = server_fallback
+-            mdah_server = md_json[&quot;server&quot;]
++            mdah_server = data[&quot;server&quot;]
+         else:
+-            md_server = md_json[&quot;server&quot;]
++            md_server = data[&quot;server&quot;]
+             mdah_server = None
+ 
+         chapter = {
+             &quot;id&quot;: chapter_id,
+-            &quot;title_id&quot;: str(md_json[&quot;manga_id&quot;]),
++            &quot;title_id&quot;: str(data[&quot;mangaId&quot;]),
+             &quot;site&quot;: &quot;mangadex&quot;,
+-            &quot;name&quot;: md_json[&quot;title&quot;],
+-            &quot;pages&quot;: [
+-                f&quot;{md_server}{md_json[&#39;hash&#39;]}/{page}&quot; for page in md_json[&quot;page_array&quot;]
+-            ],
++            &quot;name&quot;: data[&quot;title&quot;],
++            &quot;pages&quot;: [f&quot;{md_server}{data[&#39;hash&#39;]}/{page}&quot; for page in data[&quot;pages&quot;]],
+             &quot;pages_alt&quot;: [
+-                f&quot;{mdah_server}{md_json[&#39;hash&#39;]}/{page}&quot;
+-                for page in md_json[&quot;page_array&quot;]
++                f&quot;{mdah_server}{data[&#39;hash&#39;]}/{page}&quot; for page in data[&quot;pages&quot;]
+             ]
+             if mdah_server
+             else [],
+-            &quot;groups&quot;: _extract_groups(md_json),
+-            &quot;is_webtoon&quot;: md_json[&quot;long_strip&quot;] == 1,
+-            **_parse_chapter_number(md_json[&quot;chapter&quot;]),
++            &quot;groups&quot;: [html.unescape(group[&quot;name&quot;]) for group in data[&quot;groups&quot;]],
++            # TODO: longStrip doesn&#39;t exist in v2 API yet. Nagging for it on Discord.
++            &quot;is_webtoon&quot;: bool(data.get(&quot;longString&quot;)),
++            **_parse_chapter_number(data[&quot;chapter&quot;]),
+         }
+         return chapter
+ 
+@@ -148,11 +154,3 @@ def _parse_chapter_number(string):
+     if count == 2:
+         result[&quot;num_minor&quot;] = int(nums[1])
+     return result
+-
+-
+-def _extract_groups(chap):
+-    return [
+-        html.unescape(group.strip())
+-        for group in [chap[&quot;group_name&quot;], chap[&quot;group_name_2&quot;], chap[&quot;group_name_3&quot;]]
+-        if group
+-    ]
+</pre></body></html>

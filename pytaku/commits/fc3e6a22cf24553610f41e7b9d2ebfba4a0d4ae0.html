@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[fc3e6a22cf] get all possible scan groups | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / fc3e6a22cf</strong><hr><pre>commit fc3e6a22cf24553610f41e7b9d2ebfba4a0d4ae0
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 2 10:25:46 2020 +0700
+
+    get all possible scan groups
+
+diff --git a/src/mangoapi/__init__.py b/src/mangoapi/__init__.py
+index ce64c4c..e83784e 100644
+--- a/src/mangoapi/__init__.py
++++ b/src/mangoapi/__init__.py
+@@ -20,6 +20,14 @@ def _parse_chapter_number(string):
+     return result
+ 
+ 
++def _extract_groups(chap):
++    return [
++        group.strip()
++        for group in [chap[&quot;group_name&quot;], chap[&quot;group_name_2&quot;], chap[&quot;group_name_3&quot;]]
++        if group
++    ]
++
++
+ def get_title(title_id):
+     url = f&quot;https://mangadex.org/api/?id={title_id}&amp;type=manga&quot;
+     md_resp = requests.get(url)
+@@ -40,7 +48,7 @@ def get_title(title_id):
+                 &quot;id&quot;: chap_id,
+                 &quot;name&quot;: chap[&quot;title&quot;],
+                 &quot;volume&quot;: int(chap[&quot;volume&quot;]) if chap[&quot;volume&quot;] else None,
+-                &quot;group&quot;: chap[&quot;group_name&quot;],
++                &quot;groups&quot;: _extract_groups(chap),
+                 **_parse_chapter_number(chap[&quot;chapter&quot;]),
+             }
+             for chap_id, chap in md_json[&quot;chapter&quot;].items()
+@@ -66,7 +74,7 @@ def get_chapter(chapter_id):
+         &quot;title_id&quot;: md_json[&quot;manga_id&quot;],
+         &quot;name&quot;: md_json[&quot;title&quot;],
+         &quot;pages&quot;: [f&quot;{img_path}/{page}&quot; for page in md_json[&quot;page_array&quot;]],
+-        &quot;group&quot;: md_json[&quot;group_name&quot;],
++        &quot;groups&quot;: _extract_groups(md_json),
+         **_parse_chapter_number(md_json[&quot;chapter&quot;]),
+     }
+     return chapter
+diff --git a/src/pytaku/templates/title.html b/src/pytaku/templates/title.html
+index 6cf093f..700f6e2 100644
+--- a/src/pytaku/templates/title.html
++++ b/src/pytaku/templates/title.html
+@@ -32,10 +32,13 @@ &lt;h1&gt;{{ name }}&lt;/h1&gt;
+   &lt;tr&gt;
+     &lt;td&gt;
+       &lt;a href=&quot;{{ url_for(&#39;chapter_view&#39;, chapter_id=chapter[&#39;id&#39;]) }}&quot;&gt;
+-        Ch.{{ chapter[&#39;number&#39;] }} - {{ chapter[&#39;name&#39;] }}
++        Chapter {{ chapter[&#39;number&#39;] }}
++        {% if chapter[&#39;volume&#39;] %}Volume {{ chapter[&#39;volume&#39;] }} {% endif %}
++        {% if chapter[&#39;name&#39;] %}- {{ chapter[&#39;name&#39;] }} {% endif %}
++
+       &lt;/a&gt;
+     &lt;/td&gt;
+-    &lt;td&gt;{{ chapter[&#39;group&#39;] }}&lt;/td&gt;
++    &lt;td&gt;{{ &#39;, &#39;.join(chapter[&#39;groups&#39;]) }}&lt;/td&gt;
+   &lt;/tr&gt;
+   {% endfor %}
+ &lt;/table&gt;
+</pre></body></html>

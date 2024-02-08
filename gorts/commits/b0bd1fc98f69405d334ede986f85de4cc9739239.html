@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[b0bd1fc98f] enforce unix-style newlines | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / b0bd1fc98f</strong><hr><pre>commit b0bd1fc98f69405d334ede986f85de4cc9739239
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jun 19 12:38:44 2023 +0700
+
+    enforce unix-style newlines
+
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index fc48d16..9a3b451 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -1,9 +1,12 @@
+-# tclkit on Windows defaults to cp1252 encoding which will mangle utf-8
+-# source code, so let&#39;s give it no chance to fuck up:
++# Tcl on Windows has unfortunate defaults:
++#   - cp1252 encoding, which will mangle utf-8 source code
++#   - crlf linebreaks instead of unix-style lf
++# Let&#39;s be consistent cross-platform to avoid surprises:
+ encoding system &quot;utf-8&quot;
+-fconfigure stdin -encoding &quot;utf-8&quot;
+-fconfigure stdout -encoding &quot;utf-8&quot;
+-fconfigure stderr -encoding &quot;utf-8&quot;
++foreach p {stdin stdout stderr} {
++    fconfigure $p -encoding &quot;utf-8&quot;
++    fconfigure $p -translation lf
++}
+ 
+ package require Tk
+ 
+</pre></body></html>

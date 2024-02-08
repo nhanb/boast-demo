@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[5b6adcf900] parse bbcode from mangadex descriptions | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 5b6adcf900</strong><hr><pre>commit 5b6adcf900b368eb3ee5072ff7513c322579d7f1
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Jan 23 21:05:31 2021 +0700
+
+    parse bbcode from mangadex descriptions
+    
+    To do that, our system now also accepts descriptions in html format in
+    addition to plaintext. Each SourceSite class should specify which format
+    it outputs. BBCode can now be converted into html at the source site
+    level.
+
+diff --git a/poetry.lock b/poetry.lock
+index 6264af2..92ef442 100644
+--- a/poetry.lock
++++ b/poetry.lock
+@@ -56,6 +56,14 @@ optional = false
+ python-versions = &quot;*&quot;
+ marker = &quot;python_version &gt;= \&quot;3.4\&quot;&quot;
+ 
++[[package]]
++name = &quot;bbcode&quot;
++version = &quot;1.1.0&quot;
++description = &quot;A pure python bbcode parser and formatter.&quot;
++category = &quot;main&quot;
++optional = false
++python-versions = &quot;*&quot;
++
+ [[package]]
+ name = &quot;certifi&quot;
+ version = &quot;2020.6.20&quot;
+@@ -544,7 +552,7 @@ testing = [&quot;jaraco.itertools&quot;, &quot;func-timeout&quot;]
+ [metadata]
+ lock-version = &quot;1.0&quot;
+ python-versions = &quot;^3.7&quot;
+-content-hash = &quot;3cfb3337e3938185bd5cf650d8258403f4e2227115904da0972cba109818ebf5&quot;
++content-hash = &quot;1753bef74f04a35a21914127fef75ab7bfc5c14e04c0c48613c0d637bcc6df91&quot;
+ 
+ [metadata.files]
+ appnope = [
+@@ -568,6 +576,8 @@ argon2-cffi = [
+     {file = &quot;argon2_cffi-20.1.0-cp37-cp37m-win_amd64.whl&quot;, hash = &quot;sha256:6678bb047373f52bcff02db8afab0d2a77d83bde61cfecea7c5c62e2335cb203&quot;},
+     {file = &quot;argon2_cffi-20.1.0-cp38-cp38-win32.whl&quot;, hash = &quot;sha256:77e909cc756ef81d6abb60524d259d959bab384832f0c651ed7dcb6e5ccdbb78&quot;},
+     {file = &quot;argon2_cffi-20.1.0-cp38-cp38-win_amd64.whl&quot;, hash = &quot;sha256:9dfd5197852530294ecb5795c97a823839258dfd5eb9420233c7cfedec2058f2&quot;},
++    {file = &quot;argon2_cffi-20.1.0-cp39-cp39-win32.whl&quot;, hash = &quot;sha256:e2db6e85c057c16d0bd3b4d2b04f270a7467c147381e8fd73cbbe5bc719832be&quot;},
++    {file = &quot;argon2_cffi-20.1.0-cp39-cp39-win_amd64.whl&quot;, hash = &quot;sha256:8a84934bd818e14a17943de8099d41160da4a336bcc699bb4c394bbb9b94bd32&quot;},
+ ]
+ atomicwrites = [
+     {file = &quot;atomicwrites-1.4.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197&quot;},
+@@ -581,6 +591,10 @@ backcall = [
+     {file = &quot;backcall-0.2.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:fbbce6a29f263178a1f7915c1940bde0ec2b2a967566fe1c65c1dfb7422bd255&quot;},
+     {file = &quot;backcall-0.2.0.tar.gz&quot;, hash = &quot;sha256:5cbdbf27be5e7cfadb448baf0aa95508f91f2bbc6c6437cd9cd06e2a4c215e1e&quot;},
+ ]
++bbcode = [
++    {file = &quot;bbcode-1.1.0-py2.py3-none-any.whl&quot;, hash = &quot;sha256:83802f4b40c92426841a98350bd6ff9ea8fdf8f9b37df1968a88c5864fd225fa&quot;},
++    {file = &quot;bbcode-1.1.0.tar.gz&quot;, hash = &quot;sha256:eac4fb1d0f6c7ce5c41e4b5c0522562b15a1ac036fb9131adc59e9a28c7dc1d0&quot;},
++]
+ certifi = [
+     {file = &quot;certifi-2020.6.20-py2.py3-none-any.whl&quot;, hash = &quot;sha256:8fc0819f1f30ba15bdb34cceffb9ef04d99f420f68eb75d901e9560b8749fc41&quot;},
+     {file = &quot;certifi-2020.6.20.tar.gz&quot;, hash = &quot;sha256:5930595817496dd21bb8dc35dad090f1c2cd0adfaf21204bf6732ca5d8ee34d3&quot;},
+diff --git a/pyproject.toml b/pyproject.toml
+index dcb5d65..11eedc3 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.35&quot;
++version = &quot;0.4.0&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+@@ -26,6 +26,7 @@ gunicorn = &quot;^20.0.4&quot;
+ requests = &quot;^2.24.0&quot;
+ goodconf = &quot;^1.0.0&quot;
+ argon2-cffi = &quot;^20.1.0&quot;
++bbcode = &quot;^1.1.0&quot;
+ 
+ [tool.poetry.dev-dependencies]
+ pytest = &quot;^6.0.1&quot;
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index c03b350..98d73ea 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -2,11 +2,18 @@
+ import re
+ import time
+ 
++import bbcode
++
+ from mangoapi.base_site import Site, requires_login
+ 
+ MANGAPLUS_GROUP_ID = 9097
+ LONG_STRIP_TAG_ID = 36
+ 
++_bbparser = bbcode.Parser()
++_bbparser.add_simple_formatter(
++    &quot;spoiler&quot;, &quot;&lt;details&gt;&lt;summary&gt;Spoiler&lt;/summary&gt;%(value)s&lt;/details&gt;&quot;
++)
++
+ 
+ class Mangadex(Site):
+     def get_title(self, title_id):
+@@ -30,7 +37,12 @@ def get_title(self, title_id):
+             &quot;site&quot;: &quot;mangadex&quot;,
+             &quot;cover_ext&quot;: cover_ext,
+             &quot;alt_names&quot;: manga[&quot;altTitles&quot;],
+-            &quot;descriptions&quot;: html.unescape(manga[&quot;description&quot;]).split(&quot;\r\n\r\n&quot;),
++            &quot;descriptions&quot;: [
++                _bbparser.format(paragraph)
++                for paragraph in html.unescape(manga[&quot;description&quot;]).split(&quot;\r\n&quot;)
++                if paragraph.strip()
++            ],
++            &quot;descriptions_format&quot;: &quot;html&quot;,
+             &quot;is_webtoon&quot;: LONG_STRIP_TAG_ID in manga[&quot;tags&quot;],
+             &quot;chapters&quot;: [
+                 {
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+index c531989..72eba43 100644
+--- a/src/mangoapi/mangasee.py
++++ b/src/mangoapi/mangasee.py
+@@ -51,6 +51,7 @@ def get_title(self, title_id):
+             &quot;chapters&quot;: chapters,
+             &quot;alt_names&quot;: [],
+             &quot;descriptions&quot;: [desc],
++            &quot;descriptions_format&quot;: &quot;text&quot;,
+         }
+ 
+     def get_chapter(self, title_id, chapter_id):
+diff --git a/src/pytaku/database/migrations/latest_schema.sql b/src/pytaku/database/migrations/latest_schema.sql
+index c684f1b..37fd01b 100644
+--- a/src/pytaku/database/migrations/latest_schema.sql
++++ b/src/pytaku/database/migrations/latest_schema.sql
+@@ -9,7 +9,7 @@ CREATE TABLE title (
+     chapters text,
+     alt_names text,
+     descriptions text,
+-    updated_at text default (datetime(&#39;now&#39;)), is_webtoon boolean not null default false,
++    updated_at text default (datetime(&#39;now&#39;)), is_webtoon boolean not null default false, descriptions_format text not null default &#39;text&#39;,
+ 
+     unique(id, site)
+ );
+diff --git a/src/pytaku/database/migrations/m0009.sql b/src/pytaku/database/migrations/m0009.sql
+new file mode 100644
+index 0000000..c2d7f09
+--- /dev/null
++++ b/src/pytaku/database/migrations/m0009.sql
+@@ -0,0 +1,5 @@
++begin transaction;
++
++alter table title add column descriptions_format text not null default &#39;text&#39;;
++
++commit;
+diff --git a/src/pytaku/js-src/routes/title.js b/src/pytaku/js-src/routes/title.js
+index bd865ff..47739dc 100644
+--- a/src/pytaku/js-src/routes/title.js
++++ b/src/pytaku/js-src/routes/title.js
+@@ -131,7 +131,14 @@ function Title(initialVNode) {
+                 ),
+               ]),
+               m(&quot;img.title--cover[alt=cover]&quot;, { src: title.cover }),
+-              title.descriptions.map((desc) =&gt; m(&quot;p&quot;, desc)),
++              m(&quot;.title--descriptions&quot;, {}, [
++                title.descriptions.map((desc) =&gt;
++                  m(
++                    &quot;p&quot;,
++                    title.descriptions_format === &quot;html&quot; ? m.trust(desc) : desc
++                  )
++                ),
++              ]),
+               title.chapters
+                 ? title.chapters.map((chapter) =&gt;
+                     m(Chapter, { site: title.site, titleId: title.id, chapter })
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index aa77aca..cf145a7 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -19,7 +19,8 @@ def save_title(title):
+         is_webtoon,
+         chapters,
+         alt_names,
+-        descriptions
++        descriptions,
++        descriptions_format
+     ) VALUES (
+         :id,
+         :name,
+@@ -28,7 +29,8 @@ def save_title(title):
+         :is_webtoon,
+         :chapters,
+         :alt_names,
+-        :descriptions
++        :descriptions,
++        :descriptions_format
+     ) ON CONFLICT (id, site) DO UPDATE SET
+         name=excluded.name,
+         cover_ext=excluded.cover_ext,
+@@ -36,6 +38,7 @@ def save_title(title):
+         chapters=excluded.chapters,
+         alt_names=excluded.alt_names,
+         descriptions=excluded.descriptions,
++        descriptions_format=excluded.descriptions_format,
+         updated_at=datetime(&#39;now&#39;)
+     ;
+     &quot;&quot;&quot;,
+@@ -48,6 +51,7 @@ def save_title(title):
+             &quot;chapters&quot;: json.dumps(title[&quot;chapters&quot;]),
+             &quot;alt_names&quot;: json.dumps(title[&quot;alt_names&quot;]),
+             &quot;descriptions&quot;: json.dumps(title[&quot;descriptions&quot;]),
++            &quot;descriptions_format&quot;: title[&quot;descriptions_format&quot;],
+         },
+     )
+ 
+@@ -55,7 +59,8 @@ def save_title(title):
+ def load_title(site, title_id, user_id=None):
+     result = run_sql(
+         &quot;&quot;&quot;
+-        SELECT id, name, site, cover_ext, is_webtoon, chapters, alt_names, descriptions
++        SELECT id, name, site, cover_ext, is_webtoon, chapters, alt_names, descriptions,
++               descriptions_format
+         FROM title
+         WHERE id = ?
+           AND site = ?;
+diff --git a/src/pytaku/static/lookandfeel.css b/src/pytaku/static/lookandfeel.css
+index 3e3fd64..bb5e4ae 100644
+--- a/src/pytaku/static/lookandfeel.css
++++ b/src/pytaku/static/lookandfeel.css
+@@ -17,6 +17,12 @@ :root {
+   line-height: 1.2rem;
+ }
+ 
++hr {
++  border: 0;
++  border-top: 1px solid #ddd;
++  margin: 0.5em 0;
++}
++
+ h1,
+ h2,
+ h3,
+@@ -126,3 +132,8 @@ a.touch-friendly {
+ a.touch-friendly:hover {
+   background-color: #eee;
+ }
++
++summary {
++  cursor: pointer;
++  user-select: none;
++}
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index 4e591ac..bed5285 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -347,6 +347,10 @@ .title--details &gt; * {
+   margin-right: 0.3rem;
+   flex-shrink: 1;
+ }
++.title--descriptions {
++  background-color: #eee;
++  padding: 0.5em;
++}
+ 
+ @media (max-width: 399px) {
+   .title--details {
+</pre></body></html>

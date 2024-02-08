@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[bb3839b866] cookie-based auth | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / bb3839b866</strong><hr><pre>commit bb3839b86675853b857ba905f1dda75ae52f3e2b
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Wed Aug 26 20:53:39 2020 +0700
+
+    cookie-based auth
+    
+    Gave up on session/localStorate. WHY THE FUCK is sessionStorage not
+    shared between tabs? It&#39;s impossible to implement a straightforward &quot;log
+    out when browser closes&quot; scenario.
+
+diff --git a/src/pytaku/decorators.py b/src/pytaku/decorators.py
+index 22015e7..01d1a8d 100644
+--- a/src/pytaku/decorators.py
++++ b/src/pytaku/decorators.py
+@@ -9,15 +9,11 @@ def process_token(required=True):
+     def decorator(f):
+         @wraps(f)
+         def decorated_function(*args, **kwargs):
+-            header = request.headers.get(&quot;Authorization&quot;)
+-            if not header or not header.startswith(&quot;Bearer &quot;):
++            token = request.cookies.get(&quot;token&quot;)
++            if not token:
+                 if required:
+                     return (
+-                        jsonify(
+-                            {
+-                                &quot;message&quot;: &quot;Missing `Authorization: Bearer &lt;token&gt;` header.&quot;
+-                            }
+-                        ),
++                        jsonify({&quot;message&quot;: &quot;Missing &#39;token&#39; cookie.&quot;}),
+                         401,
+                     )
+                 else:
+@@ -25,7 +21,6 @@ def decorated_function(*args, **kwargs):
+                     request.user_id = None
+                     return f(*args, **kwargs)
+ 
+-            token = header[len(&quot;Bearer &quot;) :]
+             user_id = verify_token(token)
+             if user_id is None:
+                 return jsonify({&quot;message&quot;: &quot;Invalid token.&quot;}), 401
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 09970cf..2574598 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -309,7 +309,11 @@ def api_login():
+         return jsonify({&quot;message&quot;: &quot;Wrong username/password combination.&quot;}), 401
+ 
+     token = create_token(user_id, remember)
+-    return jsonify({&quot;user_id&quot;: user_id, &quot;token&quot;: token}), 200
++    resp = make_response(jsonify({&quot;user_id&quot;: user_id, &quot;token&quot;: token}))
++    resp.set_cookie(
++        &quot;token&quot;, token, max_age=31536000 if remember else None, samesite=&quot;Strict&quot;
++    )
++    return resp
+ 
+ 
+ @app.route(&quot;/api/verify-token&quot;, methods=[&quot;GET&quot;])
+@@ -324,7 +328,9 @@ def api_logout():
+     num_deleted = delete_token(request.token)
+     if num_deleted != 1:
+         return jsonify({&quot;message&quot;: &quot;Invalid token.&quot;}), 401
+-    return &quot;{}&quot;, 200
++    resp = make_response(&quot;{}&quot;, 200)
++    resp.set_cookie(&quot;token&quot;, &quot;&quot;, expires=0)
++    return resp
+ 
+ 
+ @app.route(&quot;/api/follows&quot;, methods=[&quot;GET&quot;])
+diff --git a/src/pytaku/static/js/models.js b/src/pytaku/static/js/models.js
+index 0159684..e683512 100644
+--- a/src/pytaku/static/js/models.js
++++ b/src/pytaku/static/js/models.js
+@@ -1,7 +1,18 @@
++function readCookie(cookieString) {
++  // This is terrible and wrong but it&#39;s enough for what we need i.e. just get
++  // the damn token.
++  const result = {};
++  cookieString.split(&quot;;&quot;).forEach((pair) =&gt; {
++    const [key, val] = pair.split(&quot;=&quot;);
++    result[key] = val;
++  });
++  return result;
++}
++
+ const Auth = {
+   username: sessionStorage.getItem(&quot;username&quot;),
+   userId: sessionStorage.getItem(&quot;userId&quot;),
+-  token: localStorage.getItem(&quot;token&quot;),
++  token: readCookie(document.cookie).token || null,
+   isLoggedIn: () =&gt; Auth.username !== null &amp;&amp; Auth.userId !== null,
+   init: () =&gt; {
+     // Already logged in, probably from another tab:
+@@ -21,7 +32,6 @@ const Auth = {
+       .request({
+         method: &quot;GET&quot;,
+         url: &quot;/api/verify-token&quot;,
+-        headers: { Authorization: `Bearer ${Auth.token}` },
+       })
+       .then((result) =&gt; {
+         // Success! Set user info for this session now
+@@ -41,21 +51,8 @@ const Auth = {
+   },
+ 
+   saveLoginResults: ({ userId, username, token, remember }) =&gt; {
+-    // FIXME: currently, even when remember=false we&#39;re still storing the token
+-    // in localStorage, simply because sessionStorage isn&#39;t shared across tabs.
+-    // Unfortunately this means when user logs in without checking &quot;remember
+-    // me&quot;, the token will still linger in localstorage after browser is
+-    // closed, and if an adversary reopens browser within the token&#39;s
+-    // server-enforced lifespan (1 day), then user is pwned.
+-    //
+-    // Either that or we stick to sessionStorage and forget multitab support.
+-    // _OR_ we do a convoluted song and dance with storage events:
+-    // &gt; https://stackoverflow.com/a/32766809
+-    //
+-    // 0 days since web APIs last made me sad.
+     sessionStorage.setItem(&quot;userId&quot;, userId);
+     sessionStorage.setItem(&quot;username&quot;, username);
+-    localStorage.setItem(&quot;token&quot;, token);
+     Auth.userId = userId;
+     Auth.username = username;
+     Auth.token = token;
+@@ -77,15 +74,16 @@ const Auth = {
+     Auth.username = null;
+     Auth.token = null;
+     Auth.userId = null;
+-    localStorage.clear();
+     sessionStorage.clear();
+   },
+ 
+   request: (options) =&gt; {
+-    if (Auth.isLoggedIn()) {
+-      options.headers = { Authorization: `Bearer ${Auth.token}` };
+-    }
+-    return m.request(options);
++    return m.request(options).catch((err) =&gt; {
++      if (err.code == 401) {
++        Auth.clearCredentials();
++      }
++      throw err;
++    });
+   },
+ };
+ 
+</pre></body></html>

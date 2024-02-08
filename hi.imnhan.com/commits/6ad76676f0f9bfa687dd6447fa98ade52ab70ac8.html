@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[6ad76676f0] configurable footer, use current year | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / 6ad76676f0</strong><hr><pre>commit 6ad76676f0f9bfa687dd6447fa98ade52ab70ac8
+Author: Bui Thanh Nhan &lt;hi@imnhan.com&gt;
+Date:   Thu Sep 5 23:09:29 2019 +0700
+
+    configurable footer, use current year
+
+diff --git a/README.md b/README.md
+index 5248403..a04de8b 100644
+--- a/README.md
++++ b/README.md
+@@ -36,7 +36,7 @@ # License
+ ```
+ The MIT License (MIT)
+ 
+-Copyright (c) 2013-2019 Bui Thanh Nhan
++Copyright (c) 2013-2019 Bùi Thành Nhân
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the &quot;Software&quot;), to deal
+diff --git a/motherfucking-pelican-theme b/motherfucking-pelican-theme
+index 77b73ea..8dc3975 160000
+--- a/motherfucking-pelican-theme
++++ b/motherfucking-pelican-theme
+@@ -1 +1 @@
+-Subproject commit 77b73ea810f2f8a1a82830096b0d0a1810e5f464
++Subproject commit 8dc397570bfc5e2e9c080aa4cb4eeff08609e46f
+diff --git a/pelicanconf.py b/pelicanconf.py
+index a83093e..f030595 100644
+--- a/pelicanconf.py
++++ b/pelicanconf.py
+@@ -1,4 +1,5 @@
+ #!/usr/bin/env python
++from datetime import date
+ 
+ AUTHOR = &quot;Bùi Thành Nhân&quot;
+ SITENAME = &quot;Hi, I&#39;m Nhân&quot;
+@@ -103,3 +104,10 @@
+ 
+ (ripped off from http://www.retrojunkie.com/asciiart/myth/dragons.htm)
+ &quot;&quot;&quot;
++
++CURRENT_YEAR = date.today().year
++
++FOOTER_TEXT = &quot;&quot;&quot;
++Built with &amp;#9829; and lots of
++&lt;a target=&quot;_blank&quot; rel=&quot;noopener&quot; href=&quot;https://caudatfarm.com/&quot;&gt;Cầu Đất coffee&lt;/a&gt;.
++&quot;&quot;&quot;
+</pre></body></html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[ae4966e5c6] more whitespace; colored blockquote | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / ae4966e5c6</strong><hr><pre>commit ae4966e5c6ca7b04e7a8689b8aeeaebb34c78c2d
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Nov 28 20:55:45 2023 +0700
+
+    more whitespace; colored blockquote
+
+diff --git a/_s4g/theme/base.css b/_s4g/theme/base.css
+index 0f7cf0f..141fc6c 100644
+--- a/_s4g/theme/base.css
++++ b/_s4g/theme/base.css
+@@ -14,11 +14,7 @@ code,
+ pre {
+   font-family: &quot;IBM Plex Mono&quot;;
+ }
+-code {
+-  color: darkred;
+-}
+ pre code {
+-  color: inherit;
+   font-size: 0.9rem;
+ }
+ 
+@@ -26,6 +22,17 @@ p,
+ ul,
+ ol {
+   line-height: 1.35rem;
++  margin: 1.7rem 0;
++}
++li + li {
++  margin-top: 0.7rem;
++}
++h2 + p,
++h3 + p,
++h4 + p,
++h5 + p,
++h6 + p {
++  margin-top: 1.3rem;
+ }
+ 
+ a {
+@@ -96,14 +103,22 @@ blockquote {
+   quotes: &quot;\201C&quot; &quot;\201D&quot;;
+   /* prevent long links from breaking out of the blockquote: */
+   overflow-wrap: break-word;
++  padding: 0 0.4rem 0 0.7rem;
++  background-color: cornsilk;
++  border-radius: 0.3rem;
++  border: 1px solid brown;
+ }
+ blockquote::before {
+   position: absolute;
+-  margin-left: -0.6em;
++  margin-left: -0.8em;
+   margin-top: -0.25em;
+   font-size: 3em;
++  color: brown;
+   content: open-quote;
+ }
++blockquote p {
++  margin: 0.7rem 0;
++}
+ 
+ sup {
+   line-height: 1rem; /* prevents it from pushing up the line */
+</pre></body></html>

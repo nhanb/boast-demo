@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[0504b5ab1a] handle mangadex &quot;none&quot; volume | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 0504b5ab1a</strong><hr><pre>commit 0504b5ab1a536a6cb4742ae41a69798396d68487
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Sep 4 11:45:49 2021 +0700
+
+    handle mangadex &quot;none&quot; volume
+
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index 209eff4..9a2df2d 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -78,7 +78,9 @@ def get_chapters_list(self, title_id):
+                         &quot;id&quot;: chap[&quot;id&quot;],
+                         &quot;name&quot;: &quot;&quot;,
+                         &quot;groups&quot;: [],  # TODO
+-                        &quot;volume&quot;: vol[&quot;volume&quot;],
++                        &quot;volume&quot;: vol[&quot;volume&quot;]
++                        if vol[&quot;volume&quot;] not in (None, &quot;none&quot;)
++                        else &quot;&quot;,
+                         **_parse_chapter_number(chap[&quot;chapter&quot;]),
+                     }
+                     for chap in vol[&quot;chapters&quot;].values()  # again, fucking yikes
+</pre></body></html>

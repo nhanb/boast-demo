@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[db859f35bf] add s4g &amp; gorts to /projects | hi.imnhan.com | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">hi.imnhan.com</a> / db859f35bf</strong><hr><pre>commit db859f35bf938a6de98b5f7da65eb5d6b30525be
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Aug 24 15:34:22 2023 +0700
+
+    add s4g &amp; gorts to /projects
+
+diff --git a/projects/index.dj b/projects/index.dj
+index 82f98e8..98eeba3 100644
+--- a/projects/index.dj
++++ b/projects/index.dj
+@@ -6,6 +6,13 @@ ShowInFeed: false
+ I&#39;ve written some open source software in my free time.
+ In some cases I even maintain them! Shocking, I know.
+ 
++## s4g
++
++[s4g](../s4g/) is the static site generator that powers this blog.
++It&#39;s written in Go and uses djot as a saner markdown. Reasonably complete, but
++definitely has room for improvement---internal link rot detection is one strong
++candidate. Syntax highlighting would be nice too.
++
+ ## Shark
+ 
+ [Shark][13] is a simple &quot;desktop pet&quot;. It&#39;s my first foray into cross-platform
+@@ -30,6 +37,12 @@ fighting game streams. It&#39;s served its purpose beaufifully during
+ [Saigon Cups](https://sgc19.saigonfgc.com/en/)... until a certain pandemic
+ happened.
+ 
++## GORTS
++
++[GORTS](https://github.com/nhanb/gorts/) is ORTS rewritten in Go and Tcl/Tk.
++It has been a fun experiment in cross-language IPC, and a much less masochistic
++exercise in software packaging compared to Python.
++
+ 
+ ## An animated wallpaper for KDE Plasma
+ 
+diff --git a/projects/index.html b/projects/index.html
+index b6ae831..efc48df 100644
+--- a/projects/index.html
++++ b/projects/index.html
+@@ -33,6 +33,13 @@ &lt;h1&gt;Projects&lt;/h1&gt;
+ 
+ &lt;p&gt;I’ve written some open source software in my free time.
+ In some cases I even maintain them! Shocking, I know.&lt;/p&gt;
++&lt;section id=&quot;s4g&quot;&gt;
++&lt;h2&gt;s4g&lt;/h2&gt;
++&lt;p&gt;&lt;a href=&quot;../s4g/&quot;&gt;s4g&lt;/a&gt; is the static site generator that powers this blog.
++It’s written in Go and uses djot as a saner markdown. Reasonably complete, but
++definitely has room for improvement—internal link rot detection is one strong
++candidate. Syntax highlighting would be nice too.&lt;/p&gt;
++&lt;/section&gt;
+ &lt;section id=&quot;Shark&quot;&gt;
+ &lt;h2&gt;Shark&lt;/h2&gt;
+ &lt;p&gt;&lt;a href=&quot;https://github.com/nhanb/shark/&quot;&gt;Shark&lt;/a&gt; is a simple “desktop pet”. It’s my first foray into cross-platform
+@@ -55,6 +62,12 @@ &lt;h2&gt;ORTS&lt;/h2&gt;
+ &lt;a href=&quot;https://sgc19.saigonfgc.com/en/&quot;&gt;Saigon Cups&lt;/a&gt;… until a certain pandemic
+ happened.&lt;/p&gt;
+ &lt;/section&gt;
++&lt;section id=&quot;GORTS&quot;&gt;
++&lt;h2&gt;GORTS&lt;/h2&gt;
++&lt;p&gt;&lt;a href=&quot;https://github.com/nhanb/gorts/&quot;&gt;GORTS&lt;/a&gt; is ORTS rewritten in Go and Tcl/Tk.
++It has been a fun experiment in cross-language IPC, and a much less masochistic
++exercise in software packaging compared to Python.&lt;/p&gt;
++&lt;/section&gt;
+ &lt;section id=&quot;An-animated-wallpaper-for-KDE-Plasma&quot;&gt;
+ &lt;h2&gt;An animated wallpaper for KDE Plasma&lt;/h2&gt;
+ &lt;p&gt;I was frustrated that KDE 5 didn’t allow animated gifs as wallpaper so I &lt;a href=&quot;https://github.com/nhanb/com.nerdyweekly.animated&quot;&gt;wrote
+</pre></body></html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[1f200b5e25] ci setup: mirror to gh, build wheel | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 1f200b5e25</strong><hr><pre>commit 1f200b5e25c1297feb4069f3867ae6a8d764abb4
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Aug 8 17:36:14 2020 +0700
+
+    ci setup: mirror to gh, build wheel
+
+diff --git a/.builds/ubuntu.yml b/.builds/ubuntu.yml
+new file mode 100644
+index 0000000..c7b8c33
+--- /dev/null
++++ b/.builds/ubuntu.yml
+@@ -0,0 +1,34 @@
++image: ubuntu/bionic
++
++secrets:
++  # Github deploy key: solely for mirroring to github
++  - 89816c8b-4416-4a78-84ee-3ad77b485912
++
++environment:
++  # Ugly hack to prepend to PATH:
++  #   ~/.poetry/bin - for poetry (duh)
++  #   ~/.local/bin - for entrypoint scripts that poetry installs
++  PATH: /home/build/.poetry/bin:/home/build/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/games
++
++packages:
++  - curl
++  - python3.7-dev
++
++tasks:
++  - mirror-to-github: |
++      cd pytaku
++      mkdir -p ~/.ssh
++      echo -e &quot;\nHost github.com\n  IdentityFile /home/build/.ssh/89816c8b-4416-4a78-84ee-3ad77b485912\n  IdentitiesOnly yes\n  BatchMode yes&quot; &gt;&gt; ~/.ssh/config
++      echo &quot;github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==&quot; &gt;&gt; ~/.ssh/known_hosts
++      git remote add github git@github.com:nhanb/pytaku.git
++      git push -f github &#39;*:*&#39; --follow-tags
++
++  - setup: |
++      curl https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -o get-poetry.py
++      python3.7 get-poetry.py -y
++      cd pytaku
++      poetry install
++
++  - build: |
++      cd pytaku
++      poetry build
+diff --git a/README.md b/README.md
+index 9254d2b..1ef4098 100644
+--- a/README.md
++++ b/README.md
+@@ -69,18 +69,16 @@ # then restart `pytaku` &amp; `pytaku-scheduler` processes
+ 
+ # LICENSE
+ 
+-```
+ Copyright (C) 2020  Bùi Thành Nhân
+ 
+-This program is free software: you can redistribute it and/or modify
+-it under the terms of the GNU Affero General Public License version
+-3 as published by the Free Software Foundation.
++This program is free software: you can redistribute it and/or modify it under
++the terms of the GNU Affero General Public License version 3 as published by
++the Free Software Foundation.
+ 
+-This program is distributed in the hope that it will be useful,
+-but WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-GNU Affero General Public License for more details.
++This program is distributed in the hope that it will be useful, but WITHOUT ANY
++WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
++PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
++details.
+ 
+-You should have received a copy of the GNU Affero General Public License
+-along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
+-```
++You should have received a copy of the GNU Affero General Public License along
++with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
+diff --git a/pyproject.toml b/pyproject.toml
+index 48bf9e1..530d902 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.2.4&quot;
++version = &quot;0.2.5&quot;
+ description = &quot;&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+</pre></body></html>

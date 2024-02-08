@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[d892366fd6] implement mangasee search | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / d892366fd6</strong><hr><pre>commit d892366fd6e3a0185ec253d3dc1c7da83467067d
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Aug 9 15:26:57 2020 +0700
+
+    implement mangasee search
+
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index c78103b..cb5c07b 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -67,7 +67,12 @@ def search_title(self, query):
+ 
+         matches = TITLES_PATTERN.findall(md_resp.text)
+         titles = [
+-            {&quot;id&quot;: int(id), &quot;name&quot;: name.strip(), &quot;site&quot;: &quot;mangadex&quot;}
++            {
++                &quot;id&quot;: id,
++                &quot;name&quot;: name.strip(),
++                &quot;site&quot;: &quot;mangadex&quot;,
++                &quot;thumbnail&quot;: f&quot;https://mangadex.org/images/manga/{id}.large.jpg&quot;,
++            }
+             for id, name in matches
+         ]
+         return titles
+diff --git a/src/mangoapi/mangasee.py b/src/mangoapi/mangasee.py
+index 0cfd85c..9fd25fe 100644
+--- a/src/mangoapi/mangasee.py
++++ b/src/mangoapi/mangasee.py
+@@ -1,7 +1,17 @@
++import json
++
++import apsw
++import requests
++
+ from mangoapi.base_site import Site
+ 
+ 
+ class Mangasee(Site):
++    search_table = None
++
++    def __init__(self, keyval_store=None):
++        self.keyval_store = keyval_store
++
+     def get_title(self, title_id):
+         pass
+ 
+@@ -9,4 +19,68 @@ def get_chapter(self, chapter_id):
+         pass
+ 
+     def search_title(self, query):
+-        return []
++        &quot;&quot;&quot;
++        Json blob of all mangasee titles: https://mangasee123.com/_search.php
++        The structure is something like this:
++            [
++                {
++                &#39;i&#39;: &#39;&#39;,
++                &#39;s&#39;: &#39;&#39;,
++                &#39;a&#39;: [&#39;&#39;, &#39;&#39;]
++                }
++            ]
++        Where `i` is id, `s` is name, and `a` is a list of alternative names.
++        So we can just read that once and build an in-memory sqlite db for offline full
++        text search.
++
++        Additionally, if we have a local key-value store, try that before actually
++        sending an http request to mangasee.
++        &quot;&quot;&quot;
++        if not self.search_table:
++            titles = None
++            if self.keyval_store:
++                titles = json.loads(
++                    self.keyval_store.get(&quot;mangasee_titles&quot;, &quot;null&quot;, since=&quot;-1 day&quot;)
++                )
++            if not titles:
++                print(&quot;Fetching mangasee title list...&quot;, end=&quot;&quot;)
++                resp = requests.get(&quot;https://mangasee123.com/_search.php&quot;)
++                print(&quot; done&quot;)
++                titles = resp.json()
++                self.keyval_store.set(&quot;mangasee_titles&quot;, resp.text)
++            self.search_table = SearchTable(titles)
++
++        return [
++            {
++                &quot;id&quot;: row[0],
++                &quot;name&quot;: row[1],
++                &quot;site&quot;: &quot;mangasee&quot;,
++                &quot;thumbnail&quot;: f&quot;https://cover.mangabeast01.com/cover/{row[0]}.jpg&quot;,
++            }
++            for row in self.search_table.search(query)
++        ]
++
++
++class SearchTable:
++    def __init__(self, titles: list):
++        self.db = apsw.Connection(&quot;:memory:&quot;)
++        cursor = self.db.cursor()
++        cursor.execute(
++            &quot;CREATE VIRTUAL TABLE titles USING FTS5(id UNINDEXED, name, alt_names);&quot;
++        )
++
++        rows = []
++        for t in titles:
++            id = t[&quot;i&quot;]
++            name = t[&quot;s&quot;]
++            alt_names = t[&quot;a&quot;]
++            rows.append((id, name, &quot; &quot;.join(alt_names)))
++
++        cursor.executemany(
++            &quot;INSERT INTO titles(id, name, alt_names) VALUES(?,?,?);&quot;, rows,
++        )
++
++    def search(self, query):
++        return self.db.cursor().execute(
++            &quot;SELECT id, name FROM titles(?) ORDER BY rank;&quot;, (query,)
++        )
+diff --git a/src/pytaku/database/migrations/latest_schema.sql b/src/pytaku/database/migrations/latest_schema.sql
+index 2d88116..21255b4 100644
+--- a/src/pytaku/database/migrations/latest_schema.sql
++++ b/src/pytaku/database/migrations/latest_schema.sql
+@@ -55,3 +55,8 @@ CREATE TABLE read (
+     foreign key (chapter_id, site) references chapter (id, site),
+     unique(user_id, chapter_id, site)
+ );
++CREATE TABLE keyval_store (
++    key text primary key,
++    value text not null,
++    updated_at text default (datetime(&#39;now&#39;))
++);
+diff --git a/src/pytaku/database/migrations/m0002.sql b/src/pytaku/database/migrations/m0002.sql
+new file mode 100644
+index 0000000..35d184e
+--- /dev/null
++++ b/src/pytaku/database/migrations/m0002.sql
+@@ -0,0 +1,5 @@
++create table keyval_store (
++    key text primary key,
++    value text not null,
++    updated_at text default (datetime(&#39;now&#39;))
++);
+diff --git a/src/pytaku/persistence.py b/src/pytaku/persistence.py
+index f5ed0b3..a97ae51 100644
+--- a/src/pytaku/persistence.py
++++ b/src/pytaku/persistence.py
+@@ -282,3 +282,32 @@ def find_outdated_titles(since=&quot;-6 hours&quot;):
+     return run_sql(
+         &quot;SELECT id, site FROM title WHERE updated_at &lt;= datetime(&#39;now&#39;, ?);&quot;, (since,)
+     )
++
++
++class KeyvalStore:
++    @staticmethod
++    def get(key: str, default=None, since=None) -&gt; str:
++        if since is None:
++            result = run_sql(&quot;SELECT value FROM keyval_store WHERE key=?;&quot;, (key,))
++        else:
++            result = run_sql(
++                &quot;&quot;&quot;
++                SELECT value FROM keyval_store WHERE key=?
++                AND updated_at &gt;= datetime(&#39;now&#39;, ?);
++                &quot;&quot;&quot;,
++                (key, since),
++            )
++        return result[0] if result else default
++
++    @staticmethod
++    def set(key: str, value: str):
++        # let&#39;s not allow crap in by accident
++        assert isinstance(key, str)
++        assert isinstance(value, str)
++        run_sql(
++            &quot;&quot;&quot;
++            INSERT INTO keyval_store (key, value) VALUES (?,?)
++            ON CONFLICT (key) DO UPDATE SET value=excluded.value, updated_at=datetime(&#39;now&#39;);
++            &quot;&quot;&quot;,
++            (key, value),
++        )
+diff --git a/src/pytaku/source_sites.py b/src/pytaku/source_sites.py
+index a3cc247..d97f43b 100644
+--- a/src/pytaku/source_sites.py
++++ b/src/pytaku/source_sites.py
+@@ -1,6 +1,7 @@
+ from mangoapi import get_site_class
+ 
+ from .conf import config
++from .persistence import KeyvalStore
+ 
+ &quot;&quot;&quot;
+ This module adapts mangoapi&#39;s API to a more convenient one for app-wide use.
+@@ -20,6 +21,8 @@ def _get_site(name):
+         if name == &quot;mangadex&quot;:
+             site.username = config.MANGADEX_USERNAME
+             site.password = config.MANGADEX_PASSWORD
++        elif name == &quot;mangasee&quot;:
++            site.keyval_store = KeyvalStore
+     return site
+ 
+ 
+diff --git a/src/pytaku/templates/search.html b/src/pytaku/templates/search.html
+index c38f548..1e9b23a 100644
+--- a/src/pytaku/templates/search.html
++++ b/src/pytaku/templates/search.html
+@@ -26,6 +26,7 @@
+     background-color: var(--bg-black);
+     color: white;
+     text-decoration: none;
++    max-width: 150px;
+   }
+   .result span {
+     padding: .5rem;
+@@ -59,7 +60,7 @@ &lt;h2 class=&quot;result-text&quot;&gt;No results for &quot;{{ query }}&quot;.&lt;/h2&gt;
+   {% for title in titles %}
+     &lt;a class=&quot;result&quot; href=&quot;{{ url_for(&#39;title_view&#39;, title_id=title[&#39;id&#39;], site=title[&#39;site&#39;]) }}&quot;
+        title=&quot;{{ title[&#39;name&#39;] }}&quot;&gt;
+-      &lt;img src=&quot;https://mangadex.org/images/manga/{{ title[&#39;id&#39;] }}.large.jpg&quot; alt=&quot;{{ title[&#39;name&#39;] }}&quot;&gt;
++      &lt;img src=&quot;{{ title[&#39;thumbnail&#39;] }}&quot; alt=&quot;{{ title[&#39;name&#39;] }}&quot;&gt;
+       &lt;span&gt;{{ title[&#39;name&#39;] | truncate(50) }}&lt;/span&gt;
+     &lt;/a&gt;
+   {% endfor %}
+</pre></body></html>

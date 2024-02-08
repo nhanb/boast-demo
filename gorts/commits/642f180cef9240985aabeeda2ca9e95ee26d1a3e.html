@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[642f180cef] readme: add build notes | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 642f180cef</strong><hr><pre>commit 642f180cef9240985aabeeda2ca9e95ee26d1a3e
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Tue Jun 20 11:54:56 2023 +0700
+
+    readme: add build notes
+
+diff --git a/README.md b/README.md
+index 809a12c..1d19a62 100644
+--- a/README.md
++++ b/README.md
+@@ -38,6 +38,25 @@ ## Linux
+ Proper packaging is not planned because I only develop on Linux and stream on
+ Windows. If you want to contribute then I&#39;m happy to give pointers though.
+ 
++## macOS or any other unix-like
++
++Unplanned but I&#39;m open to paid work.
++
++# Build from source
++
++Can cross-compile from any unix-like. I&#39;m cheating a little though, by
++downloading a prebuilt tcl executable for Windows, and just assume Linux users
++have already installed tcl/tk.
++
++Prerequisites: `make`, `go`, `curl`, `zip`.
++
++```sh
++make dist/GORTS-Linux.zip
++make dist/GORTS-Windows.zip
++```
++
++See Makefile for details.
++
+ # License
+ 
+ Copyright (C) 2023 Bui Thanh Nhan
+</pre></body></html>

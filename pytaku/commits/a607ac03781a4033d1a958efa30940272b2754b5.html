@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[a607ac0378] add &quot;unread all&quot; button | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / a607ac0378</strong><hr><pre>commit a607ac03781a4033d1a958efa30940272b2754b5
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Sep 4 08:03:03 2021 +0700
+
+    add &quot;unread all&quot; button
+
+diff --git a/src/pytaku/js-src/routes/title.js b/src/pytaku/js-src/routes/title.js
+index 47739dc..62710ab 100644
+--- a/src/pytaku/js-src/routes/title.js
++++ b/src/pytaku/js-src/routes/title.js
+@@ -5,8 +5,10 @@ function Title(initialVNode) {
+   let isLoading = false;
+   let isTogglingFollow = false;
+   let isMarkingAllAsRead = false;
++  let isMarkingAllAsUnread = false;
+   let title = {};
+   let allAreRead;
++  let allAreUnread;
+ 
+   return {
+     oninit: (vnode) =&gt; {
+@@ -33,9 +35,14 @@ function Title(initialVNode) {
+     view: (vnode) =&gt; {
+       if (!isLoading &amp;&amp; Auth.isLoggedIn()) {
+         allAreRead = true;
++        allAreUnread = true;
+         for (let chap of title.chapters) {
+           if (!chap.is_read) {
+             allAreRead = false;
++          } else {
++            allAreUnread = false;
++          }
++          if (allAreRead === false &amp;&amp; allAreUnread === false) {
+             break;
+           }
+         }
+@@ -95,6 +102,12 @@ function Title(initialVNode) {
+                           ? null
+                           : &quot;Click to mark all chapters as read&quot;,
+                         onclick: (ev) =&gt; {
++                          const confirmed = window.confirm(
++                            &quot;Do you surely want to read all chapters?&quot;
++                          );
++                          if (!confirmed) {
++                            return;
++                          }
+                           isMarkingAllAsRead = true;
+                           m.redraw();
+                           Auth.request({
+@@ -122,6 +135,55 @@ function Title(initialVNode) {
+                             });
+                         },
+                       }),
++                      m(Button, {
++                        icon: &quot;x-square&quot;,
++                        disabled:
++                          isMarkingAllAsUnread || allAreUnread
++                            ? &quot;disabled&quot;
++                            : null,
++                        text: isMarkingAllAsUnread
++                          ? &quot;submitting...&quot;
++                          : allAreUnread
++                          ? &quot;all unread!&quot;
++                          : &quot;unread all&quot;,
++                        color: &quot;white&quot;,
++                        title: allAreUnread
++                          ? null
++                          : &quot;Click to mark all chapters as unread&quot;,
++                        onclick: (ev) =&gt; {
++                          const confirmed = window.confirm(
++                            &quot;Do you surely want to unread all chapters?&quot;
++                          );
++                          if (!confirmed) {
++                            return;
++                          }
++                          isMarkingAllAsUnread = true;
++                          m.redraw();
++                          Auth.request({
++                            method: &quot;POST&quot;,
++                            url: &quot;/api/read&quot;,
++                            body: {
++                              unread: title.chapters
++                                .filter((ch) =&gt; ch.is_read)
++                                .map((ch) =&gt; {
++                                  return {
++                                    site: title.site,
++                                    title_id: title.id,
++                                    chapter_id: ch.id,
++                                  };
++                                }),
++                            },
++                          })
++                            .then((resp) =&gt; {
++                              title.chapters.forEach((chap) =&gt; {
++                                chap.is_read = false;
++                              });
++                            })
++                            .finally(() =&gt; {
++                              isMarkingAllAsUnread = false;
++                            });
++                        },
++                      }),
+                     ]
+                   : null,
+                 m(
+diff --git a/src/pytaku/static/spa.css b/src/pytaku/static/spa.css
+index ea8d676..794b92e 100644
+--- a/src/pytaku/static/spa.css
++++ b/src/pytaku/static/spa.css
+@@ -379,6 +379,12 @@ @media (max-width: 399px) {
+   }
+ }
+ 
++@media (min-width: 400px) and (max-width: 500px) {
++  .title--details i {
++    display: none;
++  }
++}
++
+ /* Chapter route */
+ .chapter.content {
+   padding: var(--body-padding) 0;
+</pre></body></html>

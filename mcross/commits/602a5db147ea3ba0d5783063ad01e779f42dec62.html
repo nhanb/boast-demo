@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[602a5db147] enforce max header length too | mcross | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">mcross</a> / 602a5db147</strong><hr><pre>commit 602a5db147ea3ba0d5783063ad01e779f42dec62
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun May 31 10:02:52 2020 +0700
+
+    enforce max header length too
+
+diff --git a/src/mcross/transport.py b/src/mcross/transport.py
+index 3ac904f..7c7071a 100644
+--- a/src/mcross/transport.py
++++ b/src/mcross/transport.py
+@@ -119,11 +119,12 @@ async def raw_get(url: GeminiUrl):
+             if b&quot;\r\n&quot; in header:
+                 idx = header.find(b&quot;\r\n&quot;)
+                 remainder = header[(idx + 2) :]
+-                header = header[: (idx + 2)].decode()
++                header = header[: (idx + 2)]
++                break
++            elif len(header) &gt; MAX_RESP_HEADER_BYTES:
+                 break
+ 
+-        # header = (await sock.recv(MAX_RESP_HEADER_BYTES)).decode()
+-        status, meta = _parse_resp_header(header)
++        status, meta = _parse_resp_header(header.decode())
+         resp = Response(status=status, meta=meta, url=url)
+ 
+         if status.startswith(&quot;2&quot;):
+</pre></body></html>

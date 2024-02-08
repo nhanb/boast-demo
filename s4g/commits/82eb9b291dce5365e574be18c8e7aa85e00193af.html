@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[82eb9b291d] procrastination | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 82eb9b291d</strong><hr><pre>commit 82eb9b291dce5365e574be18c8e7aa85e00193af
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Mon Jul 17 10:37:23 2023 +0700
+
+    procrastination
+
+diff --git a/main.go b/main.go
+index 375ef2c..4849340 100644
+--- a/main.go
++++ b/main.go
+@@ -129,7 +129,7 @@ func handleServeCmd(folder, port string) {
+ 	})
+ 	defer closeWatcher()
+ 
+-	site, err = regenerate(fsys)
++	_, err = regenerate(fsys)
+ 	livereload.SetError(err)
+ 
+ 	wg.Wait()
+</pre></body></html>

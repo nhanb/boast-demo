@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[fd5e5d21be] use MD@H links by default | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / fd5e5d21be</strong><hr><pre>commit fd5e5d21be3479c8de9d9897ed8902a0c3553a40
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Fri Oct 2 19:47:37 2020 +0700
+
+    use MD@H links by default
+    
+    MD&#39;s own image servers are sometimes down (like, right now). It&#39;s also
+    more polite to hit MD@H servers instead.
+    
+    Also needed to work around the filesystem&#39;s filename length limit.
+    
+    Ideally, we should probably store both main and fallback image links on
+    our side. Or maybe add some sort of wholesale preload logic so we can
+    retire the proxy thingy altogether.
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 4ed6912..679fba8 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.3.22&quot;
++version = &quot;0.3.23&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
+diff --git a/src/mangoapi/mangadex.py b/src/mangoapi/mangadex.py
+index ceab26f..044ed4a 100644
+--- a/src/mangoapi/mangadex.py
++++ b/src/mangoapi/mangadex.py
+@@ -52,7 +52,16 @@ def get_chapter(self, title_id, chapter_id):
+         md_json = md_resp.json()
+         assert md_json[&quot;status&quot;] == &quot;OK&quot;
+ 
+-        server = md_json.get(&quot;server_fallback&quot;) or md_json[&quot;server&quot;]
++        # &#39;server&#39; value points to a likely temporary MangaDex@Home instance, while
++        # &#39;server_fallback&#39; would be MD&#39;s own server e.g. s5.mangadex.org...
++        # The latter may be down (like, literally at the time of writing), so for now
++        # let&#39;s prioritize the MD@Home server.
++        # I don&#39;t know how stable MD@Home links are, but it probably won&#39;t matter,
++        # since `persistence.load_chapter()` will re-fetch if existing db record is more
++        # than 1 day old anyway.
++        # TODO: A more robust solution is to save both links to db, but I&#39;m not in the
++        # mood for it atm.
++        server = md_json[&quot;server&quot;] or md_json.get(&quot;server_fallback&quot;)
+         img_path = f&quot;{server}{md_json[&#39;hash&#39;]}&quot;
+ 
+         chapter = {
+diff --git a/src/pytaku/main.py b/src/pytaku/main.py
+index 5cb3b6d..68c7e83 100644
+--- a/src/pytaku/main.py
++++ b/src/pytaku/main.py
+@@ -74,7 +74,11 @@ def _decode_proxy_url(b64_url):
+ def _is_manga_img_url(
+     url,
+     pattern=re.compile(
+-        r&quot;^https://([\w_-]+\.)?(mangadex\.org/(data|images)|mangabeast\d{0,4}.com/manga)/&quot;
++        r&quot;^https://(&quot;
++        r&quot;([\w-]+\.)?(mangadex\.org/(data|images)|mangabeast\d{0,4}.com/manga)/&quot;
++        r&quot;|&quot;
++        r&quot;([\w-]+\.)+mangadex\.network:\d{2,6}/[\w-]+/data/&quot;
++        r&quot;)&quot;
+     ),
+ ):
+     return pattern.match(url)
+@@ -105,7 +109,11 @@ def proxy_view(b64_url):
+         md_resp = requests.get(url)
+         status_code = md_resp.status_code
+         body = md_resp.content
+-        headers = {&quot;Content-Type&quot;: md_resp.headers[&quot;content-type&quot;]}
++        # Normal responsible adults would always include the Content-Type header,
++        # but it&#39;s MangaDex@Home we&#39;re talking about so ofc they wouldn&#39;t.
++        # Therefore, watch out for that empty case:
++        content_type = md_resp.headers.get(&quot;content-type&quot;)
++        headers = {&quot;Content-Type&quot;: content_type} if content_type else {}
+         if status_code == 200:
+             storage.save(cached_headers_path, json.dumps(headers).encode())
+             storage.save(cached_file_path, md_resp.content)
+diff --git a/src/pytaku/storages.py b/src/pytaku/storages.py
+index 81d7fd2..b6bdb77 100644
+--- a/src/pytaku/storages.py
++++ b/src/pytaku/storages.py
+@@ -1,3 +1,4 @@
++import textwrap
+ from abc import ABC, abstractmethod
+ from pathlib import Path
+ 
+@@ -18,16 +19,31 @@ def read(self, path: Path) -&gt; bytes:
+ 
+ class FilesystemStorage(Storage):
+     def save(self, path: Path, blob: bytes):
++        path = self._split_long_filename(path)
+         if not path.parent.is_dir():
+             path.parent.mkdir(parents=True)
+         path.write_bytes(blob)
+ 
+     def exists(self, path: Path) -&gt; bool:
++        path = self._split_long_filename(path)
+         return path.is_file()
+ 
+     def read(self, path: Path) -&gt; bytes:
++        path = self._split_long_filename(path)
+         return path.read_bytes()
+ 
++    @staticmethod
++    def _split_long_filename(path: Path) -&gt; Path:
++        filename = path.name
++        if len(filename) &lt;= 255:
++            return path
++        else:
++            parts = textwrap.wrap(filename, width=255)
++            newpath = path.parent
++            for part in parts:
++                newpath /= Path(part)
++            return newpath
++
+ 
+ # TODO: support other storages e.g. s3-like
+ storage = FilesystemStorage()
+diff --git a/tests/mangoapi/test_mangadex.py b/tests/mangoapi/test_mangadex.py
+index b75b5b6..7bc8883 100644
+--- a/tests/mangoapi/test_mangadex.py
++++ b/tests/mangoapi/test_mangadex.py
+@@ -1,6 +1,5 @@
+-from pytaku.conf import config
+-
+ from mangoapi.mangadex import Mangadex
++from pytaku.conf import config
+ 
+ 
+ def test_get_title():
+@@ -85,35 +84,19 @@ def test_get_title():
+ 
+ def test_get_chapter():
+     chap = Mangadex().get_chapter(&quot;doesn&#39;t matter&quot;, &quot;696882&quot;)
++    pages = chap.pop(&quot;pages&quot;)
+     assert chap == {
+         &quot;id&quot;: &quot;696882&quot;,
+         &quot;title_id&quot;: &quot;12088&quot;,
+         &quot;site&quot;: &quot;mangadex&quot;,
+         &quot;name&quot;: &quot;Extras&quot;,
+-        &quot;pages&quot;: [
+-            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S1.png&quot;,
+-            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S2.png&quot;,
+-            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S3.png&quot;,
+-            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S4.png&quot;,
+-            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S5.png&quot;,
+-            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S6.png&quot;,
+-            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S7.png&quot;,
+-            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S8.png&quot;,
+-            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S9.png&quot;,
+-            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S10.png&quot;,
+-            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S11.png&quot;,
+-            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S12.png&quot;,
+-            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S13.jpg&quot;,
+-            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S14.jpg&quot;,
+-            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S15.png&quot;,
+-            &quot;https://s5.mangadex.org/data/39174bff8c88758a125c32710730223c/S16.png&quot;,
+-        ],
+         &quot;groups&quot;: [&quot;Träumerei Scans&quot;, &quot;GlassChair&quot;],
+         &quot;is_webtoon&quot;: False,
+         &quot;number&quot;: &quot;81.5&quot;,
+         &quot;num_major&quot;: 81,
+         &quot;num_minor&quot;: 5,
+     }
++    assert len(pages) == 16
+ 
+ 
+ def test_search():
+</pre></body></html>

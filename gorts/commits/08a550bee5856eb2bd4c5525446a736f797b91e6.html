@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[08a550bee5] fix ipc proc call | gorts | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">gorts</a> / 08a550bee5</strong><hr><pre>commit 08a550bee5856eb2bd4c5525446a736f797b91e6
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Thu Jun 22 13:49:04 2023 +0700
+
+    fix ipc proc call
+
+diff --git a/tcl/main.tcl b/tcl/main.tcl
+index c020f7d..d86049e 100644
+--- a/tcl/main.tcl
++++ b/tcl/main.tcl
+@@ -192,7 +192,7 @@ proc ipc_read {} {
+     return [decodenetstrings [readnetstring stdin]]
+ }
+ proc ipc {method args} {
+-    ipc_write $method $args
++    ipc_write [concat $method $args]
+     return [ipc_read]
+ }
+ 
+</pre></body></html>

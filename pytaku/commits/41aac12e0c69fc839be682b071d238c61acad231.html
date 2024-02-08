@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[41aac12e0c] update poetry &amp; readme for pypi | pytaku | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">pytaku</a> / 41aac12e0c</strong><hr><pre>commit 41aac12e0c69fc839be682b071d238c61acad231
+Author: Bùi Thành Nhân &lt;hi@imnhan.com&gt;
+Date:   Sat Oct 2 18:28:05 2021 +0700
+
+    update poetry &amp; readme for pypi
+
+diff --git a/.builds/debian.yml b/.builds/debian.yml
+index 6cf7d0b..44b6f2c 100644
+--- a/.builds/debian.yml
++++ b/.builds/debian.yml
+@@ -24,7 +24,7 @@ packages:
+ tasks:
+   - setup: |
+       pip3 install pipx
+-      python3 -m pipx install poetry==1.1.6
++      python3 -m pipx install poetry==1.1.10
+       #cd pytaku
+       #poetry install --no-dev
+ 
+diff --git a/pyproject.toml b/pyproject.toml
+index 64257ac..46cb332 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,9 +1,10 @@
+ [tool.poetry]
+ name = &quot;pytaku&quot;
+-version = &quot;0.6.0&quot;
++version = &quot;0.6.1&quot;
+ description = &quot;Self-hostable web-based manga reader&quot;
+ authors = [&quot;Bùi Thành Nhân &lt;hi@imnhan.com&gt;&quot;]
+ license = &quot;AGPL-3.0-only&quot;
++readme = &quot;README.md&quot;
+ packages = [
+     { include = &quot;pytaku&quot;, from = &quot;src&quot; },
+     { include = &quot;mangoapi&quot;, from = &quot;src&quot; },
+</pre></body></html>

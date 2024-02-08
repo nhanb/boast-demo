@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: monospace;"><head><title>[47e4fb6ddb] implement -new | s4g | Boast</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><strong><a href="../../">Repos</a> / <a href="../">s4g</a> / 47e4fb6ddb</strong><hr><pre>commit 47e4fb6ddb6cfbd0febc10c0fcbe8f567c84ba07
+Author: Nhân &lt;hi@imnhan.com&gt;
+Date:   Sun Jul 9 16:00:30 2023 +0700
+
+    implement -new
+
+diff --git a/main.go b/main.go
+index 7b8f9ad..909c968 100644
+--- a/main.go
++++ b/main.go
+@@ -6,6 +6,7 @@
+ 	&quot;fmt&quot;
+ 	&quot;html/template&quot;
+ 	&quot;io/fs&quot;
++	&quot;log&quot;
+ 	&quot;net/http&quot;
+ 	&quot;path/filepath&quot;
+ 	&quot;sort&quot;
+@@ -24,11 +25,21 @@
+ const FEED_PATH = &quot;feed.xml&quot;
+ 
+ func main() {
+-	var port, folder string
++	var port, folder, new string
++	flag.StringVar(&amp;new, &quot;new&quot;, &quot;&quot;, &quot;Path for new site to make&quot;)
+ 	flag.StringVar(&amp;port, &quot;port&quot;, &quot;3338&quot;, &quot;Port for local preview server&quot;)
+ 	flag.StringVar(&amp;folder, &quot;folder&quot;, &quot;www&quot;, &quot;Web folder&quot;)
+ 	flag.Parse()
+ 
++	if new != &quot;&quot; {
++		fmt.Println(&quot;Making new site at&quot;, new)
++		err := makeSite(new, newSiteMetadata())
++		if err != nil {
++			log.Fatal(err)
++		}
++		return
++	}
++
+ 	absolutePath, err := filepath.Abs(folder)
+ 	if err != nil {
+ 		panic(err)
+@@ -62,9 +73,17 @@ func main() {
+ 
+ func regenerate(fsys writablefs.FS) {
+ 	defer timer(&quot;Took %s&quot;)()
++
+ 	site := readSiteMetadata(fsys)
+ 	articles := findArticles(fsys)
+ 
++	if len(articles) == 0 {
++		fmt.Println(&quot;No articles found.&quot;)
++		fsys.RemoveAll(&quot;index.html&quot;)
++		fsys.RemoveAll(FEED_PATH)
++		return
++	}
++
+ 	// Sort articles, newest first
+ 	sort.Slice(articles, func(i int, j int) bool {
+ 		return articles[i].PostedAt.Compare(articles[j].PostedAt) &gt; 0
+@@ -121,12 +140,16 @@ type SiteMetadata struct {
+ 	}
+ }
+ 
+-func readSiteMetadata(fsys writablefs.FS) SiteMetadata {
+-	sm := SiteMetadata{
++func newSiteMetadata() SiteMetadata {
++	return SiteMetadata{
+ 		HomePath:     &quot;/&quot;,
+ 		ShowFooter:   true,
+ 		GenerateHome: true,
+ 	}
++}
++
++func readSiteMetadata(fsys writablefs.FS) SiteMetadata {
++	sm := newSiteMetadata()
+ 	_, err := toml.DecodeFS(fsys, SITE_FILENAME, &amp;sm)
+ 	if err != nil {
+ 		panic(err)
+diff --git a/makesite.go b/makesite.go
+new file mode 100644
+index 0000000..ac9b60d
+--- /dev/null
++++ b/makesite.go
+@@ -0,0 +1,65 @@
++package main
++
++import (
++	&quot;embed&quot;
++	_ &quot;embed&quot;
++	&quot;fmt&quot;
++	&quot;io/fs&quot;
++	&quot;io/ioutil&quot;
++	&quot;os&quot;
++	&quot;path/filepath&quot;
++
++	&quot;github.com/BurntSushi/toml&quot;
++)
++
++//go:embed theme
++var defaultTheme embed.FS
++
++func makeSite(path string, meta SiteMetadata) error {
++	err := os.MkdirAll(path, 0755)
++	if err != nil {
++		return fmt.Errorf(&quot;make site: %w&quot;, err)
++	}
++
++	metaFilePath := filepath.Join(path, SITE_FILENAME)
++	metaFile, err := os.Create(metaFilePath)
++	if err != nil {
++		return fmt.Errorf(&quot;create site metadata: %w&quot;, err)
++	}
++	defer metaFile.Close()
++
++	metaEncoder := toml.NewEncoder(metaFile)
++	err = metaEncoder.Encode(meta)
++	if err != nil {
++		return fmt.Errorf(&quot;write site metadata: %w&quot;, err)
++	}
++
++	copyTheme(defaultTheme, path)
++	return nil
++}
++
++func copyTheme(src fs.FS, dst string) error {
++	fs.WalkDir(src, &quot;.&quot;, func(path string, d fs.DirEntry, err error) error {
++		dstPath := filepath.Join(dst, path)
++
++		if d.IsDir() {
++			os.MkdirAll(dstPath, 0755)
++			return nil
++		}
++
++		content, err := fs.ReadFile(src, path)
++		if err != nil {
++			return fmt.Errorf(&quot;read source file: %w&quot;, err)
++		}
++
++		err = ioutil.WriteFile(dstPath, content, 0644)
++		if err != nil {
++			return fmt.Errorf(&quot;write dest file: %w&quot;, err)
++		}
++
++		return nil
++	})
++
++	os.Rename(filepath.Join(dst, &quot;theme&quot;), filepath.Join(dst, &quot;_theme&quot;))
++	return nil
++}
+diff --git a/www/_theme/base.css b/theme/base.css
+similarity index 100%
+rename from www/_theme/base.css
+rename to theme/base.css
+diff --git a/www/_theme/base.tmpl b/theme/base.tmpl
+similarity index 100%
+rename from www/_theme/base.tmpl
+rename to theme/base.tmpl
+diff --git a/www/_theme/feed.svg b/theme/feed.svg
+similarity index 100%
+rename from www/_theme/feed.svg
+rename to theme/feed.svg
+diff --git a/www/_theme/home.tmpl b/theme/home.tmpl
+similarity index 100%
+rename from www/_theme/home.tmpl
+rename to theme/home.tmpl
+diff --git a/www/_theme/post.css b/theme/post.css
+similarity index 100%
+rename from www/_theme/post.css
+rename to theme/post.css
+diff --git a/www/_theme/post.tmpl b/theme/post.tmpl
+similarity index 100%
+rename from www/_theme/post.tmpl
+rename to theme/post.tmpl
+diff --git a/watcher.go b/watcher.go
+index fe68698..0e2baf8 100644
+--- a/watcher.go
++++ b/watcher.go
+@@ -26,7 +26,7 @@ func WatchLocalFS(fsys writablefs.FS, callback func()) (Close func() error) {
+ 	}
+ 
+ 	fs.WalkDir(fsys, &quot;.&quot;, func(path string, d fs.DirEntry, err error) error {
+-		if !d.IsDir() || shouldIgnore(path) {
++		if !d.IsDir() || (shouldIgnore(path) &amp;&amp; path != &quot;.&quot;) {
+ 			return nil
+ 		}
+ 
+diff --git a/writablefs/writablefs.go b/writablefs/writablefs.go
+index 2451f8a..d99a1f6 100644
+--- a/writablefs/writablefs.go
++++ b/writablefs/writablefs.go
+@@ -9,6 +9,7 @@
+ type FS interface {
+ 	fs.FS
+ 	WriteFile(path string, content []byte) error
++	RemoveAll(path string) error
+ 	Path() string
+ }
+ 
+@@ -22,6 +23,10 @@ func WriteDirFS(path string) FS {
+ func (w writeDirFS) Open(name string) (fs.File, error) {
+ 	return os.DirFS(string(w)).Open(name)
+ }
++func (w writeDirFS) RemoveAll(path string) error {
++	fullPath := filepath.Join(string(w), path)
++	return os.RemoveAll(fullPath)
++}
+ 
+ func (w writeDirFS) WriteFile(path string, content []byte) error {
+ 	fullPath := filepath.Join(string(w), path)
+diff --git a/www/_theme b/www/_theme
+new file mode 120000
+index 0000000..1c50727
+--- /dev/null
++++ b/www/_theme
+@@ -0,0 +1 @@
++../theme
+\ No newline at end of file
+</pre></body></html>
